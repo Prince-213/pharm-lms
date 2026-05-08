@@ -5,14 +5,30 @@ import type { UserRole } from "@/generated/prisma/enums";
 import { canAccessRolePath, roleHomePath } from "@/lib/rbac";
 
 const protectedPrefixes = ["/mentor", "/student", "/admin"];
-const publicAuthPaths = ["/mentor/login", "/student/login", "/admin/login"];
+
+/** Paths where unauthenticated users may land; must include signup (not only login). */
+function normalizePathname(pathname: string): string {
+  const trimmed = pathname.replace(/\/$/, "");
+  return trimmed.length === 0 ? "/" : trimmed;
+}
+
+function isPublicAuthPath(pathname: string): boolean {
+  const p = normalizePathname(pathname);
+  return (
+    p === "/mentor/login" ||
+    p === "/mentor/signup" ||
+    p === "/student/login" ||
+    p === "/student/signup" ||
+    p === "/admin/login"
+  );
+}
 
 export async function proxy(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
   const needsAuth = protectedPrefixes.some((prefix) =>
     pathname.startsWith(prefix),
   );
-  const isAuthPage = publicAuthPaths.includes(pathname);
+  const isAuthPage = isPublicAuthPath(pathname);
 
   const token = await getToken({
     req,

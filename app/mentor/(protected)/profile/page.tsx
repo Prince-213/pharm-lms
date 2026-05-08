@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import {
   submitMentorReviewRequestAction,
   updateMentorProfileAction,
-} from "@/app/mentor/profile/actions";
+} from "./actions";
 import { roleHomePath } from "@/lib/rbac";
 
 export default async function MentorProfilePage() {
@@ -146,4 +146,3 @@ export default async function MentorProfilePage() {
     </div>
   );
 }
-

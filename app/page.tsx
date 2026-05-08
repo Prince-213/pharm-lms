@@ -32,6 +32,9 @@ export default function Home() {
               <Link href="/student/login" className="text-sm font-semibold text-[#404943] hover:text-[#0f5238]">
                 Sign in
               </Link>
+              <Link href="#portals" className="text-sm font-semibold text-[#404943] hover:text-[#0f5238]">
+                Sign up
+              </Link>
               <Link
                 href="/student/browse"
                 className="rounded-md bg-[#0f5238] px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-[#0a3d2a]"
@@ -99,39 +102,66 @@ export default function Home() {
             </div>
           </div>
 
-          <section id="portals" className="mt-24 border-t border-[#e2e8f0] pt-16">
+          <section
+            id="portals"
+            className="scroll-mt-20 mt-24 border-t border-[#e2e8f0] pt-16"
+          >
             <h2 className="text-center font-display text-2xl font-bold text-[#0f172a]">Choose your portal</h2>
             <p className="mx-auto mt-2 max-w-2xl text-center text-sm text-[#64748b]">
               Same platform — role-specific dashboards inspired by the PharmLMS design system.
             </p>
             <div className="mt-10 grid gap-6 md:grid-cols-4">
-              <Link
-                href="/student/login"
-                className="group flex flex-col rounded-2xl border border-[#e2e8f0] bg-white p-8 shadow-sm transition hover:border-[#10b981]/40 hover:shadow-md"
-              >
+              <div className="group flex flex-col rounded-2xl border border-[#e2e8f0] bg-white p-8 shadow-sm transition hover:border-[#10b981]/40 hover:shadow-md">
                 <CheckCircle2 className="h-10 w-10 text-[#10b981]" strokeWidth={1.5} />
                 <h3 className="mt-4 font-display text-lg font-bold text-[#0f172a]">Students</h3>
                 <p className="mt-2 flex-1 text-sm text-[#64748b]">Browse, enroll, and learn section by section with progress tracking.</p>
-                <span className="mt-6 text-sm font-semibold text-[#0f5238] group-hover:underline">Student login →</span>
-              </Link>
-              <Link
-                href="/tutor/login"
-                className="group flex flex-col rounded-2xl border border-[#e2e8f0] bg-white p-8 shadow-sm transition hover:border-[#10b981]/40 hover:shadow-md"
-              >
+                <div className="mt-6 flex flex-col gap-2 border-t border-[#e2e8f0] pt-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-1">
+                  <Link href="/student/login" className="text-sm font-semibold text-[#0f5238] hover:underline">
+                    Log in →
+                  </Link>
+                  <Link
+                    href="/student/signup"
+                    prefetch={false}
+                    className="text-sm font-semibold text-[#64748b] hover:text-[#0f5238] hover:underline"
+                  >
+                    Sign up
+                  </Link>
+                </div>
+              </div>
+              <div className="group flex flex-col rounded-2xl border border-[#e2e8f0] bg-white p-8 shadow-sm transition hover:border-[#10b981]/40 hover:shadow-md">
                 <GraduationCap className="h-10 w-10 text-[#0f5238]" strokeWidth={1.5} />
                 <h3 className="mt-4 font-display text-lg font-bold text-[#0f172a]">Tutors</h3>
                 <p className="mt-2 flex-1 text-sm text-[#64748b]">Author courses, manage curriculum, and submit for clinical review.</p>
-                <span className="mt-6 text-sm font-semibold text-[#0f5238] group-hover:underline">Tutor login →</span>
-              </Link>
-              <Link
-                href="/mentor/login"
-                className="group flex flex-col rounded-2xl border border-[#e2e8f0] bg-white p-8 shadow-sm transition hover:border-[#10b981]/40 hover:shadow-md"
-              >
+                <div className="mt-6 flex flex-col gap-2 border-t border-[#e2e8f0] pt-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-1">
+                  <Link href="/tutor/login" className="text-sm font-semibold text-[#0f5238] hover:underline">
+                    Log in →
+                  </Link>
+                  <Link
+                    href="/tutor/signup"
+                    prefetch={false}
+                    className="text-sm font-semibold text-[#64748b] hover:text-[#0f5238] hover:underline"
+                  >
+                    Sign up
+                  </Link>
+                </div>
+              </div>
+              <div className="group flex flex-col rounded-2xl border border-[#e2e8f0] bg-white p-8 shadow-sm transition hover:border-[#10b981]/40 hover:shadow-md">
                 <GraduationCap className="h-10 w-10 text-[#2d6a4f]" strokeWidth={1.5} />
                 <h3 className="mt-4 font-display text-lg font-bold text-[#0f172a]">Mentors</h3>
                 <p className="mt-2 flex-1 text-sm text-[#64748b]">Set up your profile, submit for approval, and take 1-on-1 sessions with students.</p>
-                <span className="mt-6 text-sm font-semibold text-[#0f5238] group-hover:underline">Mentor login →</span>
-              </Link>
+                <div className="mt-6 flex flex-col gap-2 border-t border-[#e2e8f0] pt-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-1">
+                  <Link href="/mentor/login" className="text-sm font-semibold text-[#0f5238] hover:underline">
+                    Log in →
+                  </Link>
+                  <Link
+                    href="/mentor/signup"
+                    prefetch={false}
+                    className="text-sm font-semibold text-[#64748b] hover:text-[#0f5238] hover:underline"
+                  >
+                    Sign up
+                  </Link>
+                </div>
+              </div>
               <Link
                 href="/admin/login"
                 className="group flex flex-col rounded-2xl border border-[#e2e8f0] bg-white p-8 shadow-sm transition hover:border-[#10b981]/40 hover:shadow-md"

@@ -2,10 +2,12 @@ import { compare } from "bcryptjs";
 import type { NextAuthConfig } from "next-auth";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import Apple from "next-auth/providers/apple";
 import Google from "next-auth/providers/google";
 import { z } from "zod";
 import { MentorProfileStatus, UserRole } from "@/generated/prisma/enums";
 import { customPrismaAdapter } from "@/lib/auth/custom-prisma-adapter";
+import { isAppleOAuthEnabled } from "@/lib/auth/apple-oauth-enabled";
 import { isGoogleOAuthEnabled } from "@/lib/auth/google-oauth-enabled";
 import { prisma } from "@/lib/prisma";
 
@@ -52,6 +54,20 @@ if (isGoogleOAuthEnabled()) {
   if (clientId && clientSecret) {
     providers.push(
       Google({
+        clientId,
+        clientSecret,
+        allowDangerousEmailAccountLinking: true,
+      }),
+    );
+  }
+}
+
+if (isAppleOAuthEnabled()) {
+  const clientId = process.env.AUTH_APPLE_ID?.trim();
+  const clientSecret = process.env.AUTH_APPLE_SECRET?.trim();
+  if (clientId && clientSecret) {
+    providers.push(
+      Apple({
         clientId,
         clientSecret,
         allowDangerousEmailAccountLinking: true,

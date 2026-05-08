@@ -2,27 +2,43 @@
 
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { UserRole } from "@/generated/prisma/enums";
-import { signupAction } from "@/lib/auth/signup-action";
+import {
+  completeSignupWithOtpAction,
+  sendSignupOtpAction,
+} from "@/lib/auth/signup-otp";
 
 type LoginFormProps = {
   actorType: "tutor" | "mentor" | "student" | "admin";
   mode: "login" | "signup";
   callbackUrl: string;
-  /** When true and not admin, show Google sign-in (requires AUTH_GOOGLE_ID / AUTH_GOOGLE_SECRET on the server). */
   googleEnabled?: boolean;
-  /**
-   * Admin login only: pre-fill email/password (e.g. from SEED_ADMIN_*).
-   * Only pass from the server when explicitly allowed (dev or SHOW_ADMIN_LOGIN_HINT).
-   */
+  appleEnabled?: boolean;
   adminCredentialHints?: { email: string; password: string };
 };
 
+const PORTAL_AUTH_BASE = {
+  student: "/student",
+  tutor: "/tutor",
+  mentor: "/mentor",
+} as const;
+
+type NonAdminPortalActor = keyof typeof PORTAL_AUTH_BASE;
+
 function setOAuthIntentCookie(intent: "tutor" | "mentor" | "student") {
-  // Short-lived hint for server-side OAuth user creation (custom Prisma adapter).
   // biome-ignore lint/suspicious/noDocumentCookie: Cookie Store API not supported everywhere; value is non-sensitive.
   document.cookie = `oauth_intent=${intent}; path=/; max-age=300; SameSite=Lax`;
+}
+
+function roleFromActor(
+  actorType: LoginFormProps["actorType"],
+): UserRole | null {
+  if (actorType === "tutor") return UserRole.TUTOR;
+  if (actorType === "mentor") return UserRole.MENTOR;
+  if (actorType === "student") return UserRole.STUDENT;
+  return null;
 }
 
 export function LoginForm({
@@ -30,17 +46,27 @@ export function LoginForm({
   mode,
   callbackUrl,
   googleEnabled = false,
+  appleEnabled = false,
   adminCredentialHints,
 }: LoginFormProps) {
   const isSignup = mode === "signup";
+  const isAdmin = actorType === "admin";
   const adminHints =
-    actorType === "admin" && !isSignup ? adminCredentialHints : undefined;
+    isAdmin && !isSignup ? adminCredentialHints : undefined;
   const [email, setEmail] = useState(adminHints?.email ?? "");
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState(adminHints?.password ?? "");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [otpCode, setOtpCode] = useState("");
   const [error, setError] = useState("");
   const [isPending, setIsPending] = useState(false);
-  const [googlePending, setGooglePending] = useState(false);
+  const [oauthPending, setOauthPending] = useState<"google" | "apple" | null>(
+    null,
+  );
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [otpCooldown, setOtpCooldown] = useState(0);
+  const [otpSending, setOtpSending] = useState(false);
 
   useEffect(() => {
     if (adminHints) {
@@ -49,18 +75,44 @@ export function LoginForm({
     }
   }, [adminHints]);
 
-  const showGoogle =
-    googleEnabled &&
-    (actorType === "student" || actorType === "tutor" || actorType === "mentor");
+  useEffect(() => {
+    if (otpCooldown <= 0) return;
+    const t = setInterval(() => {
+      setOtpCooldown((s) => (s <= 1 ? 0 : s - 1));
+    }, 1000);
+    return () => clearInterval(t);
+  }, [otpCooldown]);
 
-  function onGoogleSignIn() {
-    if (!showGoogle) {
+  const showGoogle =
+    googleEnabled && !isAdmin && (actorType === "student" || actorType === "tutor" || actorType === "mentor");
+  const showApple =
+    appleEnabled && !isAdmin && (actorType === "student" || actorType === "tutor" || actorType === "mentor");
+  const showOAuthRow = showGoogle || showApple;
+  const portalRole = roleFromActor(actorType);
+
+  function startOAuth(
+    provider: "google" | "apple",
+  ): void {
+    if (!portalRole) return;
+    setError("");
+    setOauthPending(provider);
+    setOAuthIntentCookie(actorType as "student" | "tutor" | "mentor");
+    void signIn(provider, { callbackUrl });
+  }
+
+  async function onSendCode(): Promise<void> {
+    setError("");
+    setOtpSending(true);
+    const result = await sendSignupOtpAction(email);
+    setOtpSending(false);
+    if (!result.ok) {
+      if ("cooldownSeconds" in result && result.cooldownSeconds) {
+        setOtpCooldown(result.cooldownSeconds);
+      }
+      setError(result.error);
       return;
     }
-    setError("");
-    setGooglePending(true);
-    setOAuthIntentCookie(actorType);
-    void signIn("google", { callbackUrl });
+    setOtpCooldown(60);
   }
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -68,22 +120,22 @@ export function LoginForm({
     setIsPending(true);
     setError("");
 
-    if (isSignup) {
-      if (actorType === "admin") {
-        setError("Admin accounts are created at install time, not by sign-up.");
+    if (isSignup && !isAdmin) {
+      if (password !== confirmPassword) {
+        setError("Passwords do not match.");
         setIsPending(false);
         return;
       }
-      const result = await signupAction({
+      if (!portalRole) {
+        setIsPending(false);
+        return;
+      }
+      const result = await completeSignupWithOtpAction({
         fullName,
         email,
         password,
-        role:
-          actorType === "tutor"
-            ? UserRole.TUTOR
-            : actorType === "mentor"
-              ? UserRole.MENTOR
-              : UserRole.STUDENT,
+        code: otpCode.replace(/\s/g, ""),
+        role: portalRole,
       });
       if (!result.ok) {
         setError(result.error);
@@ -105,6 +157,12 @@ export function LoginForm({
       return;
     }
 
+    if (isSignup && isAdmin) {
+      setError("Admin accounts are created at install time, not by sign-up.");
+      setIsPending(false);
+      return;
+    }
+
     const result = await signIn("credentials", {
       email,
       password,
@@ -121,38 +179,144 @@ export function LoginForm({
     window.location.href = callbackUrl;
   }
 
+  const inputClass =
+    "h-12 w-full rounded-xl border border-[var(--auth-border)] bg-[var(--auth-input-bg)] px-3 text-sm text-[var(--auth-text)] placeholder:text-[var(--auth-muted)] outline-none focus:border-[var(--auth-accent)] focus:ring-1 focus:ring-[var(--auth-accent)]";
+
   return (
-    <form onSubmit={onSubmit} className="space-y-3">
-      <h1 className="text-center text-3xl font-bold tracking-tight text-[var(--foreground)] sm:text-4xl">
-        {isSignup
-          ? `Sign up as ${actorType}`
-          : `Log in as ${actorType} to continue`}
+    <form
+      onSubmit={onSubmit}
+      className="space-y-4 text-[var(--auth-text)]"
+    >
+      <h1 className="text-center font-display text-2xl font-bold tracking-tight text-[var(--auth-text)] sm:text-[1.75rem]">
+        {isAdmin
+          ? "Admin sign in"
+          : isSignup
+            ? `Create ${actorType} account`
+            : `Sign in as ${actorType}`}
       </h1>
-      {isSignup ? (
+
+      {!isAdmin && isSignup ? (
+        <p className="text-center text-xs leading-relaxed text-[var(--auth-muted)]">
+          Use email verification, then choose a password. Or continue with
+          Google{showApple ? " or Apple" : ""} below.
+        </p>
+      ) : !isAdmin ? (
+        <p className="text-center text-xs leading-relaxed text-[var(--auth-muted)]">
+          By signing in, you agree to our{" "}
+          <Link href="/legal/terms" className="text-[var(--auth-link)] hover:underline">
+            Terms
+          </Link>{" "}
+          and{" "}
+          <Link href="/legal/privacy" className="text-[var(--auth-link)] hover:underline">
+            Privacy Policy
+          </Link>
+          .
+        </p>
+      ) : null}
+
+      {isSignup && !isAdmin ? (
         <input
-          className="h-12 w-full rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-3 text-sm"
+          className={inputClass}
           placeholder="Full name"
           type="text"
+          autoComplete="name"
           value={fullName}
-          onChange={(event) => setFullName(event.target.value)}
+          onChange={(e) => setFullName(e.target.value)}
         />
       ) : null}
+
       <input
-        className="h-12 w-full rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-3 text-sm"
-        placeholder={adminHints?.email ?? "Email"}
+        className={inputClass}
+        placeholder={adminHints?.email ?? "Email address"}
         type="email"
+        autoComplete="email"
         value={email}
-        onChange={(event) => setEmail(event.target.value)}
+        onChange={(e) => setEmail(e.target.value)}
       />
-      <input
-        className="h-12 w-full rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-3 text-sm"
-        placeholder={adminHints?.password ?? "Password"}
-        type="password"
-        value={password}
-        onChange={(event) => setPassword(event.target.value)}
-      />
+
+      {isSignup && !isAdmin ? (
+        <div className="flex gap-2">
+          <input
+            className={`${inputClass} flex-1 font-mono tracking-widest`}
+            placeholder="Verification code"
+            type="text"
+            inputMode="numeric"
+            maxLength={6}
+            autoComplete="one-time-code"
+            value={otpCode}
+            onChange={(e) =>
+              setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+            }
+          />
+          <button
+            type="button"
+            disabled={
+              otpSending ||
+              otpCooldown > 0 ||
+              !email.includes("@")
+            }
+            onClick={() => void onSendCode()}
+            className="shrink-0 rounded-xl border border-[var(--auth-border)] bg-[var(--auth-surface)] px-4 text-sm font-semibold text-[var(--auth-link)] transition hover:bg-white/5 disabled:opacity-50"
+          >
+            {otpCooldown > 0 ? `${otpCooldown}s` : otpSending ? "…" : "Send code"}
+          </button>
+        </div>
+      ) : null}
+
+      <div className="relative">
+        <input
+          className={`${inputClass} pr-11`}
+          placeholder="Password"
+          type={showPassword ? "text" : "password"}
+          autoComplete={isSignup ? "new-password" : "current-password"}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button
+          type="button"
+          tabIndex={-1}
+          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-[var(--auth-muted)] hover:text-[var(--auth-text)]"
+          onClick={() => setShowPassword((v) => !v)}
+          aria-label={showPassword ? "Hide password" : "Show password"}
+        >
+          {showPassword ? (
+            <EyeOff className="h-4 w-4" />
+          ) : (
+            <Eye className="h-4 w-4" />
+          )}
+        </button>
+      </div>
+
+      {isSignup && !isAdmin ? (
+        <div className="relative">
+          <input
+            className={`${inputClass} pr-11`}
+            placeholder="Confirm password"
+            type={showConfirmPassword ? "text" : "password"}
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+          <button
+            type="button"
+            tabIndex={-1}
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-[var(--auth-muted)] hover:text-[var(--auth-text)]"
+            onClick={() => setShowConfirmPassword((v) => !v)}
+            aria-label={
+              showConfirmPassword ? "Hide password" : "Show password"
+            }
+          >
+            {showConfirmPassword ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+      ) : null}
+
       {adminHints ? (
-        <div className="rounded-[var(--radius-md)] border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
+        <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-100">
           <p className="font-semibold">Demo admin credentials</p>
           <p>
             Email: <span className="font-mono">{adminHints.email}</span>
@@ -162,63 +326,111 @@ export function LoginForm({
           </p>
         </div>
       ) : null}
-      {isSignup ? (
-        <label className="flex items-start gap-2 text-xs text-[var(--muted)]">
-          <input type="checkbox" className="mt-0.5" defaultChecked />
-          Send me special offers, personalized recommendations, and learning
-          tips.
-        </label>
+
+      {isSignup && !isAdmin ? (
+        <p className="text-center text-[11px] leading-relaxed text-[var(--auth-muted)]">
+          By signing up, you consent to our{" "}
+          <Link href="/legal/terms" className="text-[var(--auth-link)] hover:underline">
+            Terms of Use
+          </Link>{" "}
+          and{" "}
+          <Link href="/legal/privacy" className="text-[var(--auth-link)] hover:underline">
+            Privacy Policy
+          </Link>
+          .
+        </p>
       ) : null}
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+
+      {error ? (
+        <p className="text-center text-sm text-[var(--auth-error)]">{error}</p>
+      ) : null}
+
       <button
         type="submit"
         disabled={isPending}
-        className="h-12 w-full rounded-[var(--radius-md)] bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-[var(--primary-foreground)] transition hover:bg-[var(--primary-strong)] disabled:opacity-60"
+        className="h-12 w-full rounded-xl bg-[var(--auth-accent)] text-sm font-semibold text-white transition hover:bg-[var(--auth-accent-hover)] disabled:opacity-60"
       >
-        {isPending ? "Please wait..." : "Continue"}
+        {isPending
+          ? "Please wait…"
+          : isSignup && !isAdmin
+            ? "Sign up"
+            : "Log in"}
       </button>
-      {showGoogle ? (
+
+      {!isAdmin && !isSignup ? (
+        <div className="flex items-center justify-between text-sm">
+          <Link
+            href="/contact-admin"
+            className="text-[var(--auth-link)] hover:underline"
+          >
+            Forgot password?
+          </Link>
+          <Link
+            href={`${PORTAL_AUTH_BASE[actorType as NonAdminPortalActor]}/signup`}
+            className="text-[var(--auth-link)] hover:underline"
+          >
+            Sign up
+          </Link>
+        </div>
+      ) : null}
+
+      {showOAuthRow ? (
         <>
-          <div className="flex items-center gap-2 py-2">
-            <span className="h-px flex-1 bg-[var(--border)]" />
-            <span className="text-xs text-[var(--muted)]">
+          <div className="flex items-center gap-3 py-1">
+            <span className="h-px flex-1 bg-[var(--auth-border)]" />
+            <span className="text-[11px] uppercase tracking-wider text-[var(--auth-muted)]">
               {isSignup ? "Or sign up with" : "Or continue with"}
             </span>
-            <span className="h-px flex-1 bg-[var(--border)]" />
+            <span className="h-px flex-1 bg-[var(--auth-border)]" />
           </div>
-          <button
-            type="button"
-            onClick={onGoogleSignIn}
-            disabled={isPending || googlePending}
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[#1f1f1f] shadow-sm transition hover:bg-[#f8f9fa] disabled:opacity-60"
-          >
-            <GoogleGlyph />
-            {googlePending ? "Redirecting…" : "Continue with Google"}
-          </button>
+          <div className="flex justify-center gap-4">
+            {showGoogle ? (
+              <button
+                type="button"
+                title="Google"
+                disabled={isPending || oauthPending !== null}
+                onClick={() => startOAuth("google")}
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--auth-border)] bg-white transition hover:bg-zinc-100 disabled:opacity-60"
+              >
+                <GoogleGlyph />
+              </button>
+            ) : null}
+            {showApple ? (
+              <button
+                type="button"
+                title="Apple"
+                disabled={isPending || oauthPending !== null}
+                onClick={() => startOAuth("apple")}
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--auth-border)] bg-black transition hover:bg-zinc-900 disabled:opacity-60"
+              >
+                <AppleGlyph />
+              </button>
+            ) : null}
+          </div>
         </>
       ) : null}
-      {actorType !== "admin" ? (
-        <div className="mt-5 space-y-3 rounded-[var(--radius-lg)] bg-[var(--surface-muted)]/80 p-4 text-center text-sm">
-          <p>
-            {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
-            <Link
-              className="font-semibold text-[var(--primary)]"
-              href={`/${actorType}/${isSignup ? "login" : "signup"}`}
-            >
-              {isSignup ? "Log in" : "Sign up"}
-            </Link>
-          </p>
-          {!isSignup ? (
-            <p>
-              <a
-                className="font-semibold text-[var(--primary)]"
-                href="/contact-admin"
-              >
-                Log in with your organization
-              </a>
-            </p>
-          ) : null}
-        </div>
+
+      {!isAdmin ? (
+        <p className="pt-2 text-center text-sm text-[var(--auth-muted)]">
+          {isSignup ? "Already have an account? " : "Need an account? "}
+          <Link
+            href={`${PORTAL_AUTH_BASE[actorType as NonAdminPortalActor]}/${isSignup ? "login" : "signup"}`}
+            className="font-semibold text-[var(--auth-link)] hover:underline"
+          >
+            {isSignup ? "Log in" : "Sign up"}
+          </Link>
+        </p>
+      ) : null}
+
+      {!isAdmin && !isSignup ? (
+        <p className="text-center text-sm">
+          <Link
+            href="/contact-admin"
+            className="text-[var(--auth-link)] hover:underline"
+          >
+            Log in with your organization
+          </Link>
+        </p>
       ) : null}
     </form>
   );
@@ -249,6 +461,21 @@ function GoogleGlyph() {
         fill="#EA4335"
         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
       />
+    </svg>
+  );
+}
+
+function AppleGlyph() {
+  return (
+    <svg
+      className="h-5 w-5 shrink-0 text-white"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="Apple"
+    >
+      <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
     </svg>
   );
 }

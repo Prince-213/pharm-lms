@@ -83,3 +83,40 @@ body {
 .font-display {
   font-family: var(--font-manrope), var(--font-inter-sans), system-ui, sans-serif;
 }
+
+/**
+ * Scoped dark theme for auth routes only (SaaS-style). Does not affect :root app tokens.
+ */
+.auth-saas {
+  color-scheme: dark;
+  --auth-bg: #0b0b0b;
+  --auth-surface: #141414;
+  --auth-border: rgb(255 255 255 / 0.14);
+  --auth-text: #f4f4f5;
+  --auth-muted: #c4c4c8;
+  --auth-link: #93b4ff;
+  --auth-accent: #4c82f7;
+  --auth-accent-hover: #3d6fd4;
+  --auth-input-bg: #1a1a1a;
+  --auth-error: #fca5a5;
+}
+
+/* Keep typed and autofilled text visible on dark inputs (UA defaults can ignore inherited color). */
+.auth-saas :where(input, textarea, select) {
+  color: var(--auth-text);
+  caret-color: var(--auth-accent);
+}
+
+.auth-saas input::placeholder,
+.auth-saas textarea::placeholder {
+  color: var(--auth-muted);
+  opacity: 0.85;
+}
+
+.auth-saas input:-webkit-autofill,
+.auth-saas input:-webkit-autofill:hover,
+.auth-saas input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--auth-text);
+  box-shadow: 0 0 0 1000px var(--auth-input-bg) inset;
+  transition: background-color 9999s ease-out;
+}

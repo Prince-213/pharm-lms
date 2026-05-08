@@ -6,8 +6,6 @@ const nextConfig: NextConfig = {
    allowedDevOrigins: ['127.0.0.1'],
   async redirects() {
     return [
-      { source: "/mentor/login", destination: "/tutor/login", permanent: false },
-      { source: "/mentor/signup", destination: "/tutor/signup", permanent: false },
       {
         source: "/mentor/performance/:path*",
         destination: "/tutor/performance/:path*",

@@ -102,6 +102,18 @@ model User {
   auditEntries            AuditLog[]
 }
 
+/// One-time email verification codes for public sign-up (non-admin).
+model SignupOtp {
+  id         String    @id @default(cuid())
+  email      String
+  codeHash   String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([email, expiresAt])
+}
+
 model Course {
   id                        String                   @id @default(cuid())
   mentorId                  String

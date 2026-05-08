@@ -13,6 +13,12 @@ import {
   Users,
 } from "lucide-react";
 
+function normalizePathname(pathname: string | null): string {
+  if (!pathname) return "";
+  const trimmed = pathname.replace(/\/$/, "");
+  return trimmed.length === 0 ? "/" : trimmed;
+}
+
 const nav = [
   { href: "/student/dashboard", label: "My learning", icon: BookOpen },
   { href: "/student/courses", label: "My courses", icon: GraduationCap },
@@ -30,10 +36,11 @@ export default function StudentLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const path = normalizePathname(pathname);
   const isAuthRoute =
-    pathname === "/student/login" || pathname === "/student/signup";
+    path === "/student/login" || path === "/student/signup";
 
-  const isLearningPlayer = /^\/student\/course\/[^/]+$/.test(pathname);
+  const isLearningPlayer = /^\/student\/course\/[^/]+$/.test(path);
 
   if (isAuthRoute) return children;
 
