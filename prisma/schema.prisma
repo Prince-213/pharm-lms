@@ -1,0 +1,513 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  TUTOR
+  MENTOR
+  STUDENT
+}
+
+enum MentorProfileStatus {
+  INCOMPLETE
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum CourseStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+  PUBLISHED
+}
+
+enum AssignmentStatus {
+  DRAFT
+  SENT
+  CLOSED
+}
+
+enum SubmissionStatus {
+  SUBMITTED
+  GRADED
+  LATE
+}
+
+enum MeetingRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+enum MeetingStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  EXPIRED
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+model User {
+  id                      String                  @id @default(cuid())
+  email                   String                  @unique
+  emailVerified           DateTime?
+  passwordHash            String?
+  fullName                String
+  role                    UserRole
+  mentorProfileStatus     MentorProfileStatus     @default(INCOMPLETE)
+  mentorReviewRequestedAt DateTime?
+  mentorReviewedAt        DateTime?
+  mentorReviewNote        String?
+  bio                     String?
+  avatarUrl               String?
+  isActive                Boolean                 @default(true)
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime                @updatedAt
+  courses                 Course[]                @relation("MentorCourses")
+  enrollments             Enrollment[]
+  lessonProgress          LessonProgress[]
+  wishlists               Wishlist[]
+  assignmentMade          Assignment[]            @relation("AssignmentCreatedBy")
+  submissions             AssignmentSubmission[]
+  availability            MentorAvailability[]
+  sentMessages            ChatMessage[]           @relation("ChatMessageSender")
+  receivedThreads         ChatThreadParticipant[]
+  meetingRequests         MeetingRequest[]        @relation("MeetingRequestedBy")
+  mentorMeetingRequests   MeetingRequest[]        @relation("MentorMeetingRequests")
+  meetingOwned            Meeting[]               @relation("MeetingMentor")
+  meetingJoined           Meeting[]
+  batchMemberships        BatchMembership[]
+  forumPosts              ForumPost[]
+  achievements            StudentBadge[]
+  createdBadges           Badge[]                 @relation("BadgeCreatedBy")
+  aiQuizAttempts          AIQuizAttempt[]
+  sectionQuizAttempts     SectionQuizAttempt[]
+  courseVisits            CourseVisit[]
+  accounts                Account[]
+  sessions                Session[]
+  auditEntries            AuditLog[]
+}
+
+model Course {
+  id                        String                   @id @default(cuid())
+  mentorId                  String
+  title                     String
+  subtitle                  String?
+  description               String
+  language                  String?
+  level                     String?
+  category                  String?
+  subcategory               String?
+  primaryTopic              String?
+  thumbnailUrl              String?
+  promoVideoUrl             String?
+  welcomeMessage            String?                  @db.Text
+  congratulatoryTitle       String?
+  congratulatoryContentType String?
+  congratulatoryArticle     String?                  @db.Text
+  congratulatoryVideoUrl    String?
+  priceCurrency             String                   @default("NGN")
+  priceMinorUnits           Int?
+  status                    CourseStatus             @default(DRAFT)
+  approvedById              String?
+  approvedAt                DateTime?
+  rejectionReason           String?
+  congratulatoryMessage     String?
+  createdAt                 DateTime                 @default(now())
+  updatedAt                 DateTime                 @updatedAt
+  mentor                    User                     @relation("MentorCourses", fields: [mentorId], references: [id])
+  sections                  CourseSection[]
+  enrollments               Enrollment[]
+  assignments               Assignment[]
+  forums                    ForumThread[]
+  meetingRequests           MeetingRequest[]
+  wishlists                 Wishlist[]
+  approvalLogs              CourseApprovalWorkflow[]
+  visits                    CourseVisit[]
+}
+
+model CourseSection {
+  id          String        @id @default(cuid())
+  courseId    String
+  title       String
+  description String?
+  position    Int
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  course      Course        @relation(fields: [courseId], references: [id])
+  lessons     Lesson[]
+  quizzes     SectionQuiz[]
+}
+
+model Lesson {
+  id              String           @id @default(cuid())
+  sectionId       String
+  title           String
+  content         String?
+  videoUrl        String?
+  durationSec     Int?
+  position        Int
+  downloadable    Boolean          @default(false)
+  downloadableUrl String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  section         CourseSection    @relation(fields: [sectionId], references: [id])
+  progresses      LessonProgress[]
+}
+
+model Enrollment {
+  id          String           @id @default(cuid())
+  courseId    String
+  studentId   String
+  status      EnrollmentStatus @default(ACTIVE)
+  enrolledAt  DateTime         @default(now())
+  completedAt DateTime?
+  course      Course           @relation(fields: [courseId], references: [id])
+  student     User             @relation(fields: [studentId], references: [id])
+
+  @@unique([courseId, studentId])
+}
+
+model LessonProgress {
+  id          String    @id @default(cuid())
+  lessonId    String
+  studentId   String
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  lesson      Lesson    @relation(fields: [lessonId], references: [id])
+  student     User      @relation(fields: [studentId], references: [id])
+
+  @@unique([lessonId, studentId])
+  @@index([studentId, completed])
+}
+
+model Wishlist {
+  id        String   @id @default(cuid())
+  studentId String
+  courseId  String
+  createdAt DateTime @default(now())
+  student   User     @relation(fields: [studentId], references: [id])
+  course    Course   @relation(fields: [courseId], references: [id])
+
+  @@unique([studentId, courseId])
+}
+
+model MentorAvailability {
+  id          String  @id @default(cuid())
+  mentorId    String
+  dayOfWeek   Int
+  startTime   String
+  endTime     String
+  timezone    String
+  isRecurring Boolean @default(true)
+  mentor      User    @relation(fields: [mentorId], references: [id])
+}
+
+model MeetingRequest {
+  id            String               @id @default(cuid())
+  courseId      String?
+  mentorId      String
+  studentId     String
+  requestedAt   DateTime             @default(now())
+  preferredTime DateTime?
+  message       String?
+  status        MeetingRequestStatus @default(PENDING)
+  course        Course?              @relation(fields: [courseId], references: [id])
+  mentor        User                 @relation("MentorMeetingRequests", fields: [mentorId], references: [id])
+  student       User                 @relation("MeetingRequestedBy", fields: [studentId], references: [id])
+  meeting       Meeting?
+}
+
+model Meeting {
+  id               String         @id @default(cuid())
+  meetingRequestId String         @unique
+  mentorId         String
+  studentId        String
+  roomName         String
+  joinUrl          String
+  startsAt         DateTime
+  endsAt           DateTime?
+  /**
+   * First time a participant opened the LMS join gate (not proof they stayed in Jitsi).
+   */
+  openedAt         DateTime?
+  status           MeetingStatus  @default(SCHEDULED)
+  meetingRequest   MeetingRequest @relation(fields: [meetingRequestId], references: [id])
+  mentor           User           @relation("MeetingMentor", fields: [mentorId], references: [id])
+  student          User           @relation(fields: [studentId], references: [id])
+}
+
+model Assignment {
+  id          String                 @id @default(cuid())
+  courseId    String
+  createdById String
+  title       String
+  description String
+  dueDate     DateTime?
+  status      AssignmentStatus       @default(DRAFT)
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  course      Course                 @relation(fields: [courseId], references: [id])
+  createdBy   User                   @relation("AssignmentCreatedBy", fields: [createdById], references: [id])
+  submissions AssignmentSubmission[]
+  batches     AssignmentBatch[]
+}
+
+model AssignmentSubmission {
+  id            String           @id @default(cuid())
+  assignmentId  String
+  studentId     String
+  content       String?
+  attachmentUrl String?
+  submittedAt   DateTime?
+  grade         Float?
+  feedback      String?
+  status        SubmissionStatus @default(SUBMITTED)
+  assignment    Assignment       @relation(fields: [assignmentId], references: [id])
+  student       User             @relation(fields: [studentId], references: [id])
+
+  @@unique([assignmentId, studentId])
+}
+
+model StudentBatch {
+  id          String            @id @default(cuid())
+  mentorId    String
+  courseId    String
+  name        String
+  description String?
+  createdAt   DateTime          @default(now())
+  memberships BatchMembership[]
+  assignments AssignmentBatch[]
+}
+
+model BatchMembership {
+  id        String       @id @default(cuid())
+  batchId   String
+  studentId String
+  batch     StudentBatch @relation(fields: [batchId], references: [id])
+  student   User         @relation(fields: [studentId], references: [id])
+
+  @@unique([batchId, studentId])
+}
+
+model AssignmentBatch {
+  id           String       @id @default(cuid())
+  assignmentId String
+  batchId      String
+  assignment   Assignment   @relation(fields: [assignmentId], references: [id])
+  batch        StudentBatch @relation(fields: [batchId], references: [id])
+
+  @@unique([assignmentId, batchId])
+}
+
+model ChatThread {
+  id            String                  @id @default(cuid())
+  createdAt     DateTime                @default(now())
+  lastMessageAt DateTime?
+  participants  ChatThreadParticipant[]
+  messages      ChatMessage[]
+}
+
+model ChatThreadParticipant {
+  id       String     @id @default(cuid())
+  threadId String
+  userId   String
+  thread   ChatThread @relation(fields: [threadId], references: [id])
+  user     User       @relation(fields: [userId], references: [id])
+
+  @@unique([threadId, userId])
+}
+
+model ChatMessage {
+  id        String     @id @default(cuid())
+  threadId  String
+  senderId  String
+  body      String
+  createdAt DateTime   @default(now())
+  thread    ChatThread @relation(fields: [threadId], references: [id])
+  sender    User       @relation("ChatMessageSender", fields: [senderId], references: [id])
+}
+
+model ForumThread {
+  id          String      @id @default(cuid())
+  courseId    String
+  title       String
+  createdById String
+  createdAt   DateTime    @default(now())
+  course      Course      @relation(fields: [courseId], references: [id])
+  posts       ForumPost[]
+}
+
+model ForumPost {
+  id        String      @id @default(cuid())
+  threadId  String
+  authorId  String
+  body      String
+  createdAt DateTime    @default(now())
+  thread    ForumThread @relation(fields: [threadId], references: [id])
+  author    User        @relation(fields: [authorId], references: [id])
+}
+
+model SectionQuiz {
+  id        String               @id @default(cuid())
+  sectionId String
+  title     String
+  questions Json
+  createdAt DateTime             @default(now())
+  section   CourseSection        @relation(fields: [sectionId], references: [id])
+  attempts  SectionQuizAttempt[]
+}
+
+model SectionQuizAttempt {
+  id        String      @id @default(cuid())
+  quizId    String
+  studentId String
+  answers   Json
+  score     Float
+  createdAt DateTime    @default(now())
+  quiz      SectionQuiz @relation(fields: [quizId], references: [id])
+  student   User        @relation(fields: [studentId], references: [id])
+
+  @@index([studentId])
+  @@index([quizId])
+}
+
+model Badge {
+  id          String         @id @default(cuid())
+  name        String         @unique
+  description String
+  iconUrl     String?
+  ruleType    String
+  ruleConfig  Json
+  createdById String
+  createdAt   DateTime       @default(now())
+  createdBy   User           @relation("BadgeCreatedBy", fields: [createdById], references: [id])
+  awarded     StudentBadge[]
+}
+
+model StudentBadge {
+  id        String   @id @default(cuid())
+  badgeId   String
+  studentId String
+  awardedAt DateTime @default(now())
+  badge     Badge    @relation(fields: [badgeId], references: [id])
+  student   User     @relation(fields: [studentId], references: [id])
+
+  @@unique([badgeId, studentId])
+}
+
+model CourseVisit {
+  id        String   @id @default(cuid())
+  studentId String
+  courseId  String
+  dateKey   String
+  createdAt DateTime @default(now())
+  student   User     @relation(fields: [studentId], references: [id])
+  course    Course   @relation(fields: [courseId], references: [id])
+
+  @@unique([studentId, courseId, dateKey])
+  @@index([studentId])
+  @@index([courseId])
+}
+
+model CourseApprovalWorkflow {
+  id             String       @id @default(cuid())
+  courseId       String
+  previousStatus CourseStatus
+  newStatus      CourseStatus
+  reviewedById   String
+  note           String?
+  createdAt      DateTime     @default(now())
+  course         Course       @relation(fields: [courseId], references: [id])
+}
+
+model AIQuizAttempt {
+  id           String       @id @default(cuid())
+  studentId    String
+  courseId     String
+  sectionId    String?
+  promptSource Json
+  score        Float?
+  createdAt    DateTime     @default(now())
+  student      User         @relation(fields: [studentId], references: [id])
+  questions    AIQuestion[]
+}
+
+model AIQuestion {
+  id            String           @id @default(cuid())
+  attemptId     String
+  question      String
+  options       Json?
+  correctAnswer String
+  explanation   String?
+  attempt       AIQuizAttempt    @relation(fields: [attemptId], references: [id])
+  reviews       AIAnswerReview[]
+}
+
+model AIAnswerReview {
+  id         String     @id @default(cuid())
+  questionId String
+  userAnswer String
+  isCorrect  Boolean
+  feedback   String?
+  question   AIQuestion @relation(fields: [questionId], references: [id])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  action     String
+  entityType String
+  entityId   String
+  payload    Json?
+  createdAt  DateTime @default(now())
+  actor      User     @relation(fields: [actorId], references: [id])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}

@@ -1,0 +1,202 @@
+import { Award, BookOpen, Heart, Trophy, Search } from "lucide-react";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { DashboardSearchInput } from "@/components/student/dashboard-search-input";
+import { EnrolledCourseCard } from "@/components/student/enrolled-course-card";
+import { UserRole } from "@/generated/prisma/enums";
+import { db } from "@/lib/db";
+import { resolveMediaUrl } from "@/lib/media-url";
+import { roleHomePath } from "@/lib/rbac";
+import { getEnrollmentProgressForStudent } from "@/lib/student-course-progress";
+import { AdminStatCard } from "@/components/admin/admin-stat-card";
+import { AdminPanel } from "@/components/admin/admin-panel";
+import { StreakMetric } from "@/components/student/streak-metric";
+import { getStudentStreak } from "@/lib/student/streak";
+
+type SearchParams = {
+  q?: string;
+};
+
+export default async function StudentDashboardPage({
+  searchParams,
+}: {
+  searchParams?: Promise<SearchParams>;
+}) {
+  const session = await auth();
+  if (!session?.user) redirect("/student/login?callbackUrl=/student/dashboard");
+  if (session.user.role !== UserRole.STUDENT) {
+    redirect(roleHomePath(session.user.role));
+  }
+
+  const params = (await searchParams) ?? {};
+  const query = (params.q ?? "").trim().slice(0, 80);
+
+  const firstName =
+    session.user.name?.split(" ")[0] ??
+    session.user.email?.split("@")[0] ??
+    "there";
+
+  const enrollments = await db.enrollment.findMany({
+    where: {
+      studentId: session.user.id,
+      ...(query
+        ? {
+            course: {
+              OR: [
+                { title: { contains: query, mode: "insensitive" as const } },
+                { subtitle: { contains: query, mode: "insensitive" as const } },
+                {
+                  mentor: {
+                    fullName: { contains: query, mode: "insensitive" as const },
+                  },
+                },
+              ],
+            },
+          }
+        : {}),
+    },
+    orderBy: { enrolledAt: "desc" },
+    take: 24,
+    include: {
+      course: {
+        select: {
+          id: true,
+          title: true,
+          subtitle: true,
+          thumbnailUrl: true,
+          priceMinorUnits: true,
+          priceCurrency: true,
+          status: true,
+          mentor: { select: { fullName: true } },
+        },
+      },
+    },
+  });
+
+  const courseIds = enrollments.map((e) => e.course.id);
+  const progressByCourse = await getEnrollmentProgressForStudent(
+    session.user.id,
+    courseIds,
+  );
+  const resolvedThumbnails = await Promise.all(
+    enrollments.map((e) => resolveMediaUrl(e.course.thumbnailUrl)),
+  );
+
+  const [enrollmentCount, completedLessons, badgesEarned, wishlistCount, streakData] =
+    await Promise.all([
+      db.enrollment.count({ where: { studentId: session.user.id } }),
+      db.lessonProgress.count({
+        where: { studentId: session.user.id, completed: true },
+      }),
+      db.studentBadge.count({ where: { studentId: session.user.id } }),
+      db.wishlist.count({ where: { studentId: session.user.id } }),
+      getStudentStreak(session.user.id),
+    ]);
+
+  return (
+    <div className="space-y-6 md:space-y-8 lg:space-y-10">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-(--foreground) sm:text-3xl">
+            Welcome back, {firstName} 👋
+          </h1>
+          <p className="mt-1 text-sm text-(--muted)">
+            Resume your courses or explore new pharmacy certifications.
+          </p>
+        </div>
+        <Link
+          href="/student/browse"
+          className="rounded-full bg-(--primary) px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-(--primary-strong) hover:shadow-md"
+        >
+          Explore Courses
+        </Link>
+      </div>
+
+      <div className=" w-full ">
+        <div className="grid gap-4 sm:grid-cols-4 lg:grid-cols-4 md:gap-6">
+          <AdminStatCard
+            label="Achievements"
+            value={badgesEarned}
+            icon={Award}
+            hint="Badges earned"
+            href="/student/achievements"
+          />
+          <AdminStatCard
+            label="Wishlist"
+            value={wishlistCount}
+            icon={Heart}
+            hint="Courses saved"
+            href="/student/wishlist"
+          />
+          <AdminStatCard
+            label="Enrolled Courses"
+            value={enrollmentCount}
+            icon={BookOpen}
+            hint="Active learning paths"
+          />
+          <AdminStatCard
+            label="Lessons Completed"
+            value={completedLessons}
+            icon={Trophy}
+            hint="All-time progress"
+          />
+        </div>
+
+        <br />
+
+        <div className="">
+          <StreakMetric days={streakData.days} active={streakData.activeToday} />
+        </div>
+      </div>
+
+      <AdminPanel
+        title="My Learning"
+        description="Continue where you left off"
+        headerAction={<DashboardSearchInput initialQuery={query} />}
+      >
+        {enrollments.length === 0 ? (
+          <div className="py-12 text-center">
+            <p className="text-sm text-[var(--muted)]">
+              {query
+                ? `No enrolled courses match "${query}".`
+                : "You have not enrolled in any courses yet."}
+            </p>
+            <Link
+              href="/student/browse"
+              className="mt-4 inline-block text-sm font-bold text-[var(--primary)] hover:underline"
+            >
+              Browse the catalog →
+            </Link>
+          </div>
+        ) : (
+          <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {enrollments.map((e, idx) => {
+              const c = e.course;
+              const p = progressByCourse.get(c.id) ?? {
+                pct: 0,
+                completed: 0,
+                total: 0,
+              };
+              const hasStarted = p.completed > 0 || p.pct > 0;
+              return (
+                <li key={e.id}>
+                  <EnrolledCourseCard
+                    courseId={c.id}
+                    title={c.title}
+                    mentorName={c.mentor.fullName}
+                    thumbnailUrl={resolvedThumbnails[idx] ?? null}
+                    priceMinorUnits={c.priceMinorUnits}
+                    priceCurrency={c.priceCurrency}
+                    progressPct={p.pct}
+                    hasStarted={hasStarted}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </AdminPanel>
+    </div>
+  );
+}

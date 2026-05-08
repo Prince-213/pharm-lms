@@ -1,0 +1,83 @@
+{\rtf1\ansi\deff0
+{\fonttbl{\f0 Calibri;}}
+\fs22
+\pard\sa220\sb120\b PharmLMS - Client Meeting Speech and Lecture Notes\b0\par
+\pard\sa180 Presenter script with lecture cues and live demo flow.\par
+
+\pard\sa220\sb120\b 1) Opening Hook + Executive Summary\b0\par
+\pard\li360\sa120\b SAY:\b0 Good afternoon everyone, and thank you for your time. Today I will walk you through PharmLMS end to end: what the product does, how students, mentors, and administrators use it, and why the architecture gives you a secure and scalable foundation. Then I will run a short live demo in that same order.\par
+\pard\li360\sa120\b SAY:\b0 PharmLMS is a web-based learning platform built for pharmacy and clinical training. It brings three audiences into one system: students who learn and earn recognition, mentors who author and run courses, and administrators who govern quality and outcomes.\par
+\pard\li360\sa180\b NOTE:\b0 Emphasize value proposition in one line: single place for curriculum, engagement, and governance with role-based access.\par
+
+\pard\sa220\sb120\b 2) Meeting Agenda and Timing (25 to 30 min)\b0\par
+\pard\sa60\b Time\tab Section\tab Presenter focus\b0\par
+\pard\sa40 0:00-1:30\tab Executive summary\tab Frame product, users, and outcome\par
+\pard\sa40 1:30-8:00\tab Role walkthroughs\tab Student, mentor, admin journeys\par
+\pard\sa40 8:00-12:00\tab Delivered highlights\tab Badges, meetings, curriculum UX, auth\par
+\pard\sa40 12:00-16:00\tab Architecture\tab Client-friendly technical confidence points\par
+\pard\sa40 16:00-24:00\tab Live demo\tab Scripted click path with fallbacks\par
+\pard\sa40 24:00-27:00\tab Objections and risk\tab Security, scale, extensibility answers\par
+\pard\sa40 27:00-30:00\tab Roadmap and close\tab Next-phase options and clear ask\par
+\pard\sa180 20-min fallback: 4 min roles + 6 min demo + 2 min architecture.\par
+
+\pard\page\sa220\sb120\b 3) End-to-End Walkthrough by Role\b0\par
+\pard\sa120\b 3.1 Student journey\b0\par
+\pard\li360\sa120\b SAY:\b0 For students, the flow is simple and outcome-focused: discover courses, enroll, learn in structured sections, complete assessments and meetings, and track achievements in one place.\par
+\pard\li360\sa180\b NOTE:\b0 Cue screens in order: home page -> student login/browse -> course enrollment -> lesson progression -> achievements page.\par
+
+\pard\sa120\b 3.2 Mentor journey\b0\par
+\pard\li360\sa120\b SAY:\b0 Mentors get a studio-style workflow. They create a draft course quickly, then build curriculum with sections, videos, articles, quizzes, and assignment items. During save operations, the interface prevents conflicting edits for stability.\par
+\pard\li360\sa180\b NOTE:\b0 Mention branding in onboarding flow as PharmLms and simplified new-course path.\par
+
+\pard\sa120\b 3.3 Administrator journey\b0\par
+\pard\li360\sa120\b SAY:\b0 Administrators act as the control tower. They monitor platform metrics, manage course approvals, oversee users, and maintain badge rules and references.\par
+\pard\li360\sa180\b NOTE:\b0 Admin sign-in is credential-based in current design; do not present admin access as open self-service.\par
+\pard\sa180\i Transition:\i0 Next, I will briefly explain architecture in client-friendly language.\par
+
+\pard\sa220\sb120\b 4) Technical Architecture (Client-Friendly)\b0\par
+\pard\li360\sa120\b SAY:\b0 The platform uses a modern standard architecture: a fast Next.js web application, structured PostgreSQL data through Prisma, secure authentication and role handling with NextAuth, and object storage for media. This keeps the system maintainable and extensible as usage grows.\par
+\pard\li720\sa40\'95 Web app: Next.js App Router.\par
+\pard\li720\sa40\'95 Data model: Prisma on PostgreSQL.\par
+\pard\li720\sa40\'95 Auth: credentials plus optional Google OAuth.\par
+\pard\li720\sa40\'95 RBAC and protected routes for role-specific access.\par
+\pard\li720\sa180\'95 Media via S3-compatible storage (for example, R2).\par
+
+\pard\sa220\sb120\b 5) Delivered Highlights (Recent Upgrades)\b0\par
+\pard\li360\sa120\b SAY:\b0 We have delivered capabilities that improve learning outcomes, operational control, and user experience.\par
+\pard\li720\sa40\'95 Badges: rule-driven achievements plus admin rule references.\par
+\pard\li720\sa40\'95 Meetings: mentor-student booking and completion flow.\par
+\pard\li720\sa40\'95 Curriculum UX: better loading states and write-conflict safeguards.\par
+\pard\li720\sa40\'95 Authentication: Google OAuth and email/password by role.\par
+\pard\li720\sa180\'95 Mentor onboarding: simplified course creation with brand updates.\par
+\pard\sa180\i Transition:\i0 I will now run a live click path exactly as a user experiences it.\par
+
+\pard\page\sa220\sb120\b 6) Live Demo Cue Sheet\b0\par
+\pard\sa60\b Step\tab Screen / action\tab SAY\tab If stuck / fallback\b0\par
+\pard\sa40 1\tab Home page\tab This is the front door with three role-specific lanes.\tab If slow, continue with prepared state.\par
+\pard\sa40 2\tab Student browse and enroll\tab Learners discover and enroll quickly.\tab Jump to already-enrolled course if needed.\par
+\pard\sa40 3\tab Student lesson flow\tab Content is section-based and progress is tracked.\tab If media lags, move to achievements.\par
+\pard\sa40 4\tab Student achievements\tab Recognition is transparent and rule-driven.\tab Use backup screenshot if empty.\par
+\pard\sa40 5\tab Mentor new course\tab Mentors create a draft in a streamlined flow.\tab Skip to editor if short on time.\par
+\pard\sa40 6\tab Mentor curriculum editor\tab Build sections, content, assessments with save safeguards.\tab Explain save lock is intentional.\par
+\pard\sa40 7\tab Admin dashboard and badges\tab Admins control quality, users, and standards.\tab Summarize approvals + badges in one minute.\par
+\pard\li360\sa180\b NOTE:\b0 Before sharing screen: use demo accounts, close unrelated tabs, confirm OAuth if you plan to show Google sign-in.\par
+
+\pard\sa220\sb120\b 7) Risk Handling and Objections\b0\par
+\pard\li360\sa120\b SAY:\b0 We designed this platform with practical safeguards from day one and can extend controls as governance needs mature.\par
+\pard\li720\sa40\'95 Security answer: server-side role enforcement and controlled admin access.\par
+\pard\li720\sa40\'95 Scalability answer: clear separation of UI, API, and data enables growth.\par
+\pard\li720\sa40\'95 Data/privacy answer: app data in database, media in object storage.\par
+\pard\li720\sa180\'95 Stability answer: save-state safeguards prevent overlapping edits.\par
+
+\pard\sa220\sb120\b 8) Next-Phase Roadmap Options\b0\par
+\pard\li360\sa120\b SAY:\b0 After this phase, we can proceed with a practical roadmap based on your priorities and timeline.\par
+\pard\li720\sa40\'95 Analytics dashboards for completion, meetings, and badge adoption.\par
+\pard\li720\sa40\'95 Enterprise identity options such as SSO.\par
+\pard\li720\sa40\'95 Richer assessments and larger question banks.\par
+\pard\li720\sa180\'95 Operational upgrades: audit logs, exports, and email templates.\par
+
+\pard\sa220\sb120\b 9) Closing and Call to Action\b0\par
+\pard\li360\sa120\b SAY:\b0 We have shown a complete path from learner engagement to mentor authoring to admin governance on a modern architecture. The next step is to align rollout environment, policy requirements, and the first content wave to launch.\par
+\pard\li360\sa120\b NOTE (choose one ask):\b0 Approve a pilot cohort and test accounts, confirm approval owners, or schedule deployment/security review.\par
+\pard\sa180 End of speech notes.\par
+}

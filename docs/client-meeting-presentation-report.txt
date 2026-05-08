@@ -1,0 +1,277 @@
+================================================================================
+  PHARMLMS — CLIENT MEETING PRESENTATION REPORT
+  (Speaking notes and demo flow — use as a script or checklist)
+================================================================================
+
+--------------------------------------------------------------------------------
+1) EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+
+What is PharmLMS?
+  A web-based learning management system for pharmacy and clinical training.
+  It connects three audiences in one platform:
+    • Students — discover courses, learn with progress and assessments, and
+      earn recognition (badges).
+    • Mentors (instructors) — build structured courses, manage curriculum,
+      communicate with learners, and run mentor meetings.
+    • Administrators — oversee the catalog, review and approve courses before
+      they go live, manage users, and configure achievements (badges).
+
+Value proposition
+  • Single place for curriculum, engagement, and governance.
+  • Role-based access so each group sees the right tools and data.
+  • Built to scale: modern web stack, structured data model, and clear paths
+    for future analytics and enterprise features.
+
+Opening line (optional)
+  "Today I will walk you through what we've built, how each role uses it, and
+   how the technology supports security and growth — then we will do a short
+   live demo in that same order."
+
+
+--------------------------------------------------------------------------------
+2) MEETING AGENDA AND TIMING (suggested 25–30 minutes)
+--------------------------------------------------------------------------------
+
+  0:00 – 0:30   Welcome and objectives
+  0:30 – 1:30   One-slide executive summary (product + value)
+  1:30 – 8:00   Role journeys — Student, Mentor, Admin (what each can do)
+  8:00 – 12:00  Feature highlights (badges, meetings, curriculum, auth)
+ 12:00 – 16:00  Architecture (high level, client-friendly, no deep jargon)
+ 16:00 – 24:00  Live demo (follow Section 6 script; adjust for time)
+ 24:00 – 27:00  Risks, security, and common questions
+ 27:00 – 30:00  Roadmap, next steps, and call to action
+
+If you have only 20 minutes, shorten role journeys to 4 minutes and demo to
+6 minutes; keep architecture to 2 minutes.
+
+
+--------------------------------------------------------------------------------
+3) END-TO-END PRODUCT WALKTHROUGH BY ROLE
+--------------------------------------------------------------------------------
+
+3.1 Student journey
+  Entry
+    • Land on the public home page, choose a portal, or go straight to sign-in.
+    • Sign up or sign in (email and password, or Google where configured).
+
+  Core loop
+    • Browse the course catalog, open a course, and enroll.
+    • Open a course: lessons load in a structured way; progress is tracked.
+    • Use learning aids where enabled (for example, AI quiz practice from
+      course content, depending on configuration).
+
+  Beyond lessons
+    • Book or join mentor meetings (where availability and workflow allow).
+    • View achievements and badges on a dedicated page as milestones are met.
+
+  What to say
+    "For learners, the product is the full loop from first login to completion
+     and recognition — not just video or text, but also engagement, mentoring,
+     and proof of progress through badges."
+
+
+3.2 Mentor (instructor) journey
+  Entry
+    • Sign in as a mentor, land on the mentor area (performance and tools).
+
+  Create a new course
+    • Simplified multi-step onboarding: working title, category, and time
+      commitment, then the system creates a draft course.
+    • Branding in the flow is PharmLms (not generic placeholder labels).
+
+  Build the curriculum
+    • Curriculum editor: sections, order (drag and drop), lessons as video or
+      article, add quizzes and assignment-style items to a section.
+    • While work is saving, controls lock so the mentor cannot stack conflicting
+      actions — this is intentional for a stable experience.
+
+  Operate
+    • Communicate, manage meeting-related workflows, and track how the course
+      is doing as you iterate.
+
+  What to say
+    "Mentors get a studio-style workflow: draft first, then build structure,
+     then add rich content and assessments, with safeguards while saves run."
+
+
+3.3 Administrator journey
+  Entry
+    • Admin signs in with credentials (admin account is not self-service via
+      Google in the current design; that reduces accidental privilege creation).
+
+  Govern
+    • Admin dashboard: KPIs and navigation to operational areas — for example
+      pending review, published courses, total enrollments, and badges
+      activity (where implemented on the dashboard).
+
+  Course quality
+    • Review courses submitted for approval; approve, reject, or request
+      changes according to your process.
+
+  Program design
+    • Manage the badge catalog and see reference documentation for what each
+      rule type means, so the program is transparent to staff.
+
+  What to say
+    "Admins are the control tower: they protect quality, visibility, and how
+     recognition rules work, without having to be in the day-to-day authoring."
+
+
+--------------------------------------------------------------------------------
+4) TECHNICAL ARCHITECTURE (CLIENT-FRIENDLY)
+--------------------------------------------------------------------------------
+
+How to say it in the room
+  "The application is a modern web product: fast pages, clear separation
+   between the interface and the database, and standard patterns for sign-in
+   and file storage. That means maintainability, security you can reason about,
+   and a path to grow."
+
+Stack (one sentence each)
+  • Web application: Next.js (App Router) — server and client parts work
+    together for performance and security.
+  • Data: PostgreSQL with Prisma — the schema models courses, people, progress,
+    meetings, and badges in one consistent structure.
+  • Sign-in: NextAuth — email and password, plus optional Google for students
+    and mentors when configured. Roles are stored in the database and applied on
+    every request (role-based access).
+  • Media: object storage (S3-compatible, e.g. Cloudflare R2) for lesson
+    assets, with a controlled way to read and write files.
+  • APIs: route handlers for courses, curriculum, student streaming, meetings,
+    and AI-assisted features, so the UI stays thin and testable.
+
+Why clients care
+  • You can hand this to a technical team: it is a standard, hireable stack.
+  • You can add reporting, single sign-on, or integrations without rebuilding
+    the product from scratch.
+
+
+--------------------------------------------------------------------------------
+5) DELIVERED HIGHLIGHTS (RECENT / NOTABLE)
+--------------------------------------------------------------------------------
+
+5.1 Badges and achievements
+  • Configurable rules (for example: first enrollment, lesson milestones, quiz
+    behavior, streaks, mentor meetings). Students see what they have earned
+    and what is still to unlock.
+  • Admins can manage badges and see a rules reference for transparency.
+
+5.2 Meetings
+  • Mentors and students can work within a meeting workflow (requests,
+    responses, and completion) so training is not only self-paced.
+
+5.3 Curriculum experience
+  • The curriculum editor supports section ordering, multiple content types, and
+    items such as quizzes and assignments.
+  • Saving and reordering are guarded so users do not trigger overlapping
+    writes by accident while a save is in progress.
+
+5.4 Sign-in
+  • Email and password for all applicable roles; Google OAuth for students and
+    mentors when environment variables are set. Admin sign-in is credential
+    based in the current design.
+  • Fresh start option: environment-driven seeding for a single admin and
+    default badge definitions, with end-user accounts created through sign-up.
+
+5.5 Mentor new-course flow
+  • Simplified to three user-facing steps after removing an unnecessary
+    "type of product" step; product naming shows PharmLms in the flow.
+
+
+--------------------------------------------------------------------------------
+6) LIVE DEMO SCRIPT (SUGGESTED CLICK PATH)
+--------------------------------------------------------------------------------
+
+Prerequisites (say this quietly before sharing screen)
+  • Use a test database or demo accounts.
+  • Ensure Google OAuth is configured if you will demo it; otherwise say
+    "We will use email and password; Google is optional in deployment."
+  • Close unrelated tabs; turn on Do Not Disturb.
+
+Demo A — The story order (12–15 minutes)
+  1. Home
+     Say: "This is the front door. Three lanes: student, mentor, admin."
+  2. Student — browse and enroll
+     Say: "Learners find training, then commit with enroll."
+  3. Student — open a course
+     Say: "Structured sections and lessons; progress is the product."
+  4. Student — achievements
+     Say: "Recognition is visible and program-driven."
+  5. Mentor — new course (short)
+     Say: "We create a draft, then the studio opens."
+  6. Mentor — curriculum
+     Say: "Sections, order, video or article, quizzes and items — the mentor
+     builds a real course, not a single page."
+  7. Admin — dashboard / approvals / badges (pick what is most important)
+     Say: "Governance: review before the world sees it, and program rules
+     for badges that match your standards."
+
+Demo B — If something is slow
+  Say: "The platform batches writes on purpose; you will see a brief saving
+  state. That is by design to protect data while edits run."
+
+Demo C — If you must skip a feature
+  Say: "The same building blocks are there even if we do not open every
+  screen today: catalog, course studio, review, and achievement rules."
+
+
+--------------------------------------------------------------------------------
+7) RISK HANDLING AND OBJECTIONS
+--------------------------------------------------------------------------------
+
+Security
+  • Sign-in is industry-standard. Roles are enforced server-side.
+  • Admin is not self-created via public OAuth, reducing the risk of accidental
+    admin creation in production.
+  • Media and lesson access should be demonstrated as gated by rules in the
+    app (enrollment and course state), not "public by default."
+
+Data and privacy
+  • Personal data is stored in the application database; object storage holds
+    media. Your deployment can follow your data residency needs.
+
+Stability
+  • Curriculum and upload flows are written to avoid concurrent conflicting
+    actions during saves.
+
+Scalability
+  • The architecture separates UI, API, and database, which is the right base
+    for load growth and monitoring.
+
+
+--------------------------------------------------------------------------------
+8) NEXT-PHASE ROADMAP (OPTIONS TO DISCUSS)
+--------------------------------------------------------------------------------
+
+  • Analytics: cohort progress, course completion, meeting attendance, badge
+    adoption — dashboards for leadership.
+  • Enterprise identity: single sign-on (SAML/OIDC) if you outgrow local
+    accounts and Google.
+  • Content: richer quiz authoring, question banks, and formal exams.
+  • Operations: email templates, audit logs, and export for accreditation.
+
+You do not have to commit in the room; present these as a menu.
+
+
+--------------------------------------------------------------------------------
+9) CLOSING AND CALL TO ACTION
+--------------------------------------------------------------------------------
+
+Closing (example)
+  "We have shown a complete path from learner engagement to instructor
+  authoring to administrative governance, on a modern stack. The next step is
+  to align on your rollout environment, any branding and policy requirements,
+  and the first wave of content you want to publish."
+
+Call to action (choose one)
+  • Approve a pilot cohort and test accounts.
+  • Confirm the approval workflow and who signs off on a course.
+  • Schedule a follow-up for security review or deployment (hosting, domain,
+    backups).
+
+End with thanks and a single clear ask.
+
+================================================================================
+  END OF REPORT
+================================================================================

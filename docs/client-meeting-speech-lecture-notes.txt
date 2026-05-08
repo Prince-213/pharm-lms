@@ -1,0 +1,173 @@
+PHARMLMS - CLIENT MEETING PRESENTATION NOTES
+============================================
+
+Use this as presentation notes (not a read-out script).
+
+-------------------------------------------------
+1) OPENING + EXECUTIVE SUMMARY
+-------------------------------------------------
+
+- Goal of meeting:
+  - Show product value, role workflows, architecture confidence, and next steps.
+- Product definition:
+  - PharmLMS is a web-based pharmacy/clinical learning platform.
+  - Three role lanes in one system: Student, Mentor, Admin.
+- Value proposition:
+  - One place for curriculum, engagement, and governance.
+  - Role-based access and scalable technical foundation.
+
+-------------------------------------------------
+2) AGENDA + TIMING (25-30 MIN)
+-------------------------------------------------
+
+- 0:00-1:30   Executive summary
+- 1:30-8:00   Role walkthroughs (student, mentor, admin)
+- 8:00-12:00  Delivered highlights
+- 12:00-16:00 Architecture (client-friendly)
+- 16:00-24:00 Live demo
+- 24:00-27:00 Objections and risk handling
+- 27:00-30:00 Roadmap + close
+
+20-minute fallback:
+- Roles: 4 min
+- Demo: 6 min
+- Architecture: 2 min
+
+-------------------------------------------------
+3) ROLE WALKTHROUGHS
+-------------------------------------------------
+
+3.1 Student journey
+- Flow:
+  - Discover -> enroll -> learn by sections -> complete assessments/meetings -> achievements.
+- Screen cue:
+  - Home -> Student login/browse -> Enroll -> Course -> Achievements.
+- Key point:
+  - Outcome-focused learner loop with visible progress and recognition.
+
+3.2 Mentor journey
+- Flow:
+  - Create draft course -> build curriculum -> add content and assessment items.
+- UX reliability cue:
+  - Save safeguards prevent conflicting writes during editing.
+- Product cue:
+  - Mention simplified onboarding and PharmLms branding in new-course flow.
+
+3.3 Administrator journey
+- Flow:
+  - Monitor metrics -> manage approvals -> oversee users -> manage badge references.
+- Governance cue:
+  - Admin sign-in is credential-based in current design.
+- Key point:
+  - Admin role is control tower for quality and standards.
+
+Transition cue:
+- Move from role value to architecture confidence.
+
+-------------------------------------------------
+4) TECHNICAL ARCHITECTURE (CLIENT-FRIENDLY)
+-------------------------------------------------
+
+- Stack summary:
+  - Next.js App Router (web app)
+  - Prisma + PostgreSQL (data model)
+  - NextAuth (credentials + optional Google OAuth)
+  - RBAC + protected routes (access control)
+  - S3-compatible media storage (e.g., R2)
+- Client framing:
+  - Standard, maintainable architecture with clear growth path.
+
+-------------------------------------------------
+5) DELIVERED HIGHLIGHTS (RECENT)
+-------------------------------------------------
+
+- Badge engine:
+  - Rule-driven achievements and admin reference visibility.
+- Meetings:
+  - Mentor-student booking + completion flow.
+- Curriculum UX:
+  - Better loading states and write-conflict safeguards.
+- Authentication:
+  - Email/password plus Google OAuth by role where configured.
+- Mentor onboarding:
+  - Simplified flow and brand updates.
+
+Transition cue:
+- Move to live product proof via demo sequence.
+
+-------------------------------------------------
+6) LIVE DEMO CUE SHEET
+-------------------------------------------------
+
+Step 1 - Home page
+- Focus: three role-specific lanes.
+- Fallback: use prepared account state if slow.
+
+Step 2 - Student browse + enroll
+- Focus: fast discovery and enrollment.
+- Fallback: jump to already-enrolled course.
+
+Step 3 - Student lesson flow
+- Focus: section-based progression tracking.
+- Fallback: skip heavy media and continue.
+
+Step 4 - Student achievements
+- Focus: transparent, rule-based recognition.
+- Fallback: use seeded demo account/screenshot.
+
+Step 5 - Mentor new course flow
+- Focus: streamlined draft creation.
+- Fallback: jump directly to curriculum editor.
+
+Step 6 - Mentor curriculum editor
+- Focus: sections, content, assessment creation; save safeguards.
+- Fallback: explain saving state as intentional data protection.
+
+Step 7 - Admin dashboard + badges
+- Focus: approvals, users, and standards control.
+- Fallback: summarize approvals + badges quickly.
+
+Pre-demo checklist:
+- Use demo accounts.
+- Close unrelated tabs.
+- Confirm OAuth availability if showing Google login.
+
+-------------------------------------------------
+7) RISK HANDLING + OBJECTIONS
+-------------------------------------------------
+
+- Security:
+  - Server-side role enforcement; controlled admin access.
+- Scalability:
+  - Clear UI/API/data separation supports growth.
+- Data/privacy:
+  - App data in DB, media in object storage.
+- Stability:
+  - Save-state controls prevent overlapping edits.
+
+-------------------------------------------------
+8) NEXT-PHASE ROADMAP OPTIONS
+-------------------------------------------------
+
+- Analytics dashboards:
+  - Completion, meetings, badge adoption.
+- Enterprise identity:
+  - SSO options.
+- Assessment expansion:
+  - Richer assessments and larger question banks.
+- Operations:
+  - Audit logs, exports, email templates.
+
+-------------------------------------------------
+9) CLOSING + CALL TO ACTION
+-------------------------------------------------
+
+- Closing intent:
+  - Reinforce end-to-end value across learner, mentor, and admin.
+  - Confirm architecture confidence and rollout readiness.
+- Select one ask:
+  - Approve pilot cohort and test accounts.
+  - Confirm approval owners for governance.
+  - Schedule security/deployment follow-up.
+
+END
