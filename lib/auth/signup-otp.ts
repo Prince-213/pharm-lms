@@ -21,12 +21,26 @@ const completeSchema = z.object({
 });
 
 export type OtpSendResult =
-  | { ok: true }
+  | { ok: true; devEmailMocked?: boolean }
   | { ok: false; error: string; cooldownSeconds?: number };
 
 export type CompleteSignupResult =
   | { ok: true }
   | { ok: false; error: string };
+
+function redactEmail(email: string): string {
+  const [local, domain] = email.split("@");
+  if (!domain) return "***";
+  const safeLocal = local.length <= 0 ? "*" : `${local[0] ?? "*"}***`;
+  return `${safeLocal}@${domain}`;
+}
+
+function prismaErrorCode(err: unknown): string | undefined {
+  if (err && typeof err === "object" && "code" in err) {
+    return String((err as { code: unknown }).code);
+  }
+  return undefined;
+}
 
 function generateSixDigitCode(): string {
   return String(Math.floor(100000 + Math.random() * 900000));
@@ -42,67 +56,108 @@ export async function sendSignupOtpAction(
     return { ok: false, error: "Enter a valid email address." };
   }
   const email = parsed.data;
+  const redacted = redactEmail(email);
+  console.log(`[signup-otp] send_code start email=${redacted}`);
 
-  const existing = await prisma.user.findUnique({
-    where: { email },
-    select: { id: true },
-  });
-  if (existing) {
-    return { ok: false, error: "An account with that email already exists." };
-  }
+  let step = "db_user_lookup";
 
-  const lastSend = await prisma.signupOtp.findFirst({
-    where: { email },
-    orderBy: { createdAt: "desc" },
-    select: { createdAt: true },
-  });
-  if (lastSend) {
-    const elapsed = Date.now() - lastSend.createdAt.getTime();
-    if (elapsed < SEND_COOLDOWN_MS) {
-      const cooldownSeconds = Math.ceil((SEND_COOLDOWN_MS - elapsed) / 1000);
-      return {
-        ok: false,
-        error: `Please wait ${cooldownSeconds}s before requesting another code.`,
-        cooldownSeconds,
-      };
+  try {
+    const existing = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true },
+    });
+    if (existing) {
+      console.log(
+        `[signup-otp] send_code blocked: user_exists email=${redacted}`,
+      );
+      return { ok: false, error: "An account with that email already exists." };
     }
-  }
 
-  await prisma.signupOtp.deleteMany({
-    where: { email, consumedAt: null },
-  });
+    step = "db_otp_cooldown";
+    const lastSend = await prisma.signupOtp.findFirst({
+      where: { email },
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true },
+    });
+    if (lastSend) {
+      const elapsed = Date.now() - lastSend.createdAt.getTime();
+      if (elapsed < SEND_COOLDOWN_MS) {
+        const cooldownSeconds = Math.ceil(
+          (SEND_COOLDOWN_MS - elapsed) / 1000,
+        );
+        console.log(
+          `[signup-otp] send_code blocked: cooldown email=${redacted} waitSeconds=${cooldownSeconds}`,
+        );
+        return {
+          ok: false,
+          error: `Please wait ${cooldownSeconds}s before requesting another code.`,
+          cooldownSeconds,
+        };
+      }
+    }
 
-  const code = generateSixDigitCode();
-  const codeHash = await hash(code, BCRYPT_ROUNDS);
-  const expiresAt = new Date(Date.now() + OTP_TTL_MS);
+    step = "db_otp_delete";
+    await prisma.signupOtp.deleteMany({
+      where: { email, consumedAt: null },
+    });
 
-  await prisma.signupOtp.create({
-    data: { email, codeHash, expiresAt },
-    select: { id: true },
-  });
+    const code = generateSixDigitCode();
+    const codeHash = await hash(code, BCRYPT_ROUNDS);
+    const expiresAt = new Date(Date.now() + OTP_TTL_MS);
 
-  const html = `
+    step = "db_otp_create";
+    const otpRow = await prisma.signupOtp.create({
+      data: { email, codeHash, expiresAt },
+      select: { id: true },
+    });
+    console.log(
+      `[signup-otp] send_code otp_row_created email=${redacted} otpId=${otpRow.id}`,
+    );
+
+    const html = `
     <p>Your PharmLMS verification code is:</p>
     <p style="font-size:24px;font-weight:bold;letter-spacing:0.2em;">${code}</p>
     <p>This code expires in 15 minutes. If you did not request it, you can ignore this email.</p>
   `;
 
-  const sendResult = await sendEmail({
-    to: email,
-    subject: "Your PharmLMS sign-up code",
-    html,
-  });
+    step = "email_send";
+    const sendResult = await sendEmail({
+      to: email,
+      subject: "Your PharmLMS sign-up code",
+      html,
+    });
 
-  if (!sendResult.success) {
-    await prisma.signupOtp.deleteMany({ where: { email, consumedAt: null } });
-    return { ok: false, error: "Could not send email. Try again later." };
+    if (!sendResult.success) {
+      console.error(
+        `[signup-otp] send_code blocked: email_not_sent email=${redacted}`,
+      );
+      await prisma.signupOtp.deleteMany({ where: { email, consumedAt: null } });
+      return { ok: false, error: "Could not send email. Try again later." };
+    }
+
+    if ("mocked" in sendResult && sendResult.mocked) {
+      console.log(
+        `[signup-otp] send_code success mode=mock_console email=${redacted} code=${code}`,
+      );
+      return { ok: true, devEmailMocked: true };
+    }
+
+    console.log(
+      `[signup-otp] send_code success mode=resend email=${redacted}`,
+    );
+    return { ok: true };
+  } catch (err) {
+    const code = prismaErrorCode(err);
+    console.error(
+      `[signup-otp] send_code failed step=${step} email=${redacted} prismaCode=${code ?? "n/a"}`,
+      err,
+    );
+    return {
+      ok: false,
+      error:
+        "Could not send verification code. Check the server log or try again.",
+    };
   }
-
-  if ("mocked" in sendResult && sendResult.mocked) {
-    console.log(`[signup OTP] ${email}: ${code}`);
-  }
-
-  return { ok: true };
 }
 
 export async function completeSignupWithOtpAction(

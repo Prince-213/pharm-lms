@@ -4,6 +4,7 @@ import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { UserRole } from "@/generated/prisma/enums";
 import {
   completeSignupWithOtpAction,
@@ -67,6 +68,7 @@ export function LoginForm({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [otpCooldown, setOtpCooldown] = useState(0);
   const [otpSending, setOtpSending] = useState(false);
+  const [otpDevHint, setOtpDevHint] = useState(false);
 
   useEffect(() => {
     if (adminHints) {
@@ -102,17 +104,40 @@ export function LoginForm({
 
   async function onSendCode(): Promise<void> {
     setError("");
+    setOtpDevHint(false);
+    const toastId = toast.loading("Sending verification code…");
     setOtpSending(true);
-    const result = await sendSignupOtpAction(email);
-    setOtpSending(false);
-    if (!result.ok) {
-      if ("cooldownSeconds" in result && result.cooldownSeconds) {
-        setOtpCooldown(result.cooldownSeconds);
+    try {
+      const result = await sendSignupOtpAction(email);
+      if (!result.ok) {
+        if ("cooldownSeconds" in result && result.cooldownSeconds) {
+          setOtpCooldown(result.cooldownSeconds);
+        }
+        setError(result.error);
+        toast.error(result.error, { id: toastId });
+        return;
       }
-      setError(result.error);
-      return;
+      setOtpCooldown(60);
+      if (result.devEmailMocked) {
+        setOtpDevHint(true);
+        toast.success(
+          "Code sent. In development, check the server terminal for the 6-digit code.",
+          { id: toastId },
+        );
+      } else {
+        toast.success("Verification code sent. Check your email.", {
+          id: toastId,
+        });
+      }
+    } catch (e) {
+      console.error("[login-form] sendSignupOtpAction failed", e);
+      const catchMessage =
+        "Could not send code. Check the terminal running the dev server, or try again.";
+      setError(catchMessage);
+      toast.error(catchMessage, { id: toastId });
+    } finally {
+      setOtpSending(false);
     }
-    setOtpCooldown(60);
   }
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -261,6 +286,19 @@ export function LoginForm({
             {otpCooldown > 0 ? `${otpCooldown}s` : otpSending ? "…" : "Send code"}
           </button>
         </div>
+      ) : null}
+
+      {isSignup && !isAdmin && otpDevHint ? (
+        <p className="rounded-lg border border-[var(--auth-border)] bg-[var(--auth-surface)] px-3 py-2 text-center text-[11px] leading-relaxed text-[var(--auth-muted)]">
+          <span className="font-medium text-[var(--auth-text)]">
+            Development mode:
+          </span>{" "}
+          No Resend API key — the 6-digit code was printed in the{" "}
+          <strong className="text-[var(--auth-text)]">server terminal</strong>{" "}
+          (grep{" "}
+          <code className="text-[var(--auth-link)]">[signup-otp]</code> or{" "}
+          <code className="text-[var(--auth-link)]">[email-service]</code>).
+        </p>
       ) : null}
 
       <div className="relative">
