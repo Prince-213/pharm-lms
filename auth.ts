@@ -8,7 +8,6 @@ import { z } from "zod";
 import { MentorProfileStatus, UserRole } from "@/generated/prisma/enums";
 import { customPrismaAdapter } from "@/lib/auth/custom-prisma-adapter";
 import { isAppleOAuthEnabled } from "@/lib/auth/apple-oauth-enabled";
-import { getAuthSecret } from "@/lib/auth/secret";
 import { isGoogleOAuthEnabled } from "@/lib/auth/google-oauth-enabled";
 import { prisma } from "@/lib/prisma";
 
@@ -77,10 +76,8 @@ if (isAppleOAuthEnabled()) {
   }
 }
 
-const authSecret = getAuthSecret();
-
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  ...(authSecret ? { secret: authSecret } : {}),
+  secret: process.env.AUTH_SECRET,
   adapter: customPrismaAdapter(),
   session: { strategy: "jwt" },
   trustHost: true,

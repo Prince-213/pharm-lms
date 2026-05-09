@@ -20,8 +20,8 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 ## Production env (Netlify)
 
-- **Required**: set **`AUTH_URL`** (preferred) or **`NEXTAUTH_URL`** to your production URL (no trailing slash), e.g. `https://pharm-lms.netlify.app`
-- **Required**: set **`AUTH_SECRET`** or legacy **`NEXTAUTH_SECRET`** (same value; must be stable across deploys and identical for Node and edge/proxy)
+- **Required**: set `NEXTAUTH_URL` to your production URL (no trailing slash), e.g. `https://pharm-lms.netlify.app`
+- **Required**: set `AUTH_SECRET` (must be stable across deploys)
 - **Required**: set `DATABASE_URL`
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

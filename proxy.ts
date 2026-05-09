@@ -2,7 +2,6 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import type { UserRole } from "@/generated/prisma/enums";
-import { getAuthSecret } from "@/lib/auth/secret";
 import { canAccessRolePath, roleHomePath } from "@/lib/rbac";
 
 const protectedPrefixes = ["/mentor", "/student", "/admin"];
@@ -33,7 +32,7 @@ export async function proxy(req: NextRequest) {
 
   const token = await getToken({
     req,
-    secret: getAuthSecret(),
+    secret: process.env.AUTH_SECRET,
   });
 
   const userRole = (token?.role as UserRole | undefined) ?? null;
