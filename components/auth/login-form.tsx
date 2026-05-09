@@ -198,7 +198,7 @@ export function LoginForm({
       callbackUrl,
     });
 
-    if (result?.error) {
+    if (result?.error || result?.ok !== true) {
       setError("Invalid credentials.");
       setIsPending(false);
       return;

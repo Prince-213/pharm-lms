@@ -77,6 +77,7 @@ if (isAppleOAuthEnabled()) {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  secret: process.env.AUTH_SECRET,
   adapter: customPrismaAdapter(),
   session: { strategy: "jwt" },
   trustHost: true,

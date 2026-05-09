@@ -7,11 +7,11 @@ import { useEffect, useState } from "react";
 import {
   Menu,
   ChevronRight,
-  Bell,
   X,
   GraduationCap,
 } from "lucide-react";
 import { UserMenu } from "@/components/auth/user-menu";
+import { HeaderNotificationBell } from "@/components/notifications/header-notification-bell";
 
 export type AppShellNavItem = {
   href: string;
@@ -19,17 +19,31 @@ export type AppShellNavItem = {
   icon?: any;
 };
 
+export type AppShellNavGroup = {
+  label: string;
+  items: AppShellNavItem[];
+};
+
 type AppShellProps = {
   title: string;
   subtitle: string;
-  nav: AppShellNavItem[];
+  /** Flat nav (single "Navigation" group). Ignored if `navGroups` is set. */
+  nav?: AppShellNavItem[];
+  /** Grouped sidebar (e.g. Workspace / Personal). Takes precedence over `nav`. */
+  navGroups?: AppShellNavGroup[];
   children: React.ReactNode;
   homeHref?: string;
 };
 
+function navLinkActive(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function AppShell({
   title,
-  nav,
+  subtitle,
+  nav = [],
+  navGroups,
   children,
   homeHref = "/",
 }: AppShellProps) {
@@ -71,32 +85,89 @@ export function AppShell({
           </div>
 
           <div className="flex-1 overflow-y-auto px-4 py-6 scrollbar-hide">
-            <p className="mb-4 px-4 text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-400/40">
-              Navigation
-            </p>
-            <nav className="space-y-1">
-              {nav.map((item) => {
-                const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "group flex items-center gap-3 rounded-xl px-4 py-3 text-xs font-semibold uppercase tracking-wide transition-all duration-200",
-                      active
-                        ? "bg-white/10 text-white shadow-sm ring-1 ring-white/10"
-                        : "text-emerald-50/50 hover:bg-white/5 hover:text-white"
-                    )}
-                  >
-                    <div className="flex items-center gap-4">
-                      {item.icon && <item.icon className={cn("h-4.5 w-4.5", active ? "text-emerald-400" : "text-emerald-50/20")} />}
-                      <p>{item.label}</p>
-                    </div>
-                    {active && <ChevronRight className="ml-auto h-3.5 w-3.5 text-emerald-400" />}
-                  </Link>
-                );
-              })}
-            </nav>
+            {navGroups && navGroups.length > 0 ? (
+              navGroups.map((group) => (
+                <div key={group.label} className="mb-6 last:mb-0">
+                  <p className="mb-3 px-4 text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-400/40">
+                    {group.label}
+                  </p>
+                  <nav className="space-y-1">
+                    {group.items.map((item) => {
+                      const active = navLinkActive(pathname, item.href);
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className={cn(
+                            "group flex items-center gap-3 rounded-xl px-4 py-3 text-xs font-semibold uppercase tracking-wide transition-all duration-200",
+                            active
+                              ? "bg-white/10 text-white shadow-sm ring-1 ring-white/10"
+                              : "text-emerald-50/50 hover:bg-white/5 hover:text-white",
+                          )}
+                        >
+                          <div className="flex items-center gap-4">
+                            {item.icon && (
+                              <item.icon
+                                className={cn(
+                                  "h-4.5 w-4.5",
+                                  active
+                                    ? "text-emerald-400"
+                                    : "text-emerald-50/20",
+                                )}
+                              />
+                            )}
+                            <p>{item.label}</p>
+                          </div>
+                          {active && (
+                            <ChevronRight className="ml-auto h-3.5 w-3.5 text-emerald-400" />
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </nav>
+                </div>
+              ))
+            ) : (
+              <>
+                <p className="mb-4 px-4 text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-400/40">
+                  Navigation
+                </p>
+                <nav className="space-y-1">
+                  {nav.map((item) => {
+                    const active = navLinkActive(pathname, item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={cn(
+                          "group flex items-center gap-3 rounded-xl px-4 py-3 text-xs font-semibold uppercase tracking-wide transition-all duration-200",
+                          active
+                            ? "bg-white/10 text-white shadow-sm ring-1 ring-white/10"
+                            : "text-emerald-50/50 hover:bg-white/5 hover:text-white",
+                        )}
+                      >
+                        <div className="flex items-center gap-4">
+                          {item.icon && (
+                            <item.icon
+                              className={cn(
+                                "h-4.5 w-4.5",
+                                active
+                                  ? "text-emerald-400"
+                                  : "text-emerald-50/20",
+                              )}
+                            />
+                          )}
+                          <p>{item.label}</p>
+                        </div>
+                        {active && (
+                          <ChevronRight className="ml-auto h-3.5 w-3.5 text-emerald-400" />
+                        )}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </>
+            )}
           </div>
 
           <div className="p-6 mt-auto">
@@ -122,16 +193,13 @@ export function AppShell({
                 {title}
               </h1>
               <p className="hidden text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] sm:block">
-                Portal Workspace
+                {subtitle}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-6">
-             <button className="relative p-2.5 text-[var(--muted)] hover:bg-[var(--surface-muted)] rounded-xl transition-all hover:scale-105 active:scale-95">
-              <Bell className="h-5 w-5" />
-              <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-red-500 border-2 border-white ring-2 ring-red-500/20"></span>
-            </button>
+            <HeaderNotificationBell />
             <div className="h-8 w-px bg-[var(--border)]/60 mx-1 hidden sm:block"></div>
             <UserMenu />
           </div>

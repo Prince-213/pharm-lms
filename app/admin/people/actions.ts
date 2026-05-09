@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
+import { deleteUserAndRelatedDataAsAdmin } from "@/lib/admin/delete-user-cascade";
 import { db } from "@/lib/db";
 
 async function assertAdmin() {
@@ -52,6 +53,56 @@ export async function setUserActiveAction(
   revalidatePath("/admin/mentors");
   revalidatePath("/admin/mentor-applications");
   revalidatePath("/admin/dashboard");
+
+  return { success: true as const };
+}
+
+export async function deleteUserAsAdminAction(
+  userId: string,
+  expectedRole: "STUDENT" | "TUTOR" | "MENTOR",
+) {
+  const admin = await assertAdmin();
+  if ("error" in admin) return admin;
+
+  if (userId === admin.session.user.id) {
+    return { error: "You cannot delete your own account." as const };
+  }
+
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    select: { id: true, role: true, email: true },
+  });
+  if (!user) return { error: "User not found." as const };
+  if (user.role === UserRole.ADMIN) {
+    return { error: "Admin accounts cannot be deleted here." as const };
+  }
+  if (user.role !== expectedRole) {
+    return {
+      error: `This action only applies to ${expectedRole.toLowerCase()} accounts.` as const,
+    };
+  }
+
+  try {
+    await deleteUserAndRelatedDataAsAdmin({
+      targetUserId: user.id,
+      expectedRole,
+      adminUserId: admin.session.user.id,
+      targetEmail: user.email,
+    });
+  } catch (e) {
+    console.error("deleteUserAsAdminAction", e);
+    return {
+      error:
+        "Could not delete this account. There may be related data that still references this user." as const,
+    };
+  }
+
+  revalidatePath("/admin/students");
+  revalidatePath("/admin/tutors");
+  revalidatePath("/admin/mentors");
+  revalidatePath("/admin/mentor-applications");
+  revalidatePath("/admin/dashboard");
+  revalidatePath("/admin/messages");
 
   return { success: true as const };
 }
