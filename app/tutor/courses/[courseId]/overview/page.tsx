@@ -76,7 +76,7 @@ export default async function MentorCourseOverviewPage({
             </p>
           </div>
           <Link
-            href={`/mentor/courses/${courseId}/manage/curriculum`}
+            href={`/tutor/courses/${courseId}/manage/curriculum`}
             className="rounded-md border border-[#d1d7dc] px-4 py-2 text-sm font-semibold text-[#1c1d1f] hover:bg-[#f8fafb]"
           >
             Edit curriculum

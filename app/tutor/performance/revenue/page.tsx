@@ -29,7 +29,7 @@ export default function PerformanceRevenuePage() {
       </div>
       <PerformanceChartPanel
         emptyMessage="Revenue trends will chart here once transactions are linked."
-        footerLink={{ href: "/mentor/courses", label: "Set up course pricing" }}
+        footerLink={{ href: "/tutor/courses", label: "Set up course pricing" }}
       />
       <section className="mt-8 overflow-hidden rounded-xl border border-[#e3e5e8] bg-white shadow-sm">
         <div className="border-b border-[#ececec] px-5 py-4">

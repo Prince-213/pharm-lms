@@ -172,14 +172,14 @@ export default async function PerformanceOverviewPage() {
             
             <nav className="space-y-2">
               <Link 
-                href="/mentor/courses/new" 
+                href="/tutor/courses/new" 
                 className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-sm font-medium transition-all hover:border-[var(--primary)]/40 hover:shadow-sm"
               >
                 Create New Course
                 <ArrowUpRight className="h-4 w-4 text-[var(--primary)]" />
               </Link>
               <Link 
-                href="/mentor/communication" 
+                href="/tutor/communication" 
                 className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-sm font-medium transition-all hover:border-[var(--primary)]/40 hover:shadow-sm"
               >
                 Messages
@@ -211,7 +211,7 @@ export default async function PerformanceOverviewPage() {
             {(courses as { id: string; title: string }[]).map((c) => (
               <li key={c.id}>
                 <Link
-                  href={`/mentor/courses/${c.id}/manage/curriculum`}
+                  href={`/tutor/courses/${c.id}/manage/curriculum`}
                   className="flex h-full flex-col justify-between rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-5 transition-all hover:border-[var(--primary)]/40 hover:bg-white hover:shadow-md"
                 >
                   <p className="font-bold text-[var(--foreground)]">{c.title}</p>

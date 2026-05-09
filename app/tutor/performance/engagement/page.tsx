@@ -72,7 +72,7 @@ export default function PerformanceEngagementPage() {
       </div>
       <PerformanceChartPanel
         emptyMessage="Longer-range engagement trends will render in this canvas."
-        footerLink={{ href: "/mentor/performance/overview", label: "Back to overview" }}
+        footerLink={{ href: "/tutor/performance/overview", label: "Back to overview" }}
       />
     </>
   );

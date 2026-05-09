@@ -39,7 +39,7 @@ export default async function MentorCourseManageLayout({
         courseTitle={course.title}
         statusLabel={courseStatusLabel(course.status)}
         readOnly={readOnly}
-        settingsHref={`/mentor/courses/${courseId}/manage/settings`}
+        settingsHref={`/tutor/courses/${courseId}/manage/settings`}
       >
         <div className="mx-auto flex min-h-[calc(100vh-48px)] w-full max-w-[1280px] bg-white">
           <CourseManageSidebar courseId={courseId} courseStatus={course.status} />

@@ -58,7 +58,7 @@ export default function PerformanceTrafficPage() {
         </section>
         <PerformanceChartPanel
           emptyMessage="Traffic sources (search, direct, referral) will chart here."
-          footerLink={{ href: "/mentor/courses", label: "Improve course landing" }}
+          footerLink={{ href: "/tutor/courses", label: "Improve course landing" }}
         />
       </div>
       <section className="rounded-xl border border-[#e3e5e8] bg-white p-5 shadow-sm">

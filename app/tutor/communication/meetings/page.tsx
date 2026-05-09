@@ -214,7 +214,7 @@ export default async function MentorCommunicationMeetingsPage() {
                     </span>
                     {isMeetingJoinable(meeting) ? (
                       <a
-                        href={`/mentor/communication/meetings/join/${meeting.id}`}
+                        href={`/tutor/communication/meetings/join/${meeting.id}`}
                         className="inline-flex items-center gap-1 rounded bg-[var(--primary)] px-2.5 py-1 text-xs font-semibold text-[var(--primary-foreground)] hover:bg-[var(--primary-strong)]"
                       >
                         <Video className="h-3.5 w-3.5" />

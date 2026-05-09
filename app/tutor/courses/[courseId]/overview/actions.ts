@@ -54,7 +54,7 @@ export async function postCourseAnnouncementAction(courseId: string, body: strin
     },
   });
 
-  revalidatePath(`/mentor/courses/${courseId}/overview`);
+  revalidatePath(`/tutor/courses/${courseId}/overview`);
   revalidatePath(`/student/course/${courseId}`);
   return { ok: true as const };
 }
@@ -89,7 +89,7 @@ export async function postMentorForumMessageAction(courseId: string, body: strin
     },
   });
 
-  revalidatePath(`/mentor/courses/${courseId}/overview`);
+  revalidatePath(`/tutor/courses/${courseId}/overview`);
   revalidatePath(`/student/course/${courseId}/forum`);
   return { ok: true as const };
 }

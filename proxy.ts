@@ -1,8 +1,6 @@
-import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { auth } from "@/auth";
 import type { UserRole } from "@/generated/prisma/enums";
-import { getAuthSecret } from "@/lib/auth/secret";
 import { canAccessRolePath, roleHomePath } from "@/lib/rbac";
 
 const protectedPrefixes = ["/mentor", "/student", "/admin"];
@@ -24,21 +22,21 @@ function isPublicAuthPath(pathname: string): boolean {
   );
 }
 
-export async function proxy(req: NextRequest) {
+/**
+ * Use Auth.js `auth()` so session resolution matches `/api/auth` and server `auth()`.
+ * Manual `getToken()` can diverge in production (e.g. Edge env / secret handling).
+ */
+export const proxy = auth((req) => {
   const pathname = req.nextUrl.pathname;
   const needsAuth = protectedPrefixes.some((prefix) =>
     pathname.startsWith(prefix),
   );
   const isAuthPage = isPublicAuthPath(pathname);
 
-  const token = await getToken({
-    req,
-    secret: getAuthSecret(),
-  });
+  const user = req.auth?.user;
+  const userRole = (user?.role as UserRole | undefined) ?? null;
 
-  const userRole = (token?.role as UserRole | undefined) ?? null;
-
-  if (!token && needsAuth && !isAuthPage) {
+  if (!user && needsAuth && !isAuthPage) {
     const loginPath = pathname.startsWith("/admin")
       ? "/admin/login"
       : pathname.startsWith("/mentor")
@@ -57,7 +55,7 @@ export async function proxy(req: NextRequest) {
   }
 
   return NextResponse.next();
-}
+});
 
 export const config = {
   matcher: ["/mentor/:path*", "/student/:path*", "/admin/:path*"],
