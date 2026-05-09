@@ -2,24 +2,10 @@
 
 import React, { useMemo, useState } from "react";
 import { clsx } from "clsx";
-import {
-  ChevronDown,
-  ChevronRight,
-  Circle,
-  Download,
-  ExternalLink,
-  FileText,
-  Link2,
-  Play,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, Circle, ExternalLink, FileText, Link2, Play } from "lucide-react";
 import Link from "next/link";
 import { formatLessonDuration } from "@/lib/lesson-duration";
 import type { SectionResource } from "@/components/mentor/curriculum-editor-v2";
-import type { CatalogResourceItem } from "@/lib/course-catalog-detail";
-import {
-  formatResourceMetaLine,
-  resourceDownloadFilename,
-} from "@/lib/section-resource-meta";
 import { useProgress } from "@/lib/student/progress-context";
 
 export type SidebarLesson = {
@@ -34,9 +20,7 @@ export type SidebarSection = {
   id: string;
   title: string;
   lessons: SidebarLesson[];
-  description?: string | null;
-  /** From server with signed URLs; if omitted, parsed from `description` (no R2 resolve). */
-  resources?: CatalogResourceItem[];
+  resources?: SectionResource[];
 };
 
 /** Parse resources out of the section description JSON (same logic as curriculum editor) */
@@ -50,21 +34,6 @@ function parseSectionResources(description: string | null | undefined): SectionR
   }
 }
 
-function effectiveResourceHref(
-  r: SectionResource & { href?: string | null },
-): string | null {
-  if (r.href) return r.href;
-  const u = r.url?.trim();
-  if (
-    u?.startsWith("https://") ||
-    u?.startsWith("http://") ||
-    u?.startsWith("/")
-  ) {
-    return u;
-  }
-  return null;
-}
-
 export function CourseContentSidebar({
   courseId,
   sections,
@@ -74,7 +43,7 @@ export function CourseContentSidebar({
   intelBadge = "Progress",
 }: {
   courseId: string;
-  sections: SidebarSection[];
+  sections: (SidebarSection & { description?: string | null })[];
   selectedLessonId: string | null;
   progressMap: Record<string, boolean>;
   intelHeading?: string;
@@ -123,12 +92,10 @@ export function CourseContentSidebar({
         {sections.map((section, si) => {
           const sectionDone = section.lessons.filter((l) => progressMap[l.id]).length;
           const isOpen = open[section.id] ?? true;
-          const resources: CatalogResourceItem[] =
-            section.resources ??
-            parseSectionResources(section.description ?? null).map((r) => ({
-              ...r,
-              href: null,
-            }));
+          const resources =
+            section.resources && section.resources.length > 0
+              ? section.resources
+              : parseSectionResources((section as { description?: string | null }).description);
 
           return (
             <div key={section.id} className="mb-1">
@@ -203,66 +170,25 @@ export function CourseContentSidebar({
                       <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700">
                         Resources
                       </p>
-                      <ul className="space-y-2">
-                        {resources.map((r) => {
-                          const href = effectiveResourceHref(r);
-                          return (
-                            <li key={r.id}>
-                              <div className="flex items-start gap-2 rounded-md px-0.5 py-0.5">
-                                <div className="mt-0.5 shrink-0 text-emerald-500">
-                                  {r.type === "LINK" ? (
-                                    <Link2 className="h-3.5 w-3.5" />
-                                  ) : (
-                                    <FileText className="h-3.5 w-3.5" />
-                                  )}
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-[11px] font-semibold leading-snug text-emerald-900">
-                                    {r.title}
-                                  </p>
-                                  <p className="mt-0.5 line-clamp-2 text-[10px] leading-snug text-emerald-800/85">
-                                    {formatResourceMetaLine(r)}
-                                  </p>
-                                </div>
-                                {href ? (
-                                  r.type === "FILE" ? (
-                                    <a
-                                      href={href}
-                                      download={resourceDownloadFilename(r)}
-                                      className="shrink-0 rounded-md p-1.5 text-emerald-700 transition-colors hover:bg-emerald-100/80"
-                                      title="Download"
-                                      aria-label={`Download ${r.title}`}
-                                    >
-                                      <Download className="h-4 w-4" />
-                                    </a>
-                                  ) : (
-                                    <a
-                                      href={href}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="shrink-0 rounded-md p-1.5 text-emerald-700 transition-colors hover:bg-emerald-100/80"
-                                      title="Open link"
-                                      aria-label={`Open link: ${r.title}`}
-                                    >
-                                      <ExternalLink className="h-4 w-4" />
-                                    </a>
-                                  )
-                                ) : (
-                                  <span
-                                    className="shrink-0 rounded-md p-1.5 text-emerald-300"
-                                    title="Resource unavailable"
-                                  >
-                                    {r.type === "FILE" ? (
-                                      <Download className="h-4 w-4" />
-                                    ) : (
-                                      <ExternalLink className="h-4 w-4" />
-                                    )}
-                                  </span>
-                                )}
-                              </div>
-                            </li>
-                          );
-                        })}
+                      <ul className="space-y-1">
+                        {resources.map((r) => (
+                          <li key={r.id}>
+                            <a
+                              href={r.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-800 hover:underline"
+                            >
+                              {r.type === "LINK" ? (
+                                <Link2 className="h-3 w-3 shrink-0 text-emerald-500" />
+                              ) : (
+                                <FileText className="h-3 w-3 shrink-0 text-emerald-500" />
+                              )}
+                              <span className="min-w-0 flex-1 truncate">{r.title}</span>
+                              <ExternalLink className="h-2.5 w-2.5 shrink-0 text-emerald-400" />
+                            </a>
+                          </li>
+                        ))}
                       </ul>
                     </div>
                   )}

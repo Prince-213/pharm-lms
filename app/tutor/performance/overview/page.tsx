@@ -1,4 +1,4 @@
-import { ArrowUpRight, GraduationCap, PlayCircle, Users, TrendingUp, MessageSquare, Star } from "lucide-react";
+import { ArrowUpRight, GraduationCap, PlayCircle, Users, BarChart3, TrendingUp, MessageSquare, Search } from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { MentorEnrollmentChart } from "@/components/mentor/performance/mentor-enrollment-chart";
@@ -30,7 +30,6 @@ export default async function PerformanceOverviewPage() {
     completedLessons,
     activeLearners,
     enrollmentTrendRaw,
-    unreadReviewAlerts,
   ] = mentorId
     ? await Promise.all([
         db.course.findMany({
@@ -76,15 +75,8 @@ export default async function PerformanceOverviewPage() {
           },
           select: { enrolledAt: true },
         }),
-        db.notification.count({
-          where: {
-            userId: mentorId,
-            kind: "COURSE_REVIEW_RECEIVED",
-            readAt: null,
-          },
-        }),
       ])
-    : [[], 0, 0, 0, 0, 0, [], 0];
+    : [[], 0, 0, 0, 0, 0, []];
 
   // ── Enrollment trend: 6-month monthly buckets ──────────────────────────────
   const now = new Date();
@@ -184,20 +176,6 @@ export default async function PerformanceOverviewPage() {
               >
                 Messages
                 <MessageSquare className="h-4 w-4 text-[var(--primary)]" />
-              </Link>
-              <Link 
-                href="/tutor/performance/reviews" 
-                className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-sm font-medium transition-all hover:border-[var(--primary)]/40 hover:shadow-sm"
-              >
-                <span className="flex items-center gap-2">
-                  Reviews
-                  {(unreadReviewAlerts as number) > 0 ? (
-                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-900">
-                      {(unreadReviewAlerts as number)} new
-                    </span>
-                  ) : null}
-                </span>
-                <Star className="h-4 w-4 text-[var(--primary)]" />
               </Link>
             </nav>
           </div>

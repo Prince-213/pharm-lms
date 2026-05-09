@@ -1,4 +1,4 @@
-import { ArrowLeft, ExternalLink, FileText } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
@@ -6,7 +6,6 @@ import { AssignmentStatusToggle } from "@/components/mentor/assignment-status-to
 import { GradeSubmissionForm } from "@/components/mentor/grade-submission-form";
 import { UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
-import { resolveMediaUrl } from "@/lib/media-url";
 import { roleHomePath } from "@/lib/rbac";
 
 export default async function MentorAssignmentDetailPage({
@@ -21,16 +20,6 @@ export default async function MentorAssignmentDetailPage({
   }
 
   const { assignmentId } = await params;
-
-  await db.notification.updateMany({
-    where: {
-      userId: session.user.id,
-      assignmentId,
-      readAt: null,
-    },
-    data: { readAt: new Date() },
-  });
-
   const assignment = await db.assignment.findFirst({
     where: { id: assignmentId, course: { mentorId: session.user.id } },
     include: {
@@ -45,24 +34,11 @@ export default async function MentorAssignmentDetailPage({
   });
   if (!assignment) notFound();
 
-  const handoutHref = assignment.instructionsFileUrl
-    ? await resolveMediaUrl(assignment.instructionsFileUrl)
-    : null;
-
-  const submissionRows = await Promise.all(
-    assignment.submissions.map(async (s) => ({
-      submission: s,
-      fileHref: s.attachmentUrl
-        ? await resolveMediaUrl(s.attachmentUrl)
-        : null,
-    })),
-  );
-
   return (
     <div className="space-y-6">
       <div>
         <Link
-          href="/tutor/assignments"
+          href="/mentor/assignments"
           className="inline-flex items-center gap-1 text-xs font-semibold text-[#6a6f73] hover:text-[#1c1d1f]"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -75,7 +51,7 @@ export default async function MentorAssignmentDetailPage({
             </h1>
             <p className="mt-1 text-sm text-[#6a6f73]">
               <Link
-                href={`/tutor/courses/${assignment.course.id}/manage/curriculum`}
+                href={`/mentor/courses/${assignment.course.id}/manage/curriculum`}
                 className="font-semibold text-[var(--primary)] hover:underline"
               >
                 {assignment.course.title}
@@ -100,32 +76,6 @@ export default async function MentorAssignmentDetailPage({
         <h2 className="text-sm font-bold uppercase tracking-wide text-[#6a6f73]">
           Instructions
         </h2>
-        {(handoutHref || assignment.instructionsLinkUrl) && (
-          <div className="mt-2 flex flex-wrap gap-3 text-sm">
-            {handoutHref ? (
-              <a
-                href={handoutHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 font-semibold text-[var(--primary)] hover:underline"
-              >
-                <FileText className="h-4 w-4" />
-                Handout file
-              </a>
-            ) : null}
-            {assignment.instructionsLinkUrl ? (
-              <a
-                href={assignment.instructionsLinkUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 font-semibold text-[var(--primary)] hover:underline"
-              >
-                <ExternalLink className="h-4 w-4" />
-                {assignment.instructionsLinkLabel ?? "Reference link"}
-              </a>
-            ) : null}
-          </div>
-        )}
         <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-[#1c1d1f]">
           {assignment.description}
         </p>
@@ -135,13 +85,13 @@ export default async function MentorAssignmentDetailPage({
         <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-[#6a6f73]">
           Submissions
         </h2>
-        {submissionRows.length === 0 ? (
+        {assignment.submissions.length === 0 ? (
           <div className="rounded-xl border border-dashed border-[#e3e5e8] bg-white p-10 text-center text-sm text-[#6a6f73]">
             No submissions yet.
           </div>
         ) : (
           <ul className="space-y-3">
-            {submissionRows.map(({ submission: s, fileHref }) => (
+            {assignment.submissions.map((s) => (
               <li
                 key={s.id}
                 className="rounded-xl border border-[#e3e5e8] bg-white p-5 shadow-sm"
@@ -165,18 +115,6 @@ export default async function MentorAssignmentDetailPage({
                       : ""}
                   </span>
                 </div>
-                {fileHref ? (
-                  <p className="mt-2">
-                    <a
-                      href={fileHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm font-semibold text-[var(--primary)] hover:underline"
-                    >
-                      Download submitted file
-                    </a>
-                  </p>
-                ) : null}
                 {s.content ? (
                   <p className="mt-3 whitespace-pre-wrap rounded border border-[#ececec] bg-[#fafbfb] p-3 text-sm leading-relaxed">
                     {s.content}

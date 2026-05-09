@@ -35,10 +35,6 @@ export default async function MentorAssignmentsPage() {
     },
   });
 
-  const unreadAlerts = await db.notification.count({
-    where: { userId: session.user.id, readAt: null },
-  });
-
   return (
     <div className="space-y-6">
       <div>
@@ -48,14 +44,6 @@ export default async function MentorAssignmentsPage() {
           submissions in one place.
         </p>
       </div>
-
-      {unreadAlerts > 0 ? (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-          <span className="font-semibold">{unreadAlerts}</span> unread{" "}
-          {unreadAlerts === 1 ? "alert" : "alerts"} — open an assignment below to
-          review new submissions.
-        </div>
-      ) : null}
 
       <NewAssignmentForm courses={courses} />
 
@@ -87,7 +75,7 @@ export default async function MentorAssignmentsPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <Link
-                        href={`/tutor/assignments/${a.id}`}
+                        href={`/mentor/assignments/${a.id}`}
                         className="text-base font-bold text-[#1c1d1f] hover:text-[var(--primary)]"
                       >
                         {a.title}
@@ -100,7 +88,7 @@ export default async function MentorAssignmentsPage() {
                     </div>
                     <p className="mt-1 text-xs text-[#6a6f73]">
                       <Link
-                        href={`/tutor/courses/${a.course.id}/manage/curriculum`}
+                        href={`/mentor/courses/${a.course.id}/manage/curriculum`}
                         className="font-semibold text-[var(--primary)] hover:underline"
                       >
                         {a.course.title}

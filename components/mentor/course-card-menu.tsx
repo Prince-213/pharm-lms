@@ -174,7 +174,7 @@ export function CourseCardMenu({
     setDeleting(true);
     setError(null);
     try {
-      const res = await fetch(`/api/tutor/courses/${courseId}`, {
+      const res = await fetch(`/api/mentor/courses/${courseId}`, {
         method: "DELETE",
       });
       if (!res.ok) {

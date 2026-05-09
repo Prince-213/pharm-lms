@@ -3,18 +3,75 @@
 import { CheckCircle2, HelpCircle, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
-import {
-  gradeSubmission,
-  normalizeQuizQuestions,
-  seededShuffle,
-  type NormalizedQuestion,
-} from "@/lib/section-quiz-questions";
+
+type QuizQuestion = {
+  prompt: string;
+  expectedAnswer: string | null;
+  badge?: string | null;
+};
 
 type SectionQuiz = {
   id: string;
   title: string;
   questions: unknown;
 };
+
+function parseQuestion(raw: unknown): QuizQuestion | null {
+  if (typeof raw === "string") {
+    const parts = raw.split(/\s*(?:\|\||::|=>)\s*/);
+    let rawPrompt = parts[0]?.trim() || "";
+    const expectedAnswer = parts[1]?.trim() || null;
+
+    if (!rawPrompt) return null;
+
+    // Support for [Badge] Question format
+    const badgeMatch = rawPrompt.match(/^\[(.*?)\]\s*(.*)$/);
+    let prompt = rawPrompt;
+    let badge: string | null = null;
+
+    if (badgeMatch) {
+      const bText = badgeMatch[1].trim();
+      const pText = badgeMatch[2].trim();
+
+      // If we have [Text] MoreText and no explicit answer key from ||,
+      // assume [Question] Answer format to prevent question/answer swap.
+      if (bText && pText && !expectedAnswer) {
+        return {
+          prompt: bText,
+          expectedAnswer: pText,
+          badge: null,
+        };
+      }
+
+      badge = bText;
+      prompt = pText || rawPrompt;
+    }
+
+    return {
+      prompt,
+      expectedAnswer,
+      badge,
+    };
+  }
+
+  if (raw && typeof raw === "object") {
+    const maybe = raw as { question?: unknown; answer?: unknown; badge?: unknown };
+    if (typeof maybe.question === "string" && maybe.question.trim()) {
+      return {
+        prompt: maybe.question.trim(),
+        expectedAnswer: typeof maybe.answer === "string" && maybe.answer.trim() ? maybe.answer.trim() : null,
+        badge: typeof maybe.badge === "string" ? maybe.badge : null,
+      };
+    }
+  }
+
+  return null;
+}
+
+function parseQuestions(value: unknown): QuizQuestion[] {
+  if (!Array.isArray(value)) return [];
+  return value.map(parseQuestion).filter((q): q is QuizQuestion => Boolean(q));
+}
 
 export function SectionQuizLauncher({ quizzes }: { quizzes: SectionQuiz[] }) {
   const router = useRouter();
@@ -29,7 +86,7 @@ export function SectionQuizLauncher({ quizzes }: { quizzes: SectionQuiz[] }) {
 
   const activeQuiz = quizzes.find((q) => q.id === activeQuizId) ?? quizzes[0] ?? null;
   const questions = useMemo(
-    () => (activeQuiz ? normalizeQuizQuestions(activeQuiz.questions) : []),
+    () => (activeQuiz ? parseQuestions(activeQuiz.questions) : []),
     [activeQuiz],
   );
 
@@ -37,11 +94,17 @@ export function SectionQuizLauncher({ quizzes }: { quizzes: SectionQuiz[] }) {
     const graded = questions.map((q, index) => {
       const key = `${activeQuiz?.id ?? "quiz"}:${index}`;
       const userAnswer = (answers[key] ?? "").trim();
-      const isCorrect = gradeSubmission(q, userAnswer);
-      return { q, userAnswer, isCorrect };
+      const isCorrect = q.expectedAnswer
+        ? userAnswer.toLowerCase() === q.expectedAnswer.toLowerCase()
+        : null;
+      return {
+        ...q,
+        userAnswer,
+        isCorrect,
+      };
     });
     return { graded };
-  }, [activeQuiz?.id, answers, questions]);
+  }, [activeQuiz, answers, questions]);
 
   function submit() {
     if (!activeQuiz) return;
@@ -146,15 +209,26 @@ export function SectionQuizLauncher({ quizzes }: { quizzes: SectionQuiz[] }) {
                   {questions.map((q, index) => {
                     const key = `${activeQuiz.id}:${index}`;
                     return (
-                      <QuestionBlock
-                        key={key}
-                        q={q}
-                        index={index}
-                        answerKey={key}
-                        quizId={activeQuiz.id}
-                        value={answers[key] ?? ""}
-                        onChange={(v) => setAnswers((prev) => ({ ...prev, [key]: v }))}
-                      />
+                      <div key={key} className="rounded-lg border border-[var(--border)] bg-[var(--background)] p-3">
+                        <div className="text-sm font-medium text-[var(--foreground)]">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-bold text-[var(--muted)] opacity-60">Q{index + 1}</span>
+                            {q.badge && (
+                              <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700">
+                                {q.badge}
+                              </span>
+                            )}
+                          </div>
+                          {q.prompt}
+                        </div>
+                        <textarea
+                          value={answers[key] ?? ""}
+                          onChange={(e) => setAnswers((prev) => ({ ...prev, [key]: e.target.value }))}
+                          rows={2}
+                          className="mt-2 w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-sm"
+                          placeholder="Type your answer"
+                        />
+                      </div>
                     );
                   })}
                 </div>
@@ -173,42 +247,28 @@ export function SectionQuizLauncher({ quizzes }: { quizzes: SectionQuiz[] }) {
                       <div className="flex items-start gap-2">
                         {r.isCorrect === true ? (
                           <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-600" />
-                        ) : r.isCorrect === false ? (
-                          <HelpCircle className="mt-0.5 h-4 w-4 text-amber-600" />
                         ) : (
-                          <HelpCircle className="mt-0.5 h-4 w-4 text-[var(--muted)]" />
+                          <HelpCircle className="mt-0.5 h-4 w-4 text-amber-600" />
                         )}
                         <div className="text-sm font-medium text-[var(--foreground)]">
-                          <div className="mb-1 flex items-center gap-2">
+                          <div className="flex items-center gap-2 mb-1">
                             <span className="text-xs font-bold text-[var(--muted)] opacity-60">Q{index + 1}</span>
-                            {r.q.type === "free_text" && r.q.badge ? (
+                            {r.badge && (
                               <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700">
-                                {r.q.badge}
+                                {r.badge}
                               </span>
-                            ) : null}
+                            )}
                           </div>
-                          {r.q.prompt}
+                          {r.prompt}
                         </div>
                       </div>
                       <p className="mt-2 text-xs text-[var(--muted)]">
-                        <span className="font-semibold">Your answer:</span>{" "}
-                        {r.userAnswer || "No answer"}
+                        <span className="font-semibold">Your answer:</span> {r.userAnswer || "No answer"}
                       </p>
-                      {r.q.type === "multiple_choice" ? (
-                        <p className="mt-1 text-xs text-[var(--muted)]">
-                          <span className="font-semibold">Result:</span>{" "}
-                          {r.isCorrect === true
-                            ? "Correct."
-                            : r.isCorrect === false
-                              ? `Incorrect. Correct option: ${r.q.correctAnswer}`
-                              : "Not graded."}
-                        </p>
-                      ) : (
-                        <p className="mt-1 text-xs text-[var(--muted)]">
-                          <span className="font-semibold">Expected answer:</span>{" "}
-                          {r.q.expectedAnswer ?? "Not configured by mentor"}
-                        </p>
-                      )}
+                      <p className="mt-1 text-xs text-[var(--muted)]">
+                        <span className="font-semibold">Expected answer:</span>{" "}
+                        {r.expectedAnswer ?? "Not configured by mentor"}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -256,76 +316,5 @@ export function SectionQuizLauncher({ quizzes }: { quizzes: SectionQuiz[] }) {
         </div>
       ) : null}
     </>
-  );
-}
-
-function QuestionBlock({
-  q,
-  index,
-  answerKey,
-  quizId,
-  value,
-  onChange,
-}: {
-  q: NormalizedQuestion;
-  index: number;
-  answerKey: string;
-  quizId: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  if (q.type === "multiple_choice") {
-    const displayOptions = seededShuffle(q.allOptions, `${quizId}:${index}`);
-    return (
-      <div className="rounded-lg border border-[var(--border)] bg-[var(--background)] p-3">
-        <div className="text-sm font-medium text-[var(--foreground)]">
-          <div className="mb-1 flex items-center gap-2">
-            <span className="text-xs font-bold text-[var(--muted)] opacity-60">Q{index + 1}</span>
-          </div>
-          {q.prompt}
-        </div>
-        <fieldset className="mt-3 space-y-2">
-          <legend className="sr-only">Choose one answer</legend>
-          {displayOptions.map((opt) => (
-            <label
-              key={opt}
-              className="flex cursor-pointer items-start gap-2 rounded-md border border-transparent px-1 py-0.5 hover:bg-[var(--surface-muted)]"
-            >
-              <input
-                type="radio"
-                className="mt-1"
-                name={answerKey}
-                checked={value === opt}
-                onChange={() => onChange(opt)}
-              />
-              <span className="text-sm leading-snug">{opt}</span>
-            </label>
-          ))}
-        </fieldset>
-      </div>
-    );
-  }
-
-  return (
-    <div className="rounded-lg border border-[var(--border)] bg-[var(--background)] p-3">
-      <div className="text-sm font-medium text-[var(--foreground)]">
-        <div className="mb-1 flex items-center gap-2">
-          <span className="text-xs font-bold text-[var(--muted)] opacity-60">Q{index + 1}</span>
-          {q.badge ? (
-            <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700">
-              {q.badge}
-            </span>
-          ) : null}
-        </div>
-        {q.prompt}
-      </div>
-      <textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        rows={2}
-        className="mt-2 w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-sm"
-        placeholder="Type your answer"
-      />
-    </div>
   );
 }

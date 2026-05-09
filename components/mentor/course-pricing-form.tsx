@@ -55,7 +55,7 @@ export function CoursePricingForm({
     const priceMinorUnits = Number(tier);
     setSaving(true);
     try {
-      const response = await fetch(`/api/tutor/courses/${courseId}`, {
+      const response = await fetch(`/api/mentor/courses/${courseId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ priceMinorUnits }),

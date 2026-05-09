@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/auth";
-import { emailEnrolledStudentsNewAssignment } from "@/lib/assignment-emails";
 import { AssignmentStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 
@@ -13,9 +12,6 @@ const createSchema = z.object({
   description: z.string().min(2).max(4000),
   dueAt: z.string().optional(),
   publish: z.boolean().optional(),
-  instructionsFileUrl: z.string().max(2000).optional(),
-  instructionsLinkUrl: z.string().max(2000).optional(),
-  instructionsLinkLabel: z.string().max(120).optional(),
 });
 
 export type CreateAssignmentInput = z.infer<typeof createSchema>;
@@ -43,16 +39,6 @@ export async function createAssignmentAction(
     };
   }
 
-  const linkUrl = parsed.data.instructionsLinkUrl?.trim() || undefined;
-  const linkLabel = parsed.data.instructionsLinkLabel?.trim() || undefined;
-  const fileUrl = parsed.data.instructionsFileUrl?.trim() || undefined;
-  if (linkUrl && !/^https?:\/\//i.test(linkUrl)) {
-    return {
-      ok: false,
-      message: "Reference link must start with http:// or https://",
-    };
-  }
-
   const course = await db.course.findFirst({
     where: { id: parsed.data.courseId, mentorId: user.id },
     select: { id: true },
@@ -64,30 +50,21 @@ export async function createAssignmentAction(
     return { ok: false, message: "Invalid due date." };
   }
 
-  const status = parsed.data.publish
-    ? AssignmentStatus.SENT
-    : AssignmentStatus.DRAFT;
-
   const assignment = await db.assignment.create({
     data: {
       courseId: course.id,
       createdById: user.id,
       title: parsed.data.title.trim(),
       description: parsed.data.description.trim(),
-      instructionsFileUrl: fileUrl ?? null,
-      instructionsLinkUrl: linkUrl ?? null,
-      instructionsLinkLabel: linkUrl ? (linkLabel ?? "Open link") : null,
       dueDate,
-      status,
+      status: parsed.data.publish
+        ? AssignmentStatus.SENT
+        : AssignmentStatus.DRAFT,
     },
     select: { id: true },
   });
 
-  if (status === AssignmentStatus.SENT) {
-    void emailEnrolledStudentsNewAssignment(assignment.id);
-  }
-
-  revalidatePath("/tutor/assignments");
+  revalidatePath("/mentor/assignments");
   return { ok: true, assignmentId: assignment.id };
 }
 
@@ -100,33 +77,23 @@ export async function updateAssignmentStatusAction(
   input: z.infer<typeof statusSchema>,
 ) {
   const user = await requireMentor();
-  if (!user) return { ok: false as const, message: "Tutors only." };
+  if (!user) return { ok: false as const, message: "Mentors only." };
 
   const parsed = statusSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, message: "Invalid input" };
 
   const assignment = await db.assignment.findFirst({
     where: { id: parsed.data.assignmentId, course: { mentorId: user.id } },
-    select: { id: true, status: true },
+    select: { id: true },
   });
   if (!assignment)
     return { ok: false as const, message: "Assignment not found." };
 
-  const prevStatus = assignment.status;
   await db.assignment.update({
     where: { id: assignment.id },
     data: { status: parsed.data.status },
   });
-
-  if (
-    parsed.data.status === AssignmentStatus.SENT &&
-    prevStatus !== AssignmentStatus.SENT
-  ) {
-    void emailEnrolledStudentsNewAssignment(assignment.id);
-  }
-
-  revalidatePath("/tutor/assignments");
-  revalidatePath(`/tutor/assignments/${parsed.data.assignmentId}`);
+  revalidatePath("/mentor/assignments");
   return { ok: true as const };
 }
 
@@ -140,7 +107,7 @@ export async function gradeSubmissionAction(
   input: z.infer<typeof gradeSchema>,
 ) {
   const user = await requireMentor();
-  if (!user) return { ok: false as const, message: "Tutors only." };
+  if (!user) return { ok: false as const, message: "Mentors only." };
 
   const parsed = gradeSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, message: "Invalid input" };
@@ -150,7 +117,7 @@ export async function gradeSubmissionAction(
       id: parsed.data.submissionId,
       assignment: { course: { mentorId: user.id } },
     },
-    select: { id: true, assignmentId: true },
+    select: { id: true },
   });
   if (!submission)
     return { ok: false as const, message: "Submission not found." };
@@ -163,7 +130,6 @@ export async function gradeSubmissionAction(
       status: "GRADED",
     },
   });
-  revalidatePath("/tutor/assignments");
-  revalidatePath(`/tutor/assignments/${submission.assignmentId}`);
+  revalidatePath("/mentor/assignments");
   return { ok: true as const };
 }
