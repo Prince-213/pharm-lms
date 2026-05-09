@@ -1,9 +1,23 @@
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { getToken } from "next-auth/jwt";
 import type { UserRole } from "@/generated/prisma/enums";
+import { getAuthSecret } from "@/lib/auth/secret";
 import { canAccessRolePath, roleHomePath } from "@/lib/rbac";
 
 const protectedPrefixes = ["/mentor", "/student", "/admin"];
+
+/** Logs in dev always; in production only if `PROXY_DEBUG=true` (or `1` / `yes`). */
+function shouldLogProxy(): boolean {
+  if (process.env.NODE_ENV !== "production") return true;
+  const v = process.env.PROXY_DEBUG?.toLowerCase();
+  return v === "1" || v === "true" || v === "yes";
+}
+
+function logProxy(decision: string, fields: Record<string, unknown>): void {
+  if (!shouldLogProxy()) return;
+  console.info("[proxy]", { decision, ...fields });
+}
 
 /** Paths where unauthenticated users may land; must include signup (not only login). */
 function normalizePathname(pathname: string): string {
@@ -23,39 +37,79 @@ function isPublicAuthPath(pathname: string): boolean {
 }
 
 /**
- * Use Auth.js `auth()` so session resolution matches `/api/auth` and server `auth()`.
- * Manual `getToken()` can diverge in production (e.g. Edge env / secret handling).
+ * Use `getToken` here (not `auth()` from `@/auth`) so the proxy bundle stays
+ * Edge-safe. Importing `auth` pulls Prisma + full NextAuth into middleware and
+ * can break Next.js 16 proxy with errors like "nextHandler is not a function".
  */
-export const proxy = auth((req) => {
+export async function proxy(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
   const needsAuth = protectedPrefixes.some((prefix) =>
     pathname.startsWith(prefix),
   );
   const isAuthPage = isPublicAuthPath(pathname);
 
-  const user = req.auth?.user;
-  const userRole = (user?.role as UserRole | undefined) ?? null;
+  const secret = getAuthSecret();
+  const token = await getToken({ req, secret });
 
-  if (!user && needsAuth && !isAuthPage) {
+  const userRole = (token?.role as UserRole | undefined) ?? null;
+  const hasJwt = Boolean(token);
+
+  const baseFields = {
+    pathname,
+    method: req.method,
+    needsAuth,
+    isAuthPage,
+    hasJwt,
+    userId: (token?.sub as string | undefined) ?? null,
+    role: userRole ?? null,
+    secretConfigured: Boolean(secret),
+  };
+
+  if (!token && needsAuth && !isAuthPage) {
     const loginPath = pathname.startsWith("/admin")
       ? "/admin/login"
       : pathname.startsWith("/mentor")
         ? "/mentor/login"
         : "/student/login";
 
+    logProxy("redirect_unauthenticated", {
+      ...baseFields,
+      loginPath,
+      reason: "no_jwt_on_protected_route",
+    });
+
     return NextResponse.redirect(new URL(loginPath, req.url));
   }
 
   if (userRole && needsAuth && !canAccessRolePath(userRole, pathname)) {
-    return NextResponse.redirect(new URL(roleHomePath(userRole), req.url));
+    const home = roleHomePath(userRole);
+    logProxy("redirect_role_mismatch", {
+      ...baseFields,
+      roleHomePath: home,
+      reason: "user_role_cannot_access_path",
+    });
+
+    return NextResponse.redirect(new URL(home, req.url));
   }
 
   if (userRole && isAuthPage) {
-    return NextResponse.redirect(new URL(roleHomePath(userRole), req.url));
+    const home = roleHomePath(userRole);
+    logProxy("redirect_from_auth_page", {
+      ...baseFields,
+      roleHomePath: home,
+      reason: "already_signed_in",
+    });
+
+    return NextResponse.redirect(new URL(home, req.url));
   }
 
+  logProxy("next", {
+    ...baseFields,
+    reason: "allow_request",
+  });
+
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: ["/mentor/:path*", "/student/:path*", "/admin/:path*"],
