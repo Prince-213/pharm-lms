@@ -2,9 +2,10 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import type { UserRole } from "@/generated/prisma/enums";
+import { getAuthSecret } from "@/lib/auth/secret";
 import { canAccessRolePath, roleHomePath } from "@/lib/rbac";
 
-const protectedPrefixes = ["/mentor", "/student", "/admin"];
+const protectedPrefixes = ["/mentor", "/tutor", "/student", "/admin"];
 
 /** Paths where unauthenticated users may land; must include signup (not only login). */
 function normalizePathname(pathname: string): string {
@@ -17,10 +18,19 @@ function isPublicAuthPath(pathname: string): boolean {
   return (
     p === "/mentor/login" ||
     p === "/mentor/signup" ||
+    p === "/tutor/login" ||
+    p === "/tutor/signup" ||
     p === "/student/login" ||
     p === "/student/signup" ||
     p === "/admin/login"
   );
+}
+
+function loginPathForPathname(pathname: string): string {
+  if (pathname.startsWith("/admin")) return "/admin/login";
+  if (pathname.startsWith("/mentor")) return "/mentor/login";
+  if (pathname.startsWith("/tutor")) return "/tutor/login";
+  return "/student/login";
 }
 
 export async function proxy(req: NextRequest) {
@@ -32,18 +42,14 @@ export async function proxy(req: NextRequest) {
 
   const token = await getToken({
     req,
-    secret: process.env.AUTH_SECRET,
+    secret: getAuthSecret(),
+    secureCookie: req.nextUrl.protocol === "https:",
   });
 
   const userRole = (token?.role as UserRole | undefined) ?? null;
 
   if (!token && needsAuth && !isAuthPage) {
-    const loginPath = pathname.startsWith("/admin")
-      ? "/admin/login"
-      : pathname.startsWith("/mentor")
-        ? "/mentor/login"
-        : "/student/login";
-
+    const loginPath = loginPathForPathname(pathname);
     return NextResponse.redirect(new URL(loginPath, req.url));
   }
 
@@ -59,5 +65,10 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/mentor/:path*", "/student/:path*", "/admin/:path*"],
+  matcher: [
+    "/mentor/:path*",
+    "/tutor/:path*",
+    "/student/:path*",
+    "/admin/:path*",
+  ],
 };
