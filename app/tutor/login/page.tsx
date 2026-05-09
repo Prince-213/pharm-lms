@@ -10,7 +10,7 @@ export default function MentorLoginPage() {
         key="tutor-login"
         actorType="tutor"
         mode="login"
-        callbackUrl="/tutor/performance"
+        callbackUrl="/tutor/courses"
         googleEnabled={isGoogleOAuthEnabled()}
         appleEnabled={isAppleOAuthEnabled()}
       />

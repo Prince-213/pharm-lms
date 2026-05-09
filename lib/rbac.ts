@@ -10,7 +10,7 @@ export function canAccessRolePath(userRole: UserRole, path: string) {
 
 export function roleHomePath(role: UserRole) {
   if (role === UserRole.ADMIN) return "/admin/dashboard";
-  if (role === UserRole.TUTOR) return "/tutor/performance";
+  if (role === UserRole.TUTOR) return "/tutor/courses";
   if (role === UserRole.MENTOR) return "/mentor/dashboard";
   return "/student/dashboard";
 }

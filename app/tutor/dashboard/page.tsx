@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-/** Performance analytics under /tutor/performance */
-export default function MentorDashboardRedirectPage() {
-  redirect("/tutor/performance");
+/** Tutor workspace home: course list */
+export default function TutorDashboardRedirectPage() {
+  redirect("/tutor/courses");
 }
