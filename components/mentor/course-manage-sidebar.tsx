@@ -20,12 +20,12 @@ const sections: { title: string; items: Item[] }[] = [
     items: [
       {
         label: "Course structure",
-        href: (courseId) => `/tutor/courses/${courseId}/manage/structure`,
+        href: (courseId) => `/mentor/courses/${courseId}/manage/structure`,
         segment: "structure",
       },
       {
         label: "Setup & test video",
-        href: (courseId) => `/tutor/courses/${courseId}/manage/video`,
+        href: (courseId) => `/mentor/courses/${courseId}/manage/video`,
         segment: "video",
       },
     ],
@@ -35,12 +35,12 @@ const sections: { title: string; items: Item[] }[] = [
     items: [
       {
         label: "Film & edit",
-        href: (courseId) => `/tutor/courses/${courseId}/manage/film`,
+        href: (courseId) => `/mentor/courses/${courseId}/manage/film`,
         segment: "film",
       },
       {
         label: "Curriculum",
-        href: (courseId) => `/tutor/courses/${courseId}/manage/curriculum`,
+        href: (courseId) => `/mentor/courses/${courseId}/manage/curriculum`,
         segment: "curriculum",
       },
     ],
@@ -50,22 +50,22 @@ const sections: { title: string; items: Item[] }[] = [
     items: [
       {
         label: "Course landing page",
-        href: (courseId) => `/tutor/courses/${courseId}/manage/basics`,
+        href: (courseId) => `/mentor/courses/${courseId}/manage/basics`,
         segment: "basics",
       },
       {
         label: "Pricing",
-        href: (courseId) => `/tutor/courses/${courseId}/manage/pricing`,
+        href: (courseId) => `/mentor/courses/${courseId}/manage/pricing`,
         segment: "pricing",
       },
       {
         label: "Promotions",
-        href: (courseId) => `/tutor/courses/${courseId}/manage/promotions`,
+        href: (courseId) => `/mentor/courses/${courseId}/manage/promotions`,
         segment: "promotions",
       },
       {
         label: "Course messages",
-        href: (courseId) => `/tutor/courses/${courseId}/manage/messages`,
+        href: (courseId) => `/mentor/courses/${courseId}/manage/messages`,
         segment: "messages",
       },
     ],

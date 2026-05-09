@@ -27,7 +27,7 @@ export function InstructorShell({
         <div className="mx-auto flex h-full w-full max-w-[1280px] items-center justify-between px-4">
           <div className="flex items-center gap-3 text-xs">
             <Link
-              href="/tutor/courses"
+              href="/mentor/courses"
               className="font-medium text-[var(--muted)] transition hover:text-[var(--foreground)]"
             >
               {"<"} Back to courses
