@@ -74,7 +74,7 @@ export default function NewCourseStep4Page() {
       }
 
       clearMentorNewCourseDraft();
-      router.push(`/tutor/courses/${course.id}/manage/curriculum`);
+      router.push(`/mentor/courses/${course.id}/manage/curriculum`);
     } catch (err) {
       const msg =
         err instanceof TypeError
@@ -94,7 +94,7 @@ export default function NewCourseStep4Page() {
         <div className="flex h-10 items-center justify-between px-4 text-xs">
           <span className="text-lg font-bold">PharmLms</span>
           <span>Step 3 of 3</span>
-          <Link href="/tutor/courses" className="text-[var(--primary)]">
+          <Link href="/mentor/courses" className="text-[var(--primary)]">
             Exit
           </Link>
         </div>
@@ -135,7 +135,7 @@ export default function NewCourseStep4Page() {
       </main>
       <footer className="fixed bottom-0 left-0 right-0 flex items-center justify-between border-t border-[#d1d7dc] bg-white px-4 py-3">
         <Link
-          href="/tutor/courses/new/step-3"
+          href="/mentor/courses/new/step-3"
           className="rounded-sm border border-[var(--primary)] px-3 py-1 text-xs text-[var(--primary)]"
         >
           Previous

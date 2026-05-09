@@ -67,7 +67,7 @@ export default async function MentorStudentsPage({
       </div>
 
       <form
-        action="/tutor/students"
+        action="/mentor/students"
         method="get"
         className="flex flex-wrap items-center gap-2 rounded-lg border border-[#e3e5e8] bg-white p-3"
       >
@@ -98,7 +98,7 @@ export default async function MentorStudentsPage({
         </button>
         {validFilter ? (
           <Link
-            href="/tutor/students"
+            href="/mentor/students"
             className="text-xs font-semibold text-[#6a6f73] hover:text-[#1c1d1f]"
           >
             Clear filter
@@ -134,7 +134,7 @@ export default async function MentorStudentsPage({
                   </td>
                   <td className="px-4 py-3 text-[#1c1d1f]">
                     <Link
-                      href={`/tutor/courses/${e.course.id}/manage/curriculum`}
+                      href={`/mentor/courses/${e.course.id}/manage/curriculum`}
                       className="font-medium text-[var(--primary)] hover:underline"
                     >
                       {e.course.title}

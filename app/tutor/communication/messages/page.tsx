@@ -40,7 +40,7 @@ export default async function MentorCommunicationMessagesPage({
           </p>
         </div>
         <Link
-          href="/tutor/communication/announcements"
+          href="/mentor/communication/announcements"
           className="inline-flex h-10 items-center gap-2 rounded-md border border-[var(--primary)] bg-white px-4 text-sm font-semibold text-[var(--primary)] hover:bg-[var(--primary-soft)]"
         >
           <Megaphone className="h-4 w-4" />
@@ -72,7 +72,7 @@ export default async function MentorCommunicationMessagesPage({
               {threads.map((t) => (
                 <li key={t.id}>
                   <Link
-                    href={`/tutor/communication/messages?thread=${t.id}`}
+                    href={`/mentor/communication/messages?thread=${t.id}`}
                     className={
                       t.id === activeThreadId
                         ? "block bg-[var(--primary-soft)]/40 px-3 py-3"

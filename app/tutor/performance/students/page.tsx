@@ -135,7 +135,7 @@ export default async function PerformanceStudentsPage() {
         <PerformanceChartPanel
           emptyMessage="Enrollment velocity and retention curves will display here once richer analytics are wired."
           footerLink={{
-            href: "/tutor/students",
+            href: "/mentor/students",
             label: "Open student roster",
           }}
         />
@@ -191,7 +191,7 @@ export default async function PerformanceStudentsPage() {
             Need an actionable list?
           </h2>
           <Link
-            href="/tutor/students"
+            href="/mentor/students"
             className="text-xs font-semibold text-[var(--primary)] hover:underline"
           >
             Open the full roster →

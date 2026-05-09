@@ -6,5 +6,5 @@ export default async function MentorManageIndexPage({
   params: Promise<{ courseId: string }>;
 }) {
   const { courseId } = await params;
-  redirect(`/tutor/courses/${courseId}/manage/basics`);
+  redirect(`/mentor/courses/${courseId}/manage/basics`);
 }

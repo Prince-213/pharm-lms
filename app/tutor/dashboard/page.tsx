@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-/** Performance analytics under /tutor/performance */
+/** Performance analytics moved to /mentor/performance */
 export default function MentorDashboardRedirectPage() {
-  redirect("/tutor/performance");
+  redirect("/mentor/performance");
 }

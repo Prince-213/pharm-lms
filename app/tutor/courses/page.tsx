@@ -65,7 +65,7 @@ export default async function MentorCoursesPage() {
           Courses
         </h1>
         <Link
-          href="/tutor/courses/new/step-2"
+          href="/mentor/courses/new/step-2"
           className="relative inline-flex items-center gap-2 bg-[#2d6a4f] px-8 py-3 text-base font-semibold text-white shadow-[0px_10px_15px_-3px_rgba(45,106,79,0.25)] transition hover:bg-[#245a43]"
         >
           <Plus className="h-4 w-4" strokeWidth={2.5} />
@@ -138,7 +138,7 @@ export default async function MentorCoursesPage() {
                   className="flex flex-col overflow-hidden border border-[#e1e3e4] bg-white shadow-sm sm:flex-row"
                 >
                   <Link
-                    href={`/tutor/courses/${course.id}/manage/curriculum`}
+                    href={`/mentor/courses/${course.id}/manage/curriculum`}
                     className="relative flex h-48 w-full shrink-0 bg-[#eceeef] sm:h-auto sm:w-64"
                   >
                     {thumb ? (
@@ -169,13 +169,13 @@ export default async function MentorCoursesPage() {
                         <div className="h-full bg-[#2d6a4f] transition-all" style={{ width: `${pct}%` }} />
                       </div>
                       <Link
-                        href={`/tutor/courses/${course.id}/manage/curriculum`}
+                        href={`/mentor/courses/${course.id}/manage/curriculum`}
                         className="mt-3 inline-block text-xs font-semibold uppercase tracking-wide text-[#0f5238] hover:underline"
                       >
                         Edit course →
                       </Link>
                       <Link
-                        href={`/tutor/courses/${course.id}/overview`}
+                        href={`/mentor/courses/${course.id}/overview`}
                         className="mt-2 ml-3 inline-block text-xs font-semibold uppercase tracking-wide text-[#334155] hover:underline"
                       >
                         Course overview →
