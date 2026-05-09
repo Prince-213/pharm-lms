@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Award,
+  Bell,
   BookOpen,
   ClipboardList,
   GraduationCap,
@@ -18,7 +19,6 @@ import {
   Search,
 } from "lucide-react";
 import { UserMenu } from "@/components/auth/user-menu";
-import { HeaderNotificationBell } from "@/components/notifications/header-notification-bell";
 
 const nav = [
   { href: "/admin/dashboard", label: "Overview", icon: LayoutDashboard },
@@ -120,10 +120,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
-            <HeaderNotificationBell
-              className="mr-1"
-              bellButtonClassName="rounded-full p-2 text-(--muted) hover:bg-(--surface-muted)"
-            />
+            <button className="relative p-2 text-(--muted) hover:bg-(--surface-muted) rounded-full transition-colors mr-1">
+              <Bell className="h-5 w-5" />
+              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 border-2 border-white"></span>
+            </button>
             <UserMenu />
           </div>
         </header>

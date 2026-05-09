@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { emailEnrolledStudentsNewAssignment } from "@/lib/assignment-emails";
-import { notifyStudentsNewAssignment } from "@/lib/notifications/notify-students-assignment";
 import { AssignmentStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 
@@ -85,9 +84,6 @@ export async function createAssignmentAction(
   });
 
   if (status === AssignmentStatus.SENT) {
-    void notifyStudentsNewAssignment(assignment.id).catch((err) => {
-      console.error("[createAssignmentAction] notifyStudentsNewAssignment", err);
-    });
     void emailEnrolledStudentsNewAssignment(assignment.id);
   }
 
@@ -126,12 +122,6 @@ export async function updateAssignmentStatusAction(
     parsed.data.status === AssignmentStatus.SENT &&
     prevStatus !== AssignmentStatus.SENT
   ) {
-    void notifyStudentsNewAssignment(assignment.id).catch((err) => {
-      console.error(
-        "[updateAssignmentStatusAction] notifyStudentsNewAssignment",
-        err,
-      );
-    });
     void emailEnrolledStudentsNewAssignment(assignment.id);
   }
 

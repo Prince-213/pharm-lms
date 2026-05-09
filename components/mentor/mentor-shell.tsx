@@ -3,12 +3,12 @@
 import { cn } from "@/lib/utils";
 import {
   BarChart3,
+  Bell,
   BookOpen,
   Calendar,
   FolderOpen,
   Menu,
   MessageSquare,
-  User,
   Wrench,
   ChevronRight,
   Search,
@@ -18,7 +18,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { UserMenu } from "@/components/auth/user-menu";
-import { HeaderNotificationBell } from "@/components/notifications/header-notification-bell";
 
 /** Tutor app lives under `/tutor`; `/mentor/*` redirects in next.config.ts */
 const WORKSPACE = "/tutor";
@@ -63,7 +62,6 @@ const mainNav: ShellNavItem[] = [
 const bottomNav: ShellNavItem[] = [
   { href: `${WORKSPACE}/students`, label: "Resources", icon: FolderOpen },
   { href: `${WORKSPACE}/meetings`, label: "Meetings", icon: Calendar },
-  { href: `${WORKSPACE}/profile`, label: "Profile", icon: User },
 ];
 
 export function MentorShell({ children }: { children: React.ReactNode }) {
@@ -193,10 +191,10 @@ export function MentorShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
-            <HeaderNotificationBell
-              className="mr-1"
-              bellButtonClassName="rounded-full p-2 text-(--muted) hover:bg-(--surface-muted)"
-            />
+            <button className="relative p-2 text-(--muted) hover:bg-(--surface-muted) rounded-full transition-colors mr-1">
+              <Bell className="h-5 w-5" />
+              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 border-2 border-white"></span>
+            </button>
             <UserMenu />
           </div>
         </header>

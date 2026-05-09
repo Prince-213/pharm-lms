@@ -57,13 +57,7 @@ export async function emailEnrolledStudentsNewAssignment(
         dueLine,
         assignmentsUrl,
       }),
-    }).catch((err) => {
-      console.error(
-        "[assignment-emails] sendEmail failed for new assignment",
-        e.student.email,
-        err,
-      );
-    });
+    }).catch(() => {});
   }
 }
 

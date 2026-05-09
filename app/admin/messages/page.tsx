@@ -1,6 +1,5 @@
 import { Inbox } from "lucide-react";
 import Link from "next/link";
-import { AdminBroadcastPanel } from "@/components/admin/admin-broadcast-panel";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { AdminPanel } from "@/components/admin/admin-panel";
 import { ThreadComposer } from "@/components/chat/thread-composer";
@@ -31,9 +30,6 @@ export default async function AdminMessagesPage({
         title="Messages"
         description="Operational inbox for admin ↔ user threads. Select a conversation on the left to read or reply."
       />
-      <div className="mb-6">
-        <AdminBroadcastPanel />
-      </div>
       <div className="grid min-h-[420px] gap-4 lg:grid-cols-12">
         <AdminPanel
           title={`Threads (${threads.length})`}
