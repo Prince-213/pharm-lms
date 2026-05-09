@@ -100,6 +100,8 @@ model User {
   accounts                Account[]
   sessions                Session[]
   auditEntries            AuditLog[]
+  notifications           Notification[]
+  courseReviews           CourseReview[]
 }
 
 /// One-time email verification codes for public sign-up (non-admin).
@@ -150,6 +152,7 @@ model Course {
   wishlists                 Wishlist[]
   approvalLogs              CourseApprovalWorkflow[]
   visits                    CourseVisit[]
+  reviews                   CourseReview[]
 }
 
 model CourseSection {
@@ -264,19 +267,22 @@ model Meeting {
 }
 
 model Assignment {
-  id          String                 @id @default(cuid())
-  courseId    String
-  createdById String
-  title       String
-  description String
-  dueDate     DateTime?
-  status      AssignmentStatus       @default(DRAFT)
-  createdAt   DateTime               @default(now())
-  updatedAt   DateTime               @updatedAt
-  course      Course                 @relation(fields: [courseId], references: [id])
-  createdBy   User                   @relation("AssignmentCreatedBy", fields: [createdById], references: [id])
-  submissions AssignmentSubmission[]
-  batches     AssignmentBatch[]
+  id                    String                 @id @default(cuid())
+  courseId              String
+  createdById           String
+  title                 String
+  description           String
+  instructionsFileUrl   String?
+  instructionsLinkUrl   String?
+  instructionsLinkLabel String?
+  dueDate               DateTime?
+  status                AssignmentStatus       @default(DRAFT)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  course                Course                 @relation(fields: [courseId], references: [id])
+  createdBy             User                   @relation("AssignmentCreatedBy", fields: [createdById], references: [id])
+  submissions           AssignmentSubmission[]
+  batches               AssignmentBatch[]
 }
 
 model AssignmentSubmission {
@@ -293,6 +299,37 @@ model AssignmentSubmission {
   student       User             @relation(fields: [studentId], references: [id])
 
   @@unique([assignmentId, studentId])
+}
+
+model Notification {
+  id           String    @id @default(cuid())
+  userId       String
+  kind         String
+  title        String
+  body         String?
+  href         String?
+  assignmentId String?
+  readAt       DateTime?
+  createdAt    DateTime  @default(now())
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([assignmentId])
+}
+
+model CourseReview {
+  id        String   @id @default(cuid())
+  courseId  String
+  studentId String
+  rating    Int
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, studentId])
+  @@index([courseId])
 }
 
 model StudentBatch {

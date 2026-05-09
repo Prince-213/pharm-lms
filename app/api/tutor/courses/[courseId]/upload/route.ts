@@ -2,7 +2,10 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
 import { isR2Configured, uploadToR2 } from "@/lib/storage/r2";
-import { requireMentorCourseEditable } from "@/lib/mentor-course-auth";
+import {
+  requireMentorCourse,
+  requireMentorCourseEditable,
+} from "@/lib/mentor-course-auth";
 
 const videoMimes = [
   "video/mp4",
@@ -34,12 +37,18 @@ export async function POST(
   { params }: { params: Promise<{ courseId: string }> },
 ) {
   const { courseId } = await params;
-  const authz = await requireMentorCourseEditable(courseId);
+  const formDataEarly = await request.formData();
+  const purposeEarly = String(formDataEarly.get("purpose") ?? "lesson-video");
+
+  const authz =
+    purposeEarly === "assignment-handout"
+      ? await requireMentorCourse(courseId)
+      : await requireMentorCourseEditable(courseId);
   if ("error" in authz) return authz.error;
 
-  const formData = await request.formData();
+  const formData = formDataEarly;
   const file = formData.get("file");
-  const purpose = String(formData.get("purpose") ?? "lesson-video");
+  const purpose = purposeEarly;
 
   if (!(file instanceof File)) {
     return NextResponse.json({ error: "Missing file" }, { status: 400 });
@@ -53,9 +62,10 @@ export async function POST(
   } else if (purpose === "promo-video" || purpose === "congrats-video") {
     allowed = videoMimes;
     folder = purpose === "congrats-video" ? "congrats" : "promo";
-  } else if (purpose === "resource-file") {
+  } else if (purpose === "resource-file" || purpose === "assignment-handout") {
     allowed = resourceMimes;
-    folder = "resources";
+    folder =
+      purpose === "assignment-handout" ? "assignment-handouts" : "resources";
   }
 
   if (!allowed.includes(file.type)) {
