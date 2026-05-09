@@ -2,8 +2,8 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { CourseCatalogDetail } from "@/components/student/course-catalog-detail";
-import { db } from "@/lib/db";
 import { loadCourseCatalogDetail } from "@/lib/course-catalog-detail";
+import { db } from "@/lib/db";
 
 export default async function TutorCourseCatalogPreviewPage({
   params,

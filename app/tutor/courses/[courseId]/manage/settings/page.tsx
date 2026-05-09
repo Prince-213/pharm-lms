@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
 import { deleteDraftCourseAction } from "@/app/tutor/courses/[courseId]/manage/settings/actions";
+import { auth } from "@/auth";
 import { CourseStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { courseStatusLabel } from "@/lib/mentor-course-auth";
@@ -55,12 +55,15 @@ export default async function MentorCourseSettingsPage({
         <div className="border border-[#e5e7eb] bg-[#f8fafc] p-4">
           <h2 className="text-sm font-semibold text-[#0f172a]">Danger zone</h2>
           <p className="mt-1 text-xs text-[#475569]">
-            Deleting a draft course permanently removes its sections, lessons, resources, and related records.
-            This action cannot be undone.
+            Deleting a draft course permanently removes its sections, lessons,
+            resources, and related records. This action cannot be undone.
           </p>
 
           {canDeleteDraft ? (
-            <form action={deleteDraftCourseAction} className="mt-4 max-w-[520px] space-y-3">
+            <form
+              action={deleteDraftCourseAction}
+              className="mt-4 max-w-[520px] space-y-3"
+            >
               <input type="hidden" name="courseId" value={course.id} />
               <label className="block text-xs font-medium text-[#1c1d1f]">
                 Type the course title to confirm deletion:
@@ -80,8 +83,8 @@ export default async function MentorCourseSettingsPage({
             </form>
           ) : (
             <p className="mt-3 text-xs text-[#6a6f73]">
-              This course is <strong>{courseStatusLabel(course.status)}</strong>. Tutor deletion is currently limited
-              to draft courses only.
+              This course is <strong>{courseStatusLabel(course.status)}</strong>
+              . Tutor deletion is currently limited to draft courses only.
             </p>
           )}
         </div>

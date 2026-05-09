@@ -52,9 +52,7 @@ export default async function MentorAssignmentDetailPage({
   const submissionRows = await Promise.all(
     assignment.submissions.map(async (s) => ({
       submission: s,
-      fileHref: s.attachmentUrl
-        ? await resolveMediaUrl(s.attachmentUrl)
-        : null,
+      fileHref: s.attachmentUrl ? await resolveMediaUrl(s.attachmentUrl) : null,
     })),
   );
 

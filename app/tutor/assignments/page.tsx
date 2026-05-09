@@ -52,8 +52,8 @@ export default async function MentorAssignmentsPage() {
       {unreadAlerts > 0 ? (
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
           <span className="font-semibold">{unreadAlerts}</span> unread{" "}
-          {unreadAlerts === 1 ? "alert" : "alerts"} — open an assignment below to
-          review new submissions.
+          {unreadAlerts === 1 ? "alert" : "alerts"} — open an assignment below
+          to review new submissions.
         </div>
       ) : null}
 

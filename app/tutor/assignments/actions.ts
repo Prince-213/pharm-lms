@@ -3,10 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/auth";
-import { emailEnrolledStudentsNewAssignment } from "@/lib/assignment-emails";
-import { notifyStudentsNewAssignment } from "@/lib/notifications/notify-students-assignment";
 import { AssignmentStatus, UserRole } from "@/generated/prisma/enums";
+import { emailEnrolledStudentsNewAssignment } from "@/lib/assignment-emails";
 import { db } from "@/lib/db";
+import { notifyStudentsNewAssignment } from "@/lib/notifications/notify-students-assignment";
 
 const createSchema = z.object({
   courseId: z.string().min(1),
@@ -86,7 +86,10 @@ export async function createAssignmentAction(
 
   if (status === AssignmentStatus.SENT) {
     void notifyStudentsNewAssignment(assignment.id).catch((err) => {
-      console.error("[createAssignmentAction] notifyStudentsNewAssignment", err);
+      console.error(
+        "[createAssignmentAction] notifyStudentsNewAssignment",
+        err,
+      );
     });
     void emailEnrolledStudentsNewAssignment(assignment.id);
   }

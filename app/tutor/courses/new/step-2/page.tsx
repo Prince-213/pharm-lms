@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { mergeMentorNewCourseDraft, readMentorNewCourseDraft } from "@/lib/mentor-new-course-draft";
+import {
+  mergeMentorNewCourseDraft,
+  readMentorNewCourseDraft,
+} from "@/lib/mentor-new-course-draft";
 
 export default function NewCourseStep2Page() {
   const [title, setTitle] = useState("");
@@ -21,7 +24,7 @@ export default function NewCourseStep2Page() {
           <span className="rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-[11px] font-semibold text-[var(--muted)]">
             Step 1 of 3
           </span>
-          <Link href="/mentor/courses" className="text-[var(--primary)]">
+          <Link href="/tutor/courses" className="text-[var(--primary)]">
             Exit
           </Link>
         </div>
@@ -53,19 +56,19 @@ export default function NewCourseStep2Page() {
       </main>
       <footer className="fixed bottom-0 left-0 right-0 border-t border-[var(--border)] bg-[var(--surface)]">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-3">
-        <Link
-          href="/mentor/courses"
-          className="rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--background)] px-3 py-1.5 text-xs font-semibold text-[var(--foreground)]"
-        >
-          Previous
-        </Link>
-        <Link
-          href="/mentor/courses/new/step-3"
-          onClick={() => mergeMentorNewCourseDraft({ title: title.trim() })}
-          className={`rounded-[var(--radius-sm)] px-3 py-1.5 text-xs font-semibold text-[var(--primary-foreground)] ${title.trim().length >= 3 ? "bg-[var(--primary)] hover:bg-[var(--primary-strong)]" : "pointer-events-none bg-[var(--muted)]/60"}`}
-        >
-          Continue
-        </Link>
+          <Link
+            href="/tutor/courses"
+            className="rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--background)] px-3 py-1.5 text-xs font-semibold text-[var(--foreground)]"
+          >
+            Previous
+          </Link>
+          <Link
+            href="/tutor/courses/new/step-3"
+            onClick={() => mergeMentorNewCourseDraft({ title: title.trim() })}
+            className={`rounded-[var(--radius-sm)] px-3 py-1.5 text-xs font-semibold text-[var(--primary-foreground)] ${title.trim().length >= 3 ? "bg-[var(--primary)] hover:bg-[var(--primary-strong)]" : "pointer-events-none bg-[var(--muted)]/60"}`}
+          >
+            Continue
+          </Link>
         </div>
       </footer>
     </div>

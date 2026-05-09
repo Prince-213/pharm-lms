@@ -75,41 +75,67 @@ export async function deleteDraftCourseAction(formData: FormData) {
       ).map((q) => q.id);
 
       if (aiQuestionIds.length) {
-        await tx.aIAnswerReview.deleteMany({ where: { questionId: { in: aiQuestionIds } } });
+        await tx.aIAnswerReview.deleteMany({
+          where: { questionId: { in: aiQuestionIds } },
+        });
       }
 
-      await tx.aIQuestion.deleteMany({ where: { attemptId: { in: aiAttemptIds } } });
-      await tx.aIQuizAttempt.deleteMany({ where: { id: { in: aiAttemptIds } } });
+      await tx.aIQuestion.deleteMany({
+        where: { attemptId: { in: aiAttemptIds } },
+      });
+      await tx.aIQuizAttempt.deleteMany({
+        where: { id: { in: aiAttemptIds } },
+      });
     }
 
     if (assignmentIds.length) {
-      await tx.assignmentSubmission.deleteMany({ where: { assignmentId: { in: assignmentIds } } });
-      await tx.assignmentBatch.deleteMany({ where: { assignmentId: { in: assignmentIds } } });
+      await tx.assignmentSubmission.deleteMany({
+        where: { assignmentId: { in: assignmentIds } },
+      });
+      await tx.assignmentBatch.deleteMany({
+        where: { assignmentId: { in: assignmentIds } },
+      });
     }
 
     if (batchIds.length) {
-      await tx.batchMembership.deleteMany({ where: { batchId: { in: batchIds } } });
-      await tx.assignmentBatch.deleteMany({ where: { batchId: { in: batchIds } } });
+      await tx.batchMembership.deleteMany({
+        where: { batchId: { in: batchIds } },
+      });
+      await tx.assignmentBatch.deleteMany({
+        where: { batchId: { in: batchIds } },
+      });
       await tx.studentBatch.deleteMany({ where: { id: { in: batchIds } } });
     }
 
     if (forumThreadIds.length) {
-      await tx.forumPost.deleteMany({ where: { threadId: { in: forumThreadIds } } });
-      await tx.forumThread.deleteMany({ where: { id: { in: forumThreadIds } } });
+      await tx.forumPost.deleteMany({
+        where: { threadId: { in: forumThreadIds } },
+      });
+      await tx.forumThread.deleteMany({
+        where: { id: { in: forumThreadIds } },
+      });
     }
 
     if (meetingRequestIds.length) {
-      await tx.meeting.deleteMany({ where: { meetingRequestId: { in: meetingRequestIds } } });
-      await tx.meetingRequest.deleteMany({ where: { id: { in: meetingRequestIds } } });
+      await tx.meeting.deleteMany({
+        where: { meetingRequestId: { in: meetingRequestIds } },
+      });
+      await tx.meetingRequest.deleteMany({
+        where: { id: { in: meetingRequestIds } },
+      });
     }
 
     if (lessonIds.length) {
-      await tx.lessonProgress.deleteMany({ where: { lessonId: { in: lessonIds } } });
+      await tx.lessonProgress.deleteMany({
+        where: { lessonId: { in: lessonIds } },
+      });
       await tx.lesson.deleteMany({ where: { id: { in: lessonIds } } });
     }
 
     if (sectionIds.length) {
-      await tx.sectionQuiz.deleteMany({ where: { sectionId: { in: sectionIds } } });
+      await tx.sectionQuiz.deleteMany({
+        where: { sectionId: { in: sectionIds } },
+      });
       await tx.courseSection.deleteMany({ where: { id: { in: sectionIds } } });
     }
 

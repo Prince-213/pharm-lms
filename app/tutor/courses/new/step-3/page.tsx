@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { mergeMentorNewCourseDraft, readMentorNewCourseDraft } from "@/lib/mentor-new-course-draft";
+import {
+  mergeMentorNewCourseDraft,
+  readMentorNewCourseDraft,
+} from "@/lib/mentor-new-course-draft";
 
 export default function NewCourseStep3Page() {
   const [category, setCategory] = useState("");
@@ -33,7 +36,7 @@ export default function NewCourseStep3Page() {
         <div className="flex h-10 items-center justify-between px-4 text-xs">
           <span className="text-lg font-bold">PharmLms</span>
           <span>Step 2 of 3</span>
-          <Link href="/mentor/courses" className="text-[var(--primary)]">
+          <Link href="/tutor/courses" className="text-[var(--primary)]">
             Exit
           </Link>
         </div>
@@ -63,13 +66,13 @@ export default function NewCourseStep3Page() {
       </main>
       <footer className="fixed bottom-0 left-0 right-0 flex items-center justify-between border-t border-[#d1d7dc] bg-white px-4 py-3">
         <Link
-          href="/mentor/courses/new/step-2"
+          href="/tutor/courses/new/step-2"
           className="rounded-sm border border-[var(--primary)] px-3 py-1 text-xs text-[var(--primary)]"
         >
           Previous
         </Link>
         <Link
-          href="/mentor/courses/new/step-4"
+          href="/tutor/courses/new/step-4"
           onClick={() => mergeMentorNewCourseDraft({ category })}
           className={`rounded-sm px-3 py-1 text-xs font-semibold text-white ${category ? "bg-[var(--primary)]" : "bg-[#c0c4cc] pointer-events-none"}`}
         >

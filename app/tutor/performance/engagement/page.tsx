@@ -15,9 +15,24 @@ export default function PerformanceEngagementPage() {
       />
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         {[
-          { label: "Median session", value: "24m", sub: "Sample pacing", icon: Timer },
-          { label: "Lessons started", value: "1.2k", sub: "Illustrative", icon: PlayCircle },
-          { label: "7-day streak +", value: "18%", sub: "Of active learners", icon: Flame },
+          {
+            label: "Median session",
+            value: "24m",
+            sub: "Sample pacing",
+            icon: Timer,
+          },
+          {
+            label: "Lessons started",
+            value: "1.2k",
+            sub: "Illustrative",
+            icon: PlayCircle,
+          },
+          {
+            label: "7-day streak +",
+            value: "18%",
+            sub: "Of active learners",
+            icon: Flame,
+          },
         ].map(({ label, value, sub, icon: Icon }) => (
           <div
             key={label}
@@ -38,8 +53,12 @@ export default function PerformanceEngagementPage() {
         <section className="rounded-xl border border-[#e3e5e8] bg-white p-5 shadow-sm lg:col-span-2">
           <div className="mb-2 flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-bold text-[#1c1d1f]">Weekly rhythm</h2>
-              <p className="text-xs text-[#6a6f73]">Sample relative activity by weekday</p>
+              <h2 className="text-sm font-bold text-[#1c1d1f]">
+                Weekly rhythm
+              </h2>
+              <p className="text-xs text-[#6a6f73]">
+                Sample relative activity by weekday
+              </p>
             </div>
             <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-900 ring-1 ring-amber-100">
               Demo
@@ -49,30 +68,38 @@ export default function PerformanceEngagementPage() {
         </section>
         <section className="rounded-xl border border-[#e3e5e8] bg-white p-5 shadow-sm lg:col-span-3">
           <h2 className="text-sm font-bold text-[#1c1d1f]">Content hotspots</h2>
-          <p className="text-xs text-[#6a6f73]">Lessons with the highest replay and drop-off flags.</p>
+          <p className="text-xs text-[#6a6f73]">
+            Lessons with the highest replay and drop-off flags.
+          </p>
           <ul className="mt-5 space-y-3">
-            {["Introduction — syllabus walkthrough", "Dosage calculations workshop", "Case study: community pharmacy"].map(
-              (title, i) => (
-                <li
-                  key={title}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-[#ececec] bg-[#fafbfb] px-3 py-3 text-sm"
-                >
-                  <span className="font-medium text-[#1c1d1f]">{title}</span>
-                  <span className="shrink-0 text-xs font-semibold text-[var(--primary)]">
-                    {85 - i * 7}% engaged
-                  </span>
-                </li>
-              ),
-            )}
+            {[
+              "Introduction — syllabus walkthrough",
+              "Dosage calculations workshop",
+              "Case study: community pharmacy",
+            ].map((title, i) => (
+              <li
+                key={title}
+                className="flex items-center justify-between gap-3 rounded-lg border border-[#ececec] bg-[#fafbfb] px-3 py-3 text-sm"
+              >
+                <span className="font-medium text-[#1c1d1f]">{title}</span>
+                <span className="shrink-0 text-xs font-semibold text-[var(--primary)]">
+                  {85 - i * 7}% engaged
+                </span>
+              </li>
+            ))}
           </ul>
           <p className="mt-4 text-[11px] leading-relaxed text-[#8b9199]">
-            Demo rows for layout only; connect video analytics to replace with real lesson stats.
+            Demo rows for layout only; connect video analytics to replace with
+            real lesson stats.
           </p>
         </section>
       </div>
       <PerformanceChartPanel
         emptyMessage="Longer-range engagement trends will render in this canvas."
-        footerLink={{ href: "/mentor/performance/overview", label: "Back to overview" }}
+        footerLink={{
+          href: "/tutor/performance/overview",
+          label: "Back to overview",
+        }}
       />
     </>
   );

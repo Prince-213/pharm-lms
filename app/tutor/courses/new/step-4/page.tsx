@@ -69,12 +69,14 @@ export default function NewCourseStep4Page() {
 
       const course = payload as { id?: string };
       if (!course?.id) {
-        setError("Course was created but no id was returned. Refresh your courses list.");
+        setError(
+          "Course was created but no id was returned. Refresh your courses list.",
+        );
         return;
       }
 
       clearMentorNewCourseDraft();
-      router.push(`/mentor/courses/${course.id}/manage/curriculum`);
+      router.push(`/tutor/courses/${course.id}/manage/curriculum`);
     } catch (err) {
       const msg =
         err instanceof TypeError
@@ -94,7 +96,7 @@ export default function NewCourseStep4Page() {
         <div className="flex h-10 items-center justify-between px-4 text-xs">
           <span className="text-lg font-bold">PharmLms</span>
           <span>Step 3 of 3</span>
-          <Link href="/mentor/courses" className="text-[var(--primary)]">
+          <Link href="/tutor/courses" className="text-[var(--primary)]">
             Exit
           </Link>
         </div>
@@ -105,8 +107,8 @@ export default function NewCourseStep4Page() {
           How much time can you spend creating your course per week?
         </h1>
         <p className="mt-3 text-center text-sm text-[#6a6f73]">
-          There&apos;s no wrong answer. We can help you achieve your goals even if
-          you don&apos;t have much time.
+          There&apos;s no wrong answer. We can help you achieve your goals even
+          if you don&apos;t have much time.
         </p>
         <div className="mt-10 space-y-2">
           {options.map((option) => (
@@ -125,7 +127,8 @@ export default function NewCourseStep4Page() {
           ))}
         </div>
         <p className="mt-8 text-center text-xs text-[#6a6f73]">
-          New courses are saved as drafts until you submit them for review and they are approved.
+          New courses are saved as drafts until you submit them for review and
+          they are approved.
         </p>
         {error ? (
           <p className="mt-6 text-center text-sm text-[#b32d0f]" role="alert">
@@ -135,7 +138,7 @@ export default function NewCourseStep4Page() {
       </main>
       <footer className="fixed bottom-0 left-0 right-0 flex items-center justify-between border-t border-[#d1d7dc] bg-white px-4 py-3">
         <Link
-          href="/mentor/courses/new/step-3"
+          href="/tutor/courses/new/step-3"
           className="rounded-sm border border-[var(--primary)] px-3 py-1 text-xs text-[var(--primary)]"
         >
           Previous

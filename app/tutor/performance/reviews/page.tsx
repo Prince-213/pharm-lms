@@ -90,11 +90,15 @@ export default async function PerformanceReviewsPage() {
             Average rating
           </p>
           <div className="mt-3 flex items-end gap-2">
-            <span className="text-4xl font-bold text-[#1c1d1f]">{avgDisplay}</span>
+            <span className="text-4xl font-bold text-[#1c1d1f]">
+              {avgDisplay}
+            </span>
             <span className="mb-1 text-sm text-[#6a6f73]">out of 5.0</span>
           </div>
           <div className="mt-4 flex gap-0.5 scale-110 origin-left">
-            {total > 0 ? starDisplay(Math.min(5, Math.round(avg))) : (
+            {total > 0 ? (
+              starDisplay(Math.min(5, Math.round(avg)))
+            ) : (
               <span className="flex gap-0.5">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
@@ -114,18 +118,24 @@ export default async function PerformanceReviewsPage() {
           </p>
         </div>
         <div className="rounded-xl border border-[#e3e5e8] bg-white p-6 shadow-sm lg:col-span-2">
-          <h2 className="text-sm font-bold text-[#1c1d1f]">Rating distribution</h2>
+          <h2 className="text-sm font-bold text-[#1c1d1f]">
+            Rating distribution
+          </h2>
           <ul className="mt-5 space-y-3">
             {starRows.map((row) => (
               <li key={row.stars} className="flex items-center gap-3 text-sm">
-                <span className="w-14 font-medium text-[#1c1d1f]">{row.stars} stars</span>
+                <span className="w-14 font-medium text-[#1c1d1f]">
+                  {row.stars} stars
+                </span>
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-[#ececec]">
                   <div
                     className="h-full rounded-full bg-amber-400/90"
                     style={{ width: `${row.pct}%` }}
                   />
                 </div>
-                <span className="w-10 text-right text-xs text-[#6a6f73]">{row.pct}%</span>
+                <span className="w-10 text-right text-xs text-[#6a6f73]">
+                  {row.pct}%
+                </span>
               </li>
             ))}
           </ul>
@@ -141,7 +151,9 @@ export default async function PerformanceReviewsPage() {
       <section className="mt-8 rounded-xl border border-[#e3e5e8] bg-white shadow-sm">
         <div className="border-b border-[#ececec] px-5 py-4">
           <h2 className="text-sm font-bold text-[#1c1d1f]">Latest reviews</h2>
-          <p className="text-xs text-[#6a6f73]">Newest written feedback across your courses.</p>
+          <p className="text-xs text-[#6a6f73]">
+            Newest written feedback across your courses.
+          </p>
         </div>
         {reviews.length === 0 ? (
           <div className="px-5 py-14 text-center text-sm text-[#6a6f73]">
@@ -173,7 +185,9 @@ export default async function PerformanceReviewsPage() {
                     {r.comment}
                   </p>
                 ) : (
-                  <p className="mt-2 text-xs italic text-[#8b9199]">No written comment.</p>
+                  <p className="mt-2 text-xs italic text-[#8b9199]">
+                    No written comment.
+                  </p>
                 )}
               </li>
             ))}
@@ -182,7 +196,10 @@ export default async function PerformanceReviewsPage() {
       </section>
       <p className="mt-6 text-center text-xs text-[#8b9199]">
         Showing up to {REVIEW_TAKE} most recent reviews.{" "}
-        <Link href="/tutor/performance/overview" className="font-semibold text-[var(--primary)] hover:underline">
+        <Link
+          href="/tutor/performance/overview"
+          className="font-semibold text-[var(--primary)] hover:underline"
+        >
           Back to overview
         </Link>
       </p>

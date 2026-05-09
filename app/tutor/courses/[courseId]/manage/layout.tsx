@@ -1,12 +1,12 @@
-import { redirect, notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { CourseStatus } from "@/generated/prisma/enums";
 import { CourseManageSidebar } from "@/components/mentor/course-manage-sidebar";
 import { CourseStudioProvider } from "@/components/mentor/course-studio-context";
 import {
   InstructorFooter,
   InstructorShell,
 } from "@/components/mentor/instructor-shell";
+import { CourseStatus } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { courseStatusLabel } from "@/lib/mentor-course-auth";
 
@@ -39,10 +39,13 @@ export default async function MentorCourseManageLayout({
         courseTitle={course.title}
         statusLabel={courseStatusLabel(course.status)}
         readOnly={readOnly}
-        settingsHref={`/mentor/courses/${courseId}/manage/settings`}
+        settingsHref={`/tutor/courses/${courseId}/manage/settings`}
       >
         <div className="mx-auto flex min-h-[calc(100vh-48px)] w-full max-w-[1280px] bg-white">
-          <CourseManageSidebar courseId={courseId} courseStatus={course.status} />
+          <CourseManageSidebar
+            courseId={courseId}
+            courseStatus={course.status}
+          />
           <div className="flex-1 bg-[#f7f7f8] p-6">{children}</div>
         </div>
         <InstructorFooter />

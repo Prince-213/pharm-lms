@@ -2,5 +2,5 @@ import { redirect } from "next/navigation";
 
 /** Use Communication → Meetings for the full UI. */
 export default function MentorMeetingsLegacyRedirectPage() {
-  redirect("/mentor/communication/meetings");
+  redirect("/tutor/communication/meetings");
 }

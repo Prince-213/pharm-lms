@@ -11,11 +11,15 @@ export default async function MentorCoursePromotionsPage() {
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rounded border border-[#d1d7dc] bg-[#f6f7f9] p-4">
             <h3 className="font-semibold">Announcement draft</h3>
-            <p className="mt-2 text-sm text-[#6a6f73]">Tell students about updates.</p>
+            <p className="mt-2 text-sm text-[#6a6f73]">
+              Tell students about updates.
+            </p>
           </div>
           <div className="rounded border border-[#d1d7dc] bg-[#f6f7f9] p-4">
             <h3 className="font-semibold">Coupon campaign</h3>
-            <p className="mt-2 text-sm text-[#6a6f73]">Set discount and validity period.</p>
+            <p className="mt-2 text-sm text-[#6a6f73]">
+              Set discount and validity period.
+            </p>
           </div>
         </div>
       </div>

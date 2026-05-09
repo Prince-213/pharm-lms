@@ -26,7 +26,10 @@ export default async function MentorCoursePricingPage({
           Set your course list price in Nigerian Naira.
         </p>
       </div>
-      <CoursePricingForm courseId={courseId} initialMinorUnits={course.priceMinorUnits} />
+      <CoursePricingForm
+        courseId={courseId}
+        initialMinorUnits={course.priceMinorUnits}
+      />
     </section>
   );
 }

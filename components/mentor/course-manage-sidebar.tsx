@@ -1,12 +1,11 @@
 "use client";
 
-import { CourseStatus } from "@/generated/prisma/enums";
-import { toast } from "sonner";
-
 import { clsx } from "clsx";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import { CourseStatus } from "@/generated/prisma/enums";
 
 type Item = {
   label: string;
@@ -20,12 +19,12 @@ const sections: { title: string; items: Item[] }[] = [
     items: [
       {
         label: "Course structure",
-        href: (courseId) => `/mentor/courses/${courseId}/manage/structure`,
+        href: (courseId) => `/tutor/courses/${courseId}/manage/structure`,
         segment: "structure",
       },
       {
         label: "Setup & test video",
-        href: (courseId) => `/mentor/courses/${courseId}/manage/video`,
+        href: (courseId) => `/tutor/courses/${courseId}/manage/video`,
         segment: "video",
       },
     ],
@@ -35,12 +34,12 @@ const sections: { title: string; items: Item[] }[] = [
     items: [
       {
         label: "Film & edit",
-        href: (courseId) => `/mentor/courses/${courseId}/manage/film`,
+        href: (courseId) => `/tutor/courses/${courseId}/manage/film`,
         segment: "film",
       },
       {
         label: "Curriculum",
-        href: (courseId) => `/mentor/courses/${courseId}/manage/curriculum`,
+        href: (courseId) => `/tutor/courses/${courseId}/manage/curriculum`,
         segment: "curriculum",
       },
     ],
@@ -50,22 +49,22 @@ const sections: { title: string; items: Item[] }[] = [
     items: [
       {
         label: "Course landing page",
-        href: (courseId) => `/mentor/courses/${courseId}/manage/basics`,
+        href: (courseId) => `/tutor/courses/${courseId}/manage/basics`,
         segment: "basics",
       },
       {
         label: "Pricing",
-        href: (courseId) => `/mentor/courses/${courseId}/manage/pricing`,
+        href: (courseId) => `/tutor/courses/${courseId}/manage/pricing`,
         segment: "pricing",
       },
       {
         label: "Promotions",
-        href: (courseId) => `/mentor/courses/${courseId}/manage/promotions`,
+        href: (courseId) => `/tutor/courses/${courseId}/manage/promotions`,
         segment: "promotions",
       },
       {
         label: "Course messages",
-        href: (courseId) => `/mentor/courses/${courseId}/manage/messages`,
+        href: (courseId) => `/tutor/courses/${courseId}/manage/messages`,
         segment: "messages",
       },
     ],
@@ -120,7 +119,7 @@ export function CourseManageSidebar({
         const detailText = body?.details?.length
           ? ` ${body.details.join(" ")}`
           : "";
-        
+
         toast.error(body?.error ?? "Submission failed", {
           id: toastId,
           description: detailText || "Please check all required fields.",
@@ -130,7 +129,8 @@ export function CourseManageSidebar({
 
       toast.success("Submitted for review!", {
         id: toastId,
-        description: "Your course is now pending review. You'll be notified once it's processed.",
+        description:
+          "Your course is now pending review. You'll be notified once it's processed.",
       });
       router.refresh();
     } catch (error) {

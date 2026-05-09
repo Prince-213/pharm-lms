@@ -24,13 +24,18 @@ async function requireMentorOwner(courseId: string) {
   return { ok: true as const, userId: session.user.id };
 }
 
-export async function postCourseAnnouncementAction(courseId: string, body: string) {
+export async function postCourseAnnouncementAction(
+  courseId: string,
+  body: string,
+) {
   const authz = await requireMentorOwner(courseId);
   if (!authz.ok) return authz;
 
   const text = body.trim();
-  if (text.length < 2) return { ok: false as const, message: "Announcement is too short." };
-  if (text.length > 2000) return { ok: false as const, message: "Announcement is too long." };
+  if (text.length < 2)
+    return { ok: false as const, message: "Announcement is too short." };
+  if (text.length > 2000)
+    return { ok: false as const, message: "Announcement is too long." };
 
   const thread =
     (await db.forumThread.findFirst({
@@ -54,18 +59,23 @@ export async function postCourseAnnouncementAction(courseId: string, body: strin
     },
   });
 
-  revalidatePath(`/mentor/courses/${courseId}/overview`);
+  revalidatePath(`/tutor/courses/${courseId}/overview`);
   revalidatePath(`/student/course/${courseId}`);
   return { ok: true as const };
 }
 
-export async function postMentorForumMessageAction(courseId: string, body: string) {
+export async function postMentorForumMessageAction(
+  courseId: string,
+  body: string,
+) {
   const authz = await requireMentorOwner(courseId);
   if (!authz.ok) return authz;
 
   const text = body.trim();
-  if (text.length < 2) return { ok: false as const, message: "Message is too short." };
-  if (text.length > 2000) return { ok: false as const, message: "Message is too long." };
+  if (text.length < 2)
+    return { ok: false as const, message: "Message is too short." };
+  if (text.length > 2000)
+    return { ok: false as const, message: "Message is too long." };
 
   const thread =
     (await db.forumThread.findFirst({
@@ -89,7 +99,7 @@ export async function postMentorForumMessageAction(courseId: string, body: strin
     },
   });
 
-  revalidatePath(`/mentor/courses/${courseId}/overview`);
+  revalidatePath(`/tutor/courses/${courseId}/overview`);
   revalidatePath(`/student/course/${courseId}/forum`);
   return { ok: true as const };
 }

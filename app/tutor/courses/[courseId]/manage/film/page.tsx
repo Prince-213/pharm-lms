@@ -1,7 +1,6 @@
 "use client";
 
-import { use } from "react";
-import { useState } from "react";
+import { use, useState } from "react";
 import { FileUploader } from "@/components/upload/file-uploader";
 
 export default function MentorCourseFilmEditPage({
@@ -18,10 +17,12 @@ export default function MentorCourseFilmEditPage({
         <h1 className="text-2xl font-bold text-[#1c1d1f]">Film & edit</h1>
       </div>
       <div className="space-y-5 px-6 py-5">
-        <h2 className="text-xl font-semibold">You&apos;re ready to share your knowledge.</h2>
+        <h2 className="text-xl font-semibold">
+          You&apos;re ready to share your knowledge.
+        </h2>
         <p className="text-sm text-[#6a6f73]">
-          This is your moment. If you&apos;ve structured your course and used our setup,
-          you&apos;re prepared.
+          This is your moment. If you&apos;ve structured your course and used
+          our setup, you&apos;re prepared.
         </p>
         <div className="rounded border border-[#d1d7dc] bg-[#f6f7f9] p-4">
           <h3 className="mb-2 text-lg font-semibold">Tips</h3>

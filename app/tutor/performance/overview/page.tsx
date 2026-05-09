@@ -1,16 +1,34 @@
-import { ArrowUpRight, GraduationCap, PlayCircle, Users, TrendingUp, MessageSquare, Star } from "lucide-react";
+import {
+  ArrowUpRight,
+  GraduationCap,
+  MessageSquare,
+  PlayCircle,
+  Star,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/auth";
+import { AdminPanel } from "@/components/admin/admin-panel";
+import { AdminStatCard } from "@/components/admin/admin-stat-card";
 import { MentorEnrollmentChart } from "@/components/mentor/performance/mentor-enrollment-chart";
 import { PerformanceToolbar } from "@/components/mentor/performance/performance-toolbar";
-import { AdminStatCard } from "@/components/admin/admin-stat-card";
-import { AdminPanel } from "@/components/admin/admin-panel";
 import { CourseStatus } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 
 const MONTH_SHORT = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ] as const;
 
 export default async function PerformanceOverviewPage() {
@@ -115,85 +133,93 @@ export default async function PerformanceOverviewPage() {
 
       {/* Main stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 md:gap-6 2xl:gap-7.5">
-        <AdminStatCard 
-          label="Enrollments" 
-          value={totalEnrollments} 
-          icon={TrendingUp} 
-          hint={`${(distinctLearners as number).toLocaleString()} unique learners`} 
+        <AdminStatCard
+          label="Enrollments"
+          value={totalEnrollments}
+          icon={TrendingUp}
+          hint={`${(distinctLearners as number).toLocaleString()} unique learners`}
         />
-        <AdminStatCard 
-          label="Active learners" 
-          value={activeLearners as number} 
-          icon={Users} 
-          hint="Active in last 30 days" 
+        <AdminStatCard
+          label="Active learners"
+          value={activeLearners as number}
+          icon={Users}
+          hint="Active in last 30 days"
         />
-        <AdminStatCard 
-          label="Lessons Done" 
-          value={completedLessons as number} 
-          icon={GraduationCap} 
-          hint="By all your students" 
+        <AdminStatCard
+          label="Lessons Done"
+          value={completedLessons as number}
+          icon={GraduationCap}
+          hint="By all your students"
         />
-        <AdminStatCard 
-          label="Published" 
-          value={publishedCourses as number} 
-          icon={PlayCircle} 
-          hint="Live in catalog" 
+        <AdminStatCard
+          label="Published"
+          value={publishedCourses as number}
+          icon={PlayCircle}
+          hint="Live in catalog"
         />
       </div>
 
       <div className="grid grid-cols-12 gap-4 md:gap-6 2xl:gap-7.5">
         {/* Enrollment trend chart */}
-        <AdminPanel 
-          title="Enrollment Trend" 
+        <AdminPanel
+          title="Enrollment Trend"
           description="New learners joining your courses"
           className="col-span-12 xl:col-span-8"
         >
           {hasEnrollmentData ? (
-             <MentorEnrollmentChart data={mentorEnrollmentData} />
+            <MentorEnrollmentChart data={mentorEnrollmentData} />
           ) : (
             <div className="flex min-h-[300px] items-center justify-center">
-              <p className="text-sm text-[var(--muted)]">No enrollment data for the last 6 months.</p>
+              <p className="text-sm text-[var(--muted)]">
+                No enrollment data for the last 6 months.
+              </p>
             </div>
           )}
         </AdminPanel>
 
         {/* Quick links / Revenue teaser */}
-        <AdminPanel 
-          title="Academy Tools" 
+        <AdminPanel
+          title="Academy Tools"
           description="Manage your teachings"
           className="col-span-12 xl:col-span-4"
         >
           <div className="space-y-4">
             <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
-               <p className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">Projected Revenue</p>
-               <p className="mt-1 text-2xl font-bold text-[var(--foreground)]">$0.00</p>
-               <p className="mt-1 text-xs text-[var(--muted)] underline decoration-dotted">Connect Stripe to enable payments</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
+                Projected Revenue
+              </p>
+              <p className="mt-1 text-2xl font-bold text-[var(--foreground)]">
+                $0.00
+              </p>
+              <p className="mt-1 text-xs text-[var(--muted)] underline decoration-dotted">
+                Connect Stripe to enable payments
+              </p>
             </div>
-            
+
             <nav className="space-y-2">
-              <Link 
-                href="/mentor/courses/new" 
+              <Link
+                href="/tutor/courses/new"
                 className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-sm font-medium transition-all hover:border-[var(--primary)]/40 hover:shadow-sm"
               >
                 Create New Course
                 <ArrowUpRight className="h-4 w-4 text-[var(--primary)]" />
               </Link>
-              <Link 
-                href="/mentor/communication" 
+              <Link
+                href="/tutor/communication"
                 className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-sm font-medium transition-all hover:border-[var(--primary)]/40 hover:shadow-sm"
               >
                 Messages
                 <MessageSquare className="h-4 w-4 text-[var(--primary)]" />
               </Link>
-              <Link 
-                href="/tutor/performance/reviews" 
+              <Link
+                href="/tutor/performance/reviews"
                 className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-sm font-medium transition-all hover:border-[var(--primary)]/40 hover:shadow-sm"
               >
                 <span className="flex items-center gap-2">
                   Reviews
                   {(unreadReviewAlerts as number) > 0 ? (
                     <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-900">
-                      {(unreadReviewAlerts as number)} new
+                      {unreadReviewAlerts as number} new
                     </span>
                   ) : null}
                 </span>
@@ -206,15 +232,20 @@ export default async function PerformanceOverviewPage() {
 
       {/* Recent courses */}
       {(courses as { id: string; title: string }[]).length > 0 && (
-        <AdminPanel title="Course Studio" description="Your recently updated courses">
+        <AdminPanel
+          title="Course Studio"
+          description="Your recently updated courses"
+        >
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {(courses as { id: string; title: string }[]).map((c) => (
               <li key={c.id}>
                 <Link
-                  href={`/mentor/courses/${c.id}/manage/curriculum`}
+                  href={`/tutor/courses/${c.id}/manage/curriculum`}
                   className="flex h-full flex-col justify-between rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-5 transition-all hover:border-[var(--primary)]/40 hover:bg-white hover:shadow-md"
                 >
-                  <p className="font-bold text-[var(--foreground)]">{c.title}</p>
+                  <p className="font-bold text-[var(--foreground)]">
+                    {c.title}
+                  </p>
                   <div className="mt-4 flex items-center justify-between text-xs font-semibold text-[var(--primary)]">
                     Edit Curriculum
                     <ArrowUpRight className="h-4 w-4" />

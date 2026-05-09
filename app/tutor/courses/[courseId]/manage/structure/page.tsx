@@ -5,7 +5,9 @@ export default async function MentorCourseStructurePage() {
         <h1 className="text-2xl font-bold text-[#1c1d1f]">Course structure</h1>
       </div>
       <div className="space-y-5 px-6 py-5">
-        <h2 className="text-xl font-semibold">There&apos;s a course in you. Plan it out.</h2>
+        <h2 className="text-xl font-semibold">
+          There&apos;s a course in you. Plan it out.
+        </h2>
         <p className="text-sm text-[#6a6f73]">
           Planning your course carefully will create a clear learning path.
         </p>

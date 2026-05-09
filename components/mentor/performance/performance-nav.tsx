@@ -14,21 +14,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const items = [
-  { href: "/mentor/performance/overview", label: "Overview", icon: Gauge },
-  { href: "/mentor/performance/revenue", label: "Revenue", icon: Wallet },
-  { href: "/mentor/performance/students", label: "Students", icon: Users },
+  { href: "/tutor/performance/overview", label: "Overview", icon: Gauge },
+  { href: "/tutor/performance/revenue", label: "Revenue", icon: Wallet },
+  { href: "/tutor/performance/students", label: "Students", icon: Users },
   {
-    href: "/mentor/performance/reviews",
+    href: "/tutor/performance/reviews",
     label: "Reviews",
     icon: MessageSquareQuote,
   },
   {
-    href: "/mentor/performance/engagement",
+    href: "/tutor/performance/engagement",
     label: "Engagement",
     icon: BarChart3,
   },
   {
-    href: "/mentor/performance/traffic-and-conversion",
+    href: "/tutor/performance/traffic-and-conversion",
     label: "Traffic & conversion",
     icon: MousePointerClick,
   },
@@ -51,8 +51,8 @@ export function PerformanceNav() {
         {items.map(({ href, label, icon: Icon }) => {
           const active =
             pathname === href ||
-            (href === "/mentor/performance/overview" &&
-              pathname === "/mentor/performance");
+            (href === "/tutor/performance/overview" &&
+              pathname === "/tutor/performance");
           return (
             <Link
               key={href}

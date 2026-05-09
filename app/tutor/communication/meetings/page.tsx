@@ -17,7 +17,8 @@ export default async function MentorCommunicationMeetingsPage() {
   const session = await auth();
   if (!session?.user)
     redirect("/tutor/login?callbackUrl=/tutor/communication/meetings");
-  if (session.user.role !== UserRole.TUTOR) redirect(roleHomePath(session.user.role));
+  if (session.user.role !== UserRole.TUTOR)
+    redirect(roleHomePath(session.user.role));
 
   await reconcileStaleMeetingsThrottled();
 
@@ -59,9 +60,7 @@ export default async function MentorCommunicationMeetingsPage() {
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Inbox className="h-5 w-5 text-[var(--muted)]" />
-            <h3 className="text-lg font-bold">
-              Meeting requests
-            </h3>
+            <h3 className="text-lg font-bold">Meeting requests</h3>
           </div>
         </div>
 
@@ -172,9 +171,7 @@ export default async function MentorCommunicationMeetingsPage() {
       </section>
 
       <section className="mt-8">
-        <h3 className="mb-3 text-lg font-bold">
-          Meeting sessions
-        </h3>
+        <h3 className="mb-3 text-lg font-bold">Meeting sessions</h3>
         <div className="grid gap-3">
           {meetings.length ? (
             meetings.map((meeting) => {
@@ -214,7 +211,7 @@ export default async function MentorCommunicationMeetingsPage() {
                     </span>
                     {isMeetingJoinable(meeting) ? (
                       <a
-                        href={`/mentor/communication/meetings/join/${meeting.id}`}
+                        href={`/tutor/communication/meetings/join/${meeting.id}`}
                         className="inline-flex items-center gap-1 rounded bg-[var(--primary)] px-2.5 py-1 text-xs font-semibold text-[var(--primary-foreground)] hover:bg-[var(--primary-strong)]"
                       >
                         <Video className="h-3.5 w-3.5" />

@@ -28,16 +28,21 @@ export default function PerformanceTrafficPage() {
             key={k.label}
             className="rounded-xl border border-[#e3e5e8] bg-white p-4 text-center shadow-sm sm:text-left"
           >
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#6a6f73]">{k.label}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#6a6f73]">
+              {k.label}
+            </p>
             <p className="mt-2 text-2xl font-bold text-[#1c1d1f]">{k.value}</p>
           </div>
         ))}
       </div>
       <div className="mb-8 grid gap-6 lg:grid-cols-2">
         <section className="rounded-xl border border-[#e3e5e8] bg-white p-6 shadow-sm">
-          <h2 className="text-sm font-bold text-[#1c1d1f]">Acquisition funnel</h2>
+          <h2 className="text-sm font-bold text-[#1c1d1f]">
+            Acquisition funnel
+          </h2>
           <p className="mt-1 text-xs text-[#6a6f73]">
-            Relative drop-off between key steps (placeholder widths for empty state).
+            Relative drop-off between key steps (placeholder widths for empty
+            state).
           </p>
           <ul className="mt-6 space-y-4">
             {funnel.map((step) => (
@@ -58,7 +63,10 @@ export default function PerformanceTrafficPage() {
         </section>
         <PerformanceChartPanel
           emptyMessage="Traffic sources (search, direct, referral) will chart here."
-          footerLink={{ href: "/mentor/courses", label: "Improve course landing" }}
+          footerLink={{
+            href: "/tutor/courses",
+            label: "Improve course landing",
+          }}
         />
       </div>
       <section className="rounded-xl border border-[#e3e5e8] bg-white p-5 shadow-sm">
