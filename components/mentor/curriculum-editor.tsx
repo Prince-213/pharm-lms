@@ -71,7 +71,7 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
       setError(null);
 
       const response = await fetch(
-        `/api/tutor/courses/${courseId}/curriculum`,
+        `/api/mentor/courses/${courseId}/curriculum`,
         {
           method: "GET",
           cache: "no-store",
@@ -105,7 +105,7 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
   async function createSection() {
     if (!canAddSection) return;
     setSaving(true);
-    const response = await fetch(`/api/tutor/courses/${courseId}/curriculum`, {
+    const response = await fetch(`/api/mentor/courses/${courseId}/curriculum`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -126,7 +126,7 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
   async function updateSectionTitle(sectionId: string, title: string) {
     if (!title.trim()) return;
     setSaving(true);
-    await fetch(`/api/tutor/courses/${courseId}/sections/${sectionId}`, {
+    await fetch(`/api/mentor/courses/${courseId}/sections/${sectionId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: title.trim() }),
@@ -139,7 +139,7 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
 
   async function deleteSection(sectionId: string) {
     setSaving(true);
-    await fetch(`/api/tutor/courses/${courseId}/sections/${sectionId}`, {
+    await fetch(`/api/mentor/courses/${courseId}/sections/${sectionId}`, {
       method: "DELETE",
     });
     await loadCurriculum();
@@ -149,7 +149,7 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
   async function addLesson(sectionId: string, lessonType: "VIDEO" | "ARTICLE") {
     setSaving(true);
     await fetch(
-      `/api/tutor/courses/${courseId}/sections/${sectionId}/lessons`,
+      `/api/mentor/courses/${courseId}/sections/${sectionId}/lessons`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -178,7 +178,7 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
   ) {
     setSaving(true);
     await fetch(
-      `/api/tutor/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`,
+      `/api/mentor/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`,
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -193,7 +193,7 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
     if (!canAddItem) return;
     setSaving(true);
     const response = await fetch(
-      `/api/tutor/courses/${courseId}/sections/${sectionId}/items`,
+      `/api/mentor/courses/${courseId}/sections/${sectionId}/items`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

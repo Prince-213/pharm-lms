@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/auth";
-import { emailTutorAssignmentSubmitted } from "@/lib/assignment-emails";
 import {
   AssignmentStatus,
   SubmissionStatus,
@@ -11,22 +10,10 @@ import {
 } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 
-const submitSchema = z
-  .object({
-    assignmentId: z.string().min(1),
-    content: z.string().max(8000).optional(),
-    attachmentUrl: z.string().max(2000).optional(),
-  })
-  .superRefine((data, ctx) => {
-    const text = data.content?.trim() ?? "";
-    const file = data.attachmentUrl?.trim() ?? "";
-    if (!text && !file) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Write a response or attach a file (or both).",
-      });
-    }
-  });
+const submitSchema = z.object({
+  assignmentId: z.string().min(1),
+  content: z.string().min(1).max(8000),
+});
 
 export type SubmitAssignmentInput = z.infer<typeof submitSchema>;
 export type SubmitAssignmentResult =
@@ -51,20 +38,7 @@ export async function submitAssignmentAction(
 
   const assignment = await db.assignment.findUnique({
     where: { id: parsed.data.assignmentId },
-    select: {
-      id: true,
-      status: true,
-      courseId: true,
-      dueDate: true,
-      title: true,
-      course: {
-        select: {
-          title: true,
-          mentorId: true,
-          mentor: { select: { email: true, fullName: true } },
-        },
-      },
-    },
+    select: { id: true, status: true, courseId: true, dueDate: true },
   });
   if (!assignment) return { ok: false, message: "Assignment not found." };
   if (assignment.status !== AssignmentStatus.SENT) {
@@ -90,9 +64,6 @@ export async function submitAssignmentAction(
     ? assignment.dueDate.getTime() < Date.now()
     : false;
 
-  const contentTrimmed = parsed.data.content?.trim() ?? "";
-  const attachmentTrimmed = parsed.data.attachmentUrl?.trim() ?? "";
-
   const submission = await db.assignmentSubmission.upsert({
     where: {
       assignmentId_studentId: {
@@ -101,50 +72,20 @@ export async function submitAssignmentAction(
       },
     },
     update: {
-      content: contentTrimmed || null,
-      attachmentUrl: attachmentTrimmed || null,
+      content: parsed.data.content.trim(),
       submittedAt: new Date(),
       status: isLate ? SubmissionStatus.LATE : SubmissionStatus.SUBMITTED,
     },
     create: {
       assignmentId: assignment.id,
       studentId: session.user.id,
-      content: contentTrimmed || null,
-      attachmentUrl: attachmentTrimmed || null,
+      content: parsed.data.content.trim(),
       submittedAt: new Date(),
       status: isLate ? SubmissionStatus.LATE : SubmissionStatus.SUBMITTED,
     },
     select: { id: true },
   });
 
-  const student = await db.user.findUnique({
-    where: { id: session.user.id },
-    select: { fullName: true },
-  });
-
-  const href = `/tutor/assignments/${assignment.id}`;
-  await db.notification.create({
-    data: {
-      userId: assignment.course.mentorId,
-      kind: "ASSIGNMENT_SUBMITTED",
-      title: `New submission: ${assignment.title}`,
-      body: `${student?.fullName ?? "A student"} submitted work for ${assignment.course.title}.`,
-      href,
-      assignmentId: assignment.id,
-    },
-  });
-
-  void emailTutorAssignmentSubmitted({
-    mentorEmail: assignment.course.mentor.email,
-    mentorName: assignment.course.mentor.fullName,
-    studentName: student?.fullName ?? "Student",
-    courseTitle: assignment.course.title,
-    assignmentTitle: assignment.title,
-    assignmentId: assignment.id,
-  });
-
   revalidatePath("/student/assignments");
-  revalidatePath("/tutor/assignments");
-  revalidatePath(href);
   return { ok: true, submissionId: submission.id };
 }

@@ -5,12 +5,68 @@ import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
 import { evaluateStudentBadges } from "@/lib/badges/evaluate-student-badges";
 import { db } from "@/lib/db";
-import { gradeSubmission, normalizeQuizQuestions } from "@/lib/section-quiz-questions";
 
 const schema = z.object({
   quizId: z.string().min(1).max(80),
   answers: z.record(z.string(), z.string().max(2000)),
 });
+
+type ParsedQuestion = {
+  prompt: string;
+  expectedAnswer: string | null;
+};
+
+function parseQuestion(raw: unknown): ParsedQuestion | null {
+  if (typeof raw === "string") {
+    const parts = raw.split(/\s*(?:\|\||::|=>)\s*/);
+    let rawPrompt = parts[0]?.trim() || "";
+    const expectedAnswer = parts[1]?.trim() || null;
+
+    if (!rawPrompt) return null;
+
+    // Support for [Badge] Question format
+    const badgeMatch = rawPrompt.match(/^\[(.*?)\]\s*(.*)$/);
+    let prompt = rawPrompt;
+    let fallbackAnswer: string | null = null;
+
+    if (badgeMatch) {
+      const bText = badgeMatch[1].trim();
+      const pText = badgeMatch[2].trim();
+
+      if (bText && pText && !expectedAnswer) {
+        prompt = bText;
+        fallbackAnswer = pText;
+      } else {
+        prompt = pText || rawPrompt;
+      }
+    }
+
+    return {
+      prompt,
+      expectedAnswer: expectedAnswer || fallbackAnswer,
+    };
+  }
+  if (raw && typeof raw === "object") {
+    const maybe = raw as { question?: unknown; answer?: unknown };
+    if (typeof maybe.question === "string" && maybe.question.trim()) {
+      return {
+        prompt: maybe.question.trim(),
+        expectedAnswer:
+          typeof maybe.answer === "string" && maybe.answer.trim()
+            ? maybe.answer.trim()
+            : null,
+      };
+    }
+  }
+  return null;
+}
+
+function parseQuestions(value: unknown): ParsedQuestion[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map(parseQuestion)
+    .filter((q): q is ParsedQuestion => Boolean(q));
+}
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -58,11 +114,13 @@ export async function POST(request: Request) {
     );
   }
 
-  const questions = normalizeQuizQuestions(quiz.questions);
+  const questions = parseQuestions(quiz.questions);
   const graded = questions.map((q, index) => {
     const userAnswer = (parsed.data.answers[String(index)] ?? "").trim();
-    const isCorrect = gradeSubmission(q, userAnswer);
-    return { userAnswer, isCorrect };
+    const isCorrect = q.expectedAnswer
+      ? userAnswer.toLowerCase() === q.expectedAnswer.toLowerCase()
+      : null;
+    return { ...q, userAnswer, isCorrect };
   });
 
   const gradable = graded.filter((g) => g.isCorrect !== null);
