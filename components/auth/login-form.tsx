@@ -176,7 +176,7 @@ export function LoginForm({
         redirect: false,
         callbackUrl,
       });
-      if (signInResult?.error) {
+      if (signInResult?.error || signInResult?.ok !== true) {
         setError("Account created, but sign-in failed. Try logging in.");
         setIsPending(false);
         return;
