@@ -2,6 +2,7 @@
 
 import { clsx } from "clsx";
 import {
+  BookOpen,
   Check,
   ChevronDown,
   Copy,
@@ -279,6 +280,16 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                   <p className="truncate px-2.5 pb-1.5 pt-0.5 text-xs font-semibold text-[var(--foreground)]">{activeCourse.title}</p>
                   <p className="border-b border-[var(--border)] px-2.5 pb-2 text-[10px] text-[var(--muted)]">Choose an action</p>
                   <div className="max-h-[min(70vh,460px)] overflow-y-auto py-1">
+                    <Link
+                      href={`/admin/courses/${activeCourse.id}/preview`}
+                      onClick={closePanel}
+                      className="flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)]"
+                    >
+                      <BookOpen className="h-4 w-4 shrink-0 text-[var(--muted)]" />
+                      Preview overview
+                    </Link>
+                    <div className="my-1 border-t border-[var(--border)]" />
+
                     {activeCourse.status === CourseStatus.SUBMITTED ? (
                       <>
                         <button
@@ -310,21 +321,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                       </>
                     ) : null}
 
-                    {activeCourse.status === CourseStatus.PUBLISHED ? (
-                      <>
-                        <Link
-                          href={`/student/browse/${activeCourse.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={closePanel}
-                          className="flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)]"
-                        >
-                          <ExternalLink className="h-4 w-4 shrink-0 text-[var(--muted)]" />
-                          Open course in catalog
-                        </Link>
-                        <div className="my-1 border-t border-[var(--border)]" />
-                      </>
-                    ) : null}
+                  
 
                     <a
                       href={`mailto:${encodeURIComponent(activeCourse.mentorEmail)}?subject=${encodeURIComponent(`Course: ${activeCourse.title}`)}&body=${encodeURIComponent(`Course ID: ${activeCourse.id}\n\n`)}`}

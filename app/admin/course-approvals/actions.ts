@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { CourseStatus, UserRole } from "@/generated/prisma/enums";
+import { deleteCourseGraph } from "@/lib/admin/delete-course-graph";
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/notifications/email-service";
 import { getApprovalTemplate, getRejectionTemplate } from "@/lib/notifications/email-templates";
@@ -127,114 +128,21 @@ export async function deleteCourseAction(courseId: string) {
   const admin = await assertAdmin();
   if ("error" in admin) return admin;
 
-  const course = await db.course.findUnique({
-    where: { id: courseId },
-    select: {
-      id: true,
-      title: true,
-      sections: {
-        select: {
-          id: true,
-          lessons: { select: { id: true } },
-        },
-      },
-      assignments: { select: { id: true } },
-      forums: { select: { id: true } },
-      meetingRequests: { select: { id: true } },
-    },
-  });
-  if (!course) return { error: "Course not found" as const };
-
-  const sectionIds = course.sections.map((s) => s.id);
-  const lessonIds = course.sections.flatMap((s) => s.lessons.map((l) => l.id));
-  const assignmentIds = course.assignments.map((a) => a.id);
-  const forumThreadIds = course.forums.map((f) => f.id);
-  const meetingRequestIds = course.meetingRequests.map((m) => m.id);
-
-  await db.$transaction(async (tx) => {
-    const aiAttemptIds = (
-      await tx.aIQuizAttempt.findMany({
-        where: { courseId },
-        select: { id: true },
-      })
-    ).map((a) => a.id);
-
-    const batchIds = (
-      await tx.studentBatch.findMany({
-        where: { courseId },
-        select: { id: true },
-      })
-    ).map((b) => b.id);
-
-    if (aiAttemptIds.length) {
-      const aiQuestionIds = (
-        await tx.aIQuestion.findMany({
-          where: { attemptId: { in: aiAttemptIds } },
-          select: { id: true },
-        })
-      ).map((q) => q.id);
-
-      if (aiQuestionIds.length) {
-        await tx.aIAnswerReview.deleteMany({
-          where: { questionId: { in: aiQuestionIds } },
-        });
-      }
-      await tx.aIQuestion.deleteMany({ where: { attemptId: { in: aiAttemptIds } } });
-      await tx.aIQuizAttempt.deleteMany({ where: { id: { in: aiAttemptIds } } });
-    }
-
-    if (assignmentIds.length) {
-      await tx.assignmentSubmission.deleteMany({
-        where: { assignmentId: { in: assignmentIds } },
-      });
-      await tx.assignmentBatch.deleteMany({
-        where: { assignmentId: { in: assignmentIds } },
-      });
-    }
-
-    if (batchIds.length) {
-      await tx.batchMembership.deleteMany({ where: { batchId: { in: batchIds } } });
-      await tx.assignmentBatch.deleteMany({ where: { batchId: { in: batchIds } } });
-      await tx.studentBatch.deleteMany({ where: { id: { in: batchIds } } });
-    }
-
-    if (forumThreadIds.length) {
-      await tx.forumPost.deleteMany({ where: { threadId: { in: forumThreadIds } } });
-      await tx.forumThread.deleteMany({ where: { id: { in: forumThreadIds } } });
-    }
-
-    if (meetingRequestIds.length) {
-      await tx.meeting.deleteMany({ where: { meetingRequestId: { in: meetingRequestIds } } });
-      await tx.meetingRequest.deleteMany({ where: { id: { in: meetingRequestIds } } });
-    }
-
-    if (lessonIds.length) {
-      await tx.lessonProgress.deleteMany({ where: { lessonId: { in: lessonIds } } });
-      await tx.lesson.deleteMany({ where: { id: { in: lessonIds } } });
-    }
-
-    if (sectionIds.length) {
-      await tx.sectionQuiz.deleteMany({ where: { sectionId: { in: sectionIds } } });
-      await tx.courseSection.deleteMany({ where: { id: { in: sectionIds } } });
-    }
-
-    await tx.enrollment.deleteMany({ where: { courseId } });
-    await tx.wishlist.deleteMany({ where: { courseId } });
-    await tx.courseVisit.deleteMany({ where: { courseId } });
-    await tx.assignment.deleteMany({ where: { courseId } });
-    await tx.courseApprovalWorkflow.deleteMany({ where: { courseId } });
-    await tx.course.delete({ where: { id: courseId } });
-
+  const deleted = await db.$transaction(async (tx) => {
+    const result = await deleteCourseGraph(tx, courseId);
+    if (!result.ok) return null;
     await tx.auditLog.create({
       data: {
         actorId: admin.session.user.id,
         action: "DELETE_COURSE",
         entityType: "Course",
         entityId: courseId,
-        payload: { title: course.title },
+        payload: { title: result.title },
       },
     });
+    return result;
   });
+  if (!deleted) return { error: "Course not found" as const };
 
   revalidatePath("/admin/course-approvals");
   revalidatePath("/admin/dashboard");
