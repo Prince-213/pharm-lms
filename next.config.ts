@@ -1,9 +1,25 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { NextConfig } from "next";
+
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
-   allowedDevOrigins: ['127.0.0.1'],
+  allowedDevOrigins: ["127.0.0.1"],
+  turbopack: {
+    root: projectRoot,
+  },
+  /** Course APIs live under /api/tutor; UI still calls /api/mentor (legacy). */
+  async rewrites() {
+    return [
+      {
+        source: "/api/mentor/courses/:path*",
+        destination: "/api/tutor/courses/:path*",
+      },
+    ];
+  },
   async redirects() {
     return [
       {
