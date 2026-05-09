@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import {
   Award,
   Bell,
+  BookOpen,
   ClipboardList,
   GraduationCap,
   LayoutDashboard,
@@ -23,6 +24,7 @@ const nav = [
   { href: "/admin/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/course-approvals", label: "Course oversight", icon: ClipboardList },
   { href: "/admin/students", label: "Students", icon: GraduationCap },
+  { href: "/admin/tutors", label: "Tutors", icon: BookOpen },
   { href: "/admin/mentors", label: "Mentors", icon: Users },
   { href: "/admin/badges", label: "Badges", icon: Award },
   { href: "/admin/messages", label: "Messages", icon: MessageSquare },

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
+import { userRoleLabel } from "@/lib/user-role-label";
 import { 
   User, 
   Settings, 
@@ -55,7 +56,7 @@ export function UserMenu() {
             {user.name || "User"}
           </p>
           <p className="text-xs text-(--muted) mt-1">
-            {user.role || "Member"}
+            {userRoleLabel(user.role)}
           </p>
         </div>
         <ChevronDown className={cn(

@@ -43,7 +43,7 @@ export default async function MentorCourseSettingsPage({
       <div className="space-y-6 px-6 py-5">
         {error === "only-draft" ? (
           <p className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
-            Only draft courses can be deleted by mentors at this time.
+            Only draft courses can be deleted by tutors at this time.
           </p>
         ) : null}
         {error === "confirm-title" ? (
@@ -80,7 +80,7 @@ export default async function MentorCourseSettingsPage({
             </form>
           ) : (
             <p className="mt-3 text-xs text-[#6a6f73]">
-              This course is <strong>{courseStatusLabel(course.status)}</strong>. Mentor deletion is currently limited
+              This course is <strong>{courseStatusLabel(course.status)}</strong>. Tutor deletion is currently limited
               to draft courses only.
             </p>
           )}

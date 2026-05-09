@@ -49,5 +49,5 @@ export default async function MentorMeetingJoinPage({
     data: { openedAt: new Date() },
   });
 
-  return <OpenMeetingRedirect url={safe} returnTo="/mentor/dashboard" />;
+  return <OpenMeetingRedirect url={safe} returnTo="/tutor/performance" />;
 }

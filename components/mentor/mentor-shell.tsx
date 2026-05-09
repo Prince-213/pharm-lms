@@ -10,34 +10,59 @@ import {
   Menu,
   MessageSquare,
   Wrench,
-  X,
   ChevronRight,
   Search,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { UserMenu } from "@/components/auth/user-menu";
 
-const mainNav = [
-  { href: "/mentor/courses", label: "Courses", icon: BookOpen },
+/** Tutor app lives under `/tutor`; `/mentor/*` redirects in next.config.ts */
+const WORKSPACE = "/tutor";
+
+function navLinkActive(
+  pathname: string,
+  href: string,
+  activePrefix?: string,
+): boolean {
+  if (activePrefix) {
+    return (
+      pathname === activePrefix || pathname.startsWith(`${activePrefix}/`)
+    );
+  }
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+type ShellNavItem = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  /** When set, any path under this prefix counts as active (e.g. performance sub-pages). */
+  activePrefix?: string;
+};
+
+const mainNav: ShellNavItem[] = [
+  { href: `${WORKSPACE}/courses`, label: "Courses", icon: BookOpen },
   {
-    href: "/mentor/communication",
+    href: `${WORKSPACE}/communication`,
     label: "Communication",
     icon: MessageSquare,
   },
   {
-    href: "/mentor/performance/overview",
+    href: `${WORKSPACE}/performance/overview`,
     label: "Performance",
     icon: BarChart3,
+    activePrefix: `${WORKSPACE}/performance`,
   },
-  { href: "/mentor/assignments", label: "Tools", icon: Wrench },
-] as const;
+  { href: `${WORKSPACE}/assignments`, label: "Tools", icon: Wrench },
+];
 
-const bottomNav = [
-  { href: "/mentor/students", label: "Resources", icon: FolderOpen },
-  { href: "/mentor/meetings", label: "Meetings", icon: Calendar },
-] as const;
+const bottomNav: ShellNavItem[] = [
+  { href: `${WORKSPACE}/students`, label: "Resources", icon: FolderOpen },
+  { href: `${WORKSPACE}/meetings`, label: "Meetings", icon: Calendar },
+];
 
 export function MentorShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -67,7 +92,10 @@ export function MentorShell({ children }: { children: React.ReactNode }) {
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="flex h-18.5 items-center px-8">
-            <Link href="/mentor/courses" className="font-display text-xl font-bold uppercase tracking-wider text-white">
+            <Link
+              href={`${WORKSPACE}/courses`}
+              className="font-display text-xl font-bold uppercase tracking-wider text-white"
+            >
               PharmLMS
             </Link>
           </div>
@@ -79,7 +107,11 @@ export function MentorShell({ children }: { children: React.ReactNode }) {
             <nav className="space-y-1">
               {mainNav.map((item) => {
                 const Icon = item.icon;
-                const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                const active = navLinkActive(
+                  pathname,
+                  item.href,
+                  item.activePrefix,
+                );
                 return (
                   <Link
                     key={item.href}
@@ -105,7 +137,11 @@ export function MentorShell({ children }: { children: React.ReactNode }) {
             <nav className="space-y-1">
               {bottomNav.map((item) => {
                 const Icon = item.icon;
-                const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                const active = navLinkActive(
+                  pathname,
+                  item.href,
+                  item.activePrefix,
+                );
                 return (
                   <Link
                     key={item.href}

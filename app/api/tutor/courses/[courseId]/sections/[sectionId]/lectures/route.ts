@@ -14,7 +14,7 @@ export async function POST(
 ) {
   const { courseId, sectionId } = await params;
   const session = await auth();
-  if (!session?.user || session.user.role !== UserRole.MENTOR) {
+  if (!session?.user || session.user.role !== UserRole.TUTOR) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

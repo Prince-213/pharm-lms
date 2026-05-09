@@ -69,7 +69,7 @@ export default async function MentorCourseOverviewPage({
       <div className="rounded-xl border border-[#d1d7dc] bg-white p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#0f5238]">Mentor course workspace</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#0f5238]">Tutor course workspace</p>
             <h1 className="mt-1 font-display text-3xl font-bold text-[#1c1d1f]">{course.title}</h1>
             <p className="mt-1 text-sm text-[#6a6f73]">
               Overview, learner quiz reviews, announcements, and forum discussions in one view.
@@ -216,7 +216,7 @@ export default async function MentorCourseOverviewPage({
               required
               maxLength={2000}
               className="w-full rounded-md border border-[#d1d7dc] px-3 py-2 text-sm"
-              placeholder="Reply in forum as mentor..."
+              placeholder="Reply in forum as tutor..."
             />
             <button
               type="submit"

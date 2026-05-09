@@ -19,7 +19,7 @@ export default async function MentorCourseManageLayout({
 }) {
   const { courseId } = await params;
   const session = await auth();
-  if (!session?.user) redirect("/mentor/login");
+  if (!session?.user) redirect("/tutor/login");
 
   const course = await db.course.findFirst({
     where: { id: courseId, mentorId: session.user.id },

@@ -10,7 +10,7 @@ export default function MentorSignupPage() {
         key="mentor-signup"
         actorType="mentor"
         mode="signup"
-        callbackUrl="/mentor/profile"
+        callbackUrl="/mentor/dashboard"
         googleEnabled={isGoogleOAuthEnabled()}
         appleEnabled={isAppleOAuthEnabled()}
       />

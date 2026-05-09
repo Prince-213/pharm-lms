@@ -48,6 +48,7 @@ export async function setUserActiveAction(
   ]);
 
   revalidatePath("/admin/students");
+  revalidatePath("/admin/tutors");
   revalidatePath("/admin/mentors");
   revalidatePath("/admin/mentor-applications");
   revalidatePath("/admin/dashboard");

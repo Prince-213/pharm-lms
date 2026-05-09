@@ -220,6 +220,7 @@ export async function deleteCourseAction(courseId: string) {
 
     await tx.enrollment.deleteMany({ where: { courseId } });
     await tx.wishlist.deleteMany({ where: { courseId } });
+    await tx.courseVisit.deleteMany({ where: { courseId } });
     await tx.assignment.deleteMany({ where: { courseId } });
     await tx.courseApprovalWorkflow.deleteMany({ where: { courseId } });
     await tx.course.delete({ where: { id: courseId } });

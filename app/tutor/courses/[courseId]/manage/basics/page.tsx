@@ -12,7 +12,7 @@ export default async function MentorCourseBasicsPage({
   params: Promise<{ courseId: string }>;
 }) {
   const session = await auth();
-  if (!session?.user) redirect("/mentor/login");
+  if (!session?.user) redirect("/tutor/login");
 
   const { courseId } = await params;
   const course = await db.course.findFirst({

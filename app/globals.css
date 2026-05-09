@@ -85,32 +85,32 @@ body {
 }
 
 /**
- * Scoped dark theme for auth routes only (SaaS-style). Does not affect :root app tokens.
+ * Auth routes: aliases to Pharm LMS :root tokens (Figma clinical / mint accent).
+ * Scoped class keeps login/signup/legal aligned with the rest of the app.
  */
 .auth-saas {
-  color-scheme: dark;
-  --auth-bg: #0b0b0b;
-  --auth-surface: #141414;
-  --auth-border: rgb(255 255 255 / 0.14);
-  --auth-text: #f4f4f5;
-  --auth-muted: #c4c4c8;
-  --auth-link: #93b4ff;
-  --auth-accent: #4c82f7;
-  --auth-accent-hover: #3d6fd4;
-  --auth-input-bg: #1a1a1a;
-  --auth-error: #fca5a5;
+  color-scheme: light;
+  --auth-bg: var(--background);
+  --auth-surface: var(--surface);
+  --auth-border: var(--border);
+  --auth-text: var(--foreground);
+  --auth-muted: var(--muted-soft);
+  --auth-link: var(--primary);
+  --auth-accent: var(--primary);
+  --auth-accent-hover: var(--primary-strong);
+  --auth-input-bg: var(--surface);
+  --auth-error: var(--live);
+  --auth-primary-foreground: var(--primary-foreground);
 }
 
-/* Keep typed and autofilled text visible on dark inputs (UA defaults can ignore inherited color). */
 .auth-saas :where(input, textarea, select) {
   color: var(--auth-text);
-  caret-color: var(--auth-accent);
+  caret-color: var(--primary);
 }
 
 .auth-saas input::placeholder,
 .auth-saas textarea::placeholder {
   color: var(--auth-muted);
-  opacity: 0.85;
 }
 
 .auth-saas input:-webkit-autofill,

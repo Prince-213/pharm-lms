@@ -55,10 +55,13 @@ type PanelState =
 const POPOVER_W = 300;
 const PAGE_SIZE_OPTIONS = [10, 20, 50] as const;
 
+const POPOVER_GAP = 8;
+
+/** Anchor point above the button; dialog uses translateY(-100%) so the panel sits above the trigger. */
 function placePopover(anchor: DOMRect) {
   const vw = typeof window !== "undefined" ? window.innerWidth : 1024;
   const left = Math.min(vw - POPOVER_W - 8, Math.max(8, anchor.right - POPOVER_W));
-  const top = anchor.bottom + 6;
+  const top = anchor.top - POPOVER_GAP;
   return { left, top };
 }
 
@@ -263,8 +266,13 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
             <div
               role="dialog"
               aria-label="Course actions"
-              className="fixed z-[90] w-[300px] rounded-xl border border-[var(--border)] bg-[var(--surface)] py-1.5 shadow-lg ring-1 ring-black/5"
-              style={{ left: panel.left, top: panel.top, width: POPOVER_W }}
+              className="fixed z-[90] w-[300px] max-h-[min(85vh,560px)] origin-bottom overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] py-1.5 shadow-lg ring-1 ring-black/5"
+              style={{
+                left: panel.left,
+                top: panel.top,
+                width: POPOVER_W,
+                transform: "translateY(-100%)",
+              }}
             >
               {panel.phase === "menu" ? (
                 <div className="px-1">
@@ -324,7 +332,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                       className="flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)]"
                     >
                       <Mail className="h-4 w-4 shrink-0 text-[var(--muted)]" />
-                      Email mentor
+                      Email tutor
                     </a>
 
                     <button
@@ -368,7 +376,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                   </div>
                   <p className="mb-2 line-clamp-2 text-[11px] text-[var(--muted)]">{activeCourse.title}</p>
                   <label className="block text-xs font-medium text-[var(--foreground)]">
-                    Reason for mentor
+                    Reason for tutor
                     <textarea
                       value={rejectReason}
                       onChange={(e) => setRejectReason(e.target.value)}
@@ -467,7 +475,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by title, mentor, email, status, or ID"
+            placeholder="Search by title, tutor, email, status, or ID"
             className="h-10 w-full rounded-md border border-[var(--border)] bg-[var(--background)] pl-9 pr-3 text-sm"
           />
         </label>
@@ -487,7 +495,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
             <option value="updatedAt:asc">Oldest updated</option>
             <option value="title:asc">Title A-Z</option>
             <option value="title:desc">Title Z-A</option>
-            <option value="mentorName:asc">Mentor A-Z</option>
+            <option value="mentorName:asc">Tutor A-Z</option>
             <option value="lessonCount:desc">Most lessons</option>
             <option value="enrollmentCount:desc">Most enrollments</option>
             <option value="status:asc">Status</option>
@@ -545,7 +553,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                 </th>
                 <th className="px-4 py-3">
                   <button type="button" className="inline-flex items-center gap-1" onClick={() => sortBy("mentorName")}>
-                    Mentor <ChevronDown className="h-3.5 w-3.5" />
+                    Tutor <ChevronDown className="h-3.5 w-3.5" />
                   </button>
                 </th>
                 <th className="px-4 py-3">

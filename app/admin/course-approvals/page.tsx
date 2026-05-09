@@ -38,11 +38,11 @@ export default async function AdminCourseApprovalsPage() {
     <>
       <AdminPageHeader
         title="Courses"
-        description="Review mentor submissions, publish approved content to the catalog, or return work with clear feedback. Typical LMS flow: draft → submitted → published (or rejected for revision)."
+        description="Review tutor submissions, publish approved content to the catalog, or return work with clear feedback. Typical LMS flow: draft → submitted → published (or rejected for revision)."
       />
       <AdminPanel
         title="Course catalog & review queue"
-        description="Filter by status. Approve sends the course live as Published. Reject unlocks the studio for the mentor to revise and resubmit."
+        description="Filter by status. Approve sends the course live as Published. Reject unlocks the studio for the tutor to revise and resubmit."
       >
         <div className="mb-4 flex flex-wrap gap-4 text-sm text-[var(--muted)]">
           <span>

@@ -34,6 +34,7 @@ const NEXT_ACTIONS = [
     label: "Manage students CRM",
     Icon: GraduationCap,
   },
+  { href: "/admin/tutors", label: "Manage tutors CRM", Icon: Library },
   { href: "/admin/mentors", label: "Manage mentors CRM", Icon: Users },
   { href: "/admin/users", label: "All users", Icon: ShieldCheck },
   { href: "/admin/badges", label: "Badges & rules reference", Icon: Award },
@@ -69,6 +70,7 @@ export default async function AdminDashboardPage() {
     publishedCourses,
     totalCourses,
     mentorCount,
+    tutorCount,
     studentCount,
     totalEnrollments,
     activeLearnerRows,
@@ -83,6 +85,7 @@ export default async function AdminDashboardPage() {
     db.course.count({ where: { status: CourseStatus.PUBLISHED } }),
     db.course.count(),
     db.user.count({ where: { role: UserRole.MENTOR } }),
+    db.user.count({ where: { role: UserRole.TUTOR } }),
     db.user.count({ where: { role: UserRole.STUDENT } }),
     db.enrollment.count(),
     db.lessonProgress.findMany({
@@ -165,7 +168,7 @@ export default async function AdminDashboardPage() {
       />
 
       {/* Stat cards row */}
-      <div className="mb-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 md:mb-6 md:gap-6 2xl:mb-9 2xl:gap-7.5">
+      <div className="mb-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 md:mb-6 md:gap-6 2xl:mb-9 2xl:gap-7.5">
         <AdminStatCard
           label="Pending review"
           value={pendingReview}
@@ -180,9 +183,16 @@ export default async function AdminDashboardPage() {
           icon={TrendingUp}
         />
         <AdminStatCard
+          label="Tutors"
+          value={tutorCount}
+          hint="Course creator accounts"
+          icon={Library}
+          href="/admin/tutors"
+        />
+        <AdminStatCard
           label="Mentors"
           value={mentorCount}
-          hint="Accounts with mentor role"
+          hint="Community mentor accounts"
           icon={Users}
           href="/admin/mentors"
         />
@@ -298,7 +308,7 @@ export default async function AdminDashboardPage() {
               <TableRow>
                 <TableHead className="w-12">Rank</TableHead>
                 <TableHead>Course</TableHead>
-                <TableHead>Mentor</TableHead>
+                <TableHead>Tutor</TableHead>
                 <TableHead className="text-right">Enrollments</TableHead>
               </TableRow>
             </TableHeader>

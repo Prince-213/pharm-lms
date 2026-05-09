@@ -5,20 +5,22 @@ import { Megaphone, MessageSquare, Video } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+const WORKSPACE = "/tutor";
+
 const subNav = [
   {
-    href: "/mentor/communication/messages",
+    href: `${WORKSPACE}/communication/messages`,
     label: "Messages",
     icon: MessageSquare,
     badge: 3,
   },
   {
-    href: "/mentor/communication/announcements",
+    href: `${WORKSPACE}/communication/announcements`,
     label: "Announcements",
     icon: Megaphone,
   },
   {
-    href: "/mentor/communication/meetings",
+    href: `${WORKSPACE}/communication/meetings`,
     label: "Meetings",
     icon: Video,
   },

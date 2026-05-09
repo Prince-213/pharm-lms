@@ -34,15 +34,15 @@ export async function deleteDraftCourseAction(formData: FormData) {
   });
 
   if (!course) {
-    redirect("/mentor/courses?error=course-not-found");
+    redirect("/tutor/courses?error=course-not-found");
   }
 
   if (course.status !== CourseStatus.DRAFT) {
-    redirect(`/mentor/courses/${course.id}/manage/settings?error=only-draft`);
+    redirect(`/tutor/courses/${course.id}/manage/settings?error=only-draft`);
   }
 
   if (confirmText !== course.title) {
-    redirect(`/mentor/courses/${course.id}/manage/settings?error=confirm-title`);
+    redirect(`/tutor/courses/${course.id}/manage/settings?error=confirm-title`);
   }
 
   const sectionIds = course.sections.map((s) => s.id);
@@ -129,11 +129,11 @@ export async function deleteDraftCourseAction(formData: FormData) {
     });
   });
 
-  revalidatePath("/mentor/courses");
-  revalidatePath("/mentor/dashboard");
+  revalidatePath("/tutor/courses");
+  revalidatePath("/tutor/performance");
   revalidatePath("/admin/course-approvals");
   revalidatePath("/admin/dashboard");
   revalidatePath("/student/browse");
 
-  redirect("/mentor/courses?deleted=draft");
+  redirect("/tutor/courses?deleted=draft");
 }

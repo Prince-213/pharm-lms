@@ -10,6 +10,7 @@ import {
   completeSignupWithOtpAction,
   sendSignupOtpAction,
 } from "@/lib/auth/signup-otp";
+import { userRoleLabel } from "@/lib/user-role-label";
 
 type LoginFormProps = {
   actorType: "tutor" | "mentor" | "student" | "admin";
@@ -91,6 +92,8 @@ export function LoginForm({
     appleEnabled && !isAdmin && (actorType === "student" || actorType === "tutor" || actorType === "mentor");
   const showOAuthRow = showGoogle || showApple;
   const portalRole = roleFromActor(actorType);
+  const portalActorTitle =
+    !isAdmin && portalRole ? userRoleLabel(portalRole) : null;
 
   function startOAuth(
     provider: "google" | "apple",
@@ -205,7 +208,7 @@ export function LoginForm({
   }
 
   const inputClass =
-    "h-12 w-full rounded-xl border border-[var(--auth-border)] bg-[var(--auth-input-bg)] px-3 text-sm text-[var(--auth-text)] placeholder:text-[var(--auth-muted)] outline-none focus:border-[var(--auth-accent)] focus:ring-1 focus:ring-[var(--auth-accent)]";
+    "h-12 w-full rounded-xl border border-[var(--auth-border)] bg-[var(--auth-input-bg)] px-3 text-sm text-[var(--auth-text)] placeholder:text-[var(--auth-muted)] outline-none transition-shadow focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-soft)]";
 
   return (
     <form
@@ -216,8 +219,8 @@ export function LoginForm({
         {isAdmin
           ? "Admin sign in"
           : isSignup
-            ? `Create ${actorType} account`
-            : `Sign in as ${actorType}`}
+            ? `Create ${portalActorTitle} account`
+            : `Sign in as ${portalActorTitle}`}
       </h1>
 
       {!isAdmin && isSignup ? (
@@ -281,7 +284,7 @@ export function LoginForm({
               !email.includes("@")
             }
             onClick={() => void onSendCode()}
-            className="shrink-0 rounded-xl border border-[var(--auth-border)] bg-[var(--auth-surface)] px-4 text-sm font-semibold text-[var(--auth-link)] transition hover:bg-white/5 disabled:opacity-50"
+            className="shrink-0 rounded-xl border border-[var(--auth-border)] bg-[var(--surface-muted)] px-4 text-sm font-semibold text-[var(--primary)] transition hover:bg-[var(--primary-soft)]/50 disabled:opacity-50"
           >
             {otpCooldown > 0 ? `${otpCooldown}s` : otpSending ? "…" : "Send code"}
           </button>
@@ -289,15 +292,15 @@ export function LoginForm({
       ) : null}
 
       {isSignup && !isAdmin && otpDevHint ? (
-        <p className="rounded-lg border border-[var(--auth-border)] bg-[var(--auth-surface)] px-3 py-2 text-center text-[11px] leading-relaxed text-[var(--auth-muted)]">
-          <span className="font-medium text-[var(--auth-text)]">
+        <p className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2 text-center text-[11px] leading-relaxed text-[var(--muted-soft)]">
+          <span className="font-medium text-[var(--foreground)]">
             Development mode:
           </span>{" "}
           No Resend API key — the 6-digit code was printed in the{" "}
-          <strong className="text-[var(--auth-text)]">server terminal</strong>{" "}
+          <strong className="text-[var(--foreground)]">server terminal</strong>{" "}
           (grep{" "}
-          <code className="text-[var(--auth-link)]">[signup-otp]</code> or{" "}
-          <code className="text-[var(--auth-link)]">[email-service]</code>).
+          <code className="text-[var(--primary)]">[signup-otp]</code> or{" "}
+          <code className="text-[var(--primary)]">[email-service]</code>).
         </p>
       ) : null}
 
@@ -354,8 +357,10 @@ export function LoginForm({
       ) : null}
 
       {adminHints ? (
-        <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-100">
-          <p className="font-semibold">Demo admin credentials</p>
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--primary-soft)]/35 p-3 text-xs text-[var(--primary-soft-text)]">
+          <p className="font-semibold text-[var(--foreground)]">
+            Demo admin credentials
+          </p>
           <p>
             Email: <span className="font-mono">{adminHints.email}</span>
           </p>
@@ -386,7 +391,7 @@ export function LoginForm({
       <button
         type="submit"
         disabled={isPending}
-        className="h-12 w-full rounded-xl bg-[var(--auth-accent)] text-sm font-semibold text-white transition hover:bg-[var(--auth-accent-hover)] disabled:opacity-60"
+        className="h-12 w-full rounded-xl bg-[var(--auth-accent)] text-sm font-semibold text-[var(--auth-primary-foreground)] shadow-[var(--shadow-1)] transition hover:bg-[var(--auth-accent-hover)] disabled:opacity-60"
       >
         {isPending
           ? "Please wait…"
@@ -428,7 +433,7 @@ export function LoginForm({
                 title="Google"
                 disabled={isPending || oauthPending !== null}
                 onClick={() => startOAuth("google")}
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--auth-border)] bg-white transition hover:bg-zinc-100 disabled:opacity-60"
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--auth-border)] bg-[var(--surface)] transition hover:bg-[var(--surface-muted)] disabled:opacity-60"
               >
                 <GoogleGlyph />
               </button>
@@ -439,7 +444,7 @@ export function LoginForm({
                 title="Apple"
                 disabled={isPending || oauthPending !== null}
                 onClick={() => startOAuth("apple")}
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--auth-border)] bg-black transition hover:bg-zinc-900 disabled:opacity-60"
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--ink-deep)] bg-[var(--ink-deep)] transition hover:bg-[var(--ink-mid)] disabled:opacity-60"
               >
                 <AppleGlyph />
               </button>
