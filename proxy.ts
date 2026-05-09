@@ -3,7 +3,11 @@ import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import type { UserRole } from "@/generated/prisma/enums";
 import { getAuthSecret } from "@/lib/auth/secret";
-import { canAccessRolePath, roleHomePath } from "@/lib/rbac";
+import {
+  canAccessRolePath,
+  isTutorLegacyMentorAliasPath,
+  roleHomePath,
+} from "@/lib/rbac";
 
 const protectedPrefixes = ["/mentor", "/student", "/admin"];
 
@@ -66,11 +70,17 @@ export async function proxy(req: NextRequest) {
   };
 
   if (!token && needsAuth && !isAuthPage) {
-    const loginPath = pathname.startsWith("/admin")
-      ? "/admin/login"
-      : pathname.startsWith("/mentor")
-        ? "/mentor/login"
-        : "/student/login";
+    let loginPath: string;
+    if (pathname.startsWith("/admin")) {
+      loginPath = "/admin/login";
+    } else if (pathname.startsWith("/mentor")) {
+      // Tutor bookmarks / shared links use legacy /mentor/* URLs → tutor sign-in.
+      loginPath = isTutorLegacyMentorAliasPath(pathname)
+        ? "/tutor/login"
+        : "/mentor/login";
+    } else {
+      loginPath = "/student/login";
+    }
 
     logProxy("redirect_unauthenticated", {
       ...baseFields,
@@ -110,6 +120,9 @@ export async function proxy(req: NextRequest) {
 
   return NextResponse.next();
 }
+
+/** Default export for runtimes that expect it (named `proxy` is primary). */
+export default proxy;
 
 export const config = {
   matcher: ["/mentor/:path*", "/student/:path*", "/admin/:path*"],
