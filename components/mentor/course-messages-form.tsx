@@ -45,7 +45,7 @@ export function CourseMessagesForm({
       const formData = new FormData();
       formData.set("file", file);
       formData.set("purpose", "congrats-video");
-      const response = await fetch(`/api/mentor/courses/${courseId}/upload`, {
+      const response = await fetch(`/api/tutor/courses/${courseId}/upload`, {
         method: "POST",
         body: formData,
       });
@@ -63,7 +63,7 @@ export function CourseMessagesForm({
   async function save() {
     setSaving(true);
     try {
-      const response = await fetch(`/api/mentor/courses/${courseId}`, {
+      const response = await fetch(`/api/tutor/courses/${courseId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

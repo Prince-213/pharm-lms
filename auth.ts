@@ -1,19 +1,14 @@
 import { compare } from "bcryptjs";
 import type { NextAuthConfig } from "next-auth";
 import NextAuth from "next-auth";
-import Apple from "next-auth/providers/apple";
 import CredentialsProvider from "next-auth/providers/credentials";
+import Apple from "next-auth/providers/apple";
 import Google from "next-auth/providers/google";
 import { z } from "zod";
-import { type MentorProfileStatus, UserRole } from "@/generated/prisma/enums";
-import { isAppleOAuthEnabled } from "@/lib/auth/apple-oauth-enabled";
+import { MentorProfileStatus, UserRole } from "@/generated/prisma/enums";
 import { customPrismaAdapter } from "@/lib/auth/custom-prisma-adapter";
+import { isAppleOAuthEnabled } from "@/lib/auth/apple-oauth-enabled";
 import { isGoogleOAuthEnabled } from "@/lib/auth/google-oauth-enabled";
-import {
-  authTraceEnabled,
-  getAuthSecret,
-  isAuthSecretConfigured,
-} from "@/lib/auth/secret";
 import { prisma } from "@/lib/prisma";
 
 const loginSchema = z.object({
@@ -83,13 +78,9 @@ if (isAppleOAuthEnabled()) {
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: customPrismaAdapter(),
-  secret: getAuthSecret(),
   session: { strategy: "jwt" },
   trustHost: true,
-  debug:
-    process.env.NODE_ENV === "development" ||
-    process.env.AUTH_DEBUG === "true" ||
-    authTraceEnabled(),
+  debug: process.env.NODE_ENV === "development",
   pages: {
     signIn: "/student/login",
   },
@@ -101,12 +92,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: { id: user.id },
           select: { id: true, role: true, mentorProfileStatus: true },
         });
-        if (authTraceEnabled()) {
-          console.info("[auth] jwt after credentials/OAuth user", {
-            secretConfigured: isAuthSecretConfigured(),
-            dbRowFound: Boolean(row),
-          });
-        }
         if (row) {
           token.sub = row.id;
           token.role = row.role;
@@ -116,24 +101,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     session({ session, token }) {
-      if (authTraceEnabled()) {
-        console.info("[auth] session callback", {
-          secretConfigured: isAuthSecretConfigured(),
-          hasSub: Boolean(token.sub),
-          hasRole: token.role != null,
-        });
-      }
       if (session.user) {
         session.user.id = token.sub as string;
         session.user.role =
           (token.role as UserRole | undefined) ?? UserRole.STUDENT;
-        (
-          session.user as unknown as {
-            mentorProfileStatus?: MentorProfileStatus;
-          }
-        ).mentorProfileStatus = token.mentorProfileStatus as
-          | MentorProfileStatus
-          | undefined;
+        (session.user as unknown as { mentorProfileStatus?: MentorProfileStatus }).mentorProfileStatus =
+          token.mentorProfileStatus as MentorProfileStatus | undefined;
       }
       return session;
     },

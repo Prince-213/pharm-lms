@@ -66,6 +66,10 @@ export type SectionResource = {
   type: "LINK" | "FILE";
   title: string;
   url: string;
+  /** Set when type is FILE from tutor upload (stored in section description JSON). */
+  originalFileName?: string;
+  sizeBytes?: number;
+  mimeType?: string;
 };
 
 type Section = {
@@ -77,6 +81,55 @@ type Section = {
   assignmentItems: SectionAssignment[];
   resources: SectionResource[];
 };
+
+type McqFormRow = {
+  id: string;
+  prompt: string;
+  correctAnswer: string;
+  wrong1: string;
+  wrong2: string;
+  wrong3: string;
+};
+
+function createEmptyMcqRow(): McqFormRow {
+  return {
+    id:
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `row-${Date.now()}-${Math.random()}`,
+    prompt: "",
+    correctAnswer: "",
+    wrong1: "",
+    wrong2: "",
+    wrong3: "",
+  };
+}
+
+function mcqRowsValid(rows: McqFormRow[]): boolean {
+  if (rows.length === 0) return false;
+  for (const r of rows) {
+    const p = r.prompt.trim();
+    const c = r.correctAnswer.trim();
+    const w = [r.wrong1.trim(), r.wrong2.trim(), r.wrong3.trim()];
+    if (!p || !c || w.some((x) => !x)) return false;
+    const all = [c, ...w];
+    if (new Set(all.map((x) => x.toLowerCase())).size !== 4) return false;
+  }
+  return true;
+}
+
+function mcqRowsToPayload(rows: McqFormRow[]) {
+  return rows.map((r) => ({
+    kind: "multiple_choice" as const,
+    prompt: r.prompt.trim(),
+    correctAnswer: r.correctAnswer.trim(),
+    incorrectOptions: [
+      r.wrong1.trim(),
+      r.wrong2.trim(),
+      r.wrong3.trim(),
+    ] as [string, string, string],
+  }));
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -131,7 +184,9 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
   const [activeSectionForItem, setActiveSectionForItem] = useState<string | null>(null);
   const [itemType, setItemType] = useState<"QUIZ" | "ASSIGNMENT">("QUIZ");
   const [itemTitle, setItemTitle] = useState("");
-  const [quizQuestionsText, setQuizQuestionsText] = useState("");
+  const [quizMcqRows, setQuizMcqRows] = useState<McqFormRow[]>(() => [
+    createEmptyMcqRow(),
+  ]);
   const [assignmentDescription, setAssignmentDescription] = useState("");
   const [assignmentDueDays, setAssignmentDueDays] = useState("7");
 
@@ -147,7 +202,11 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
   // ─────────────────────────────────────────────────────────────────────────
 
   const canAddSection = useMemo(() => newSectionTitle.trim().length >= 3, [newSectionTitle]);
-  const canAddItem = useMemo(() => itemTitle.trim().length >= 2, [itemTitle]);
+  const canAddItem = useMemo(() => {
+    if (itemTitle.trim().length < 2) return false;
+    if (itemType === "QUIZ") return mcqRowsValid(quizMcqRows);
+    return true;
+  }, [itemTitle, itemType, quizMcqRows]);
   const canAddResource = useMemo(
     () =>
       resourceTitle.trim().length >= 2 &&
@@ -173,7 +232,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
   // ── Load ──────────────────────────────────────────────────────────────────
 
   const loadCurriculum = useCallback(async () => {
-    const res = await fetch(`/api/mentor/courses/${courseId}/curriculum`, { method: "GET", cache: "no-store" });
+    const res = await fetch(`/api/tutor/courses/${courseId}/curriculum`, { method: "GET", cache: "no-store" });
     if (!res.ok) {
       const j = (await res.json().catch(() => null)) as { error?: string } | null;
       setError(j?.error ?? "Unable to load curriculum.");
@@ -217,7 +276,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     const { text } = parseDescription(section.description);
     const encodedDesc = encodeDescription(text, resources);
     return runPending(async () => {
-      const res = await fetch(`/api/mentor/courses/${courseId}/sections/${sectionId}`, {
+      const res = await fetch(`/api/tutor/courses/${courseId}/sections/${sectionId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: section.title, description: encodedDesc }),
@@ -233,7 +292,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     formData.set("file", file);
     formData.set("purpose", "lesson-video");
     const res = await runPending(() =>
-      fetch(`/api/mentor/courses/${courseId}/upload`, { method: "POST", body: formData }),
+      fetch(`/api/tutor/courses/${courseId}/upload`, { method: "POST", body: formData }),
     );
     if (!res.ok) return null;
     return (await res.json()) as { url: string };
@@ -243,7 +302,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     const formData = new FormData();
     formData.set("file", file);
     formData.set("purpose", "resource-file");
-    const res = await fetch(`/api/mentor/courses/${courseId}/upload`, { method: "POST", body: formData });
+    const res = await fetch(`/api/tutor/courses/${courseId}/upload`, { method: "POST", body: formData });
     if (!res.ok) return null;
     return (await res.json()) as { url: string };
   }
@@ -269,7 +328,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     setNewSectionObjective("");
 
     const res = await runPending(() =>
-      fetch(`/api/mentor/courses/${courseId}/curriculum`, {
+      fetch(`/api/tutor/courses/${courseId}/curriculum`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: newSection.title, objective: newSectionObjective.trim() }),
@@ -295,7 +354,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     setEditingSectionTitle("");
 
     const res = await runPending(() =>
-      fetch(`/api/mentor/courses/${courseId}/sections/${sectionId}`, {
+      fetch(`/api/tutor/courses/${courseId}/sections/${sectionId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: title.trim() }),
@@ -315,7 +374,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     setSections((prev) => prev.filter((s) => s.id !== sectionId));
     
     const res = await runPending(() =>
-      fetch(`/api/mentor/courses/${courseId}/sections/${sectionId}`, { method: "DELETE" }),
+      fetch(`/api/tutor/courses/${courseId}/sections/${sectionId}`, { method: "DELETE" }),
     );
     if (!res.ok) {
       toast.error("Failed to delete section.");
@@ -354,7 +413,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
       setNewLessonArticleContent("");
 
       const res = await fetch(
-        `/api/mentor/courses/${courseId}/sections/${sectionId}/lessons`,
+        `/api/tutor/courses/${courseId}/sections/${sectionId}/lessons`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -412,7 +471,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
       setNewLessonType("VIDEO");
 
       const res = await fetch(
-        `/api/mentor/courses/${courseId}/sections/${sectionId}/lessons`,
+        `/api/tutor/courses/${courseId}/sections/${sectionId}/lessons`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -462,7 +521,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     );
 
     const res = await runPending(() =>
-      fetch(`/api/mentor/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`, {
+      fetch(`/api/tutor/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`, {
         method: "DELETE",
       }),
     );
@@ -492,7 +551,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     const timeout = setTimeout(() => {
       if (readOnly) return;
       void runPending(async () => {
-        const res = await fetch(`/api/mentor/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`, {
+        const res = await fetch(`/api/tutor/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -508,9 +567,17 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
 
   async function addItem(sectionId: string) {
     if (readOnly || saving) return;
+    const submittedType = itemType;
+    if (submittedType === "QUIZ" && !mcqRowsValid(quizMcqRows)) {
+      toast.error(
+        "Each question needs a prompt, correct answer, three distractors, and four distinct options.",
+      );
+      return;
+    }
+    const quizQuestions =
+      submittedType === "QUIZ" ? mcqRowsToPayload(quizMcqRows) : undefined;
     const tempId = crypto.randomUUID();
-    const quizQuestions = quizQuestionsText.split("\n").map((q) => q.trim()).filter(Boolean);
-    
+
     // Optimistic UI
     const tempItem = {
       id: tempId,
@@ -521,28 +588,28 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     setSections((prev) =>
       prev.map((s) => {
         if (s.id !== sectionId) return s;
-        if (itemType === "QUIZ") return { ...s, quizzes: [...s.quizzes, { id: tempId, title: tempItem.title }] };
+        if (submittedType === "QUIZ") return { ...s, quizzes: [...s.quizzes, { id: tempId, title: tempItem.title }] };
         return { ...s, assignmentItems: [...s.assignmentItems, tempItem as SectionAssignment] };
       })
     );
 
     setItemTitle("");
     setItemType("QUIZ");
-    setQuizQuestionsText("");
+    setQuizMcqRows([createEmptyMcqRow()]);
     setAssignmentDescription("");
     setAssignmentDueDays("7");
     setActiveSectionForItem(null);
 
     const res = await runPending(() =>
-      fetch(`/api/mentor/courses/${courseId}/sections/${sectionId}/items`, {
+      fetch(`/api/tutor/courses/${courseId}/sections/${sectionId}/items`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          itemType,
+          itemType: submittedType,
           title: tempItem.title,
-          quizQuestions: itemType === "QUIZ" ? quizQuestions : undefined,
-          assignmentDescription: itemType === "ASSIGNMENT" ? assignmentDescription : undefined,
-          dueDays: itemType === "ASSIGNMENT" ? Number(assignmentDueDays || "7") : undefined,
+          quizQuestions: submittedType === "QUIZ" ? quizQuestions : undefined,
+          assignmentDescription: submittedType === "ASSIGNMENT" ? assignmentDescription : undefined,
+          dueDays: submittedType === "ASSIGNMENT" ? Number(assignmentDueDays || "7") : undefined,
         }),
       }),
     );
@@ -552,7 +619,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
       setSections((prev) =>
         prev.map((s) => {
           if (s.id !== sectionId) return s;
-          if (itemType === "QUIZ") return { ...s, quizzes: s.quizzes.filter(q => q.id !== tempId) };
+          if (submittedType === "QUIZ") return { ...s, quizzes: s.quizzes.filter(q => q.id !== tempId) };
           return { ...s, assignmentItems: s.assignmentItems.filter(a => a.id !== tempId) };
         })
       );
@@ -598,6 +665,13 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
         type: resourceType,
         title: resourceTitle.trim(),
         url,
+        ...(resourceType === "FILE" && resourceFile
+          ? {
+              originalFileName: resourceFile.name,
+              sizeBytes: resourceFile.size,
+              mimeType: resourceFile.type || undefined,
+            }
+          : {}),
       };
       
       const section = sections.find((s) => s.id === sectionId);
@@ -666,7 +740,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
       runPending(async () => {
         const responses = await Promise.all(
           moved.map((s, i) =>
-            fetch(`/api/mentor/courses/${courseId}/sections/${s.id}`, {
+            fetch(`/api/tutor/courses/${courseId}/sections/${s.id}`, {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ position: i + 1 }),
@@ -1046,7 +1120,14 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                 <button
                   type="button"
                   disabled={interactionLocked}
-                  onClick={() => setActiveSectionForItem(section.id)}
+                  onClick={() => {
+                    setActiveSectionForItem(section.id);
+                    setItemTitle("");
+                    setItemType("QUIZ");
+                    setQuizMcqRows([createEmptyMcqRow()]);
+                    setAssignmentDescription("");
+                    setAssignmentDueDays("7");
+                  }}
                   className="rounded border border-[var(--primary)] px-3 py-1 text-xs text-[var(--primary)] disabled:opacity-50"
                 >
                   + Curriculum item
@@ -1173,13 +1254,117 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                     Add
                   </button>
                   {itemType === "QUIZ" ? (
-                    <textarea
-                      value={quizQuestionsText}
-                      onChange={(e) => setQuizQuestionsText(e.target.value)}
-                      disabled={interactionLocked}
-                      placeholder="Format: Question || Answer OR [Question] Answer (one per line)"
-                      className="md:col-span-3 min-h-20 border border-[#d1d7dc] px-2 py-1 text-sm disabled:bg-[#f6f7f9]"
-                    />
+                    <div className="md:col-span-3 space-y-4">
+                      <p className="text-xs text-[#6a6f73]">
+                        Multiple choice: four options per question (correct + three distractors). Students
+                        see choices in random order.
+                      </p>
+                      {quizMcqRows.map((row, rowIndex) => (
+                        <div
+                          key={row.id}
+                          className="space-y-2 rounded border border-[#d1d7dc] bg-[#fafbfc] p-3"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-semibold text-[#6a6f73]">
+                              Question {rowIndex + 1}
+                            </span>
+                            {quizMcqRows.length > 1 ? (
+                              <button
+                                type="button"
+                                disabled={interactionLocked}
+                                onClick={() =>
+                                  setQuizMcqRows((prev) =>
+                                    prev.filter((r) => r.id !== row.id),
+                                  )
+                                }
+                                className="text-xs font-medium text-rose-600 hover:underline disabled:opacity-50"
+                              >
+                                Remove
+                              </button>
+                            ) : null}
+                          </div>
+                          <input
+                            value={row.prompt}
+                            onChange={(e) =>
+                              setQuizMcqRows((prev) =>
+                                prev.map((r) =>
+                                  r.id === row.id ? { ...r, prompt: e.target.value } : r,
+                                ),
+                              )
+                            }
+                            disabled={interactionLocked}
+                            placeholder="Question"
+                            className="w-full border border-[#d1d7dc] px-2 py-1.5 text-sm disabled:bg-[#f6f7f9]"
+                          />
+                          <input
+                            value={row.correctAnswer}
+                            onChange={(e) =>
+                              setQuizMcqRows((prev) =>
+                                prev.map((r) =>
+                                  r.id === row.id
+                                    ? { ...r, correctAnswer: e.target.value }
+                                    : r,
+                                ),
+                              )
+                            }
+                            disabled={interactionLocked}
+                            placeholder="Correct answer"
+                            className="w-full border border-[#d1d7dc] px-2 py-1.5 text-sm disabled:bg-[#f6f7f9]"
+                          />
+                          <div className="grid gap-2 sm:grid-cols-3">
+                            <input
+                              value={row.wrong1}
+                              onChange={(e) =>
+                                setQuizMcqRows((prev) =>
+                                  prev.map((r) =>
+                                    r.id === row.id ? { ...r, wrong1: e.target.value } : r,
+                                  ),
+                                )
+                              }
+                              disabled={interactionLocked}
+                              placeholder="Incorrect option 1"
+                              className="border border-[#d1d7dc] px-2 py-1.5 text-sm disabled:bg-[#f6f7f9]"
+                            />
+                            <input
+                              value={row.wrong2}
+                              onChange={(e) =>
+                                setQuizMcqRows((prev) =>
+                                  prev.map((r) =>
+                                    r.id === row.id ? { ...r, wrong2: e.target.value } : r,
+                                  ),
+                                )
+                              }
+                              disabled={interactionLocked}
+                              placeholder="Incorrect option 2"
+                              className="border border-[#d1d7dc] px-2 py-1.5 text-sm disabled:bg-[#f6f7f9]"
+                            />
+                            <input
+                              value={row.wrong3}
+                              onChange={(e) =>
+                                setQuizMcqRows((prev) =>
+                                  prev.map((r) =>
+                                    r.id === row.id ? { ...r, wrong3: e.target.value } : r,
+                                  ),
+                                )
+                              }
+                              disabled={interactionLocked}
+                              placeholder="Incorrect option 3"
+                              className="border border-[#d1d7dc] px-2 py-1.5 text-sm disabled:bg-[#f6f7f9]"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        disabled={interactionLocked}
+                        onClick={() =>
+                          setQuizMcqRows((prev) => [...prev, createEmptyMcqRow()])
+                        }
+                        className="text-xs font-semibold text-[var(--primary)] hover:underline disabled:opacity-50"
+                      >
+                        + Add another question
+                      </button>
+                    </div>
                   ) : (
                     <>
                       <div className="md:col-span-3">

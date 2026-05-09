@@ -1,25 +1,9 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import type { NextConfig } from "next";
-
-const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
-  allowedDevOrigins: ["127.0.0.1"],
-  turbopack: {
-    root: projectRoot,
-  },
-  /** Course APIs live under /api/tutor; UI still calls /api/mentor (legacy). */
-  async rewrites() {
-    return [
-      {
-        source: "/api/mentor/courses/:path*",
-        destination: "/api/tutor/courses/:path*",
-      },
-    ];
-  },
+   allowedDevOrigins: ['127.0.0.1'],
   async redirects() {
     return [
       {
@@ -58,6 +42,15 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       { source: "/mentor", destination: "/tutor", permanent: false },
+    ];
+  },
+  /** Legacy course-studio fetches; handlers live under /api/tutor/courses */
+  async rewrites() {
+    return [
+      {
+        source: "/api/mentor/courses/:path*",
+        destination: "/api/tutor/courses/:path*",
+      },
     ];
   },
 };

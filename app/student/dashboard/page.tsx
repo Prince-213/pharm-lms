@@ -1,4 +1,11 @@
-import { Award, BookOpen, Heart, Trophy, Search } from "lucide-react";
+import {
+  Award,
+  BookOpen,
+  ClipboardList,
+  Heart,
+  Trophy,
+  Search,
+} from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
@@ -105,12 +112,21 @@ export default async function StudentDashboardPage({
             Resume your courses or explore new pharmacy certifications.
           </p>
         </div>
-        <Link
-          href="/student/browse"
-          className="rounded-full bg-(--primary) px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-(--primary-strong) hover:shadow-md"
-        >
-          Explore Courses
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/student/assignments"
+            className="inline-flex items-center gap-2 rounded-full border border-(--border) bg-(--background) px-5 py-2.5 text-sm font-bold text-(--foreground) shadow-sm transition hover:bg-(--surface-muted)"
+          >
+            <ClipboardList className="h-4 w-4 text-(--primary)" />
+            Assignments
+          </Link>
+          <Link
+            href="/student/browse"
+            className="rounded-full bg-(--primary) px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-(--primary-strong) hover:shadow-md"
+          >
+            Explore Courses
+          </Link>
+        </div>
       </div>
 
       <div className=" w-full ">

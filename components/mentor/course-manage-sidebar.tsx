@@ -107,7 +107,7 @@ export function CourseManageSidebar({
     const toastId = toast.loading("Submitting your course for review...");
 
     try {
-      const response = await fetch(`/api/mentor/courses/${courseId}/submit`, {
+      const response = await fetch(`/api/tutor/courses/${courseId}/submit`, {
         method: "POST",
       });
       setSubmitting(false);

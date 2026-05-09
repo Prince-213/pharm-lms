@@ -11,6 +11,7 @@ import {
   Award,
   Trophy,
   Users,
+  ClipboardList,
 } from "lucide-react";
 
 function normalizePathname(pathname: string | null): string {
@@ -19,15 +20,26 @@ function normalizePathname(pathname: string | null): string {
   return trimmed.length === 0 ? "/" : trimmed;
 }
 
-const nav = [
-  { href: "/student/dashboard", label: "My learning", icon: BookOpen },
-  { href: "/student/courses", label: "My courses", icon: GraduationCap },
-  { href: "/student/browse", label: "Browse", icon: Search },
-  { href: "/student/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/student/wishlist", label: "Wishlist", icon: Heart },
-  { href: "/student/meetings", label: "Meetings", icon: Calendar },
-  { href: "/student/mentors", label: "Mentors", icon: Users },
-  { href: "/student/achievements", label: "Badges", icon: Award },
+const navGroups = [
+  {
+    label: "Workspace",
+    items: [
+      { href: "/student/dashboard", label: "My learning", icon: BookOpen },
+      { href: "/student/courses", label: "My courses", icon: GraduationCap },
+      { href: "/student/browse", label: "Browse", icon: Search },
+      { href: "/student/assignments", label: "Assignments", icon: ClipboardList },
+      { href: "/student/leaderboard", label: "Leaderboard", icon: Trophy },
+    ],
+  },
+  {
+    label: "Personal",
+    items: [
+      { href: "/student/wishlist", label: "Wishlist", icon: Heart },
+      { href: "/student/meetings", label: "Meetings", icon: Calendar },
+      { href: "/student/mentors", label: "Mentors", icon: Users },
+      { href: "/student/achievements", label: "Badges", icon: Award },
+    ],
+  },
 ];
 
 export default function StudentLayout({
@@ -52,7 +64,7 @@ export default function StudentLayout({
       <AppShell
         title="STUDENT DASHBOARD"
         subtitle="Browse the catalog, read course pages, enroll, and learn section by section."
-        nav={nav}
+        navGroups={navGroups}
         homeHref="/student/dashboard"
       >
         {children}

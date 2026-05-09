@@ -46,8 +46,7 @@ export function InstructorShell({
           <div className="flex items-center gap-2">
             {showReview && courseId ? (
               <Link
-                href={`/student/browse/${courseId}`}
-                target="_blank"
+                href={`/tutor/courses/${courseId}/preview`}
                 className="rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--background)] px-3 py-1 text-xs font-semibold text-[var(--foreground)] transition hover:bg-[var(--surface-muted)]"
               >
                 Review

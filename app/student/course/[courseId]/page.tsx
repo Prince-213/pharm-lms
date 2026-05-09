@@ -6,12 +6,17 @@ import { CourseChatBubble } from "@/components/student/course-chat-bubble";
 import { CourseContentSidebar } from "@/components/student/course-content-sidebar";
 import { CourseSessionShell } from "@/components/student/course-session-shell";
 import { CourseCompletionCta } from "@/components/student/course-completion-cta";
+import { CourseReviewPanel } from "@/components/student/course-review-panel";
 import { LessonProgressToggle } from "@/components/student/lesson-progress-toggle";
 import { SectionQuizLauncher } from "@/components/student/section-quiz-launcher";
 import { CourseStatus, UserRole, EnrollmentStatus } from "@/generated/prisma/enums";
 import { COURSE_ANNOUNCEMENTS_THREAD_TITLE } from "@/lib/course-discussions";
 import { ProgressProvider } from "@/lib/student/progress-context";
+import { studentHasCompletedAtLeastOneFullSection } from "@/lib/course-review-eligibility";
+import { parseSectionDescription } from "@/lib/curriculum";
 import { recordCourseVisit } from "@/lib/courses/record-course-visit";
+import type { CatalogResourceItem } from "@/lib/course-catalog-detail";
+import { resolveMediaUrl } from "@/lib/media-url";
 import { db } from "@/lib/db";
 import { roleHomePath } from "@/lib/rbac";
 
@@ -108,6 +113,10 @@ export default async function StudentCourseLearningPage({
   if (!course) notFound();
   if (!enrollment) redirect(`/student/browse/${courseId}`);
 
+  const congratulatoryVideoSrc = await resolveMediaUrl(
+    course.congratulatoryVideoUrl,
+  );
+
   // Must never break the course player if it fails (function swallows errors),
   // but it does write to DB so keep it after auth/enrollment checks.
   await recordCourseVisit(session.user.id, course.id);
@@ -151,7 +160,12 @@ export default async function StudentCourseLearningPage({
   const prevLesson = idx > 0 ? flat[idx - 1] : null;
   const nextLesson = idx >= 0 && idx < flat.length - 1 ? flat[idx + 1] : null;
 
-  const [progressRows, announcementsThread] = await Promise.all([
+  const [
+    progressRows,
+    announcementsThread,
+    existingReview,
+    hasFullSectionComplete,
+  ] = await Promise.all([
     db.lessonProgress.findMany({
       where: {
         studentId: session.user.id,
@@ -170,6 +184,13 @@ export default async function StudentCourseLearningPage({
           },
         })
       : Promise.resolve(null),
+    db.courseReview.findUnique({
+      where: {
+        courseId_studentId: { courseId, studentId: session.user.id },
+      },
+      select: { rating: true, comment: true },
+    }),
+    studentHasCompletedAtLeastOneFullSection(session.user.id, courseId),
   ]);
   const progressMap: Record<string, boolean> = {};
   for (const p of progressRows) {
@@ -183,6 +204,11 @@ export default async function StudentCourseLearningPage({
   const totalLessons = flat.length;
   const progressPct =
     totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
+
+  const enrollmentAllowsReview =
+    enrollment.status === EnrollmentStatus.ACTIVE ||
+    enrollment.status === EnrollmentStatus.COMPLETED;
+  const canLeaveReview = enrollmentAllowsReview && hasFullSectionComplete;
 
   const videoSrc = selected?.videoUrl
     ? selected.videoUrl.startsWith("r2://")
@@ -202,6 +228,31 @@ export default async function StudentCourseLearningPage({
   const lessonLine = selected
     ? `${selected.title} · ${course.mentor.fullName}`
     : `With ${course.mentor.fullName}`;
+
+  const sidebarSections = await Promise.all(
+    course.sections.map(async (s) => {
+      const raw = parseSectionDescription(s.description).resources;
+      const resources: CatalogResourceItem[] = await Promise.all(
+        raw.map(async (r) => ({
+          ...r,
+          href: await resolveMediaUrl(r.url),
+        })),
+      );
+      return {
+        id: s.id,
+        title: s.title,
+        description: s.description,
+        resources,
+        lessons: s.lessons.map((l) => ({
+          id: l.id,
+          title: l.title,
+          videoUrl: l.videoUrl,
+          content: null,
+          durationSec: l.durationSec,
+        })),
+      };
+    }),
+  );
 
   const mintBadge =
     progressPct >= 100
@@ -278,7 +329,7 @@ export default async function StudentCourseLearningPage({
             congratulatoryTitle={course.congratulatoryTitle}
             congratulatoryContentType={course.congratulatoryContentType}
             congratulatoryArticle={course.congratulatoryArticle}
-            congratulatoryVideoUrl={course.congratulatoryVideoUrl}
+            congratulatoryVideoUrl={congratulatoryVideoSrc ?? undefined}
           />
         </div>
         <div className="mx-auto flex max-w-5xl gap-1 pt-2">
@@ -350,6 +401,12 @@ export default async function StudentCourseLearningPage({
                   Generate smart quiz
                 </Link>
               </div>
+              <CourseReviewPanel
+                courseId={courseId}
+                canReview={canLeaveReview}
+                initialRating={existingReview?.rating ?? null}
+                initialComment={existingReview?.comment ?? null}
+              />
             </div>
           ) : announcementsThread?.posts.length ? (
             <div className="space-y-3">
@@ -398,18 +455,7 @@ export default async function StudentCourseLearningPage({
             courseId={courseId}
             intelHeading="Session intelligence"
             intelBadge={mintBadge}
-            sections={course.sections.map((s) => ({
-              id: s.id,
-              title: s.title,
-              description: s.description,
-              lessons: s.lessons.map((l) => ({
-                id: l.id,
-                title: l.title,
-                videoUrl: l.videoUrl,
-                content: null,
-                durationSec: l.durationSec,
-              })),
-            }))}
+            sections={sidebarSections}
             selectedLessonId={selectedId}
             progressMap={progressMap}
           />
