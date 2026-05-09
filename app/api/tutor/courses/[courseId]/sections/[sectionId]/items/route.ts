@@ -4,10 +4,55 @@ import { AssignmentStatus } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { requireMentorCourseEditable } from "@/lib/mentor-course-auth";
 
+const mcqQuestionSchema = z
+  .object({
+    kind: z.literal("multiple_choice"),
+    prompt: z.string().min(1).max(500),
+    correctAnswer: z.string().min(1).max(300),
+    incorrectOptions: z.tuple([
+      z.string().min(1).max(300),
+      z.string().min(1).max(300),
+      z.string().min(1).max(300),
+    ]),
+  })
+  .superRefine((q, ctx) => {
+    const all = [q.correctAnswer, ...q.incorrectOptions];
+    if (new Set(all.map((s) => s.trim().toLowerCase())).size !== 4) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Each question needs four distinct options (correct answer plus three different distractors).",
+      });
+    }
+  });
+
+const DEFAULT_MCQ_QUESTIONS = [
+  {
+    kind: "multiple_choice" as const,
+    prompt: "What is the key takeaway from this section?",
+    correctAnswer: "The core concept explained in the section lessons.",
+    incorrectOptions: [
+      "An unrelated administrative requirement.",
+      "A workflow from a different course entirely.",
+      "There is no single takeaway.",
+    ],
+  },
+  {
+    kind: "multiple_choice" as const,
+    prompt: "Which statement best reflects the material above?",
+    correctAnswer: "It aligns with the skills and outcomes described in this section.",
+    incorrectOptions: [
+      "It contradicts every lesson in this section.",
+      "It applies only to unrelated regulatory paperwork.",
+      "None of the readings support any conclusion.",
+    ],
+  },
+];
+
 const createItemBodySchema = z.object({
   itemType: z.enum(["QUIZ", "ASSIGNMENT"]),
   title: z.string().min(2).max(140),
-  quizQuestions: z.array(z.string().min(1).max(300)).max(20).optional(),
+  quizQuestions: z.array(mcqQuestionSchema).min(1).max(20).optional(),
   assignmentDescription: z.string().max(5000).optional(),
   dueDays: z.number().int().min(1).max(365).optional(),
 });
@@ -39,12 +84,10 @@ export async function POST(
   }
 
   if (parsed.data.itemType === "QUIZ") {
-    const questions = parsed.data.quizQuestions?.length
-      ? parsed.data.quizQuestions
-      : [
-          "What is the key concept in this section?",
-          "Which best practice applies here?",
-        ];
+    const questions =
+      parsed.data.quizQuestions && parsed.data.quizQuestions.length > 0
+        ? parsed.data.quizQuestions
+        : DEFAULT_MCQ_QUESTIONS;
     const quiz = await db.sectionQuiz.create({
       data: {
         sectionId,

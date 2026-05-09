@@ -44,6 +44,15 @@ const nextConfig: NextConfig = {
       { source: "/mentor", destination: "/tutor", permanent: false },
     ];
   },
+  /** Legacy course-studio fetches; handlers live under /api/tutor/courses */
+  async rewrites() {
+    return [
+      {
+        source: "/api/mentor/courses/:path*",
+        destination: "/api/tutor/courses/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

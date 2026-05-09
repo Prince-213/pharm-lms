@@ -35,9 +35,8 @@ export function ProgressProvider({
   const markAsComplete = async (lessonId: string) => {
     if (optimisticProgress[lessonId]) return;
 
-    addOptimisticProgress(lessonId);
-
     startTransition(async () => {
+      addOptimisticProgress(lessonId);
       const res = await setLessonCompletedAction(courseId, lessonId, true);
       if (!res.ok) {
         toast.error(res.message || "Failed to save progress");

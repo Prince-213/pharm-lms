@@ -13,7 +13,8 @@ export default function TutorLayout({
     pathname === "/tutor/login" || pathname === "/tutor/signup";
   const isCourseStudioRoute =
     pathname.startsWith("/tutor/courses/new") ||
-    /\/tutor\/courses\/[^/]+\/manage/.test(pathname);
+    /\/tutor\/courses\/[^/]+\/manage/.test(pathname) ||
+    /\/tutor\/courses\/[^/]+\/preview/.test(pathname);
 
   if (isAuthRoute || isCourseStudioRoute) return children;
 

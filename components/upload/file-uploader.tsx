@@ -171,7 +171,7 @@ export function FileUploader({
         formData.set("file", file);
         formData.set("purpose", purpose);
 
-        const response = await fetch(`/api/mentor/courses/${courseId}/upload`, {
+        const response = await fetch(`/api/tutor/courses/${courseId}/upload`, {
           method: "POST",
           body: formData,
         });

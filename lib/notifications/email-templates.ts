@@ -26,6 +26,79 @@ export function getApprovalTemplate(courseTitle: string, mentorName: string, cou
   `;
 }
 
+export function getNewAssignmentEmailTemplate(opts: {
+  studentName: string;
+  courseTitle: string;
+  assignmentTitle: string;
+  dueLine: string;
+  assignmentsUrl: string;
+}) {
+  const { studentName, courseTitle, assignmentTitle, dueLine, assignmentsUrl } = opts;
+  return `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1c1d1f;">
+      <h2 style="color: #6366f1;">New assignment in ${courseTitle}</h2>
+      <p>Hi ${studentName},</p>
+      <p>Your mentor posted a new assignment: <strong>${assignmentTitle}</strong>.</p>
+      <p>${dueLine}</p>
+      <a href="${assignmentsUrl}" style="display: inline-block; background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">View assignments</a>
+      <br /><br />
+      <p>Best regards,<br />Pharm LMS</p>
+    </div>
+  `;
+}
+
+export function getAssignmentSubmittedEmailTemplate(opts: {
+  mentorName: string;
+  studentName: string;
+  courseTitle: string;
+  assignmentTitle: string;
+  reviewUrl: string;
+}) {
+  const { mentorName, studentName, courseTitle, assignmentTitle, reviewUrl } = opts;
+  return `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1c1d1f;">
+      <h2 style="color: #6366f1;">New submission received</h2>
+      <p>Hi ${mentorName},</p>
+      <p><strong>${studentName}</strong> submitted work for <strong>${assignmentTitle}</strong> in <strong>${courseTitle}</strong>.</p>
+      <a href="${reviewUrl}" style="display: inline-block; background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">Review submission</a>
+      <br /><br />
+      <p>Pharm LMS</p>
+    </div>
+  `;
+}
+
+export function getCourseReviewReceivedEmailTemplate(opts: {
+  mentorName: string;
+  studentName: string;
+  courseTitle: string;
+  rating: number;
+  commentPreview: string;
+  reviewsUrl: string;
+}) {
+  const {
+    mentorName,
+    studentName,
+    courseTitle,
+    rating,
+    commentPreview,
+    reviewsUrl,
+  } = opts;
+  const commentBlock = commentPreview
+    ? `<p style="margin:12px 0;padding:12px;background:#f4f4f5;border-radius:6px;">${commentPreview}</p>`
+    : "";
+  return `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1c1d1f;">
+      <h2 style="color: #6366f1;">New course review</h2>
+      <p>Hi ${mentorName},</p>
+      <p><strong>${studentName}</strong> left a <strong>${rating}★</strong> review for <strong>${courseTitle}</strong>.</p>
+      ${commentBlock}
+      <a href="${reviewsUrl}" style="display: inline-block; background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">View reviews</a>
+      <br /><br />
+      <p>Pharm LMS</p>
+    </div>
+  `;
+}
+
 export function getRejectionTemplate(courseTitle: string, mentorName: string, reason: string, editUrl: string) {
   return `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1c1d1f;">
