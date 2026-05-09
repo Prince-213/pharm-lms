@@ -113,6 +113,10 @@ export default async function StudentCourseLearningPage({
   if (!course) notFound();
   if (!enrollment) redirect(`/student/browse/${courseId}`);
 
+  const congratulatoryVideoSrc = await resolveMediaUrl(
+    course.congratulatoryVideoUrl,
+  );
+
   // Must never break the course player if it fails (function swallows errors),
   // but it does write to DB so keep it after auth/enrollment checks.
   await recordCourseVisit(session.user.id, course.id);
@@ -325,7 +329,7 @@ export default async function StudentCourseLearningPage({
             congratulatoryTitle={course.congratulatoryTitle}
             congratulatoryContentType={course.congratulatoryContentType}
             congratulatoryArticle={course.congratulatoryArticle}
-            congratulatoryVideoUrl={course.congratulatoryVideoUrl}
+            congratulatoryVideoUrl={congratulatoryVideoSrc ?? undefined}
           />
         </div>
         <div className="mx-auto flex max-w-5xl gap-1 pt-2">

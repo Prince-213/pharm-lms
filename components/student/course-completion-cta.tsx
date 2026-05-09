@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition, useState } from "react";
-import { CheckCircle2, PartyPopper, Trophy, Video, FileText } from "lucide-react";
+import { CheckCircle2, PartyPopper, Trophy, X } from "lucide-react";
 import confetti from "canvas-confetti";
 import { completeCourseAction } from "@/app/student/course/[courseId]/actions";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,7 @@ export function CourseCompletionCta({
 }: CourseCompletionCtaProps) {
   const [isPending, startTransition] = useTransition();
   const [showCelebration, setShowCelebration] = useState(alreadyCompleted);
+  const congratsKind = congratulatoryContentType?.toUpperCase() ?? "";
 
   const handleComplete = () => {
     startTransition(async () => {
@@ -50,13 +51,13 @@ export function CourseCompletionCta({
       {showCelebration && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/90 p-4 backdrop-blur-sm transition-all animate-in fade-in duration-500">
           <div className="relative w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl animate-in zoom-in slide-in-from-bottom-8 duration-700">
-            {/* Close button for the modal */}
-            <button 
+            <button
+              type="button"
               onClick={() => setShowCelebration(false)}
-              className="absolute right-6 top-6 z-10 rounded-full bg-slate-100 p-2 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors"
+              className="absolute right-6 top-6 z-10 rounded-full bg-slate-100 p-2 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-600"
+              aria-label="Close"
             >
-              <FileText className="h-6 w-6 rotate-45" /> {/* Close icon stand-in if X isn't imported, but wait I have lucide-react */}
-              {/* Better use CheckCircle instead of FileText rotate if X is missing */}
+              <X className="h-6 w-6" strokeWidth={2} />
             </button>
 
             <div className="flex flex-col items-center p-8 text-center sm:p-12">
@@ -72,16 +73,16 @@ export function CourseCompletionCta({
               </p>
 
               <div className="mt-8 w-full">
-                {congratulatoryContentType === "video" && congratulatoryVideoUrl ? (
+                {congratsKind === "VIDEO" && congratulatoryVideoUrl ? (
                   <div className="aspect-video w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-lg">
-                    <video 
-                      src={congratulatoryVideoUrl} 
-                      controls 
+                    <video
+                      src={congratulatoryVideoUrl}
+                      controls
                       autoPlay
                       className="h-full w-full object-cover"
                     />
                   </div>
-                ) : congratulatoryContentType === "article" && congratulatoryArticle ? (
+                ) : congratsKind === "ARTICLE" && congratulatoryArticle ? (
                   <div className="max-h-[400px] w-full overflow-y-auto rounded-2xl border border-slate-100 bg-slate-50 p-6 text-left shadow-inner">
                     <div 
                       className="prose prose-emerald max-w-none text-slate-800"

@@ -24,7 +24,7 @@ export default async function StudentMentorsPage() {
 
   return (
     <div className="space-y-6 text-[var(--foreground)]">
-      <StudentSecondaryNav />
+     
 
       <div>
         <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
