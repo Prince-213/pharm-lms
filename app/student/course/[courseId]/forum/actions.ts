@@ -45,11 +45,11 @@ export async function createForumPostAction(courseId: string, body: string) {
         message: "Only enrolled students can post here.",
       };
     }
-  } else if (role === UserRole.MENTOR) {
+  } else if (role === UserRole.MENTOR || role === UserRole.TUTOR) {
     if (course.mentorId !== session.user.id) {
       return {
         ok: false as const,
-        message: "Only the assigned mentor can post here.",
+        message: "Only the course instructor can post here.",
       };
     }
   } else if (role !== UserRole.ADMIN) {
@@ -87,5 +87,8 @@ export async function createForumPostAction(courseId: string, body: string) {
   });
 
   revalidatePath(`/student/course/${courseId}/forum`);
+  revalidatePath(`/tutor/courses/${courseId}/overview`);
+  revalidatePath(`/tutor/communication/forums/${courseId}`);
+  revalidatePath(`/student/course/${courseId}`);
   return { ok: true as const };
 }

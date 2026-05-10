@@ -13,12 +13,20 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { CourseStatusChart } from "@/components/admin/charts/course-status-chart";
-import { EnrollmentTrendChart } from "@/components/admin/charts/enrollment-trend-chart";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { AdminPanel } from "@/components/admin/admin-panel";
 import { AdminStatCard } from "@/components/admin/admin-stat-card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { CourseStatusChart } from "@/components/admin/charts/course-status-chart";
+import { EnrollmentTrendChart } from "@/components/admin/charts/enrollment-trend-chart";
+import { RouterRefreshInterval } from "@/components/system/router-refresh-interval";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { CourseStatus, UserRole } from "@/generated/prisma/enums";
 import { requireAdminSession } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
@@ -42,8 +50,18 @@ const NEXT_ACTIONS = [
 ];
 
 const MONTH_SHORT = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ] as const;
 
 const STATUS_LABELS: Record<string, string> = {
@@ -142,9 +160,16 @@ export default async function AdminDashboardPage() {
   const enrollmentTrendData = enrollmentBuckets.map(({ x, y }) => ({ x, y }));
 
   // ── Course status breakdown ─────────────────────────────────────────────────
-  const statusCountMap = new Map(courseStatusGroups.map((g) => [g.status, g._count.status]));
-  const courseStatusData = (["DRAFT", "SUBMITTED", "APPROVED", "REJECTED", "PUBLISHED"] as const)
-    .map((s) => ({ label: STATUS_LABELS[s] ?? s, count: statusCountMap.get(s) ?? 0 }))
+  const statusCountMap = new Map(
+    courseStatusGroups.map((g) => [g.status, g._count.status]),
+  );
+  const courseStatusData = (
+    ["DRAFT", "SUBMITTED", "APPROVED", "REJECTED", "PUBLISHED"] as const
+  )
+    .map((s) => ({
+      label: STATUS_LABELS[s] ?? s,
+      count: statusCountMap.get(s) ?? 0,
+    }))
     .filter((d) => d.count > 0);
 
   // ── Top courses detail ──────────────────────────────────────────────────────
@@ -162,6 +187,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <>
+      <RouterRefreshInterval intervalMs={20000} />
       <AdminPageHeader
         title="Overview"
         description="Operational snapshot of the pharmacy LMS: catalog pipeline, people, learning activity, and the latest catalog decisions."
@@ -240,7 +266,11 @@ export default async function AdminDashboardPage() {
 
       <div className="mb-4 grid grid-cols-12 gap-4 md:mb-6 md:gap-6 2xl:mb-9 2xl:gap-7.5">
         {/* Next actions */}
-        <AdminPanel title="Next Actions" description="Common admin workflows" className="col-span-12 xl:col-span-4">
+        <AdminPanel
+          title="Next Actions"
+          description="Common admin workflows"
+          className="col-span-12 xl:col-span-4"
+        >
           <ul className="space-y-3">
             {NEXT_ACTIONS.map(({ href, label, Icon }) => (
               <li key={href}>
@@ -280,8 +310,12 @@ export default async function AdminDashboardPage() {
                 <TableBody>
                   {recentEnrollments.map((e) => (
                     <TableRow key={e.id}>
-                      <TableCell className="font-medium text-foreground">{e.student.fullName}</TableCell>
-                      <TableCell className="text-(--muted)">{e.course.title}</TableCell>
+                      <TableCell className="font-medium text-foreground">
+                        {e.student.fullName}
+                      </TableCell>
+                      <TableCell className="text-(--muted)">
+                        {e.course.title}
+                      </TableCell>
                       <TableCell className="text-right text-xs text-(--muted-soft)">
                         {e.enrolledAt.toLocaleDateString()}
                       </TableCell>

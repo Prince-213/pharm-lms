@@ -1,6 +1,7 @@
 import { AdminCoursesTable } from "@/components/admin/admin-courses-table";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { AdminPanel } from "@/components/admin/admin-panel";
+import { RouterRefreshInterval } from "@/components/system/router-refresh-interval";
 import { CourseStatus } from "@/generated/prisma/enums";
 import { requireAdminSession } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
@@ -32,10 +33,13 @@ export default async function AdminCourseApprovalsPage() {
     rejectionReason: c.rejectionReason,
   }));
 
-  const pending = courses.filter((c) => c.status === CourseStatus.SUBMITTED).length;
+  const pending = courses.filter(
+    (c) => c.status === CourseStatus.SUBMITTED,
+  ).length;
 
   return (
     <>
+      <RouterRefreshInterval intervalMs={20000} />
       <AdminPageHeader
         title="Courses"
         description="Review tutor submissions, publish approved content to the catalog, or return work with clear feedback. Typical LMS flow: draft → submitted → published (or rejected for revision)."
@@ -46,10 +50,14 @@ export default async function AdminCourseApprovalsPage() {
       >
         <div className="mb-4 flex flex-wrap gap-4 text-sm text-[var(--muted)]">
           <span>
-            <strong className="text-[var(--foreground)]">{courses.length}</strong> total
+            <strong className="text-[var(--foreground)]">
+              {courses.length}
+            </strong>{" "}
+            total
           </span>
           <span>
-            <strong className="text-amber-800">{pending}</strong> awaiting review
+            <strong className="text-amber-800">{pending}</strong> awaiting
+            review
           </span>
         </div>
         <AdminCoursesTable courses={rows} />

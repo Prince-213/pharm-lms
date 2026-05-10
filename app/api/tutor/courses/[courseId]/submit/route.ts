@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { CourseStatus } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
@@ -59,7 +60,10 @@ export async function POST(
       details.push("Upload a congratulations video or switch to article.");
     }
   } else if (course.congratulatoryContentType === "ARTICLE") {
-    if (!course.congratulatoryArticle || course.congratulatoryArticle.length < 20) {
+    if (
+      !course.congratulatoryArticle ||
+      course.congratulatoryArticle.length < 20
+    ) {
       details.push("Congratulations article content is required.");
     }
   } else {
@@ -72,7 +76,10 @@ export async function POST(
   }
 
   if (details.length) {
-    return NextResponse.json({ error: "Complete required fields first.", details }, { status: 400 });
+    return NextResponse.json(
+      { error: "Complete required fields first.", details },
+      { status: 400 },
+    );
   }
 
   const previousStatus = authz.course.status;
@@ -93,12 +100,21 @@ export async function POST(
     }),
   ]);
 
-  // Send notification email to the mentor
-  void sendEmail({
-    to: authz.session.user.email!,
-    subject: `Submission Received: ${course.title}`,
-    html: getSubmissionTemplate(course.title, authz.session.user.name!),
-  });
+  revalidatePath("/tutor/courses");
+  revalidatePath("/tutor/performance");
+  revalidatePath("/admin/course-approvals");
+  revalidatePath("/admin/dashboard");
+  revalidatePath("/student/browse");
+
+  const userEmail = authz.session.user.email;
+  const userName = authz.session.user.name;
+  if (userEmail && userName) {
+    void sendEmail({
+      to: userEmail,
+      subject: `Submission Received: ${course.title}`,
+      html: getSubmissionTemplate(course.title, userName),
+    });
+  }
 
   return NextResponse.json({ success: true, status: CourseStatus.SUBMITTED });
 }

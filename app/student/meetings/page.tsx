@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { StudentSecondaryNav } from "@/components/student/student-secondary-nav";
+import { RouterRefreshInterval } from "@/components/system/router-refresh-interval";
 import { MentorProfileStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { withDbRetry } from "@/lib/db-retry";
@@ -114,6 +115,7 @@ export default async function StudentMeetingsPage() {
 
   return (
     <div className="space-y-8 text-[var(--foreground)]">
+      <RouterRefreshInterval intervalMs={20000} />
       <StudentSecondaryNav />
 
       <header className="space-y-1">
