@@ -112,7 +112,7 @@ export function AssignmentSubmitForm({
           type="file"
           accept=".pdf,.doc,.docx,.zip,.txt,.png,.jpg,.jpeg,.webp,.ppt,.pptx,.xls,.xlsx"
           onChange={(e) => setPendingFile(e.target.files?.[0] ?? null)}
-          className="mt-1 block w-full text-xs file:mr-2 file:rounded file:border file:border-[var(--border)] file:bg-[var(--surface)] file:px-2 file:py-1"
+          className="mt-1 block w-full text-xs text-[var(--foreground)] outline-none file:mr-2 file:rounded file:border file:border-[var(--border)] file:bg-[var(--surface)] file:px-2 file:py-1 file:text-sm file:font-medium file:text-[var(--foreground)]"
         />
       </label>
       {attachmentUrl ? (
@@ -125,7 +125,7 @@ export function AssignmentSubmitForm({
         <div className="text-xs text-[var(--muted)]">
           {error ? <span className="text-rose-600">{error}</span> : null}
           {feedback ? (
-            <span className="text-emerald-700">{feedback}</span>
+            <span className="text-[var(--primary)]">{feedback}</span>
           ) : null}
         </div>
         <button

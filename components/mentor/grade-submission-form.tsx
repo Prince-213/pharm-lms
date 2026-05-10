@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { gradeSubmissionAction } from "@/app/tutor/assignments/actions";
 import { toast } from "sonner";
+import { gradeSubmissionAction } from "@/app/tutor/assignments/actions";
 
 export function GradeSubmissionForm({
   submissionId,
@@ -44,12 +44,15 @@ export function GradeSubmissionForm({
     });
   }
 
+  const input =
+    "mt-1 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-soft)]";
+
   return (
     <form
       onSubmit={onSubmit}
       className="grid gap-3 sm:grid-cols-[120px_1fr_auto] sm:items-end"
     >
-      <label className="text-xs font-semibold text-[#1c1d1f]">
+      <label className="text-xs font-semibold text-[var(--foreground)]">
         Grade (0–100)
         <input
           type="number"
@@ -58,10 +61,10 @@ export function GradeSubmissionForm({
           step={1}
           value={grade}
           onChange={(e) => setGrade(e.target.value)}
-          className="mt-1 h-10 w-full rounded border border-[#d1d7dc] bg-white px-2 text-sm"
+          className={`${input} h-10 w-full px-2 text-sm`}
         />
       </label>
-      <label className="text-xs font-semibold text-[#1c1d1f]">
+      <label className="text-xs font-semibold text-[var(--foreground)]">
         Feedback
         <textarea
           rows={2}
@@ -69,14 +72,14 @@ export function GradeSubmissionForm({
           onChange={(e) => setFeedback(e.target.value)}
           maxLength={2000}
           placeholder="Optional feedback for the student"
-          className="mt-1 w-full resize-y rounded border border-[#d1d7dc] bg-white px-3 py-2 text-sm"
+          className={`${input} w-full resize-y px-3 py-2 text-sm`}
         />
       </label>
       <div className="flex flex-col items-stretch gap-1">
         <button
           type="submit"
           disabled={pending}
-          className="h-10 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--primary-strong)] disabled:opacity-60"
+          className="h-10 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-[var(--primary-foreground)] hover:bg-[var(--primary-strong)] disabled:opacity-60"
         >
           {pending ? "Saving…" : "Save grade"}
         </button>

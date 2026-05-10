@@ -30,7 +30,7 @@ export function AssignmentStatusToggle({
   ];
 
   return (
-    <div className="inline-flex items-center gap-1 rounded border border-[#d1d7dc] bg-white p-1 text-xs font-semibold">
+    <div className="inline-flex items-center gap-1 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] p-1 text-xs font-semibold text-[var(--foreground)]">
       {options.map((opt) => (
         <button
           key={opt.value}
@@ -39,8 +39,8 @@ export function AssignmentStatusToggle({
           disabled={pending}
           className={
             opt.value === status
-              ? "rounded bg-[var(--primary)] px-3 py-1.5 text-white shadow-sm"
-              : "rounded px-3 py-1.5 text-[#3e4143] hover:bg-[#f7f7f8]"
+              ? "rounded bg-[var(--primary)] px-3 py-1.5 text-[var(--primary-foreground)] shadow-sm"
+              : "rounded px-3 py-1.5 text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
           }
         >
           {opt.label}
