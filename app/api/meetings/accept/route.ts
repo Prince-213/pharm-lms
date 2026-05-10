@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { buildJitsiJoinUrl, buildJitsiRoomName } from "@/lib/meetings/jitsi";
+import { notifyStudentMeetingAccepted } from "@/lib/notifications/meeting-events";
 
 const schema = z.object({
   meetingRequestId: z.string().cuid(),
@@ -14,7 +15,8 @@ export async function POST(request: Request) {
   const session = await auth();
   if (
     !session?.user ||
-    (session.user.role !== UserRole.TUTOR && session.user.role !== UserRole.MENTOR)
+    (session.user.role !== UserRole.TUTOR &&
+      session.user.role !== UserRole.MENTOR)
   ) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -36,6 +38,12 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { error: "Meeting request not found." },
       { status: 404 },
+    );
+  }
+  if (meetingRequest.status !== "PENDING") {
+    return NextResponse.json(
+      { error: "Only pending requests can be accepted." },
+      { status: 400 },
     );
   }
 
@@ -60,6 +68,8 @@ export async function POST(request: Request) {
     where: { id: meetingRequest.id },
     data: { status: "ACCEPTED" },
   });
+
+  await notifyStudentMeetingAccepted(meetingRequest.id);
 
   return NextResponse.json(meeting, { status: 201 });
 }

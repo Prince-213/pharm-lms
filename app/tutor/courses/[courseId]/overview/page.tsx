@@ -242,7 +242,10 @@ export default async function MentorCourseOverviewPage({
           </div>
         </section>
 
-        <section className="rounded-xl border border-[#d1d7dc] bg-white">
+        <section
+          id="course-forum"
+          className="rounded-xl border border-[#d1d7dc] bg-white scroll-mt-6"
+        >
           <div className="border-b border-[#d1d7dc] px-5 py-4">
             <h2 className="text-lg font-semibold text-[#1c1d1f]">Forum</h2>
             <p className="text-xs text-[#6a6f73]">

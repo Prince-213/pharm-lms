@@ -9,7 +9,7 @@ import { isMeetingJoinable } from "@/lib/meetings/meeting-joinable";
 import { reconcileStaleMeetings } from "@/lib/meetings/reconcile-stale-meetings";
 import { roleHomePath } from "@/lib/rbac";
 
-export default async function TutorMeetingJoinPage({
+export default async function MentorMeetingJoinPage({
   params,
 }: {
   params: Promise<{ meetingId: string }>;
@@ -18,13 +18,10 @@ export default async function TutorMeetingJoinPage({
   const session = await auth();
   if (!session?.user) {
     redirect(
-      `/tutor/login?callbackUrl=${encodeURIComponent(`/tutor/communication/meetings/join/${meetingId}`)}`,
+      `/mentor/login?callbackUrl=${encodeURIComponent(`/mentor/meetings/join/${meetingId}`)}`,
     );
   }
-  if (
-    session.user.role !== UserRole.TUTOR &&
-    session.user.role !== UserRole.MENTOR
-  ) {
+  if (session.user.role !== UserRole.MENTOR) {
     redirect(roleHomePath(session.user.role));
   }
 
@@ -55,10 +52,5 @@ export default async function TutorMeetingJoinPage({
     data: { openedAt: new Date() },
   });
 
-  const returnTo =
-    session.user.role === UserRole.MENTOR
-      ? "/mentor/meetings"
-      : "/tutor/communication/meetings";
-
-  return <OpenMeetingRedirect url={safe} returnTo={returnTo} />;
+  return <OpenMeetingRedirect url={safe} returnTo="/mentor/meetings" />;
 }

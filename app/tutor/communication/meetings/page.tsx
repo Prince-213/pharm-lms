@@ -1,10 +1,7 @@
 import { Inbox, User, Video } from "lucide-react";
 import { redirect } from "next/navigation";
-import {
-  acceptMeetingRequestAction,
-  rejectMeetingRequestAction,
-} from "@/app/tutor/communication/meetings/actions";
 import { auth } from "@/auth";
+import { MeetingRequestActions } from "@/components/meetings/meeting-request-actions";
 import { MentorMeetingsAvailabilityCallout } from "@/components/mentor/mentor-meetings-availability";
 import { MeetingStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
@@ -104,37 +101,10 @@ export default async function MentorCommunicationMeetingsPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       {req.status === "PENDING" ? (
-                        <div className="flex justify-end gap-2">
-                          <form
-                            action={async () => {
-                              "use server";
-                              await rejectMeetingRequestAction(req.id);
-                            }}
-                          >
-                            <button
-                              type="submit"
-                              className="rounded border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700"
-                            >
-                              Reject
-                            </button>
-                          </form>
-                          <form
-                            action={async () => {
-                              "use server";
-                              const starts = req.preferredTime
-                                ? new Date(req.preferredTime).toISOString()
-                                : new Date().toISOString();
-                              await acceptMeetingRequestAction(req.id, starts);
-                            }}
-                          >
-                            <button
-                              type="submit"
-                              className="rounded bg-[var(--primary)] px-2.5 py-1 text-xs font-semibold text-[var(--primary-foreground)] hover:bg-[var(--primary-strong)]"
-                            >
-                              Accept
-                            </button>
-                          </form>
-                        </div>
+                        <MeetingRequestActions
+                          meetingRequestId={req.id}
+                          preferredTime={req.preferredTime}
+                        />
                       ) : (
                         <span className="text-xs text-[var(--muted)]">
                           Processed

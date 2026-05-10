@@ -126,11 +126,14 @@ export function MeetingBookingModal({
   mentorId,
   mentorName,
   availability,
+  primaryCta = "Book 1-on-1 session",
 }: {
   courseId?: string;
   mentorId: string;
   mentorName: string;
   availability: MeetingAvailabilityRow[];
+  /** Button label (e.g. shorter copy for coach directory). */
+  primaryCta?: string;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -290,7 +293,7 @@ export function MeetingBookingModal({
         className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-lg)] bg-[var(--primary)] py-3.5 text-sm font-bold text-[var(--primary-foreground)] shadow-[var(--shadow-sm)] transition hover:bg-[var(--primary-strong)]"
       >
         <Calendar className="h-4 w-4 shrink-0" strokeWidth={2} />
-        Book 1-on-1 clinical consultation
+        {primaryCta}
       </button>
 
       {success ? (

@@ -5,8 +5,9 @@ import {
   MentorProfileStatus,
   UserRole,
 } from "@/generated/prisma/enums";
-import { buildJitsiJoinUrl, buildJitsiRoomName } from "@/lib/meetings/jitsi";
 import { db } from "@/lib/db";
+import { buildJitsiJoinUrl, buildJitsiRoomName } from "@/lib/meetings/jitsi";
+import { notifyHostNewMeetingRequest } from "@/lib/notifications/meeting-events";
 import { meetingRequestSchema } from "@/lib/validation/lms";
 
 export async function POST(request: Request) {
@@ -59,7 +60,10 @@ export async function POST(request: Request) {
       where: { id: parsed.data.mentorId, role: UserRole.MENTOR },
       select: { id: true, mentorProfileStatus: true },
     });
-    if (!mentor || mentor.mentorProfileStatus !== MentorProfileStatus.APPROVED) {
+    if (
+      !mentor ||
+      mentor.mentorProfileStatus !== MentorProfileStatus.APPROVED
+    ) {
       return NextResponse.json(
         { error: "This mentor is not available for booking." },
         { status: 400 },
@@ -78,7 +82,9 @@ export async function POST(request: Request) {
         ? new Date(parsed.data.preferredTime)
         : null,
       message: parsed.data.message,
-      status: instant ? MeetingRequestStatus.ACCEPTED : MeetingRequestStatus.PENDING,
+      status: instant
+        ? MeetingRequestStatus.ACCEPTED
+        : MeetingRequestStatus.PENDING,
     },
   });
 
@@ -98,8 +104,13 @@ export async function POST(request: Request) {
         startsAt: new Date(),
       },
     });
-    return NextResponse.json({ meetingRequest, meeting, instant: true }, { status: 201 });
+    await notifyHostNewMeetingRequest(meetingRequest.id);
+    return NextResponse.json(
+      { meetingRequest, meeting, instant: true },
+      { status: 201 },
+    );
   }
 
+  await notifyHostNewMeetingRequest(meetingRequest.id);
   return NextResponse.json(meetingRequest, { status: 201 });
 }

@@ -117,17 +117,20 @@ export type BroadcastResult =
   | { ok: false; message: string };
 
 /**
- * Mentor-only: starts (or continues) 1:1 threads with every active enrollee
- * of a course and posts the same body to each. Useful for course-wide updates
- * before a dedicated announcements module exists.
+ * Course owner (tutor or mentor): starts (or continues) 1:1 threads with every
+ * active enrollee and posts the same body to each.
  */
 export async function broadcastToCourseAction(input: {
   courseId: string;
   body: string;
 }): Promise<BroadcastResult> {
   const session = await auth();
-  if (!session?.user || session.user.role !== UserRole.MENTOR) {
-    return { ok: false, message: "Mentors only." };
+  if (
+    !session?.user ||
+    (session.user.role !== UserRole.MENTOR &&
+      session.user.role !== UserRole.TUTOR)
+  ) {
+    return { ok: false, message: "Only course instructors can broadcast." };
   }
   const parsed = broadcastSchema.safeParse(input);
   if (!parsed.success) return { ok: false, message: "Message is required." };
@@ -165,5 +168,6 @@ export async function broadcastToCourseAction(input: {
   }
 
   revalidatePath("/mentor/communication/messages");
+  revalidatePath("/tutor/communication/announcements");
   return { ok: true, recipients: studentIds.length };
 }

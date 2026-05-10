@@ -1,7 +1,15 @@
 "use client";
 
+import { clsx } from "clsx";
 import { CalendarDays, Clock, X } from "lucide-react";
 import { useCallback, useEffect, useId, useState } from "react";
+
+type AvailabilitySlot = {
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  timezone: string;
+};
 
 const WEEKDAYS = [
   { key: "mon", label: "Monday" },
@@ -29,6 +37,7 @@ export function MentorMeetingsAvailabilityCallout() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [savedSlots, setSavedSlots] = useState<AvailabilitySlot[]>([]);
 
   const closeModal = useCallback(() => {
     setModalOpen(false);
@@ -57,49 +66,54 @@ export function MentorMeetingsAvailabilityCallout() {
     setDayEnabled((prev) => ({ ...prev, [key]: !prev[key] }));
   }
 
+  const applySlotsToState = useCallback((slots: AvailabilitySlot[]) => {
+    if (!slots.length) {
+      setScheduleConfigured(false);
+      setSavedSlots([]);
+      return;
+    }
+    const dayMap = {
+      mon: false,
+      tue: false,
+      wed: false,
+      thu: false,
+      fri: false,
+      sat: false,
+      sun: false,
+    };
+    for (const slot of slots) {
+      const key = WEEKDAYS[slot.dayOfWeek]?.key;
+      if (key) dayMap[key] = true;
+    }
+    setDayEnabled(dayMap);
+    setStartTime(slots[0].startTime);
+    setEndTime(slots[0].endTime);
+    setScheduleConfigured(true);
+    setSavedSlots(slots);
+    setSavedHint(`Availability synced (${slots[0].timezone}).`);
+  }, []);
+
+  const refreshAvailability = useCallback(async () => {
+    const res = await fetch("/api/meetings/availability", {
+      method: "GET",
+      cache: "no-store",
+    });
+    if (!res.ok) return;
+    const data = (await res.json()) as { slots: AvailabilitySlot[] };
+    if (!data.slots.length) {
+      setScheduleConfigured(false);
+      setSavedSlots([]);
+      return;
+    }
+    applySlotsToState(data.slots);
+  }, [applySlotsToState]);
+
   useEffect(() => {
     void (async () => {
-      const res = await fetch("/api/meetings/availability", {
-        method: "GET",
-        cache: "no-store",
-      });
-      if (!res.ok) {
-        setLoaded(true);
-        return;
-      }
-      const data = (await res.json()) as {
-        slots: {
-          dayOfWeek: number;
-          startTime: string;
-          endTime: string;
-          timezone: string;
-        }[];
-      };
-      if (!data.slots.length) {
-        setLoaded(true);
-        return;
-      }
-      const dayMap = {
-        mon: false,
-        tue: false,
-        wed: false,
-        thu: false,
-        fri: false,
-        sat: false,
-        sun: false,
-      };
-      for (const slot of data.slots) {
-        const key = WEEKDAYS[slot.dayOfWeek]?.key;
-        if (key) dayMap[key] = true;
-      }
-      setDayEnabled(dayMap);
-      setStartTime(data.slots[0].startTime);
-      setEndTime(data.slots[0].endTime);
-      setScheduleConfigured(true);
-      setSavedHint(`Availability synced (${data.slots[0].timezone}).`);
+      await refreshAvailability();
       setLoaded(true);
     })();
-  }, []);
+  }, [refreshAvailability]);
 
   function handleSave() {
     setSaveError(null);
@@ -137,36 +151,41 @@ export function MentorMeetingsAvailabilityCallout() {
         setSaveError(body?.error ?? "Could not save availability.");
         return;
       }
-      setScheduleConfigured(true);
+      await refreshAvailability();
       setSavedHint("Weekly hours saved and visible to students.");
       closeModal();
     })();
   }
 
+  const summaryTimezone = savedSlots[0]?.timezone;
+  const summaryWindow =
+    savedSlots.length > 0
+      ? `${savedSlots[0].startTime} – ${savedSlots[0].endTime}`
+      : null;
+
   return (
     <>
-      <section className="mb-10 overflow-hidden rounded border border-[#d1d7dc] bg-gradient-to-b from-[#fafbff] to-white">
+      <section className="mb-10 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-sm)]">
         <div className="grid gap-6 p-6 sm:grid-cols-[1fr_auto] sm:items-center sm:p-8">
           <div className="flex gap-5">
-            <div className="hidden h-28 w-36 shrink-0 rounded-lg border border-dashed border-[#c0c4cc] bg-white sm:flex sm:items-center sm:justify-center">
+            <div className="hidden h-28 w-36 shrink-0 rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] bg-[var(--background)] sm:flex sm:items-center sm:justify-center">
               <CalendarDays
-                className="h-12 w-12 text-[#d1d7dc]"
+                className="h-12 w-12 text-[var(--muted)]"
                 strokeWidth={1.25}
               />
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-[#1c1d1f]">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-lg font-bold text-[var(--foreground)]">
                 Set your availability
               </h3>
               {!loaded ? (
-                <p className="mt-2 text-sm leading-relaxed text-[#6a6f73]">
+                <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">
                   Loading current schedule...
                 </p>
               ) : scheduleConfigured ? (
-                <p className="mt-2 text-sm leading-relaxed text-[#6a6f73]">
-                  You have a weekly hours template saved. Students will only see
-                  slots that match these windows once booking is enabled. You
-                  can{" "}
+                <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">
+                  Your weekly template is saved. Students only see bookable slots
+                  inside these windows. You can{" "}
                   <button
                     type="button"
                     onClick={() => {
@@ -180,18 +199,42 @@ export function MentorMeetingsAvailabilityCallout() {
                   anytime.
                 </p>
               ) : (
-                <p className="mt-2 text-sm leading-relaxed text-[#6a6f73]">
-                  The first time you use meetings, choose the days and times you
-                  are open for one-on-one sessions. Until you save a schedule,
-                  students will see you as{" "}
-                  <span className="font-semibold text-[#1c1d1f]">
-                    available every day, any time
-                  </span>{" "}
-                  (placeholder for the default policy in the real product).
+                <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">
+                  Choose the days and times you are open for one-on-one sessions.
+                  Until you save a schedule, the booking UI may assume flexible
+                  availability.
                 </p>
               )}
+              {scheduleConfigured && loaded && summaryWindow && summaryTimezone ? (
+                <div className="mt-4 rounded-[var(--radius-lg)] border border-[var(--primary)]/25 bg-[var(--primary-soft)]/30 p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">
+                    Active schedule
+                  </p>
+                  <p className="mt-1 text-base font-semibold tabular-nums text-[var(--foreground)]">
+                    {summaryWindow}
+                  </p>
+                  <p className="mt-0.5 text-xs text-[var(--muted)]">
+                    {summaryTimezone}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {WEEKDAYS.map((d) => (
+                      <span
+                        key={d.key}
+                        className={clsx(
+                          "rounded-full px-2.5 py-1 text-[11px] font-bold",
+                          dayEnabled[d.key]
+                            ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
+                            : "bg-[var(--surface-muted)] text-[var(--muted)]",
+                        )}
+                      >
+                        {d.label.slice(0, 3)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
               {savedHint ? (
-                <p className="mt-3 rounded border border-[#c5e5cf] bg-[#e8f9ef] px-3 py-2 text-xs text-[#1e4620]">
+                <p className="mt-3 rounded-[var(--radius-md)] border border-emerald-200/80 bg-emerald-50 px-3 py-2 text-xs text-emerald-950 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-100">
                   {savedHint}
                 </p>
               ) : null}
@@ -201,15 +244,15 @@ export function MentorMeetingsAvailabilityCallout() {
                   setSaveError(null);
                   setModalOpen(true);
                 }}
-                className="mt-4 inline-flex items-center gap-2 rounded-sm bg-[var(--primary)] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-95"
+                className="mt-4 inline-flex items-center gap-2 rounded-[var(--radius-md)] bg-[var(--primary)] px-5 py-2.5 text-sm font-semibold text-[var(--primary-foreground)] hover:bg-[var(--primary-strong)]"
               >
                 <Clock className="h-4 w-4" />
-                Configure weekly hours
+                {scheduleConfigured ? "Edit weekly hours" : "Configure weekly hours"}
               </button>
             </div>
           </div>
-          <div className="rounded border border-[#e8edf2] bg-[#f7f9fa] p-4 text-xs text-[#6a6f73] sm:max-w-[220px]">
-            <p className="font-semibold text-[#1c1d1f]">Tip</p>
+          <div className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--background)] p-4 text-xs text-[var(--muted)] sm:max-w-[220px]">
+            <p className="font-semibold text-[var(--foreground)]">Tip</p>
             <p className="mt-2 leading-relaxed">
               Block lunch or teaching hours so requests only land when you can
               actually meet.
@@ -225,7 +268,7 @@ export function MentorMeetingsAvailabilityCallout() {
         >
           <button
             type="button"
-            className="absolute inset-0 bg-[#1c1d1f]/50"
+            className="absolute inset-0 bg-black/50"
             aria-label="Close dialog"
             onClick={closeModal}
           />
@@ -233,14 +276,14 @@ export function MentorMeetingsAvailabilityCallout() {
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            className="relative z-10 flex max-h-[min(90vh,640px)] w-full max-w-lg flex-col rounded-lg border border-[#d1d7dc] bg-white shadow-xl"
+            className="relative z-10 flex max-h-[min(90vh,640px)] w-full max-w-lg flex-col rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-lg)]"
           >
-            <div className="flex items-start justify-between border-b border-[#ececec] px-5 py-4">
+            <div className="flex items-start justify-between border-b border-[var(--border)] px-5 py-4">
               <div>
-                <h2 id={titleId} className="text-lg font-bold text-[#1c1d1f]">
+                <h2 id={titleId} className="text-lg font-bold text-[var(--foreground)]">
                   Weekly hours
                 </h2>
-                <p className="mt-1 text-xs text-[#6a6f73]">
+                <p className="mt-1 text-xs text-[var(--muted)]">
                   Turn days on or off, then set the window that repeats each
                   week.
                 </p>
@@ -248,7 +291,7 @@ export function MentorMeetingsAvailabilityCallout() {
               <button
                 type="button"
                 onClick={closeModal}
-                className="rounded p-1 text-[#6a6f73] hover:bg-[#f7f7f8] hover:text-[#1c1d1f]"
+                className="rounded p-1 text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
                 aria-label="Close"
               >
                 <X className="h-5 w-5" />
@@ -257,7 +300,7 @@ export function MentorMeetingsAvailabilityCallout() {
 
             <div className="space-y-4 overflow-y-auto px-5 py-4">
               {saveError ? (
-                <p className="rounded border border-[#f3d0c7] bg-[#fff4e5] px-3 py-2 text-xs text-[#8a4a1b]">
+                <p className="rounded-[var(--radius-md)] border border-amber-200/80 bg-amber-50 px-3 py-2 text-xs text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
                   {saveError}
                 </p>
               ) : null}
@@ -274,7 +317,7 @@ export function MentorMeetingsAvailabilityCallout() {
                     type="time"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
-                    className="h-10 w-full rounded border border-[#d1d7dc] px-2 text-sm"
+                    className="h-10 w-full rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--background)] px-2 text-sm text-[var(--foreground)]"
                   />
                 </div>
                 <div>
@@ -289,26 +332,26 @@ export function MentorMeetingsAvailabilityCallout() {
                     type="time"
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
-                    className="h-10 w-full rounded border border-[#d1d7dc] px-2 text-sm"
+                    className="h-10 w-full rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--background)] px-2 text-sm text-[var(--foreground)]"
                   />
                 </div>
               </div>
 
-              <ul className="divide-y divide-[#ececec] rounded border border-[#d1d7dc]">
+              <ul className="divide-y divide-[var(--border)] rounded-[var(--radius-md)] border border-[var(--border)]">
                 {WEEKDAYS.map((d) => (
                   <li
                     key={d.key}
-                    className="flex items-center justify-between gap-3 bg-[#fcfcfd] px-4 py-3"
+                    className="flex items-center justify-between gap-3 bg-[var(--background)] px-4 py-3"
                   >
-                    <span className="text-sm font-medium text-[#1c1d1f]">
+                    <span className="text-sm font-medium text-[var(--foreground)]">
                       {d.label}
                     </span>
-                    <label className="flex cursor-pointer items-center gap-2 text-xs text-[#6a6f73]">
+                    <label className="flex cursor-pointer items-center gap-2 text-xs text-[var(--muted)]">
                       <input
                         type="checkbox"
                         checked={dayEnabled[d.key]}
                         onChange={() => toggleDay(d.key)}
-                        className="h-4 w-4 rounded border-[#d1d7dc] text-[var(--primary)]"
+                        className="h-4 w-4 rounded border-[var(--border)] text-[var(--primary)]"
                       />
                       Available
                     </label>
@@ -317,11 +360,11 @@ export function MentorMeetingsAvailabilityCallout() {
               </ul>
             </div>
 
-            <div className="flex justify-end gap-2 border-t border-[#ececec] px-5 py-4">
+            <div className="flex justify-end gap-2 border-t border-[var(--border)] px-5 py-4">
               <button
                 type="button"
                 onClick={closeModal}
-                className="rounded-sm border border-[#d1d7dc] bg-white px-4 py-2 text-sm font-semibold text-[#3e4143]"
+                className="rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-semibold text-[var(--foreground)]"
               >
                 Cancel
               </button>
@@ -329,7 +372,7 @@ export function MentorMeetingsAvailabilityCallout() {
                 type="button"
                 onClick={handleSave}
                 disabled={saving}
-                className="rounded-sm bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white hover:opacity-95 disabled:opacity-60"
+                className="rounded-[var(--radius-md)] bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-[var(--primary-foreground)] hover:bg-[var(--primary-strong)] disabled:opacity-60"
               >
                 {saving ? "Saving..." : "Save weekly hours"}
               </button>

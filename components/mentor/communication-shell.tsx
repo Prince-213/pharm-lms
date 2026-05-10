@@ -1,7 +1,7 @@
 "use client";
 
 import { clsx } from "clsx";
-import { Megaphone, MessageSquare, Video } from "lucide-react";
+import { Megaphone, MessageSquare, MessagesSquare, Video } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -18,6 +18,11 @@ const subNav = [
     href: `${WORKSPACE}/communication/announcements`,
     label: "Announcements",
     icon: Megaphone,
+  },
+  {
+    href: `${WORKSPACE}/communication/forums`,
+    label: "Forums",
+    icon: MessagesSquare,
   },
   {
     href: `${WORKSPACE}/communication/meetings`,
