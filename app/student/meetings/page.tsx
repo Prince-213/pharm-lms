@@ -7,6 +7,7 @@ import { RouterRefreshInterval } from "@/components/system/router-refresh-interv
 import { MentorProfileStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { withDbRetry } from "@/lib/db-retry";
+import { formatMeetingCrmDate } from "@/lib/meetings/crm-display";
 import {
   isMeetingJoinable,
   isMeetingLiveForDashboard,
@@ -268,11 +269,13 @@ export default async function StudentMeetingsPage() {
         {meetingRequests.length ? (
           <>
             <div className="mt-4 hidden overflow-hidden rounded-[var(--radius-md)] border border-[var(--border)] md:block">
-              <table className="w-full min-w-[560px] text-left text-sm">
+              <table className="w-full min-w-[720px] text-left text-sm">
                 <thead className="border-b border-[var(--border)] bg-[var(--background)] text-[10px] font-bold uppercase tracking-wide text-[var(--muted)]">
                   <tr>
                     <th className="px-3 py-2.5">Context</th>
                     <th className="px-3 py-2.5">Host</th>
+                    <th className="px-3 py-2.5">Submitted</th>
+                    <th className="px-3 py-2.5">When</th>
                     <th className="px-3 py-2.5">Status</th>
                     <th className="px-3 py-2.5"> </th>
                   </tr>
@@ -311,6 +314,24 @@ export default async function StudentMeetingsPage() {
                         </td>
                         <td className="px-3 py-2.5 text-xs text-[var(--muted)]">
                           {req.mentor.fullName}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-2.5 text-[11px] text-[var(--muted)]">
+                          {formatMeetingCrmDate(req.requestedAt)}
+                        </td>
+                        <td className="px-3 py-2.5 text-[11px] text-[var(--muted)]">
+                          {meeting?.startsAt ? (
+                            <>
+                              Scheduled:{" "}
+                              {formatMeetingCrmDate(meeting.startsAt)}
+                            </>
+                          ) : req.preferredTime ? (
+                            <>
+                              Preferred:{" "}
+                              {formatMeetingCrmDate(req.preferredTime)}
+                            </>
+                          ) : (
+                            "—"
+                          )}
                         </td>
                         <td className="px-3 py-2.5">
                           <span className="rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-[10px] font-semibold text-[var(--muted)]">
@@ -372,6 +393,16 @@ export default async function StudentMeetingsPage() {
                     <p className="text-xs text-[var(--muted)]">
                       {req.mentor.fullName}
                     </p>
+                    <p className="mt-1 text-[11px] text-[var(--muted)]">
+                      Submitted: {formatMeetingCrmDate(req.requestedAt)}
+                    </p>
+                    <p className="text-[11px] text-[var(--muted)]">
+                      {meeting?.startsAt
+                        ? `Scheduled: ${formatMeetingCrmDate(meeting.startsAt)}`
+                        : req.preferredTime
+                          ? `Preferred: ${formatMeetingCrmDate(req.preferredTime)}`
+                          : null}
+                    </p>
                     <p className="mt-1 text-[11px] font-semibold text-[var(--muted)]">
                       {status}
                     </p>
@@ -383,20 +414,11 @@ export default async function StudentMeetingsPage() {
                         <Video className="h-3.5 w-3.5" />
                         Join meeting
                       </Link>
-                    ) : meeting?.startsAt ? (
-                      <p className="mt-2 text-[11px] text-[var(--muted)]">
-                        {new Date(meeting.startsAt).toLocaleString()}
-                      </p>
-                    ) : req.preferredTime ? (
-                      <p className="mt-2 text-[11px] text-[var(--muted)]">
-                        Requested:{" "}
-                        {new Date(req.preferredTime).toLocaleString()}
-                      </p>
-                    ) : (
+                    ) : !meeting?.startsAt && !req.preferredTime ? (
                       <p className="mt-2 text-[11px] text-[var(--muted)]">
                         Waiting for host.
                       </p>
-                    )}
+                    ) : null}
                   </li>
                 );
               })}

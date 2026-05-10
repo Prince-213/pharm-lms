@@ -11,6 +11,7 @@ import {
 } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { withDbRetry } from "@/lib/db-retry";
+import { formatMeetingCrmDate } from "@/lib/meetings/crm-display";
 import { isMeetingJoinable } from "@/lib/meetings/meeting-joinable";
 import { reconcileStaleMeetingsThrottled } from "@/lib/meetings/reconcile-stale-meetings";
 import { roleHomePath } from "@/lib/rbac";
@@ -46,6 +47,7 @@ export default async function MentorMeetingsPage() {
       orderBy: { startsAt: "desc" },
       include: {
         student: { select: { fullName: true } },
+        meetingRequest: { select: { requestedAt: true } },
       },
       take: 50,
     });
@@ -84,7 +86,8 @@ export default async function MentorMeetingsPage() {
                     Student
                   </span>
                 </th>
-                <th className="px-4 py-3">Requested window</th>
+                <th className="px-4 py-3">Submitted</th>
+                <th className="px-4 py-3">Preferred slot</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3 text-right">Actions</th>
               </tr>
@@ -101,9 +104,12 @@ export default async function MentorMeetingsPage() {
                         {req.student.email}
                       </p>
                     </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-xs text-[var(--muted)]">
+                      {formatMeetingCrmDate(req.requestedAt)}
+                    </td>
                     <td className="px-4 py-3 text-xs text-[var(--muted)]">
                       {req.preferredTime
-                        ? new Date(req.preferredTime).toLocaleString()
+                        ? formatMeetingCrmDate(req.preferredTime)
                         : "Flexible / ASAP"}
                     </td>
                     <td className="px-4 py-3">
@@ -128,7 +134,7 @@ export default async function MentorMeetingsPage() {
               ) : (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={5}
                     className="px-6 py-16 text-center text-[var(--muted)]"
                   >
                     <p className="font-semibold text-[var(--foreground)]">
@@ -156,9 +162,13 @@ export default async function MentorMeetingsPage() {
                 <p className="text-xs text-[var(--muted)]">
                   {req.student.email}
                 </p>
-                <p className="mt-2 text-xs text-[var(--muted)]">
+                <p className="mt-2 text-[11px] text-[var(--muted)]">
+                  Submitted: {formatMeetingCrmDate(req.requestedAt)}
+                </p>
+                <p className="mt-1 text-xs text-[var(--muted)]">
+                  Preferred:{" "}
                   {req.preferredTime
-                    ? new Date(req.preferredTime).toLocaleString()
+                    ? formatMeetingCrmDate(req.preferredTime)
                     : "Flexible / ASAP"}
                 </p>
                 <p className="mt-1 text-[11px] font-semibold text-[var(--muted)]">
@@ -212,9 +222,15 @@ export default async function MentorMeetingsPage() {
                     <p className="text-sm font-semibold text-[var(--foreground)]">
                       Coaching session
                     </p>
-                    <p className="text-xs text-[var(--muted)]">
-                      {meeting.student.fullName} ·{" "}
-                      {new Date(meeting.startsAt).toLocaleString()}
+                    <p className="text-xs text-[var(--foreground)]">
+                      {meeting.student.fullName}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-[var(--muted)]">
+                      Scheduled: {formatMeetingCrmDate(meeting.startsAt)}
+                    </p>
+                    <p className="text-[11px] text-[var(--muted)]">
+                      Submitted:{" "}
+                      {formatMeetingCrmDate(meeting.meetingRequest.requestedAt)}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">

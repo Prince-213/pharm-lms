@@ -6,6 +6,11 @@ import { MentorMeetingsAvailabilityCallout } from "@/components/mentor/mentor-me
 import { MeetingStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { withDbRetry } from "@/lib/db-retry";
+import {
+  enrollmentsByStudentId,
+  formatEnrolledCoursesLine,
+  formatMeetingCrmDate,
+} from "@/lib/meetings/crm-display";
 import { isMeetingJoinable } from "@/lib/meetings/meeting-joinable";
 import { reconcileStaleMeetingsThrottled } from "@/lib/meetings/reconcile-stale-meetings";
 import { roleHomePath } from "@/lib/rbac";
@@ -19,7 +24,7 @@ export default async function MentorCommunicationMeetingsPage() {
 
   await reconcileStaleMeetingsThrottled();
 
-  const [requests, meetings] = await withDbRetry(async () => {
+  const [requests, meetings, enrollmentRows] = await withDbRetry(async () => {
     const requests = await db.meetingRequest.findMany({
       where: { mentorId: session.user.id, courseId: { not: null } },
       orderBy: { requestedAt: "desc" },
@@ -29,17 +34,38 @@ export default async function MentorCommunicationMeetingsPage() {
       },
       take: 50,
     });
+    const studentIds = [...new Set(requests.map((r) => r.studentId))];
+    const enrollmentRows =
+      studentIds.length > 0
+        ? await db.enrollment.findMany({
+            where: {
+              studentId: { in: studentIds },
+              course: { mentorId: session.user.id },
+            },
+            select: {
+              studentId: true,
+              course: { select: { id: true, title: true } },
+            },
+          })
+        : [];
     const meetings = await db.meeting.findMany({
       where: { mentorId: session.user.id },
       orderBy: { startsAt: "desc" },
       include: {
         student: { select: { fullName: true } },
-        meetingRequest: { include: { course: { select: { title: true } } } },
+        meetingRequest: {
+          select: {
+            requestedAt: true,
+            course: { select: { title: true } },
+          },
+        },
       },
       take: 50,
     });
-    return [requests, meetings] as const;
+    return [requests, meetings, enrollmentRows] as const;
   });
+
+  const enrollmentsMap = enrollmentsByStudentId(enrollmentRows);
 
   return (
     <div className="px-5 py-6 text-[var(--foreground)] sm:px-8">
@@ -71,52 +97,69 @@ export default async function MentorCommunicationMeetingsPage() {
                     Student
                   </span>
                 </th>
+                <th className="px-4 py-3">Submitted</th>
                 <th className="px-4 py-3">Course</th>
-                <th className="px-4 py-3">Requested window</th>
+                <th className="px-4 py-3">Preferred slot</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {requests.length ? (
-                requests.map((req) => (
-                  <tr key={req.id} className="border-t border-[var(--border)]">
-                    <td className="px-4 py-3">
-                      <p className="font-medium text-[var(--foreground)]">
-                        {req.student.fullName}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3 text-[var(--foreground)]">
-                      {req.course?.title ?? "Course"}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-[var(--muted)]">
-                      {req.preferredTime
-                        ? new Date(req.preferredTime).toLocaleString()
-                        : "Instant request"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-[11px] font-semibold text-[var(--muted)]">
-                        {req.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      {req.status === "PENDING" ? (
-                        <MeetingRequestActions
-                          meetingRequestId={req.id}
-                          preferredTime={req.preferredTime}
-                        />
-                      ) : (
-                        <span className="text-xs text-[var(--muted)]">
-                          Processed
+                requests.map((req) => {
+                  const enrolledLine = formatEnrolledCoursesLine(
+                    enrollmentsMap.get(req.studentId) ?? [],
+                  );
+                  return (
+                    <tr
+                      key={req.id}
+                      className="border-t border-[var(--border)]"
+                    >
+                      <td className="px-4 py-3">
+                        <p className="font-medium text-[var(--foreground)]">
+                          {req.student.fullName}
+                        </p>
+                        {enrolledLine ? (
+                          <p className="mt-1 line-clamp-2 text-[11px] text-[var(--muted)]">
+                            {enrolledLine}
+                          </p>
+                        ) : null}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-xs text-[var(--muted)]">
+                        {formatMeetingCrmDate(req.requestedAt)}
+                      </td>
+                      <td className="px-4 py-3 text-[var(--foreground)]">
+                        {req.course?.title ?? "Course"}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-[var(--muted)]">
+                        {req.preferredTime
+                          ? formatMeetingCrmDate(req.preferredTime)
+                          : "—"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-[11px] font-semibold text-[var(--muted)]">
+                          {req.status}
                         </span>
-                      )}
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {req.status === "PENDING" ? (
+                          <MeetingRequestActions
+                            meetingRequestId={req.id}
+                            preferredTime={req.preferredTime}
+                          />
+                        ) : (
+                          <span className="text-xs text-[var(--muted)]">
+                            Processed
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-6 py-16 text-center text-[var(--muted)]"
                   >
                     <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--surface-muted)]">
@@ -170,9 +213,15 @@ export default async function MentorCommunicationMeetingsPage() {
                     <p className="text-sm font-semibold text-[var(--foreground)]">
                       {meeting.meetingRequest.course?.title ?? "Course"}
                     </p>
-                    <p className="text-xs text-[var(--muted)]">
-                      {meeting.student.fullName} ·{" "}
-                      {new Date(meeting.startsAt).toLocaleString()}
+                    <p className="text-xs text-[var(--foreground)]">
+                      {meeting.student.fullName}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-[var(--muted)]">
+                      Scheduled: {formatMeetingCrmDate(meeting.startsAt)}
+                    </p>
+                    <p className="text-[11px] text-[var(--muted)]">
+                      Submitted:{" "}
+                      {formatMeetingCrmDate(meeting.meetingRequest.requestedAt)}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
