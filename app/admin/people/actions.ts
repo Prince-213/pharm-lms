@@ -6,6 +6,7 @@ import { UserRole } from "@/generated/prisma/enums";
 import { deleteCourseGraph } from "@/lib/admin/delete-course-graph";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
+import { notifyMentorAccountActivated } from "@/lib/notifications/mentor-events";
 
 async function assertAdmin() {
   const session = await auth();
@@ -48,6 +49,10 @@ export async function setUserActiveAction(
       },
     }),
   ]);
+
+  if (expectedRole === "MENTOR") {
+    void notifyMentorAccountActivated(userId, isActive);
+  }
 
   revalidatePath("/admin/students");
   revalidatePath("/admin/tutors");
@@ -142,7 +147,9 @@ export async function adminDeleteUserAndData(
 
   const snapshot = { email: user.email, role: user.role };
 
-  await db.$transaction(async (tx) => {
+  // This delete touches many tables; keep it resilient under load.
+  await db.$transaction(
+    async (tx) => {
     if (user.role === UserRole.TUTOR) {
       const ownedCourseIds = (
         await tx.course.findMany({
@@ -214,7 +221,6 @@ export async function adminDeleteUserAndData(
       await tx.chatThread.deleteMany({ where: { id: { in: emptyThreadIds } } });
     }
 
-    await tx.auditLog.deleteMany({ where: { actorId: userId } });
     await tx.signupOtp.deleteMany({ where: { email: user.email } });
 
     await tx.user.delete({ where: { id: userId } });
@@ -228,7 +234,12 @@ export async function adminDeleteUserAndData(
         payload: snapshot as object,
       },
     });
-  });
+    },
+    { timeout: 30000 },
+  );
+
+  // Clean up historic audit trail after user is removed.
+  await db.auditLog.deleteMany({ where: { actorId: userId } });
 
   revalidateAfterUserDelete();
   return { success: true as const };

@@ -203,7 +203,7 @@ export async function completeSignupWithOtpAction(
   try {
     await prisma.$transaction([
       prisma.user.create({
-        data: { fullName, email, role, passwordHash },
+        data: { fullName, email, role, passwordHash, isActive: role === UserRole.MENTOR ? false : true },
         select: { id: true },
       }),
       prisma.signupOtp.update({

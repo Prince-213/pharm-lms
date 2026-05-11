@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { MeetingBookingModal } from "@/components/student/meeting-booking-modal";
-import { MentorProfileStatus, UserRole } from "@/generated/prisma/enums";
+import { UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { roleHomePath } from "@/lib/rbac";
 
@@ -20,10 +20,17 @@ export default async function StudentMentorDetailPage({
     where: {
       id: mentorId,
       role: UserRole.MENTOR,
-      mentorProfileStatus: MentorProfileStatus.APPROVED,
       isActive: true,
     },
-    select: { id: true, fullName: true, bio: true, avatarUrl: true },
+    select: {
+      id: true,
+      fullName: true,
+      bio: true,
+      avatarUrl: true,
+      mentorHeadline: true,
+      mentorSpecialties: true,
+      mentorYearsExperience: true,
+    },
   });
   if (!mentor) notFound();
 
@@ -36,19 +43,38 @@ export default async function StudentMentorDetailPage({
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-6 py-10 text-[var(--foreground)]">
       <div className="flex items-start gap-4">
-        <div className="h-16 w-16 overflow-hidden rounded-full border border-[var(--border)] bg-[var(--surface-muted)]">
+        <div className="aspect-square h-16 w-16 shrink-0 overflow-hidden rounded-full border border-[var(--border)] bg-[var(--surface-muted)]">
           {mentor.avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={mentor.avatarUrl} alt="" className="h-full w-full object-cover" />
+            <img
+              src={mentor.avatarUrl}
+              alt=""
+              className="block h-full w-full object-cover object-center"
+            />
           ) : null}
         </div>
         <div className="min-w-0">
           <h1 className="font-display text-2xl font-extrabold tracking-tight">
             {mentor.fullName}
           </h1>
+          {mentor.mentorHeadline ? (
+            <p className="mt-1 text-sm font-semibold text-[var(--muted)]">
+              {mentor.mentorHeadline}
+            </p>
+          ) : null}
+          {mentor.mentorYearsExperience !== null ? (
+            <p className="mt-1 text-xs text-[var(--muted)]">
+              {mentor.mentorYearsExperience} years of experience
+            </p>
+          ) : null}
           <p className="mt-2 text-sm text-[var(--muted)]">
             {mentor.bio?.trim() || "Mentor profile available."}
           </p>
+          {mentor.mentorSpecialties ? (
+            <p className="mt-3 text-xs font-semibold text-[var(--muted)]">
+              Specialties: {mentor.mentorSpecialties}
+            </p>
+          ) : null}
         </div>
       </div>
 

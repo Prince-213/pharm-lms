@@ -31,6 +31,23 @@ export type AdminPersonRow = {
   primaryMetricValue: number;
   secondaryMetricLabel?: string;
   secondaryMetricValue?: number;
+  mentorProfile?: {
+    mentorHeadline: string | null;
+    mentorSpecialties: string | null;
+    mentorYearsExperience: number | null;
+    phoneNumber: string | null;
+    country: string | null;
+    state: string | null;
+    city: string | null;
+    addressLine1: string | null;
+    addressLine2: string | null;
+    postalCode: string | null;
+    websiteUrl: string | null;
+    linkedinUrl: string | null;
+    bio: string | null;
+    avatarUrl: string | null;
+    mentorProfileSubmittedAtIso: string | null;
+  };
 };
 
 type StatusFilter = "all" | "active" | "inactive";
@@ -103,6 +120,7 @@ export function AdminPeopleCrmTable({
   }, [rows, search, status]);
 
   const activePerson = panel ? rows.find((r) => r.id === panel.userId) ?? null : null;
+  const mentorProfile = activePerson?.role === "MENTOR" ? activePerson.mentorProfile ?? null : null;
 
   function openMenu(userId: string, anchor: HTMLElement) {
     const r = anchor.getBoundingClientRect();
@@ -218,6 +236,81 @@ export function AdminPeopleCrmTable({
                   </p>
                   <div className="max-h-[min(72vh,520px)] overflow-y-auto py-1">
                     <div className="px-2.5 pb-2 pt-1">
+                      {mentorProfile ? (
+                        <div className="mb-3 rounded-lg border border-[var(--border)] bg-[var(--background)] p-2.5">
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+                            Mentor profile
+                          </p>
+                          <div className="mt-2 grid gap-1 text-xs text-[var(--foreground)]">
+                            {mentorProfile.mentorProfileSubmittedAtIso ? (
+                              <p className="text-[11px] text-[var(--muted)]">
+                                Submitted:{" "}
+                                {new Date(mentorProfile.mentorProfileSubmittedAtIso).toLocaleString()}
+                              </p>
+                            ) : (
+                              <p className="text-[11px] text-[var(--muted)]">
+                                Not submitted yet
+                              </p>
+                            )}
+                            {mentorProfile.mentorHeadline ? (
+                              <p className="font-medium">{mentorProfile.mentorHeadline}</p>
+                            ) : null}
+                            {mentorProfile.mentorYearsExperience !== null ? (
+                              <p className="text-[11px] text-[var(--muted)]">
+                                Experience: {mentorProfile.mentorYearsExperience} years
+                              </p>
+                            ) : null}
+                            {mentorProfile.mentorSpecialties ? (
+                              <p className="text-[11px] text-[var(--muted)]">
+                                Specialties: {mentorProfile.mentorSpecialties}
+                              </p>
+                            ) : null}
+                            {mentorProfile.phoneNumber ? (
+                              <p className="text-[11px] text-[var(--muted)]">
+                                Phone: {mentorProfile.phoneNumber}
+                              </p>
+                            ) : null}
+                            {mentorProfile.country || mentorProfile.state || mentorProfile.city ? (
+                              <p className="text-[11px] text-[var(--muted)]">
+                                Location: {[mentorProfile.city, mentorProfile.state, mentorProfile.country]
+                                  .filter(Boolean)
+                                  .join(", ")}
+                              </p>
+                            ) : null}
+                            {mentorProfile.addressLine1 ? (
+                              <p className="text-[11px] text-[var(--muted)]">
+                                Address: {mentorProfile.addressLine1}
+                                {mentorProfile.addressLine2 ? `, ${mentorProfile.addressLine2}` : ""}
+                                {mentorProfile.postalCode ? ` (${mentorProfile.postalCode})` : ""}
+                              </p>
+                            ) : null}
+                            {mentorProfile.linkedinUrl ? (
+                              <a
+                                className="text-[11px] font-semibold text-[var(--primary-strong)] hover:underline"
+                                href={mentorProfile.linkedinUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                LinkedIn
+                              </a>
+                            ) : null}
+                            {mentorProfile.websiteUrl ? (
+                              <a
+                                className="text-[11px] font-semibold text-[var(--primary-strong)] hover:underline"
+                                href={mentorProfile.websiteUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                Website
+                              </a>
+                            ) : null}
+                            <p className="mt-1 line-clamp-5 text-[11px] text-[var(--muted)]">
+                              {mentorProfile.bio?.trim() || "No bio provided."}
+                            </p>
+                          </div>
+                        </div>
+                      ) : null}
+
                       <label className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)]">
                         In-app message
                       </label>

@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import {
   MeetingRequestStatus,
-  MentorProfileStatus,
   UserRole,
 } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
@@ -58,12 +57,9 @@ export async function POST(request: Request) {
   } else {
     const mentor = await db.user.findFirst({
       where: { id: parsed.data.mentorId, role: UserRole.MENTOR },
-      select: { id: true, mentorProfileStatus: true },
+      select: { id: true, isActive: true },
     });
-    if (
-      !mentor ||
-      mentor.mentorProfileStatus !== MentorProfileStatus.APPROVED
-    ) {
+    if (!mentor || !mentor.isActive) {
       return NextResponse.json(
         { error: "This mentor is not available for booking." },
         { status: 400 },

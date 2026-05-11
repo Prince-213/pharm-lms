@@ -74,6 +74,19 @@ model User {
   mentorReviewNote        String?
   bio                     String?
   avatarUrl               String?
+  mentorHeadline          String?
+  mentorSpecialties       String?
+  mentorYearsExperience   Int?
+  phoneNumber             String?
+  country                 String?
+  state                   String?
+  city                    String?
+  addressLine1            String?
+  addressLine2            String?
+  postalCode              String?
+  websiteUrl              String?
+  linkedinUrl             String?
+  mentorProfileSubmittedAt DateTime?
   isActive                Boolean                 @default(true)
   createdAt               DateTime                @default(now())
   updatedAt               DateTime                @updatedAt
@@ -102,6 +115,9 @@ model User {
   auditEntries            AuditLog[]
   notifications           Notification[]
   courseReviews           CourseReview[]
+
+  @@index([role, isActive])
+  @@index([mentorProfileSubmittedAt])
 }
 
 /// One-time email verification codes for public sign-up (non-admin).

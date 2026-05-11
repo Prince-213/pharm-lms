@@ -47,6 +47,7 @@ export function customPrismaAdapter(): Adapter {
           : intent === "mentor"
             ? UserRole.MENTOR
             : UserRole.STUDENT;
+      const isActive = role === UserRole.MENTOR ? false : true;
       const localPart = email.includes("@")
         ? (email.split("@")[0] ?? "")
         : email;
@@ -57,6 +58,7 @@ export function customPrismaAdapter(): Adapter {
           emailVerified,
           fullName,
           role,
+          isActive,
           passwordHash: null,
           avatarUrl: image ?? null,
         },

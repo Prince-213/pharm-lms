@@ -6,7 +6,6 @@ import { MeetingRequestActions } from "@/components/meetings/meeting-request-act
 import { MentorMeetingsAvailabilityCallout } from "@/components/mentor/mentor-meetings-availability";
 import {
   MeetingStatus,
-  MentorProfileStatus,
   UserRole,
 } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
@@ -24,12 +23,9 @@ export default async function MentorMeetingsPage() {
 
   const mentor = await db.user.findUnique({
     where: { id: session.user.id },
-    select: { mentorProfileStatus: true, fullName: true },
+    select: { isActive: true, fullName: true },
   });
   if (!mentor) redirect("/mentor/login");
-  if (mentor.mentorProfileStatus !== MentorProfileStatus.APPROVED) {
-    redirect("/mentor/profile");
-  }
 
   await reconcileStaleMeetingsThrottled();
 
@@ -65,6 +61,20 @@ export default async function MentorMeetingsPage() {
           sessions.
         </p>
       </div>
+
+      {!mentor.isActive ? (
+        <section className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          <p className="font-semibold">Pending activation</p>
+          <p className="mt-1 text-xs">
+            Students can’t book you yet. Complete and submit your profile so an admin can activate your account.
+          </p>
+          <p className="mt-2 text-xs">
+            <Link href="/mentor/profile" className="font-semibold underline">
+              Go to profile
+            </Link>
+          </p>
+        </section>
+      ) : null}
 
       <MentorMeetingsAvailabilityCallout />
 

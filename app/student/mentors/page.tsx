@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { MentorProfileStatus, UserRole } from "@/generated/prisma/enums";
+import { UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { roleHomePath } from "@/lib/rbac";
 import { StudentSecondaryNav } from "@/components/student/student-secondary-nav";
@@ -14,11 +14,17 @@ export default async function StudentMentorsPage() {
   const mentors = await db.user.findMany({
     where: {
       role: UserRole.MENTOR,
-      mentorProfileStatus: MentorProfileStatus.APPROVED,
       isActive: true,
     },
     orderBy: { updatedAt: "desc" },
-    select: { id: true, fullName: true, bio: true, avatarUrl: true },
+    select: {
+      id: true,
+      fullName: true,
+      bio: true,
+      avatarUrl: true,
+      mentorHeadline: true,
+      mentorSpecialties: true,
+    },
     take: 60,
   });
 
@@ -44,21 +50,31 @@ export default async function StudentMentorsPage() {
               className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)]"
             >
               <div className="flex items-start gap-3">
-                <div className="h-12 w-12 overflow-hidden rounded-full border border-[var(--border)] bg-[var(--surface-muted)]">
+                <div className="aspect-square h-12 w-12 shrink-0 overflow-hidden rounded-full border border-[var(--border)] bg-[var(--surface-muted)]">
                   {m.avatarUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={m.avatarUrl}
                       alt=""
-                      className="h-full w-full object-cover"
+                      className="block h-full w-full object-cover object-center"
                     />
                   ) : null}
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold">{m.fullName}</p>
+                  {m.mentorHeadline ? (
+                    <p className="mt-0.5 truncate text-xs text-[var(--muted)]">
+                      {m.mentorHeadline}
+                    </p>
+                  ) : null}
                   <p className="mt-1 line-clamp-3 text-xs text-[var(--muted)]">
                     {m.bio?.trim() || "Mentor profile available."}
                   </p>
+                  {m.mentorSpecialties ? (
+                    <p className="mt-2 line-clamp-1 text-[11px] font-semibold text-[var(--muted)]">
+                      {m.mentorSpecialties}
+                    </p>
+                  ) : null}
                 </div>
               </div>
               <p className="mt-3 text-xs font-semibold text-[var(--primary)]">
