@@ -11,6 +11,7 @@ import { isAppleOAuthEnabled } from "@/lib/auth/apple-oauth-enabled";
 import { customPrismaAdapter } from "@/lib/auth/custom-prisma-adapter";
 import { isGoogleOAuthEnabled } from "@/lib/auth/google-oauth-enabled";
 import { getAuthSecret } from "@/lib/auth/secret";
+import { SESSION_MAX_AGE_SECONDS } from "@/lib/auth/session-short-lived";
 import { prisma } from "@/lib/prisma";
 
 class WrongPortalCredentials extends CredentialsSignin {
@@ -92,7 +93,11 @@ if (isAppleOAuthEnabled()) {
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: customPrismaAdapter(),
   secret: getAuthSecret(),
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+    maxAge: SESSION_MAX_AGE_SECONDS,
+    updateAge: 1,
+  },
   trustHost: true,
   debug: process.env.NODE_ENV === "development",
   pages: {
@@ -168,6 +173,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           token.role = row.role;
           token.mentorProfileStatus = row.mentorProfileStatus;
         }
+      }
+      if (token.sub) {
+        token.exp = Math.floor(Date.now() / 1000) + SESSION_MAX_AGE_SECONDS;
       }
       return token;
     },
