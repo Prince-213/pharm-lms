@@ -35,6 +35,15 @@ function loginPathForPathname(pathname: string): string {
 
 export async function proxy(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
+
+  if (
+    pathname.startsWith("/api/") ||
+    pathname.startsWith("/_next/") ||
+    pathname === "/favicon.ico"
+  ) {
+    return NextResponse.next();
+  }
+
   const needsAuth = protectedPrefixes.some((prefix) =>
     pathname.startsWith(prefix),
   );

@@ -4,6 +4,8 @@ import { MentorPortalShell } from "@/components/mentor/mentor-portal-shell";
 import { UserRole } from "@/generated/prisma/enums";
 import { roleHomePath } from "@/lib/rbac";
 
+export const dynamic = "force-dynamic";
+
 export default async function MentorProtectedLayout({
   children,
 }: {

@@ -99,6 +99,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           token.role = row.role;
           token.mentorProfileStatus = row.mentorProfileStatus;
         }
+      } else if (token.sub) {
+        const row = await prisma.user.findUnique({
+          where: { id: token.sub as string },
+          select: { role: true, mentorProfileStatus: true },
+        });
+        if (row) {
+          token.role = row.role;
+          token.mentorProfileStatus = row.mentorProfileStatus;
+        }
       }
       return token;
     },
