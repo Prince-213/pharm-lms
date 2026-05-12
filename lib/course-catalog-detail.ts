@@ -78,7 +78,6 @@ export async function loadCourseCatalogDetail(
       })
     : null;
 
-  const totalSeconds = catalogTotalSeconds(course, course.sections);
   const totalLectures = course.sections.reduce(
     (n, s) => n + s.lessons.length,
     0,
@@ -88,6 +87,13 @@ export async function loadCourseCatalogDetail(
     0,
   );
   const totalAssignments = course.assignments.length;
+
+  let totalSeconds = catalogTotalSeconds(course, course.sections);
+  const hasBlueprintContent =
+    totalLectures + totalQuizzes + totalAssignments > 0;
+  if (totalSeconds <= 0 && hasBlueprintContent) {
+    totalSeconds = 30 * 60;
+  }
 
   const thumb = await resolveMediaUrl(course.thumbnailUrl);
   const bullets = CATEGORY_CHIPS.slice(0, 4);

@@ -1,5 +1,7 @@
 /** Format seconds as "3min" or "1h 02min" for catalog / curriculum UI */
-export function formatLessonDuration(seconds: number | null | undefined): string {
+export function formatLessonDuration(
+  seconds: number | null | undefined,
+): string {
   if (seconds == null || seconds <= 0) return "";
   const m = Math.round(seconds / 60);
   if (m < 60) return `${m}min`;
@@ -21,7 +23,7 @@ export function sumLessonSeconds(
 }
 
 export function formatTotalDuration(seconds: number): string {
-  if (seconds <= 0) return "—";
+  if (seconds <= 0) return "Not timed yet";
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   if (h === 0) return `${m}min total`;
