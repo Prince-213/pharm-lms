@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useCourseStudio } from "@/components/mentor/course-studio-context";
 import { RichTextArea } from "@/components/rich-text-area";
@@ -18,6 +18,7 @@ export type CourseLandingInitial = {
   primaryTopic: string | null;
   thumbnailUrl: string | null;
   promoVideoUrl: string | null;
+  estimatedDurationMinutes: number | null;
 };
 
 function plainTextLength(html: string) {
@@ -48,33 +49,41 @@ export function CourseLandingForm({
   const [promoVideoUrl, setPromoVideoUrl] = useState(
     initial.promoVideoUrl ?? "",
   );
+  const initialDur = initial.estimatedDurationMinutes;
+  const [durationHours, setDurationHours] = useState(
+    initialDur != null && initialDur > 0
+      ? String(Math.floor(initialDur / 60))
+      : "",
+  );
+  const [durationMinutes, setDurationMinutes] = useState(
+    initialDur != null && initialDur > 0 ? String(initialDur % 60) : "",
+  );
   const [saving, setSaving] = useState(false);
 
   const descLen = useMemo(() => plainTextLength(description), [description]);
 
-  const uploadAsset = useCallback(
-    async (file: File, purpose: string) => {
-      const formData = new FormData();
-      formData.set("file", file);
-      formData.set("purpose", purpose);
-      const response = await fetch(`/api/tutor/courses/${courseId}/upload`, {
-        method: "POST",
-        body: formData,
-      });
-      if (!response.ok) {
-        const body = (await response.json().catch(() => null)) as {
-          error?: string;
-        } | null;
-        throw new Error(body?.error ?? "Upload failed.");
-      }
-      return (await response.json()) as { url: string };
-    },
-    [courseId],
-  );
-
   async function save() {
     setSaving(true);
     try {
+      const h = Number.parseInt(durationHours.trim(), 10);
+      const m = Number.parseInt(durationMinutes.trim(), 10);
+      const hoursOk = durationHours.trim() === "" || !Number.isNaN(h);
+      const minsOk = durationMinutes.trim() === "" || !Number.isNaN(m);
+      if (!hoursOk || !minsOk) {
+        toast.error(
+          "Enter valid numbers for hours and minutes, or leave them blank.",
+        );
+        return;
+      }
+      let estimatedDurationMinutes: number | null = null;
+      if (hoursOk && minsOk) {
+        const hh = durationHours.trim() === "" ? 0 : Math.max(0, h);
+        const mmRaw = durationMinutes.trim() === "" ? 0 : Math.max(0, m);
+        const mm = Math.min(59, mmRaw);
+        const total = hh * 60 + mm;
+        estimatedDurationMinutes = total > 0 ? total : null;
+      }
+
       const response = await fetch(`/api/tutor/courses/${courseId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -89,6 +98,7 @@ export function CourseLandingForm({
           primaryTopic: primaryTopic.trim() || null,
           thumbnailUrl: thumbnailUrl.trim() || null,
           promoVideoUrl: promoVideoUrl.trim() || null,
+          estimatedDurationMinutes,
         }),
       });
       if (!response.ok) {
@@ -254,6 +264,48 @@ export function CourseLandingForm({
         />
       </div>
 
+      <div>
+        <span className="mb-1 block text-xs font-semibold">
+          Estimated course duration (optional)
+        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="number"
+            min={0}
+            max={999}
+            inputMode="numeric"
+            placeholder="0"
+            value={durationHours}
+            onChange={(e) =>
+              setDurationHours(e.target.value.replace(/\D/g, "").slice(0, 3))
+            }
+            disabled={readOnly}
+            className="h-10 w-20 border border-[#d1d7dc] px-2 text-sm disabled:bg-[#f6f7f9]"
+            aria-label="Hours"
+          />
+          <span className="text-sm text-[#6a6f73]">hr</span>
+          <input
+            type="number"
+            min={0}
+            max={59}
+            inputMode="numeric"
+            placeholder="0"
+            value={durationMinutes}
+            onChange={(e) =>
+              setDurationMinutes(e.target.value.replace(/\D/g, "").slice(0, 2))
+            }
+            disabled={readOnly}
+            className="h-10 w-16 border border-[#d1d7dc] px-2 text-sm disabled:bg-[#f6f7f9]"
+            aria-label="Minutes"
+          />
+          <span className="text-sm text-[#6a6f73]">min</span>
+        </div>
+        <p className="mt-1 text-[11px] leading-relaxed text-[#6a6f73]">
+          Leave blank to auto-estimate from lesson video lengths plus about 30
+          minutes if the course includes reading-style lessons.
+        </p>
+      </div>
+
       <FileUploader
         purpose="thumbnail"
         courseId={courseId}
@@ -269,8 +321,6 @@ export function CourseLandingForm({
         onUploadComplete={setPromoVideoUrl}
         disabled={readOnly}
       />
-
-
 
       <div className="flex justify-end gap-2 border-t border-[#d1d7dc] pt-4">
         <button

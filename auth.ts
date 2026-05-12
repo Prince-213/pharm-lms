@@ -1,6 +1,7 @@
 import { compare } from "bcryptjs";
+import { cookies } from "next/headers";
 import type { NextAuthConfig } from "next-auth";
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Apple from "next-auth/providers/apple";
 import CredentialsProvider from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
@@ -12,9 +13,14 @@ import { isGoogleOAuthEnabled } from "@/lib/auth/google-oauth-enabled";
 import { getAuthSecret } from "@/lib/auth/secret";
 import { prisma } from "@/lib/prisma";
 
+class WrongPortalCredentials extends CredentialsSignin {
+  code = "WRONG_PORTAL";
+}
+
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
+  portalRole: z.enum(["STUDENT", "TUTOR", "MENTOR"]).optional(),
 });
 
 const providers: NextAuthConfig["providers"] = [
@@ -23,14 +29,16 @@ const providers: NextAuthConfig["providers"] = [
     credentials: {
       email: { label: "Email", type: "email" },
       password: { label: "Password", type: "password" },
+      portalRole: { label: "Portal role", type: "text" },
     },
     async authorize(credentials) {
       const parsed = loginSchema.safeParse(credentials);
       if (!parsed.success) {
         return null;
       }
+      const email = parsed.data.email.toLowerCase();
       const user = await prisma.user.findUnique({
-        where: { email: parsed.data.email },
+        where: { email },
       });
       if (!user?.passwordHash) {
         return null;
@@ -38,6 +46,10 @@ const providers: NextAuthConfig["providers"] = [
       const isValid = await compare(parsed.data.password, user.passwordHash);
       if (!isValid) {
         return null;
+      }
+      const expected = parsed.data.portalRole;
+      if (expected && user.role !== expected) {
+        throw new WrongPortalCredentials();
       }
       return {
         id: user.id,
@@ -88,6 +100,54 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   providers,
   callbacks: {
+    async signIn({ user, account, profile }) {
+      const provider = account?.provider;
+      if (provider !== "google" && provider !== "apple") {
+        return true;
+      }
+      const cookieStore = await cookies();
+      const intent = cookieStore.get("oauth_intent")?.value;
+      const expectedRole =
+        intent === "mentor"
+          ? UserRole.MENTOR
+          : intent === "tutor"
+            ? UserRole.TUTOR
+            : intent === "student"
+              ? UserRole.STUDENT
+              : null;
+      if (!expectedRole) {
+        return true;
+      }
+
+      const rawEmail =
+        typeof user?.email === "string"
+          ? user.email
+          : profile && typeof profile.email === "string"
+            ? profile.email
+            : null;
+      if (!rawEmail) {
+        return true;
+      }
+      const email = rawEmail.toLowerCase();
+      const row = await prisma.user.findUnique({
+        where: { email },
+        select: { role: true },
+      });
+      if (!row) {
+        return true;
+      }
+      if (row.role !== expectedRole) {
+        cookieStore.delete("oauth_intent");
+        const loginPath =
+          expectedRole === UserRole.MENTOR
+            ? "/mentor/login"
+            : expectedRole === UserRole.TUTOR
+              ? "/tutor/login"
+              : "/student/login";
+        return `${loginPath}?authError=wrong_portal`;
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user?.id) {
         const row = await prisma.user.findUnique({

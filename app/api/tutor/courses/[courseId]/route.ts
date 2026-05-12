@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { requireMentorCourse, requireMentorCourseEditable } from "@/lib/mentor-course-auth";
+import {
+  requireMentorCourse,
+  requireMentorCourseEditable,
+} from "@/lib/mentor-course-auth";
 
 const patchCourseSchema = z.object({
   title: z.string().min(3).max(120).optional(),
@@ -20,6 +23,13 @@ const patchCourseSchema = z.object({
   congratulatoryArticle: z.string().max(100000).nullable().optional(),
   congratulatoryVideoUrl: z.string().max(2000).nullable().optional(),
   priceMinorUnits: z.number().int().min(0).nullable().optional(),
+  estimatedDurationMinutes: z
+    .number()
+    .int()
+    .min(0)
+    .max(100_000)
+    .nullable()
+    .optional(),
 });
 
 export async function GET(
@@ -44,7 +54,10 @@ export async function PATCH(
   const body = await request.json();
   const parsed = patchCourseSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json(
+      { error: parsed.error.flatten() },
+      { status: 400 },
+    );
   }
 
   const data = parsed.data;
@@ -72,6 +85,7 @@ export async function PATCH(
       congratulatoryArticle: data.congratulatoryArticle,
       congratulatoryVideoUrl: data.congratulatoryVideoUrl,
       priceMinorUnits: data.priceMinorUnits,
+      estimatedDurationMinutes: data.estimatedDurationMinutes,
       ...(congratulatoryMessage ? { congratulatoryMessage } : {}),
     },
   });
@@ -120,7 +134,9 @@ export async function DELETE(
     await tx.sectionQuizAttempt.deleteMany({
       where: { quiz: { sectionId: { in: sectionIds } } },
     });
-    await tx.sectionQuiz.deleteMany({ where: { sectionId: { in: sectionIds } } });
+    await tx.sectionQuiz.deleteMany({
+      where: { sectionId: { in: sectionIds } },
+    });
     await tx.courseSection.deleteMany({ where: { courseId } });
     await tx.assignment.deleteMany({ where: { courseId } });
     await tx.wishlist.deleteMany({ where: { courseId } });

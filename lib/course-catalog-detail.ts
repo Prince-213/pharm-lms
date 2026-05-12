@@ -1,9 +1,9 @@
 import type { SectionResource } from "@/components/mentor/curriculum-editor-v2";
 import { CourseStatus, UserRole } from "@/generated/prisma/enums";
-import { db } from "@/lib/db";
+import { catalogTotalSeconds } from "@/lib/course-duration";
 import { parseSectionDescription } from "@/lib/curriculum";
+import { db } from "@/lib/db";
 import { resolveMediaUrl } from "@/lib/media-url";
-import { sumLessonSeconds } from "@/lib/lesson-duration";
 
 export type CatalogResourceItem = SectionResource & { href: string | null };
 
@@ -22,7 +22,13 @@ const catalogInclude = {
     include: {
       lessons: {
         orderBy: { position: "asc" as const },
-        select: { id: true, title: true, durationSec: true },
+        select: {
+          id: true,
+          title: true,
+          durationSec: true,
+          content: true,
+          videoUrl: true,
+        },
       },
       quizzes: {
         select: { id: true, title: true },
@@ -72,7 +78,7 @@ export async function loadCourseCatalogDetail(
       })
     : null;
 
-  const totalSeconds = sumLessonSeconds(course.sections);
+  const totalSeconds = catalogTotalSeconds(course, course.sections);
   const totalLectures = course.sections.reduce(
     (n, s) => n + s.lessons.length,
     0,

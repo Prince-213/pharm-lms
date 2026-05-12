@@ -1,19 +1,37 @@
 import { AuthPageShell } from "@/components/auth/auth-page-shell";
+import { CrossSectorSessionGate } from "@/components/auth/cross-sector-session-gate";
 import { LoginForm } from "@/components/auth/login-form";
+import { UserRole } from "@/generated/prisma/enums";
 import { isAppleOAuthEnabled } from "@/lib/auth/apple-oauth-enabled";
 import { isGoogleOAuthEnabled } from "@/lib/auth/google-oauth-enabled";
 
-export default function MentorLoginPage() {
+export default async function TutorLoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string; authError?: string }>;
+}) {
+  const sp = await searchParams;
+  const raw = sp.callbackUrl;
+  const callbackUrl =
+    typeof raw === "string" && raw.startsWith("/tutor")
+      ? raw
+      : "/tutor/courses";
+  const portalAuthError =
+    sp.authError === "wrong_portal" ? ("wrong_portal" as const) : null;
+
   return (
     <AuthPageShell>
-      <LoginForm
-        key="tutor-login"
-        actorType="tutor"
-        mode="login"
-        callbackUrl="/tutor/courses"
-        googleEnabled={isGoogleOAuthEnabled()}
-        appleEnabled={isAppleOAuthEnabled()}
-      />
+      <CrossSectorSessionGate expectedRole={UserRole.TUTOR}>
+        <LoginForm
+          key="tutor-login"
+          actorType="tutor"
+          mode="login"
+          callbackUrl={callbackUrl}
+          googleEnabled={isGoogleOAuthEnabled()}
+          appleEnabled={isAppleOAuthEnabled()}
+          portalAuthError={portalAuthError}
+        />
+      </CrossSectorSessionGate>
     </AuthPageShell>
   );
 }

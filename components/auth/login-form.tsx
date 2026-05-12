@@ -1,8 +1,8 @@
 "use client";
 
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { UserRole } from "@/generated/prisma/enums";
@@ -19,6 +19,8 @@ type LoginFormProps = {
   googleEnabled?: boolean;
   appleEnabled?: boolean;
   adminCredentialHints?: { email: string; password: string };
+  /** Set when OAuth sign-in was rejected because the account role does not match this portal. */
+  portalAuthError?: "wrong_portal" | null;
 };
 
 const PORTAL_AUTH_BASE = {
@@ -50,11 +52,11 @@ export function LoginForm({
   googleEnabled = false,
   appleEnabled = false,
   adminCredentialHints,
+  portalAuthError = null,
 }: LoginFormProps) {
   const isSignup = mode === "signup";
   const isAdmin = actorType === "admin";
-  const adminHints =
-    isAdmin && !isSignup ? adminCredentialHints : undefined;
+  const adminHints = isAdmin && !isSignup ? adminCredentialHints : undefined;
   const [email, setEmail] = useState(adminHints?.email ?? "");
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState(adminHints?.password ?? "");
@@ -87,17 +89,27 @@ export function LoginForm({
   }, [otpCooldown]);
 
   const showGoogle =
-    googleEnabled && !isAdmin && (actorType === "student" || actorType === "tutor" || actorType === "mentor");
+    googleEnabled &&
+    !isAdmin &&
+    (actorType === "student" ||
+      actorType === "tutor" ||
+      actorType === "mentor");
   const showApple =
-    appleEnabled && !isAdmin && (actorType === "student" || actorType === "tutor" || actorType === "mentor");
+    appleEnabled &&
+    !isAdmin &&
+    (actorType === "student" ||
+      actorType === "tutor" ||
+      actorType === "mentor");
   const showOAuthRow = showGoogle || showApple;
   const portalRole = roleFromActor(actorType);
   const portalActorTitle =
     !isAdmin && portalRole ? userRoleLabel(portalRole) : null;
+  const wrongPortalBanner =
+    portalAuthError === "wrong_portal" && portalActorTitle
+      ? `This account is not registered as a ${portalActorTitle.toLowerCase()}.`
+      : null;
 
-  function startOAuth(
-    provider: "google" | "apple",
-  ): void {
+  function startOAuth(provider: "google" | "apple"): void {
     if (!portalRole) return;
     setError("");
     setOauthPending(provider);
@@ -175,9 +187,16 @@ export function LoginForm({
         password,
         redirect: false,
         callbackUrl,
+        ...(portalRole ? { portalRole } : {}),
       });
       if (signInResult?.error) {
-        setError("Account created, but sign-in failed. Try logging in.");
+        if (signInResult.code === "WRONG_PORTAL" && portalActorTitle) {
+          setError(
+            `This account is not registered as a ${portalActorTitle.toLowerCase()}.`,
+          );
+        } else {
+          setError("Account created, but sign-in failed. Try logging in.");
+        }
         setIsPending(false);
         return;
       }
@@ -196,10 +215,17 @@ export function LoginForm({
       password,
       redirect: false,
       callbackUrl,
+      ...(portalRole ? { portalRole } : {}),
     });
 
     if (result?.error) {
-      setError("Invalid credentials.");
+      if (result.code === "WRONG_PORTAL" && portalActorTitle) {
+        setError(
+          `This account is not registered as a ${portalActorTitle.toLowerCase()}.`,
+        );
+      } else {
+        setError("Invalid credentials.");
+      }
       setIsPending(false);
       return;
     }
@@ -211,10 +237,16 @@ export function LoginForm({
     "h-12 w-full rounded-xl border border-[var(--auth-border)] bg-[var(--auth-input-bg)] px-3 text-sm text-[var(--auth-text)] placeholder:text-[var(--auth-muted)] outline-none transition-shadow focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-soft)]";
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="space-y-4 text-[var(--auth-text)]"
-    >
+    <form onSubmit={onSubmit} className="space-y-4 text-[var(--auth-text)]">
+      {wrongPortalBanner ? (
+        <p
+          role="alert"
+          className="rounded-xl border border-[var(--auth-error)]/40 bg-[var(--auth-error)]/10 px-3 py-2 text-center text-sm text-[var(--auth-error)]"
+        >
+          {wrongPortalBanner}
+        </p>
+      ) : null}
+
       <h1 className="text-center font-display text-2xl font-bold tracking-tight text-[var(--auth-text)] sm:text-[1.75rem]">
         {isAdmin
           ? "Admin sign in"
@@ -231,11 +263,17 @@ export function LoginForm({
       ) : !isAdmin ? (
         <p className="text-center text-xs leading-relaxed text-[var(--auth-muted)]">
           By signing in, you agree to our{" "}
-          <Link href="/legal/terms" className="text-[var(--auth-link)] hover:underline">
+          <Link
+            href="/legal/terms"
+            className="text-[var(--auth-link)] hover:underline"
+          >
             Terms
           </Link>{" "}
           and{" "}
-          <Link href="/legal/privacy" className="text-[var(--auth-link)] hover:underline">
+          <Link
+            href="/legal/privacy"
+            className="text-[var(--auth-link)] hover:underline"
+          >
             Privacy Policy
           </Link>
           .
@@ -278,15 +316,15 @@ export function LoginForm({
           />
           <button
             type="button"
-            disabled={
-              otpSending ||
-              otpCooldown > 0 ||
-              !email.includes("@")
-            }
+            disabled={otpSending || otpCooldown > 0 || !email.includes("@")}
             onClick={() => void onSendCode()}
             className="shrink-0 rounded-xl border border-[var(--auth-border)] bg-[var(--surface-muted)] px-4 text-sm font-semibold text-[var(--primary)] transition hover:bg-[var(--primary-soft)]/50 disabled:opacity-50"
           >
-            {otpCooldown > 0 ? `${otpCooldown}s` : otpSending ? "…" : "Send code"}
+            {otpCooldown > 0
+              ? `${otpCooldown}s`
+              : otpSending
+                ? "…"
+                : "Send code"}
           </button>
         </div>
       ) : null}
@@ -298,8 +336,7 @@ export function LoginForm({
           </span>{" "}
           No Resend API key — the 6-digit code was printed in the{" "}
           <strong className="text-[var(--foreground)]">server terminal</strong>{" "}
-          (grep{" "}
-          <code className="text-[var(--primary)]">[signup-otp]</code> or{" "}
+          (grep <code className="text-[var(--primary)]">[signup-otp]</code> or{" "}
           <code className="text-[var(--primary)]">[email-service]</code>).
         </p>
       ) : null}
@@ -343,9 +380,7 @@ export function LoginForm({
             tabIndex={-1}
             className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-[var(--auth-muted)] hover:text-[var(--auth-text)]"
             onClick={() => setShowConfirmPassword((v) => !v)}
-            aria-label={
-              showConfirmPassword ? "Hide password" : "Show password"
-            }
+            aria-label={showConfirmPassword ? "Hide password" : "Show password"}
           >
             {showConfirmPassword ? (
               <EyeOff className="h-4 w-4" />
@@ -373,11 +408,17 @@ export function LoginForm({
       {isSignup && !isAdmin ? (
         <p className="text-center text-[11px] leading-relaxed text-[var(--auth-muted)]">
           By signing up, you consent to our{" "}
-          <Link href="/legal/terms" className="text-[var(--auth-link)] hover:underline">
+          <Link
+            href="/legal/terms"
+            className="text-[var(--auth-link)] hover:underline"
+          >
             Terms of Use
           </Link>{" "}
           and{" "}
-          <Link href="/legal/privacy" className="text-[var(--auth-link)] hover:underline">
+          <Link
+            href="/legal/privacy"
+            className="text-[var(--auth-link)] hover:underline"
+          >
             Privacy Policy
           </Link>
           .

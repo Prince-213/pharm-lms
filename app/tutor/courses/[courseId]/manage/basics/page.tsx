@@ -31,6 +31,7 @@ export default async function MentorCourseBasicsPage({
     primaryTopic: course.primaryTopic,
     thumbnailUrl: course.thumbnailUrl,
     promoVideoUrl: course.promoVideoUrl,
+    estimatedDurationMinutes: course.estimatedDurationMinutes,
   };
 
   return (

@@ -62,59 +62,59 @@ enum EnrollmentStatus {
 }
 
 model User {
-  id                      String                  @id @default(cuid())
-  email                   String                  @unique
-  emailVerified           DateTime?
-  passwordHash            String?
-  fullName                String
-  role                    UserRole
-  mentorProfileStatus     MentorProfileStatus     @default(INCOMPLETE)
-  mentorReviewRequestedAt DateTime?
-  mentorReviewedAt        DateTime?
-  mentorReviewNote        String?
-  bio                     String?
-  avatarUrl               String?
-  mentorHeadline          String?
-  mentorSpecialties       String?
-  mentorYearsExperience   Int?
-  phoneNumber             String?
-  country                 String?
-  state                   String?
-  city                    String?
-  addressLine1            String?
-  addressLine2            String?
-  postalCode              String?
-  websiteUrl              String?
-  linkedinUrl             String?
+  id                       String                  @id @default(cuid())
+  email                    String                  @unique
+  emailVerified            DateTime?
+  passwordHash             String?
+  fullName                 String
+  role                     UserRole
+  mentorProfileStatus      MentorProfileStatus     @default(INCOMPLETE)
+  mentorReviewRequestedAt  DateTime?
+  mentorReviewedAt         DateTime?
+  mentorReviewNote         String?
+  bio                      String?
+  avatarUrl                String?
+  mentorHeadline           String?
+  mentorSpecialties        String?
+  mentorYearsExperience    Int?
+  phoneNumber              String?
+  country                  String?
+  state                    String?
+  city                     String?
+  addressLine1             String?
+  addressLine2             String?
+  postalCode               String?
+  websiteUrl               String?
+  linkedinUrl              String?
   mentorProfileSubmittedAt DateTime?
-  isActive                Boolean                 @default(true)
-  createdAt               DateTime                @default(now())
-  updatedAt               DateTime                @updatedAt
-  courses                 Course[]                @relation("MentorCourses")
-  enrollments             Enrollment[]
-  lessonProgress          LessonProgress[]
-  wishlists               Wishlist[]
-  assignmentMade          Assignment[]            @relation("AssignmentCreatedBy")
-  submissions             AssignmentSubmission[]
-  availability            MentorAvailability[]
-  sentMessages            ChatMessage[]           @relation("ChatMessageSender")
-  receivedThreads         ChatThreadParticipant[]
-  meetingRequests         MeetingRequest[]        @relation("MeetingRequestedBy")
-  mentorMeetingRequests   MeetingRequest[]        @relation("MentorMeetingRequests")
-  meetingOwned            Meeting[]               @relation("MeetingMentor")
-  meetingJoined           Meeting[]
-  batchMemberships        BatchMembership[]
-  forumPosts              ForumPost[]
-  achievements            StudentBadge[]
-  createdBadges           Badge[]                 @relation("BadgeCreatedBy")
-  aiQuizAttempts          AIQuizAttempt[]
-  sectionQuizAttempts     SectionQuizAttempt[]
-  courseVisits            CourseVisit[]
-  accounts                Account[]
-  sessions                Session[]
-  auditEntries            AuditLog[]
-  notifications           Notification[]
-  courseReviews           CourseReview[]
+  isActive                 Boolean                 @default(true)
+  createdAt                DateTime                @default(now())
+  updatedAt                DateTime                @updatedAt
+  courses                  Course[]                @relation("MentorCourses")
+  enrollments              Enrollment[]
+  lessonProgress           LessonProgress[]
+  wishlists                Wishlist[]
+  assignmentMade           Assignment[]            @relation("AssignmentCreatedBy")
+  submissions              AssignmentSubmission[]
+  availability             MentorAvailability[]
+  sentMessages             ChatMessage[]           @relation("ChatMessageSender")
+  receivedThreads          ChatThreadParticipant[]
+  meetingRequests          MeetingRequest[]        @relation("MeetingRequestedBy")
+  mentorMeetingRequests    MeetingRequest[]        @relation("MentorMeetingRequests")
+  meetingOwned             Meeting[]               @relation("MeetingMentor")
+  meetingJoined            Meeting[]
+  batchMemberships         BatchMembership[]
+  forumPosts               ForumPost[]
+  achievements             StudentBadge[]
+  createdBadges            Badge[]                 @relation("BadgeCreatedBy")
+  aiQuizAttempts           AIQuizAttempt[]
+  sectionQuizAttempts      SectionQuizAttempt[]
+  courseVisits             CourseVisit[]
+  accounts                 Account[]
+  sessions                 Session[]
+  auditEntries             AuditLog[]
+  notifications            Notification[]
+  courseReviews            CourseReview[]
 
   @@index([role, isActive])
   @@index([mentorProfileSubmittedAt])
@@ -152,6 +152,8 @@ model Course {
   congratulatoryVideoUrl    String?
   priceCurrency             String                   @default("NGN")
   priceMinorUnits           Int?
+  /// Optional total duration in minutes (mentor override). When null, catalog derives from lessons.
+  estimatedDurationMinutes  Int?
   status                    CourseStatus             @default(DRAFT)
   approvedById              String?
   approvedAt                DateTime?
