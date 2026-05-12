@@ -31,10 +31,10 @@ export default async function MentorCourseSettingsPage({
   const canDeleteDraft = course.status === CourseStatus.DRAFT;
 
   return (
-    <section className="mx-auto max-w-[960px] border border-[#d1d7dc] bg-white">
-      <div className="border-b border-[#d1d7dc] px-6 py-4">
-        <h1 className="text-2xl font-bold text-[#1c1d1f]">Course settings</h1>
-        <p className="mt-1 text-sm text-[#6a6f73]">
+    <section className="mx-auto max-w-[960px] border border-[var(--border)] bg-[var(--surface)]">
+      <div className="border-b border-[var(--border)] px-6 py-4">
+        <h1 className="text-2xl font-bold text-[var(--foreground)]">Course settings</h1>
+        <p className="mt-1 text-sm text-[var(--muted)]">
           {course.title} · {courseStatusLabel(course.status)} · Last updated{" "}
           {course.updatedAt.toLocaleDateString()}
         </p>
@@ -65,11 +65,11 @@ export default async function MentorCourseSettingsPage({
               className="mt-4 max-w-[520px] space-y-3"
             >
               <input type="hidden" name="courseId" value={course.id} />
-              <label className="block text-xs font-medium text-[#1c1d1f]">
+              <label className="block text-xs font-medium text-[var(--foreground)]">
                 Type the course title to confirm deletion:
                 <input
                   name="confirmText"
-                  className="mt-1 h-10 w-full border border-[#d1d7dc] px-3 text-sm"
+                  className="mt-1 h-10 w-full border border-[var(--border)] px-3 text-sm"
                   placeholder={course.title}
                   required
                 />
@@ -82,7 +82,7 @@ export default async function MentorCourseSettingsPage({
               </button>
             </form>
           ) : (
-            <p className="mt-3 text-xs text-[#6a6f73]">
+            <p className="mt-3 text-xs text-[var(--muted)]">
               This course is <strong>{courseStatusLabel(course.status)}</strong>
               . Tutor deletion is currently limited to draft courses only.
             </p>

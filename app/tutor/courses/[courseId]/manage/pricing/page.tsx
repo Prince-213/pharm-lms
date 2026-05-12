@@ -19,10 +19,10 @@ export default async function MentorCoursePricingPage({
   if (!course) notFound();
 
   return (
-    <section className="mx-auto max-w-[900px] border border-[#d1d7dc] bg-white">
-      <div className="border-b border-[#d1d7dc] px-6 py-4">
-        <h1 className="text-2xl font-bold text-[#1c1d1f]">Pricing</h1>
-        <p className="mt-1 text-sm text-[#6a6f73]">
+    <section className="mx-auto max-w-[900px] border border-[var(--border)] bg-[var(--surface)]">
+      <div className="border-b border-[var(--border)] px-6 py-4">
+        <h1 className="text-2xl font-bold text-[var(--foreground)]">Pricing</h1>
+        <p className="mt-1 text-sm text-[var(--muted)]">
           Set your course list price in Nigerian Naira.
         </p>
       </div>

@@ -51,7 +51,7 @@ export function CourseAnnouncementForm({
           id="ann-course"
           value={courseId}
           onChange={(e) => setCourseId(e.target.value)}
-          className="h-10 w-full rounded border border-[#d1d7dc] bg-white px-3 text-sm text-[#1c1d1f]"
+          className="h-10 w-full rounded border border-[var(--border)] bg-white px-3 text-sm text-[var(--foreground)]"
         >
           {courses.map((c) => (
             <option key={c.id} value={c.id}>
@@ -76,12 +76,12 @@ export function CourseAnnouncementForm({
           value={body}
           onChange={(e) => setBody(e.target.value)}
           placeholder="Write what students should know…"
-          className="w-full resize-y rounded border border-[#d1d7dc] bg-white px-3 py-2 text-sm leading-relaxed outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-soft)]"
+          className="w-full resize-y rounded border border-[var(--border)] bg-white px-3 py-2 text-sm leading-relaxed outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-soft)]"
         />
       </div>
 
       <div className="md:col-span-2 flex flex-wrap items-center justify-between gap-3 border-t border-[#ececec] pt-4">
-        <div className="text-xs text-[#6a6f73]">
+        <div className="text-xs text-[var(--muted)]">
           {selectedCourse
             ? `Will create or update threads with ${selectedCourse.learners} student${
                 selectedCourse.learners === 1 ? "" : "s"

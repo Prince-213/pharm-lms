@@ -5,6 +5,9 @@ import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { UserRole } from "@/generated/prisma/enums";
 import {
   completeSignupWithOtpAction,
@@ -233,9 +236,6 @@ export function LoginForm({
     window.location.href = callbackUrl;
   }
 
-  const inputClass =
-    "h-12 w-full rounded-xl border border-[var(--auth-border)] bg-[var(--auth-input-bg)] px-3 text-sm text-[var(--auth-text)] placeholder:text-[var(--auth-muted)] outline-none transition-shadow focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-soft)]";
-
   return (
     <form onSubmit={onSubmit} className="space-y-4 text-[var(--auth-text)]">
       {wrongPortalBanner ? (
@@ -281,18 +281,26 @@ export function LoginForm({
       ) : null}
 
       {isSignup && !isAdmin ? (
-        <input
-          className={inputClass}
-          placeholder="Full name"
-          type="text"
-          autoComplete="name"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-        />
+        <>
+          <Label htmlFor="login-full-name" className="sr-only">
+            Full name
+          </Label>
+          <Input
+            id="login-full-name"
+            placeholder="Full name"
+            type="text"
+            autoComplete="name"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+          />
+        </>
       ) : null}
 
-      <input
-        className={inputClass}
+      <Label htmlFor="login-email" className="sr-only">
+        Email address
+      </Label>
+      <Input
+        id="login-email"
         placeholder={adminHints?.email ?? "Email address"}
         type="email"
         autoComplete="email"
@@ -302,8 +310,12 @@ export function LoginForm({
 
       {isSignup && !isAdmin ? (
         <div className="flex gap-2">
-          <input
-            className={`${inputClass} flex-1 font-mono tracking-widest`}
+          <Label htmlFor="login-otp" className="sr-only">
+            Verification code
+          </Label>
+          <Input
+            id="login-otp"
+            className="flex-1 font-mono tracking-widest"
             placeholder="Verification code"
             type="text"
             inputMode="numeric"
@@ -314,18 +326,19 @@ export function LoginForm({
               setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))
             }
           />
-          <button
+          <Button
             type="button"
+            variant="outline"
             disabled={otpSending || otpCooldown > 0 || !email.includes("@")}
             onClick={() => void onSendCode()}
-            className="shrink-0 rounded-xl border border-[var(--auth-border)] bg-[var(--surface-muted)] px-4 text-sm font-semibold text-[var(--primary)] transition hover:bg-[var(--primary-soft)]/50 disabled:opacity-50"
+            className="shrink-0 px-4"
           >
             {otpCooldown > 0
               ? `${otpCooldown}s`
               : otpSending
                 ? "…"
                 : "Send code"}
-          </button>
+          </Button>
         </div>
       ) : null}
 
@@ -342,18 +355,23 @@ export function LoginForm({
       ) : null}
 
       <div className="relative">
-        <input
-          className={`${inputClass} pr-11`}
+        <Label htmlFor="login-password" className="sr-only">
+          Password
+        </Label>
+        <Input
+          id="login-password"
+          className="pr-11"
           placeholder="Password"
           type={showPassword ? "text" : "password"}
           autoComplete={isSignup ? "new-password" : "current-password"}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button
+        <Button
           type="button"
+          variant="ghost"
           tabIndex={-1}
-          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-[var(--auth-muted)] hover:text-[var(--auth-text)]"
+          className="absolute right-2 top-1/2 h-auto w-auto -translate-y-1/2 rounded-lg p-1.5"
           onClick={() => setShowPassword((v) => !v)}
           aria-label={showPassword ? "Hide password" : "Show password"}
         >
@@ -362,23 +380,28 @@ export function LoginForm({
           ) : (
             <Eye className="h-4 w-4" />
           )}
-        </button>
+        </Button>
       </div>
 
       {isSignup && !isAdmin ? (
         <div className="relative">
-          <input
-            className={`${inputClass} pr-11`}
+          <Label htmlFor="login-confirm-password" className="sr-only">
+            Confirm password
+          </Label>
+          <Input
+            id="login-confirm-password"
+            className="pr-11"
             placeholder="Confirm password"
             type={showConfirmPassword ? "text" : "password"}
             autoComplete="new-password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
-          <button
+          <Button
             type="button"
+            variant="ghost"
             tabIndex={-1}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-[var(--auth-muted)] hover:text-[var(--auth-text)]"
+            className="absolute right-2 top-1/2 h-auto w-auto -translate-y-1/2 rounded-lg p-1.5"
             onClick={() => setShowConfirmPassword((v) => !v)}
             aria-label={showConfirmPassword ? "Hide password" : "Show password"}
           >
@@ -387,7 +410,7 @@ export function LoginForm({
             ) : (
               <Eye className="h-4 w-4" />
             )}
-          </button>
+          </Button>
         </div>
       ) : null}
 
@@ -429,17 +452,13 @@ export function LoginForm({
         <p className="text-center text-sm text-[var(--auth-error)]">{error}</p>
       ) : null}
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="h-12 w-full rounded-xl bg-[var(--auth-accent)] text-sm font-semibold text-[var(--auth-primary-foreground)] shadow-[var(--shadow-1)] transition hover:bg-[var(--auth-accent-hover)] disabled:opacity-60"
-      >
+      <Button type="submit" disabled={isPending} className="w-full">
         {isPending
           ? "Please wait…"
           : isSignup && !isAdmin
             ? "Sign up"
             : "Log in"}
-      </button>
+      </Button>
 
       {!isAdmin && !isSignup ? (
         <div className="flex items-center justify-between text-sm">
@@ -469,26 +488,28 @@ export function LoginForm({
           </div>
           <div className="flex justify-center gap-4">
             {showGoogle ? (
-              <button
+              <Button
                 type="button"
+                variant="oauthGoogle"
                 title="Google"
                 disabled={isPending || oauthPending !== null}
                 onClick={() => startOAuth("google")}
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--auth-border)] bg-[var(--surface)] transition hover:bg-[var(--surface-muted)] disabled:opacity-60"
+                className="flex items-center justify-center"
               >
                 <GoogleGlyph />
-              </button>
+              </Button>
             ) : null}
             {showApple ? (
-              <button
+              <Button
                 type="button"
+                variant="oauthApple"
                 title="Apple"
                 disabled={isPending || oauthPending !== null}
                 onClick={() => startOAuth("apple")}
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--ink-deep)] bg-[var(--ink-deep)] transition hover:bg-[var(--ink-mid)] disabled:opacity-60"
+                className="flex items-center justify-center"
               >
                 <AppleGlyph />
-              </button>
+              </Button>
             ) : null}
           </div>
         </>

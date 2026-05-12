@@ -11,12 +11,16 @@ import {
   MessageSquare,
   Search,
   Wrench,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { UserMenu } from "@/components/auth/user-menu";
 import { HeaderNotificationBell } from "@/components/notifications/header-notification-bell";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 /** Tutor workspace routes use `/tutor/*` (see proxy RBAC: only MENTOR may use `/mentor/*`). */
@@ -66,40 +70,49 @@ export function MentorShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Close mobile nav when the route changes.
   useEffect(() => {
     setMobileNavOpen(false);
   }, [pathname]);
 
   return (
     <div className="flex min-h-screen bg-[var(--background)]">
-      {/* Mobile Overlay */}
       {mobileNavOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+        <button
+          type="button"
+          className="fixed inset-0 z-40 cursor-default border-0 bg-black/50 lg:hidden"
+          aria-label="Close navigation menu"
           onClick={() => setMobileNavOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-72 transform bg-[#022c22] text-white transition-transform duration-300 lg:sticky lg:top-0 lg:z-30 lg:h-screen lg:translate-x-0 sm:w-64 dark:bg-gray-dark",
-          mobileNavOpen ? "translate-x-0" : "-translate-x-full",
+          "fixed inset-y-0 left-0 z-50 w-72 transform bg-[var(--header)] text-[var(--header-fg)] transition-transform duration-300 sm:w-64 lg:sticky lg:top-0 lg:z-30 lg:h-screen lg:translate-x-0",
+          mobileNavOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full",
         )}
       >
         <div className="flex h-full flex-col">
-          {/* Logo */}
-          <div className="flex h-18.5 items-center px-8">
+          <div className="flex h-18.5 shrink-0 items-center justify-between px-8">
             <Link
               href={`${WORKSPACE}/courses`}
-              className="font-display text-xl font-bold uppercase tracking-wider text-white"
+              className="font-display text-xl font-bold uppercase tracking-wider text-[var(--header-fg)]"
             >
               PharmLMS
             </Link>
+            <Button
+              type="button"
+              variant="sidebarIcon"
+              className="lg:hidden"
+              onClick={() => setMobileNavOpen(false)}
+              aria-label="Close navigation"
+            >
+              <X className="h-6 w-6" />
+            </Button>
           </div>
 
           <div className="flex-1 overflow-y-auto px-4 py-6">
-            <p className="mb-4 px-4 text-xs font-semibold uppercase tracking-widest text-emerald-400/60">
+            <p className="mb-4 px-4 text-xs font-semibold uppercase tracking-widest text-[var(--header-fg-muted)]">
               Workspace
             </p>
             <nav className="space-y-1">
@@ -117,28 +130,28 @@ export function MentorShell({ children }: { children: React.ReactNode }) {
                     className={cn(
                       "group flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200",
                       active
-                        ? "bg-white/10 text-white"
-                        : "text-emerald-50/60 hover:bg-white/5 hover:text-white",
+                        ? "bg-[var(--header-fg)]/10 text-[var(--header-fg)]"
+                        : "text-[var(--header-fg-muted)] hover:bg-[var(--header-fg)]/5 hover:text-[var(--header-fg)]",
                     )}
                   >
                     <Icon
                       className={cn(
                         "h-5 w-5 transition-colors",
                         active
-                          ? "text-emerald-400"
-                          : "group-hover:text-emerald-400",
+                          ? "text-[var(--primary-soft)]"
+                          : "text-[var(--header-fg-muted)] group-hover:text-[var(--primary-soft)]",
                       )}
                     />
                     {item.label}
                     {active && (
-                      <ChevronRight className="ml-auto h-4 w-4 text-emerald-400" />
+                      <ChevronRight className="ml-auto h-4 w-4 text-[var(--primary-soft)]" />
                     )}
                   </Link>
                 );
               })}
             </nav>
 
-            <p className="mb-4 mt-8 px-4 text-xs font-semibold uppercase tracking-widest text-emerald-400/60">
+            <p className="mb-4 mt-8 px-4 text-xs font-semibold uppercase tracking-widest text-[var(--header-fg-muted)]">
               Personal
             </p>
             <nav className="space-y-1">
@@ -156,21 +169,21 @@ export function MentorShell({ children }: { children: React.ReactNode }) {
                     className={cn(
                       "group flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200",
                       active
-                        ? "bg-white/10 text-white"
-                        : "text-emerald-50/60 hover:bg-white/5 hover:text-white",
+                        ? "bg-[var(--header-fg)]/10 text-[var(--header-fg)]"
+                        : "text-[var(--header-fg-muted)] hover:bg-[var(--header-fg)]/5 hover:text-[var(--header-fg)]",
                     )}
                   >
                     <Icon
                       className={cn(
                         "h-5 w-5 transition-colors",
                         active
-                          ? "text-emerald-400"
-                          : "group-hover:text-emerald-400",
+                          ? "text-[var(--primary-soft)]"
+                          : "text-[var(--header-fg-muted)] group-hover:text-[var(--primary-soft)]",
                       )}
                     />
                     {item.label}
                     {active && (
-                      <ChevronRight className="ml-auto h-4 w-4 text-emerald-400" />
+                      <ChevronRight className="ml-auto h-4 w-4 text-[var(--primary-soft)]" />
                     )}
                   </Link>
                 );
@@ -178,32 +191,37 @@ export function MentorShell({ children }: { children: React.ReactNode }) {
             </nav>
           </div>
 
-          <div className="p-4 mt-auto">
-            <div className="rounded-xl bg-white/5 p-4 py-6">
-              <p className="text-xs font-medium text-emerald-50/40 italic text-center">
-                Educator Hub
-              </p>
-            </div>
+          <div className="mt-auto p-4">
+            <Card className="border-[var(--header-fg)]/10 bg-[var(--header-fg)]/5 text-center text-[var(--header-fg)] shadow-none">
+              <CardContent className="p-4 py-6">
+                <p className="text-xs font-medium italic text-[var(--header-fg-muted)]">
+                  Educator Hub
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </aside>
 
-      {/* Content */}
-      <div className="flex flex-1 flex-col min-w-0">
-        <header className="sticky top-0 z-30 flex h-18.5 items-center justify-between border-b border-(--border) bg-white/80 px-4 backdrop-blur-md lg:px-8 dark:bg-gray-dark/80">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-30 flex h-18.5 items-center justify-between border-b border-[var(--border)] bg-[var(--surface)]/80 px-4 backdrop-blur-md lg:px-8">
           <div className="flex items-center gap-4">
-            <button
+            <Button
+              type="button"
+              variant="chrome"
+              className="lg:hidden"
               onClick={() => setMobileNavOpen(true)}
-              className="lg:hidden p-2 text-(--muted) hover:bg-(--surface-muted) rounded-md"
+              aria-label="Open navigation"
             >
               <Menu className="h-6 w-6" />
-            </button>
+            </Button>
             <div className="relative hidden sm:block">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-(--muted-soft)" />
-              <input
-                type="text"
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted-soft)]" />
+              <Input
+                type="search"
                 placeholder="Search workspace..."
-                className="h-10 w-64 rounded-full bg-(--surface-muted) pl-10 pr-4 text-sm outline-none focus:ring-1 focus:ring-(--primary)/20 transition-all"
+                aria-label="Search workspace"
+                className="h-10 w-64 rounded-full border-0 bg-[var(--surface-muted)] py-0 pl-10 pr-4 shadow-none focus-visible:ring-1 focus-visible:ring-[var(--primary)]/20"
               />
             </div>
           </div>
@@ -211,7 +229,7 @@ export function MentorShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-2 sm:gap-4">
             <HeaderNotificationBell
               className="mr-1"
-              bellButtonClassName="rounded-full p-2 text-(--muted) hover:bg-(--surface-muted)"
+              bellButtonClassName="rounded-full p-2 text-[var(--muted)] hover:bg-[var(--surface-muted)]"
             />
             <UserMenu />
           </div>

@@ -34,32 +34,55 @@ export function RichTextArea({
     }
   }, [value]);
 
-  const exec = useCallback((command: string) => {
-    ref.current?.focus();
-    document.execCommand(command, false);
-    const html = sanitizeHtml(ref.current?.innerHTML ?? "");
-    onChange(html);
-  }, [onChange]);
+  const exec = useCallback(
+    (command: string) => {
+      ref.current?.focus();
+      document.execCommand(command, false);
+      const html = sanitizeHtml(ref.current?.innerHTML ?? "");
+      onChange(html);
+    },
+    [onChange],
+  );
 
   return (
-    <div className="rounded border border-[#d1d7dc] bg-white">
-      <div className="flex flex-wrap gap-1 border-b border-[#d1d7dc] px-2 py-1 text-xs">
-        <button type="button" disabled={disabled} className="rounded px-2 py-0.5 hover:bg-[#f6f7f9] disabled:opacity-40" onClick={() => exec("bold")}>
+    <div className="rounded border border-[var(--border)] bg-[var(--surface)]">
+      <div className="flex flex-wrap gap-1 border-b border-[var(--border)] px-2 py-1 text-xs">
+        <button
+          type="button"
+          disabled={disabled}
+          className="rounded px-2 py-0.5 hover:bg-[var(--surface-muted)] disabled:opacity-40"
+          onClick={() => exec("bold")}
+        >
           B
         </button>
-        <button type="button" disabled={disabled} className="rounded px-2 py-0.5 hover:bg-[#f6f7f9] disabled:opacity-40" onClick={() => exec("italic")}>
+        <button
+          type="button"
+          disabled={disabled}
+          className="rounded px-2 py-0.5 hover:bg-[var(--surface-muted)] disabled:opacity-40"
+          onClick={() => exec("italic")}
+        >
           I
         </button>
-        <button type="button" disabled={disabled} className="rounded px-2 py-0.5 hover:bg-[#f6f7f9] disabled:opacity-40" onClick={() => exec("insertUnorderedList")}>
+        <button
+          type="button"
+          disabled={disabled}
+          className="rounded px-2 py-0.5 hover:bg-[var(--surface-muted)] disabled:opacity-40"
+          onClick={() => exec("insertUnorderedList")}
+        >
           • List
         </button>
-        <button type="button" disabled={disabled} className="rounded px-2 py-0.5 hover:bg-[#f6f7f9] disabled:opacity-40" onClick={() => exec("insertOrderedList")}>
+        <button
+          type="button"
+          disabled={disabled}
+          className="rounded px-2 py-0.5 hover:bg-[var(--surface-muted)] disabled:opacity-40"
+          onClick={() => exec("insertOrderedList")}
+        >
           1. List
         </button>
       </div>
       <div
         ref={ref}
-        className={`${minHeightClass} w-full px-3 py-2 text-sm outline-none ${disabled ? "bg-[#f6f7f9] text-[#6a6f73]" : ""}`}
+        className={`${minHeightClass} w-full px-3 py-2 text-sm outline-none ${disabled ? "bg-[var(--surface-muted)] text-[var(--muted)]" : ""}`}
         contentEditable={!disabled}
         suppressContentEditableWarning
         data-placeholder={placeholder}
@@ -71,7 +94,7 @@ export function RichTextArea({
       <style>{`
         [contenteditable][data-placeholder]:empty:before {
           content: attr(data-placeholder);
-          color: #6a6f73;
+          color: var(--muted);
         }
       `}</style>
     </div>

@@ -89,7 +89,7 @@ export function CourseMessagesForm({
   return (
     <div className="space-y-6 px-6 py-5">
       {readOnly ? (
-        <p className="rounded border border-[#d1d7dc] bg-[#f6f7f9] p-3 text-sm text-[#6a6f73]">
+        <p className="rounded border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-sm text-[var(--muted)]">
           This course is pending review. Course messages are read-only.
         </p>
       ) : null}
@@ -98,7 +98,7 @@ export function CourseMessagesForm({
         <span className="mb-2 block text-sm font-semibold">
           Welcome message
         </span>
-        <p className="mb-2 text-xs text-[#6a6f73]">
+        <p className="mb-2 text-xs text-[var(--muted)]">
           Sent when a student enrolls. Optional; supports basic formatting.
         </p>
         <RichTextArea
@@ -109,11 +109,11 @@ export function CourseMessagesForm({
         />
       </div>
 
-      <div className="border-t border-[#d1d7dc] pt-6">
+      <div className="border-t border-[var(--border)] pt-6">
         <span className="mb-2 block text-sm font-semibold">
           Congratulations message
         </span>
-        <p className="mb-3 text-xs text-[#6a6f73]">
+        <p className="mb-3 text-xs text-[var(--muted)]">
           Shown when a student completes the course. Provide a title, then
           choose article (rich text) or video content.
         </p>
@@ -131,7 +131,7 @@ export function CourseMessagesForm({
           maxLength={200}
           disabled={readOnly}
           placeholder="e.g. You did it!"
-          className="mb-4 h-10 w-full max-w-lg border border-[#d1d7dc] px-3 text-sm disabled:bg-[#f6f7f9]"
+          className="mb-4 h-10 w-full max-w-lg border border-[var(--border)] px-3 text-sm disabled:bg-[var(--surface-muted)]"
         />
 
         <label
@@ -147,7 +147,7 @@ export function CourseMessagesForm({
             setContentType(e.target.value as "ARTICLE" | "VIDEO")
           }
           disabled={readOnly}
-          className="mb-4 h-10 max-w-xs border border-[#d1d7dc] bg-white px-2 text-sm disabled:bg-[#f6f7f9]"
+          className="mb-4 h-10 max-w-xs border border-[var(--border)] bg-white px-2 text-sm disabled:bg-[var(--surface-muted)]"
         >
           <option value="ARTICLE">Article (rich text)</option>
           <option value="VIDEO">Video</option>
@@ -162,12 +162,12 @@ export function CourseMessagesForm({
             minHeightClass="min-h-[160px]"
           />
         ) : (
-          <div className="rounded border border-[#d1d7dc] p-4">
-            <p className="mb-2 text-xs text-[#6a6f73]">
+          <div className="rounded border border-[var(--border)] p-4">
+            <p className="mb-2 text-xs text-[var(--muted)]">
               Upload a short congratulatory video.
             </p>
             {videoUrl ? (
-              <p className="mb-2 break-all text-xs text-[#1c1d1f]">
+              <p className="mb-2 break-all text-xs text-[var(--foreground)]">
                 {videoUrl}
               </p>
             ) : null}

@@ -1,6 +1,5 @@
 "use client";
 
-import { clsx } from "clsx";
 import {
   BarChart3,
   Gauge,
@@ -12,6 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 const items = [
   { href: "/tutor/performance/overview", label: "Overview", icon: Gauge },
@@ -38,12 +38,12 @@ export function PerformanceNav() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-full shrink-0 flex-col border-b border-[#e3e5e8] bg-[#f3f4f6] lg:w-[220px] lg:border-b-0 lg:border-r">
-      <div className="border-b border-[#e3e5e8] px-4 py-4 sm:px-5 sm:py-6">
-        <h2 className="text-lg font-bold tracking-tight text-[#1c1d1f]">
+    <aside className="flex w-full shrink-0 flex-col border-b border-[var(--border)] bg-[var(--surface-muted)] lg:w-[220px] lg:border-b-0 lg:border-r">
+      <div className="border-b border-[var(--border)] px-4 py-4 sm:px-5 sm:py-6">
+        <h2 className="text-lg font-bold tracking-tight text-[var(--foreground)]">
           Performance
         </h2>
-        <p className="mt-1 text-xs leading-snug text-[#6a6f73]">
+        <p className="mt-1 text-xs leading-snug text-[var(--muted)]">
           Insights across revenue, learners, and content.
         </p>
       </div>
@@ -58,23 +58,23 @@ export function PerformanceNav() {
               key={href}
               href={href}
               aria-current={active ? "page" : undefined}
-              className={clsx(
+              className={cn(
                 "flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors sm:gap-3 sm:py-2.5 lg:w-full",
                 active
-                  ? "bg-white text-[#1c1d1f] shadow-sm ring-1 ring-[#e3e5e8]"
-                  : "text-[#3e4143] hover:bg-white/70 hover:text-[#1c1d1f]",
+                  ? "bg-[var(--surface)] text-[var(--foreground)] shadow-sm ring-1 ring-[var(--border)]"
+                  : "text-[var(--muted)] hover:bg-[var(--surface)]/80 hover:text-[var(--foreground)]",
               )}
             >
               <Icon
-                className={clsx(
+                className={cn(
                   "h-4 w-4 shrink-0",
-                  active ? "text-[var(--primary)]" : "text-[#6a6f73]",
+                  active ? "text-[var(--primary)]" : "text-[var(--muted)]",
                 )}
                 strokeWidth={2}
               />
               <span className="leading-tight">{label}</span>
               {label === "Traffic & conversion" ? (
-                <span className="ml-auto rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-800">
+                <span className="ml-auto rounded bg-[var(--primary-soft)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--primary-strong)] ring-1 ring-[var(--primary)]/20">
                   New
                 </span>
               ) : null}
@@ -82,10 +82,10 @@ export function PerformanceNav() {
           );
         })}
       </nav>
-      <div className="border-t border-[#e3e5e8] p-4">
-        <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 ring-1 ring-emerald-100">
+      <div className="border-t border-[var(--border)] p-4">
+        <div className="flex items-center gap-2 rounded-lg bg-[var(--primary-soft)]/35 px-3 py-2 ring-1 ring-[var(--border)]">
           <TrendingUp className="h-4 w-4 text-[var(--primary)]" />
-          <p className="text-[11px] leading-snug text-[#1c1d1f]">
+          <p className="text-[11px] leading-snug text-[var(--foreground)]">
             Connect payouts &amp; enrollments to unlock live charts.
           </p>
         </div>

@@ -254,17 +254,17 @@ export function FileUploader({
   if (currentUrl && !isReplacing && !isUploading) {
     return (
       <div className="space-y-2">
-        <label className="text-xs font-semibold text-[#1c1d1f]">{getLabel()}</label>
-        <div className="flex items-center justify-between rounded-lg border border-[#d1d7dc] bg-white p-4 shadow-sm">
+        <label className="text-xs font-semibold text-[var(--foreground)]">{getLabel()}</label>
+        <div className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-white p-4 shadow-sm">
           <div className="flex items-center gap-3 min-w-0">
             <div className="rounded-md bg-purple-50 p-2">
               {getFileIcon()}
             </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-[#1c1d1f]">
+              <p className="truncate text-sm font-medium text-[var(--foreground)]">
                 {currentUrl.split("/").pop()}
               </p>
-              <p className="text-xs text-[#6a6f73]">Successfully uploaded</p>
+              <p className="text-xs text-[var(--muted)]">Successfully uploaded</p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -297,14 +297,14 @@ export function FileUploader({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="text-xs font-semibold text-[#1c1d1f]">
+        <label className="text-xs font-semibold text-[var(--foreground)]">
           {isReplacing ? `Replace ${getLabel().toLowerCase()}` : getLabel()}
         </label>
         {isReplacing && (
            <button
            type="button"
            onClick={() => setIsReplacing(false)}
-           className="text-xs font-semibold text-[#6a6f73] hover:text-[#1c1d1f]"
+           className="text-xs font-semibold text-[var(--muted)] hover:text-[var(--foreground)]"
          >
            Cancel
          </button>
@@ -315,7 +315,7 @@ export function FileUploader({
         className={`relative rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
           isDragging
             ? "border-[var(--primary)] bg-[var(--primary)]/5"
-            : "border-[#d1d7dc] hover:border-[#a3a9b0]"
+            : "border-[var(--border)] hover:border-[var(--muted)]"
         } ${disabled || isUploading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
@@ -335,37 +335,37 @@ export function FileUploader({
           <div className="space-y-3">
             <div className="flex justify-center">{getFileIcon()}</div>
             <div className="space-y-2">
-              <p className="text-sm font-medium text-[#1c1d1f]">{filePreview?.name}</p>
-              <div className="h-2 w-full rounded-full bg-[#d1d7dc]">
+              <p className="text-sm font-medium text-[var(--foreground)]">{filePreview?.name}</p>
+              <div className="h-2 w-full rounded-full bg-[var(--border)]">
                 <div
                   className="h-2 rounded-full bg-[var(--primary)] transition-all duration-300"
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
-              <p className="text-xs text-[#6a6f73]">{uploadProgress}% uploaded</p>
+              <p className="text-xs text-[var(--muted)]">{uploadProgress}% uploaded</p>
             </div>
           </div>
         ) : (
           <div className="space-y-3">
             <div className="flex justify-center">{getFileIcon()}</div>
             <div>
-              <p className="text-sm font-medium text-[#1c1d1f]">
+              <p className="text-sm font-medium text-[var(--foreground)]">
                 {isReplacing ? "Select new file to replace" : "Click to upload or drag and drop"}
               </p>
-              <p className="text-xs text-[#6a6f73] mt-1">{getDescription()}</p>
+              <p className="text-xs text-[var(--muted)] mt-1">{getDescription()}</p>
             </div>
           </div>
         )}
       </div>
 
       {showPreview && filePreview && !isUploading && (
-        <div className="rounded-lg border border-[#d1d7dc] bg-[#f6f7f9] p-3">
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {getFileIcon()}
               <div>
-                <p className="text-xs font-medium text-[#1c1d1f]">{filePreview.name}</p>
-                <p className="text-[11px] text-[#6a6f73]">
+                <p className="text-xs font-medium text-[var(--foreground)]">{filePreview.name}</p>
+                <p className="text-[11px] text-[var(--muted)]">
                   {(filePreview.size / 1024 / 1024).toFixed(2)} MB
                 </p>
               </div>
@@ -373,7 +373,7 @@ export function FileUploader({
             <button
               type="button"
               onClick={clearPreview}
-              className="rounded p-1 text-[#6a6f73] hover:bg-[#d1d7dc]"
+              className="rounded p-1 text-[var(--muted)] hover:bg-[var(--surface-muted)]"
               aria-label="Remove preview"
             >
               <X className="h-4 w-4" />

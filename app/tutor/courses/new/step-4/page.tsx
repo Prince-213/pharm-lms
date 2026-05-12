@@ -91,8 +91,8 @@ export default function NewCourseStep4Page() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f7f8]">
-      <header className="border-b border-[#d1d7dc] bg-white">
+    <div className="min-h-screen bg-[var(--surface-muted)]">
+      <header className="border-b border-[var(--border)] bg-[var(--surface)]">
         <div className="flex h-10 items-center justify-between px-4 text-xs">
           <span className="text-lg font-bold">PharmLms</span>
           <span>Step 3 of 3</span>
@@ -106,7 +106,7 @@ export default function NewCourseStep4Page() {
         <h1 className="text-center text-4xl font-bold">
           How much time can you spend creating your course per week?
         </h1>
-        <p className="mt-3 text-center text-sm text-[#6a6f73]">
+        <p className="mt-3 text-center text-sm text-[var(--muted)]">
           There&apos;s no wrong answer. We can help you achieve your goals even
           if you don&apos;t have much time.
         </p>
@@ -119,14 +119,14 @@ export default function NewCourseStep4Page() {
                 setTimeChoice(option);
                 mergeMentorNewCourseDraft({ timeCommitment: option });
               }}
-              className={`flex w-full items-center gap-3 border px-3 py-3 text-sm ${timeChoice === option ? "border-[var(--primary)]" : "border-[#d1d7dc]"}`}
+              className={`flex w-full items-center gap-3 border px-3 py-3 text-sm ${timeChoice === option ? "border-[var(--primary)]" : "border-[var(--border)]"}`}
             >
               <span>{timeChoice === option ? "◉" : "○"}</span>
               {option}
             </button>
           ))}
         </div>
-        <p className="mt-8 text-center text-xs text-[#6a6f73]">
+        <p className="mt-8 text-center text-xs text-[var(--muted)]">
           New courses are saved as drafts until you submit them for review and
           they are approved.
         </p>
@@ -136,7 +136,7 @@ export default function NewCourseStep4Page() {
           </p>
         ) : null}
       </main>
-      <footer className="fixed bottom-0 left-0 right-0 flex items-center justify-between border-t border-[#d1d7dc] bg-white px-4 py-3">
+      <footer className="fixed bottom-0 left-0 right-0 flex items-center justify-between border-t border-[var(--border)] bg-[var(--surface)] px-4 py-3">
         <Link
           href="/tutor/courses/new/step-3"
           className="rounded-sm border border-[var(--primary)] px-3 py-1 text-xs text-[var(--primary)]"

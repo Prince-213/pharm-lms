@@ -19,9 +19,9 @@ export default async function MentorCourseCurriculumPage({
   if (!course) notFound();
 
   return (
-    <section className="mx-auto max-w-[900px] border border-[#d1d7dc] bg-white">
-      <div className="flex items-center justify-between border-b border-[#d1d7dc] px-6 py-4">
-        <h1 className="text-2xl font-bold text-[#1c1d1f]">Curriculum</h1>
+    <section className="mx-auto max-w-[900px] border border-[var(--border)] bg-[var(--surface)]">
+      <div className="flex items-center justify-between border-b border-[var(--border)] px-6 py-4">
+        <h1 className="text-2xl font-bold text-[var(--foreground)]">Curriculum</h1>
       </div>
       <CurriculumEditorV2Dynamic courseId={courseId} />
     </section>

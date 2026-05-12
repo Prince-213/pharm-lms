@@ -1,9 +1,9 @@
 "use client";
 
-import { clsx } from "clsx";
 import { Megaphone, MessageSquare, MessagesSquare, Video } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 const WORKSPACE = "/tutor";
 
@@ -39,16 +39,16 @@ export function CommunicationShell({
   const pathname = usePathname();
 
   return (
-    <div className="flex min-h-[calc(100vh-0px)] flex-col bg-[#f8fafb] text-[#191c1d]">
-      <header className="flex h-14 shrink-0 items-center border-b border-[#e2e8f0] bg-white px-4 sm:px-8">
-        <h1 className="font-display text-lg font-bold tracking-tight text-[#0f172a] sm:text-xl">
+    <div className="flex min-h-[calc(100vh-0px)] flex-col bg-[var(--background)] text-[var(--foreground)]">
+      <header className="flex h-14 shrink-0 items-center border-b border-[var(--border)] bg-[var(--surface)] px-4 sm:px-8">
+        <h1 className="font-display text-lg font-bold tracking-tight text-[var(--foreground)] sm:text-xl">
           Communication
         </h1>
       </header>
 
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
         <aside
-          className="w-full shrink-0 border-b border-[#e2e8f0] bg-white px-2 py-3 md:w-[220px] md:border-b-0 md:border-r md:py-5"
+          className="w-full shrink-0 border-b border-[var(--border)] bg-[var(--surface)] px-2 py-3 md:w-[220px] md:border-b-0 md:border-r md:py-5"
           aria-label="Communication sections"
         >
           <nav className="flex flex-row gap-1 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] md:flex-col md:space-y-0.5 md:overflow-visible md:pb-0 [&::-webkit-scrollbar]:hidden">
@@ -61,11 +61,11 @@ export function CommunicationShell({
                   key={item.href}
                   href={item.href}
                   aria-current={active ? "page" : undefined}
-                  className={clsx(
+                  className={cn(
                     "flex shrink-0 items-center gap-3 rounded-sm px-3 py-2.5 text-sm font-medium transition-colors md:w-full md:shrink",
                     active
-                      ? "bg-[#ecfdf5] text-[#0f172a] shadow-[inset_3px_0_0_0_#10b981] md:shadow-[inset_3px_0_0_0_#10b981]"
-                      : "text-[#475569] hover:bg-slate-100",
+                      ? "bg-[var(--primary-soft)]/35 text-[var(--foreground)] shadow-[inset_3px_0_0_0_var(--primary)] md:shadow-[inset_3px_0_0_0_var(--primary)]"
+                      : "text-[var(--muted)] hover:bg-[var(--surface-muted)]",
                   )}
                 >
                   <Icon
@@ -74,7 +74,7 @@ export function CommunicationShell({
                   />
                   <span className="flex-1">{item.label}</span>
                   {"badge" in item && item.badge != null ? (
-                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--primary)] px-1 text-[11px] font-bold text-white">
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--primary)] px-1 text-[11px] font-bold text-[var(--primary-foreground)]">
                       {item.badge}
                     </span>
                   ) : null}
@@ -84,7 +84,7 @@ export function CommunicationShell({
           </nav>
         </aside>
 
-        <main className="min-h-0 min-w-0 flex-1 overflow-auto bg-white shadow-inner">
+        <main className="min-h-0 min-w-0 flex-1 overflow-auto bg-[var(--surface)] shadow-inner">
           {children}
         </main>
       </div>

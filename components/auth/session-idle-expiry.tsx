@@ -2,7 +2,7 @@
 
 import { signOut, useSession } from "next-auth/react";
 import { useCallback, useEffect, useRef } from "react";
-import { IDLE_SIGN_OUT_MS } from "@/lib/auth/session-short-lived";
+import { IDLE_SIGN_OUT_MS } from "@/lib/auth/session-policy";
 
 const ACTIVITY_EVENTS: (keyof WindowEventMap)[] = [
   "pointerdown",
@@ -13,9 +13,9 @@ const ACTIVITY_EVENTS: (keyof WindowEventMap)[] = [
 ];
 
 /**
- * Signs the user out after {@link IDLE_SIGN_OUT_MS} with no input events, and
- * pings `/api/auth/session` on activity so the JWT sliding expiry in `auth.ts`
- * can refresh while they are active.
+ * Signs the user out after {@link IDLE_SIGN_OUT_MS} with no pointer/keyboard
+ * activity, and pings `/api/auth/session` on activity so the JWT sliding expiry
+ * in `auth.ts` can refresh while they are active.
  */
 export function SessionIdleExpiry() {
   const { status } = useSession();

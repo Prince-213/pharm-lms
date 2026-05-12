@@ -35,12 +35,12 @@ export default async function MentorCourseBasicsPage({
   };
 
   return (
-    <section className="mx-auto max-w-[900px] border border-[#d1d7dc] bg-white">
-      <div className="border-b border-[#d1d7dc] px-6 py-4">
-        <h1 className="text-2xl font-bold text-[#1c1d1f]">
+    <section className="mx-auto max-w-[900px] border border-[var(--border)] bg-[var(--surface)]">
+      <div className="border-b border-[var(--border)] px-6 py-4">
+        <h1 className="text-2xl font-bold text-[var(--foreground)]">
           Course landing page
         </h1>
-        <p className="mt-1 text-sm text-[#6a6f73]">
+        <p className="mt-1 text-sm text-[var(--muted)]">
           Title, description, basics, and media students see before enrolling.
         </p>
       </div>

@@ -70,23 +70,23 @@ export default async function MentorCourseOverviewPage({
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
-      <div className="rounded-xl border border-[#d1d7dc] bg-white p-6">
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-[#0f5238]">
               Tutor course workspace
             </p>
-            <h1 className="mt-1 font-display text-3xl font-bold text-[#1c1d1f]">
+            <h1 className="mt-1 font-display text-3xl font-bold text-[var(--foreground)]">
               {course.title}
             </h1>
-            <p className="mt-1 text-sm text-[#6a6f73]">
+            <p className="mt-1 text-sm text-[var(--muted)]">
               Overview, learner quiz reviews, announcements, and forum
               discussions in one view.
             </p>
           </div>
           <Link
             href={`/tutor/courses/${courseId}/manage/curriculum`}
-            className="rounded-md border border-[#d1d7dc] px-4 py-2 text-sm font-semibold text-[#1c1d1f] hover:bg-[#f8fafb]"
+            className="rounded-md border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--foreground)] hover:bg-[var(--surface-muted)]"
           >
             Edit curriculum
           </Link>
@@ -94,42 +94,42 @@ export default async function MentorCourseOverviewPage({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-[#d1d7dc] bg-white p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#6a6f73]">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
             Sections
           </p>
-          <p className="mt-1 text-2xl font-bold text-[#1c1d1f]">
+          <p className="mt-1 text-2xl font-bold text-[var(--foreground)]">
             {course.sections.length}
           </p>
         </div>
-        <div className="rounded-xl border border-[#d1d7dc] bg-white p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#6a6f73]">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
             Lessons
           </p>
-          <p className="mt-1 text-2xl font-bold text-[#1c1d1f]">
+          <p className="mt-1 text-2xl font-bold text-[var(--foreground)]">
             {lessonCount}
           </p>
         </div>
-        <div className="rounded-xl border border-[#d1d7dc] bg-white p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#6a6f73]">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
             Enrollments
           </p>
-          <p className="mt-1 text-2xl font-bold text-[#1c1d1f]">
+          <p className="mt-1 text-2xl font-bold text-[var(--foreground)]">
             {course.enrollments.length}
           </p>
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-xl border border-[#d1d7dc] bg-white">
-          <div className="border-b border-[#d1d7dc] px-5 py-4">
-            <h2 className="text-lg font-semibold text-[#1c1d1f]">Overview</h2>
-            <p className="text-xs text-[#6a6f73]">
+        <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)]">
+          <div className="border-b border-[var(--border)] px-5 py-4">
+            <h2 className="text-lg font-semibold text-[var(--foreground)]">Overview</h2>
+            <p className="text-xs text-[var(--muted)]">
               Course description and structure snapshot
             </p>
           </div>
           <div className="space-y-4 px-5 py-4">
-            <p className="text-sm leading-relaxed text-[#1c1d1f]">
+            <p className="text-sm leading-relaxed text-[var(--foreground)]">
               {course.description.replace(/<[^>]+>/g, " ").slice(0, 420)}
               {course.description.length > 420 ? "..." : ""}
             </p>
@@ -143,23 +143,23 @@ export default async function MentorCourseOverviewPage({
           </div>
         </section>
 
-        <section className="rounded-xl border border-[#d1d7dc] bg-white">
-          <div className="border-b border-[#d1d7dc] px-5 py-4">
-            <h2 className="text-lg font-semibold text-[#1c1d1f]">Reviews</h2>
-            <p className="text-xs text-[#6a6f73]">
+        <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)]">
+          <div className="border-b border-[var(--border)] px-5 py-4">
+            <h2 className="text-lg font-semibold text-[var(--foreground)]">Reviews</h2>
+            <p className="text-xs text-[var(--muted)]">
               Learner AI quiz performance insights
             </p>
           </div>
           <div className="space-y-4 px-5 py-4">
             <p className="text-sm text-[#334155]">
               Average quiz score:{" "}
-              <span className="font-semibold text-[#1c1d1f]">
+              <span className="font-semibold text-[var(--foreground)]">
                 {reviewStats._avg.score
                   ? `${Math.round(reviewStats._avg.score)}%`
                   : "N/A"}
               </span>{" "}
               · Attempts:{" "}
-              <span className="font-semibold text-[#1c1d1f]">
+              <span className="font-semibold text-[var(--foreground)]">
                 {reviewStats._count.id}
               </span>
             </p>
@@ -170,7 +170,7 @@ export default async function MentorCourseOverviewPage({
                     key={review.id}
                     className="rounded-md border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2 text-sm"
                   >
-                    <span className="font-medium text-[#1c1d1f]">
+                    <span className="font-medium text-[var(--foreground)]">
                       {review.student.fullName}
                     </span>{" "}
                     scored{" "}
@@ -180,7 +180,7 @@ export default async function MentorCourseOverviewPage({
                   </li>
                 ))
               ) : (
-                <li className="rounded-md border border-dashed border-[#d1d7dc] px-3 py-5 text-sm text-[#6a6f73]">
+                <li className="rounded-md border border-dashed border-[var(--border)] px-3 py-5 text-sm text-[var(--muted)]">
                   No quiz reviews yet.
                 </li>
               )}
@@ -190,12 +190,12 @@ export default async function MentorCourseOverviewPage({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-xl border border-[#d1d7dc] bg-white">
-          <div className="border-b border-[#d1d7dc] px-5 py-4">
-            <h2 className="text-lg font-semibold text-[#1c1d1f]">
+        <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)]">
+          <div className="border-b border-[var(--border)] px-5 py-4">
+            <h2 className="text-lg font-semibold text-[var(--foreground)]">
               Announcements
             </h2>
-            <p className="text-xs text-[#6a6f73]">
+            <p className="text-xs text-[var(--muted)]">
               Post updates that students see in course description.
             </p>
           </div>
@@ -212,7 +212,7 @@ export default async function MentorCourseOverviewPage({
               rows={3}
               required
               maxLength={2000}
-              className="w-full rounded-md border border-[#d1d7dc] px-3 py-2 text-sm"
+              className="w-full rounded-md border border-[var(--border)] px-3 py-2 text-sm"
               placeholder="Share an announcement with learners..."
             />
             <button
@@ -222,20 +222,20 @@ export default async function MentorCourseOverviewPage({
               Publish announcement
             </button>
           </form>
-          <div className="space-y-2 border-t border-[#d1d7dc] px-5 py-4">
+          <div className="space-y-2 border-t border-[var(--border)] px-5 py-4">
             {(announcementsThread?.posts ?? []).slice(0, 10).map((post) => (
               <div
                 key={post.id}
                 className="rounded-md border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2"
               >
-                <p className="text-sm text-[#1c1d1f]">{post.body}</p>
+                <p className="text-sm text-[var(--foreground)]">{post.body}</p>
                 <p className="mt-1 text-[11px] text-[#64748b]">
                   {post.createdAt.toLocaleString()}
                 </p>
               </div>
             ))}
             {!announcementsThread?.posts.length ? (
-              <p className="rounded-md border border-dashed border-[#d1d7dc] px-3 py-4 text-sm text-[#6a6f73]">
+              <p className="rounded-md border border-dashed border-[var(--border)] px-3 py-4 text-sm text-[var(--muted)]">
                 No announcements yet.
               </p>
             ) : null}
@@ -244,11 +244,11 @@ export default async function MentorCourseOverviewPage({
 
         <section
           id="course-forum"
-          className="rounded-xl border border-[#d1d7dc] bg-white scroll-mt-6"
+          className="rounded-xl border border-[var(--border)] bg-[var(--surface)] scroll-mt-6"
         >
-          <div className="border-b border-[#d1d7dc] px-5 py-4">
-            <h2 className="text-lg font-semibold text-[#1c1d1f]">Forum</h2>
-            <p className="text-xs text-[#6a6f73]">
+          <div className="border-b border-[var(--border)] px-5 py-4">
+            <h2 className="text-lg font-semibold text-[var(--foreground)]">Forum</h2>
+            <p className="text-xs text-[var(--muted)]">
               Discuss with enrolled students.
             </p>
           </div>
@@ -265,17 +265,17 @@ export default async function MentorCourseOverviewPage({
               rows={3}
               required
               maxLength={2000}
-              className="w-full rounded-md border border-[#d1d7dc] px-3 py-2 text-sm"
+              className="w-full rounded-md border border-[var(--border)] px-3 py-2 text-sm"
               placeholder="Reply in forum as tutor..."
             />
             <button
               type="submit"
-              className="rounded-md border border-[#d1d7dc] px-4 py-2 text-sm font-semibold text-[#1c1d1f] hover:bg-[#f8fafb]"
+              className="rounded-md border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--foreground)] hover:bg-[var(--surface-muted)]"
             >
               Send to forum
             </button>
           </form>
-          <div className="space-y-2 border-t border-[#d1d7dc] px-5 py-4">
+          <div className="space-y-2 border-t border-[var(--border)] px-5 py-4">
             {(forumThread?.posts ?? []).slice(0, 10).map((post) => (
               <div
                 key={post.id}
@@ -284,11 +284,11 @@ export default async function MentorCourseOverviewPage({
                 <p className="text-xs font-semibold text-[#0f172a]">
                   {post.author.fullName} · {post.author.role}
                 </p>
-                <p className="mt-1 text-sm text-[#1c1d1f]">{post.body}</p>
+                <p className="mt-1 text-sm text-[var(--foreground)]">{post.body}</p>
               </div>
             ))}
             {!forumThread?.posts.length ? (
-              <p className="rounded-md border border-dashed border-[#d1d7dc] px-3 py-4 text-sm text-[#6a6f73]">
+              <p className="rounded-md border border-dashed border-[var(--border)] px-3 py-4 text-sm text-[var(--muted)]">
                 No forum messages yet.
               </p>
             ) : null}

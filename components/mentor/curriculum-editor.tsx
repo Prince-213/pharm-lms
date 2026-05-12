@@ -215,7 +215,7 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
   }
 
   if (loading) {
-    return <p className="p-6 text-sm text-[#6a6f73]">Loading curriculum...</p>;
+    return <p className="p-6 text-sm text-[var(--muted)]">Loading curriculum...</p>;
   }
 
   if (error) {
@@ -224,16 +224,16 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
 
   return (
     <div className="space-y-5 px-6 py-5">
-      <div className="rounded border border-[#d1d7dc] bg-[#f6f7f9] p-4 text-sm">
+      <div className="rounded border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm">
         Here&apos;s where you add real course content: sections, lectures,
         quizzes, and assignments.
       </div>
       {saving ? (
-        <p className="text-xs text-[#6a6f73]">Saving changes...</p>
+        <p className="text-xs text-[var(--muted)]">Saving changes...</p>
       ) : null}
 
       {sections.map((section, sectionIndex) => (
-        <div key={section.id} className="border border-[#d1d7dc] bg-white p-4">
+        <div key={section.id} className="border border-[var(--border)] bg-white p-4">
           <div className="mb-3 flex items-center gap-2">
             <span className="text-base font-bold">{`Section ${sectionIndex + 1}:`}</span>
             {editingSectionId === section.id ? (
@@ -243,11 +243,11 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
                   onChange={(event) =>
                     setEditingSectionTitle(event.target.value)
                   }
-                  className="w-full max-w-[500px] border border-[#d1d7dc] px-2 py-1 text-sm"
+                  className="w-full max-w-[500px] border border-[var(--border)] px-2 py-1 text-sm"
                 />
                 <button
                   type="button"
-                  className="rounded border border-[#d1d7dc] p-1 text-[#1c1d1f]"
+                  className="rounded border border-[var(--border)] p-1 text-[var(--foreground)]"
                   onClick={() =>
                     void updateSectionTitle(
                       section.id,
@@ -259,7 +259,7 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
                 </button>
                 <button
                   type="button"
-                  className="rounded border border-[#d1d7dc] p-1 text-[#1c1d1f]"
+                  className="rounded border border-[var(--border)] p-1 text-[var(--foreground)]"
                   onClick={() => {
                     setEditingSectionId(null);
                     setEditingSectionTitle("");
@@ -273,7 +273,7 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
                 <p className="w-full max-w-[500px] text-sm">{section.title}</p>
                 <button
                   type="button"
-                  className="rounded border border-[#d1d7dc] p-1 text-[#1c1d1f]"
+                  className="rounded border border-[var(--border)] p-1 text-[var(--foreground)]"
                   onClick={() => {
                     setEditingSectionId(section.id);
                     setEditingSectionTitle(section.title);
@@ -283,7 +283,7 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
                 </button>
                 <button
                   type="button"
-                  className="rounded border border-[#d1d7dc] p-1 text-[#1c1d1f]"
+                  className="rounded border border-[var(--border)] p-1 text-[var(--foreground)]"
                   onClick={() => {
                     if (
                       window.confirm("Delete this section and its lectures?")
@@ -308,7 +308,7 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
               return (
                 <div
                   key={lesson.id}
-                  className="border border-[#d1d7dc] bg-[#fcfcfd] p-3"
+                  className="border border-[var(--border)] bg-[var(--surface-muted)] p-3"
                 >
                   <div className="grid gap-2 md:grid-cols-[1fr_180px]">
                     <input
@@ -318,7 +318,7 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
                           title: event.target.value,
                         })
                       }
-                      className="border border-[#d1d7dc] px-2 py-1 text-sm"
+                      className="border border-[var(--border)] px-2 py-1 text-sm"
                     />
                     <select
                       defaultValue={lessonType}
@@ -330,7 +330,7 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
                           value: lessonValue,
                         })
                       }
-                      className="border border-[#d1d7dc] px-2 py-1 text-sm"
+                      className="border border-[var(--border)] px-2 py-1 text-sm"
                     >
                       <option value="VIDEO">Video</option>
                       <option value="ARTICLE">Article</option>
@@ -349,7 +349,7 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
                         ? "Paste video URL"
                         : "Write article content for this lecture"
                     }
-                    className="mt-2 min-h-20 w-full border border-[#d1d7dc] px-2 py-1 text-sm"
+                    className="mt-2 min-h-20 w-full border border-[var(--border)] px-2 py-1 text-sm"
                   />
                 </div>
               );
@@ -374,19 +374,19 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
           </div>
 
           {activeSectionForLesson === section.id ? (
-            <div className="mt-3 grid gap-2 rounded border border-[#d1d7dc] p-3 md:grid-cols-[1fr_140px_auto]">
+            <div className="mt-3 grid gap-2 rounded border border-[var(--border)] p-3 md:grid-cols-[1fr_140px_auto]">
               <input
                 value={newLessonTitle}
                 onChange={(event) => setNewLessonTitle(event.target.value)}
                 placeholder="Lecture title"
-                className="border border-[#d1d7dc] px-2 py-1 text-sm"
+                className="border border-[var(--border)] px-2 py-1 text-sm"
               />
               <select
                 value={newLessonType}
                 onChange={(event) =>
                   setNewLessonType(event.target.value as "VIDEO" | "ARTICLE")
                 }
-                className="border border-[#d1d7dc] px-2 py-1 text-sm"
+                className="border border-[var(--border)] px-2 py-1 text-sm"
               >
                 <option value="VIDEO">Video</option>
                 <option value="ARTICLE">Article</option>
@@ -415,13 +415,13 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
           ) : null}
 
           {activeSectionForItem === section.id ? (
-            <div className="mt-3 grid gap-2 rounded border border-[#d1d7dc] p-3 md:grid-cols-[140px_1fr_auto]">
+            <div className="mt-3 grid gap-2 rounded border border-[var(--border)] p-3 md:grid-cols-[140px_1fr_auto]">
               <select
                 value={itemType}
                 onChange={(event) =>
                   setItemType(event.target.value as "QUIZ" | "ASSIGNMENT")
                 }
-                className="border border-[#d1d7dc] px-2 py-1 text-sm"
+                className="border border-[var(--border)] px-2 py-1 text-sm"
               >
                 <option value="QUIZ">Quiz</option>
                 <option value="ASSIGNMENT">Assignment</option>
@@ -430,7 +430,7 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
                 value={itemTitle}
                 onChange={(event) => setItemTitle(event.target.value)}
                 placeholder="Title"
-                className="border border-[#d1d7dc] px-2 py-1 text-sm"
+                className="border border-[var(--border)] px-2 py-1 text-sm"
               />
               <button
                 type="button"
@@ -445,7 +445,7 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
         </div>
       ))}
 
-      <div className="border border-[#d1d7dc] bg-white p-4">
+      <div className="border border-[var(--border)] bg-white p-4">
         <h3 className="mb-2 text-base font-bold">New Section</h3>
         <div className="grid gap-2">
           <input
@@ -453,14 +453,14 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
             onChange={(event) => setNewSectionTitle(event.target.value)}
             maxLength={120}
             placeholder="Enter section title"
-            className="border border-[#d1d7dc] px-2 py-2 text-sm"
+            className="border border-[var(--border)] px-2 py-2 text-sm"
           />
           <input
             value={newSectionObjective}
             onChange={(event) => setNewSectionObjective(event.target.value)}
             maxLength={500}
             placeholder="Enter a learning objective"
-            className="border border-[#d1d7dc] px-2 py-2 text-sm"
+            className="border border-[var(--border)] px-2 py-2 text-sm"
           />
           <button
             type="button"

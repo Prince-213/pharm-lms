@@ -28,20 +28,20 @@ export default async function TutorCourseCatalogPreviewPage({
   if (!data) notFound();
 
   return (
-    <div className="min-h-screen bg-[#f8faff]">
-      <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 px-4 py-3 backdrop-blur-md">
+    <div className="min-h-screen bg-[var(--background)]">
+      <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--surface)]/95 px-4 py-3 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <span className="rounded-full bg-[var(--primary-soft)] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[var(--primary-strong)]">
               Student preview
             </span>
-            <p className="truncate text-sm text-slate-600">
+            <p className="truncate text-sm text-[var(--muted)]">
               How learners see this course in the catalog before enrolling.
             </p>
           </div>
           <Link
             href={`/tutor/courses/${courseId}/manage`}
-            className="shrink-0 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50"
+            className="shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-semibold text-[var(--foreground)] shadow-sm transition hover:bg-[var(--surface-muted)]"
           >
             Back to course editor
           </Link>

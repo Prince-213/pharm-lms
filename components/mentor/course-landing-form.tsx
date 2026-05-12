@@ -122,7 +122,7 @@ export function CourseLandingForm({
   return (
     <div className="space-y-5 px-6 py-5">
       {readOnly ? (
-        <p className="rounded border border-[#d1d7dc] bg-[#f6f7f9] p-3 text-sm text-[#6a6f73]">
+        <p className="rounded border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-sm text-[var(--muted)]">
           This course is pending review. Landing page fields are read-only.
         </p>
       ) : null}
@@ -137,9 +137,9 @@ export function CourseLandingForm({
           onChange={(e) => setTitle(e.target.value)}
           maxLength={120}
           disabled={readOnly}
-          className="h-10 w-full border border-[#d1d7dc] px-3 text-sm disabled:bg-[#f6f7f9]"
+          className="h-10 w-full border border-[var(--border)] px-3 text-sm disabled:bg-[var(--surface-muted)]"
         />
-        <p className="mt-1 text-right text-[11px] text-[#6a6f73]">
+        <p className="mt-1 text-right text-[11px] text-[var(--muted)]">
           {title.length} / 120
         </p>
       </div>
@@ -154,9 +154,9 @@ export function CourseLandingForm({
           onChange={(e) => setSubtitle(e.target.value)}
           maxLength={200}
           disabled={readOnly}
-          className="h-10 w-full border border-[#d1d7dc] px-3 text-sm disabled:bg-[#f6f7f9]"
+          className="h-10 w-full border border-[var(--border)] px-3 text-sm disabled:bg-[var(--surface-muted)]"
         />
-        <p className="mt-1 text-right text-[11px] text-[#6a6f73]">
+        <p className="mt-1 text-right text-[11px] text-[var(--muted)]">
           {subtitle.length} / 200
         </p>
       </div>
@@ -172,7 +172,7 @@ export function CourseLandingForm({
           placeholder="Describe what students will learn."
           minHeightClass="min-h-[200px]"
         />
-        <p className="mt-1 text-[11px] text-[#6a6f73]">
+        <p className="mt-1 text-[11px] text-[var(--muted)]">
           {descLen} characters of text (aim for a thorough description; 50+
           required to submit).
         </p>
@@ -188,7 +188,7 @@ export function CourseLandingForm({
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
             disabled={readOnly}
-            className="h-10 w-full border border-[#d1d7dc] bg-white px-2 text-sm disabled:bg-[#f6f7f9]"
+            className="h-10 w-full border border-[var(--border)] bg-white px-2 text-sm disabled:bg-[var(--surface-muted)]"
           >
             <option value="English">English</option>
             <option value="English (US)">English (US)</option>
@@ -207,7 +207,7 @@ export function CourseLandingForm({
             value={level}
             onChange={(e) => setLevel(e.target.value)}
             disabled={readOnly}
-            className="h-10 w-full border border-[#d1d7dc] bg-white px-2 text-sm disabled:bg-[#f6f7f9]"
+            className="h-10 w-full border border-[var(--border)] bg-white px-2 text-sm disabled:bg-[var(--surface-muted)]"
           >
             <option value="">— Select level —</option>
             <option value="Beginner">Beginner</option>
@@ -227,7 +227,7 @@ export function CourseLandingForm({
             maxLength={120}
             disabled={readOnly}
             placeholder="e.g. Pharmacy"
-            className="h-10 w-full border border-[#d1d7dc] px-3 text-sm disabled:bg-[#f6f7f9]"
+            className="h-10 w-full border border-[var(--border)] px-3 text-sm disabled:bg-[var(--surface-muted)]"
           />
         </div>
         <div>
@@ -244,7 +244,7 @@ export function CourseLandingForm({
             maxLength={120}
             disabled={readOnly}
             placeholder="Optional"
-            className="h-10 w-full border border-[#d1d7dc] px-3 text-sm disabled:bg-[#f6f7f9]"
+            className="h-10 w-full border border-[var(--border)] px-3 text-sm disabled:bg-[var(--surface-muted)]"
           />
         </div>
       </div>
@@ -260,7 +260,7 @@ export function CourseLandingForm({
           maxLength={200}
           disabled={readOnly}
           placeholder="What is primarily taught?"
-          className="h-10 w-full border border-[#d1d7dc] px-3 text-sm disabled:bg-[#f6f7f9]"
+          className="h-10 w-full border border-[var(--border)] px-3 text-sm disabled:bg-[var(--surface-muted)]"
         />
       </div>
 
@@ -280,10 +280,10 @@ export function CourseLandingForm({
               setDurationHours(e.target.value.replace(/\D/g, "").slice(0, 3))
             }
             disabled={readOnly}
-            className="h-10 w-20 border border-[#d1d7dc] px-2 text-sm disabled:bg-[#f6f7f9]"
+            className="h-10 w-20 border border-[var(--border)] px-2 text-sm disabled:bg-[var(--surface-muted)]"
             aria-label="Hours"
           />
-          <span className="text-sm text-[#6a6f73]">hr</span>
+          <span className="text-sm text-[var(--muted)]">hr</span>
           <input
             type="number"
             min={0}
@@ -295,12 +295,12 @@ export function CourseLandingForm({
               setDurationMinutes(e.target.value.replace(/\D/g, "").slice(0, 2))
             }
             disabled={readOnly}
-            className="h-10 w-16 border border-[#d1d7dc] px-2 text-sm disabled:bg-[#f6f7f9]"
+            className="h-10 w-16 border border-[var(--border)] px-2 text-sm disabled:bg-[var(--surface-muted)]"
             aria-label="Minutes"
           />
-          <span className="text-sm text-[#6a6f73]">min</span>
+          <span className="text-sm text-[var(--muted)]">min</span>
         </div>
-        <p className="mt-1 text-[11px] leading-relaxed text-[#6a6f73]">
+        <p className="mt-1 text-[11px] leading-relaxed text-[var(--muted)]">
           Leave blank to auto-estimate from lesson video lengths plus about 30
           minutes if the course includes reading-style lessons.
         </p>
@@ -322,7 +322,7 @@ export function CourseLandingForm({
         disabled={readOnly}
       />
 
-      <div className="flex justify-end gap-2 border-t border-[#d1d7dc] pt-4">
+      <div className="flex justify-end gap-2 border-t border-[var(--border)] pt-4">
         <button
           type="button"
           disabled={readOnly || saving || title.trim().length < 3}

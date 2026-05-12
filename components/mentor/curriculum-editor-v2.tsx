@@ -762,21 +762,21 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
 
   // ── Render ────────────────────────────────────────────────────────────────
 
-  if (loading) return <p className="p-6 text-sm text-[#6a6f73]">Loading curriculum...</p>;
+  if (loading) return <p className="p-6 text-sm text-[var(--muted)]">Loading curriculum...</p>;
   if (error) return <p className="p-6 text-sm text-[#b32d0f]">{error}</p>;
 
   return (
     <div className="space-y-5 px-6 py-5">
       {readOnly ? (
-        <p className="rounded border border-[#d1d7dc] bg-[#f6f7f9] p-3 text-sm text-[#6a6f73]">
+        <p className="rounded border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-sm text-[var(--muted)]">
           This course is pending review. Curriculum is read-only.
         </p>
       ) : null}
-      <div className="rounded border border-[#d1d7dc] bg-[#f6f7f9] p-4 text-sm">
+      <div className="rounded border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm">
         Manage content by type: video uploads, article text, quiz questions,
         assignment instructions, and section resources.
       </div>
-      {saving ? <p className="text-xs text-[#6a6f73]">Saving...</p> : null}
+      {saving ? <p className="text-xs text-[var(--muted)]">Saving...</p> : null}
 
       <DndContext
         sensors={sensors}
@@ -797,7 +797,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
               titleRow={
                 <div className=" w-full flex items-center justify-between">
                   <div className="flex items-center gap-2 overflow-hidden mr-4">
-                     <span className="shrink-0 text-sm font-bold text-[#1c1d1f]">{`Section ${sectionIndex + 1} : `}</span>
+                     <span className="shrink-0 text-sm font-bold text-[var(--foreground)]">{`Section ${sectionIndex + 1} : `}</span>
                     {editingSectionId === section.id ? (
                       <div className="flex items-center gap-1">
                         <input
@@ -805,7 +805,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                           onChange={(e) => setEditingSectionTitle(e.target.value)}
                           disabled={interactionLocked}
                           autoFocus
-                          className="min-w-0 flex-1 max-w-[300px] border border-[#d1d7dc] px-2 py-1 text-sm rounded"
+                          className="min-w-0 flex-1 max-w-[300px] border border-[var(--border)] px-2 py-1 text-sm rounded"
                           onClick={(e) => e.stopPropagation()}
                         />
                         <button
@@ -833,7 +833,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                         </button>
                       </div>
                     ) : (
-                       <p className="truncate text-sm font-semibold text-[#1c1d1f]">
+                       <p className="truncate text-sm font-semibold text-[var(--foreground)]">
                         {section.title}
                       </p>
                     )}
@@ -849,7 +849,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                          setEditingSectionId(section.id);
                          setEditingSectionTitle(section.title);
                        }}
-                       className="rounded p-1 text-[#6a6f73] hover:bg-[#f6f7f9]"
+                       className="rounded p-1 text-[var(--muted)] hover:bg-[var(--surface-muted)]"
                      >
                        <Pencil className="h-4 w-4" />
                      </button>
@@ -883,7 +883,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                   return (
                     <div
                       key={lesson.id}
-                      className="group border border-[#d1d7dc] bg-white p-4 rounded-md shadow-sm transition hover:shadow-md"
+                      className="group border border-[var(--border)] bg-white p-4 rounded-md shadow-sm transition hover:shadow-md"
                     >
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -1089,8 +1089,8 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
               {/* ── Curriculum items list ────────────────────────────────── */}
               {(section.quizzes.length > 0 ||
                 section.assignmentItems.length > 0) && (
-                <div className="mt-3 rounded border border-[#d1d7dc] bg-[#f6f7f9] p-3 text-xs">
-                  <p className="mb-2 font-semibold text-[#1c1d1f]">
+                <div className="mt-3 rounded border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-xs">
+                  <p className="mb-2 font-semibold text-[var(--foreground)]">
                     Curriculum items
                   </p>
                   <div className="space-y-1">
@@ -1150,14 +1150,14 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
 
               {/* ── Add lesson form ──────────────────────────────────────── */}
               {activeSectionForLesson === section.id ? (
-                <div className="mt-3 rounded border border-[#d1d7dc] p-4">
+                <div className="mt-3 rounded border border-[var(--border)] p-4">
                   <div className="grid gap-3 sm:grid-cols-[1fr_140px]">
                     <input
                       value={newLessonTitle}
                       onChange={(e) => setNewLessonTitle(e.target.value)}
                       disabled={interactionLocked}
                       placeholder="Lecture title"
-                      className="border border-[#d1d7dc] px-2 py-1 text-sm disabled:bg-[#f6f7f9]"
+                      className="border border-[var(--border)] px-2 py-1 text-sm disabled:bg-[var(--surface-muted)]"
                     />
                     <select
                       value={newLessonType}
@@ -1165,7 +1165,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                       onChange={(e) =>
                         setNewLessonType(e.target.value as "VIDEO" | "ARTICLE")
                       }
-                      className="border border-[#d1d7dc] px-2 py-1 text-sm disabled:bg-[#f6f7f9]"
+                      className="border border-[var(--border)] px-2 py-1 text-sm disabled:bg-[var(--surface-muted)]"
                     >
                       <option value="VIDEO">Video</option>
                       <option value="ARTICLE">Article</option>
@@ -1206,7 +1206,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                         setNewLessonArticleContent("");
                         setNewLessonVideoFile(null);
                       }}
-                      className="rounded border border-[#d1d7dc] px-3 py-1 text-xs text-[#6a6f73]"
+                      className="rounded border border-[var(--border)] px-3 py-1 text-xs text-[var(--muted)]"
                     >
                       Cancel
                     </button>
@@ -1226,14 +1226,14 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
 
               {/* ── Add curriculum item form ─────────────────────────────── */}
               {activeSectionForItem === section.id ? (
-                <div className="mt-3 grid gap-2 rounded border border-[#d1d7dc] p-3 md:grid-cols-[140px_1fr_auto]">
+                <div className="mt-3 grid gap-2 rounded border border-[var(--border)] p-3 md:grid-cols-[140px_1fr_auto]">
                   <select
                     value={itemType}
                     disabled={interactionLocked}
                     onChange={(e) =>
                       setItemType(e.target.value as "QUIZ" | "ASSIGNMENT")
                     }
-                    className="border border-[#d1d7dc] px-2 py-1 text-sm disabled:bg-[#f6f7f9]"
+                    className="border border-[var(--border)] px-2 py-1 text-sm disabled:bg-[var(--surface-muted)]"
                   >
                     <option value="QUIZ">Quiz</option>
                     <option value="ASSIGNMENT">Assignment</option>
@@ -1243,7 +1243,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                     onChange={(e) => setItemTitle(e.target.value)}
                     disabled={interactionLocked}
                     placeholder="Title"
-                    className="border border-[#d1d7dc] px-2 py-1 text-sm disabled:bg-[#f6f7f9]"
+                    className="border border-[var(--border)] px-2 py-1 text-sm disabled:bg-[var(--surface-muted)]"
                   />
                   <button
                     type="button"
@@ -1255,17 +1255,17 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                   </button>
                   {itemType === "QUIZ" ? (
                     <div className="md:col-span-3 space-y-4">
-                      <p className="text-xs text-[#6a6f73]">
+                      <p className="text-xs text-[var(--muted)]">
                         Multiple choice: four options per question (correct + three distractors). Students
                         see choices in random order.
                       </p>
                       {quizMcqRows.map((row, rowIndex) => (
                         <div
                           key={row.id}
-                          className="space-y-2 rounded border border-[#d1d7dc] bg-[#fafbfc] p-3"
+                          className="space-y-2 rounded border border-[var(--border)] bg-[#fafbfc] p-3"
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-xs font-semibold text-[#6a6f73]">
+                            <span className="text-xs font-semibold text-[var(--muted)]">
                               Question {rowIndex + 1}
                             </span>
                             {quizMcqRows.length > 1 ? (
@@ -1294,7 +1294,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                             }
                             disabled={interactionLocked}
                             placeholder="Question"
-                            className="w-full border border-[#d1d7dc] px-2 py-1.5 text-sm disabled:bg-[#f6f7f9]"
+                            className="w-full border border-[var(--border)] px-2 py-1.5 text-sm disabled:bg-[var(--surface-muted)]"
                           />
                           <input
                             value={row.correctAnswer}
@@ -1309,7 +1309,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                             }
                             disabled={interactionLocked}
                             placeholder="Correct answer"
-                            className="w-full border border-[#d1d7dc] px-2 py-1.5 text-sm disabled:bg-[#f6f7f9]"
+                            className="w-full border border-[var(--border)] px-2 py-1.5 text-sm disabled:bg-[var(--surface-muted)]"
                           />
                           <div className="grid gap-2 sm:grid-cols-3">
                             <input
@@ -1323,7 +1323,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                               }
                               disabled={interactionLocked}
                               placeholder="Incorrect option 1"
-                              className="border border-[#d1d7dc] px-2 py-1.5 text-sm disabled:bg-[#f6f7f9]"
+                              className="border border-[var(--border)] px-2 py-1.5 text-sm disabled:bg-[var(--surface-muted)]"
                             />
                             <input
                               value={row.wrong2}
@@ -1336,7 +1336,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                               }
                               disabled={interactionLocked}
                               placeholder="Incorrect option 2"
-                              className="border border-[#d1d7dc] px-2 py-1.5 text-sm disabled:bg-[#f6f7f9]"
+                              className="border border-[var(--border)] px-2 py-1.5 text-sm disabled:bg-[var(--surface-muted)]"
                             />
                             <input
                               value={row.wrong3}
@@ -1349,7 +1349,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                               }
                               disabled={interactionLocked}
                               placeholder="Incorrect option 3"
-                              className="border border-[#d1d7dc] px-2 py-1.5 text-sm disabled:bg-[#f6f7f9]"
+                              className="border border-[var(--border)] px-2 py-1.5 text-sm disabled:bg-[var(--surface-muted)]"
                             />
                           </div>
                         </div>
@@ -1381,7 +1381,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                         onChange={(e) => setAssignmentDueDays(e.target.value)}
                         disabled={interactionLocked}
                         placeholder="Due in days (e.g. 7)"
-                        className="md:col-span-3 border border-[#d1d7dc] px-2 py-1 text-sm disabled:bg-[#f6f7f9]"
+                        className="md:col-span-3 border border-[var(--border)] px-2 py-1 text-sm disabled:bg-[var(--surface-muted)]"
                       />
                     </>
                   )}
@@ -1484,7 +1484,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
       </DndContext>
 
       {/* ── New section form ─────────────────────────────────────────────── */}
-      <div className="border border-[#d1d7dc] bg-white p-4">
+      <div className="border border-[var(--border)] bg-white p-4">
         <h3 className="mb-2 text-base font-bold">New Section</h3>
         <div className="grid gap-2">
           <input
@@ -1493,7 +1493,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
             maxLength={120}
             disabled={interactionLocked}
             placeholder="Enter section title"
-            className="border border-[#d1d7dc] px-2 py-2 text-sm disabled:bg-[#f6f7f9]"
+            className="border border-[var(--border)] px-2 py-2 text-sm disabled:bg-[var(--surface-muted)]"
           />
           <input
             value={newSectionObjective}
@@ -1501,7 +1501,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
             maxLength={500}
             disabled={interactionLocked}
             placeholder="Enter a learning objective"
-            className="border border-[#d1d7dc] px-2 py-2 text-sm disabled:bg-[#f6f7f9]"
+            className="border border-[var(--border)] px-2 py-2 text-sm disabled:bg-[var(--surface-muted)]"
           />
           <button
             type="button"
@@ -1542,7 +1542,7 @@ function SortableSection(props: {
     <div
       ref={setNodeRef}
       style={style}
-      className={`border border-[#d1d7dc] bg-white transition-all ${
+      className={`border border-[var(--border)] bg-white transition-all ${
         isExpanded ? "mb-6 shadow-sm" : "mb-2"
       }`}
       {...attributes}
@@ -1559,7 +1559,7 @@ function SortableSection(props: {
           {...listeners}
           disabled={disabled}
           aria-label="Reorder section"
-          className="shrink-0 touch-none cursor-grab rounded p-1 text-[#6a6f73] hover:bg-[#f6f7f9] disabled:cursor-not-allowed disabled:opacity-40"
+          className="shrink-0 touch-none cursor-grab rounded p-1 text-[var(--muted)] hover:bg-[var(--surface-muted)] disabled:cursor-not-allowed disabled:opacity-40"
           onClick={(e) => e.stopPropagation()}
         >
           <GripVertical className="h-4 w-4" />

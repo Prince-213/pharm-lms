@@ -11,7 +11,7 @@ import { isAppleOAuthEnabled } from "@/lib/auth/apple-oauth-enabled";
 import { customPrismaAdapter } from "@/lib/auth/custom-prisma-adapter";
 import { isGoogleOAuthEnabled } from "@/lib/auth/google-oauth-enabled";
 import { getAuthSecret } from "@/lib/auth/secret";
-import { SESSION_MAX_AGE_SECONDS } from "@/lib/auth/session-short-lived";
+import { SESSION_MAX_AGE_SECONDS } from "@/lib/auth/session-policy";
 import { prisma } from "@/lib/prisma";
 
 class WrongPortalCredentials extends CredentialsSignin {
@@ -96,7 +96,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: {
     strategy: "jwt",
     maxAge: SESSION_MAX_AGE_SECONDS,
-    updateAge: 1,
+    /** Min seconds between session/JWT refreshes when the client hits `/api/auth/session`. */
+    updateAge: 24 * 60 * 60,
   },
   trustHost: true,
   debug: process.env.NODE_ENV === "development",

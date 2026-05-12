@@ -41,12 +41,12 @@ export default async function MentorCourseManageLayout({
         readOnly={readOnly}
         settingsHref={`/tutor/courses/${courseId}/manage/settings`}
       >
-        <div className="mx-auto flex min-h-[calc(100vh-48px)] w-full max-w-[1280px] bg-white">
+        <div className="mx-auto flex min-h-[calc(100vh-48px)] w-full max-w-[1280px] bg-[var(--surface)]">
           <CourseManageSidebar
             courseId={courseId}
             courseStatus={course.status}
           />
-          <div className="flex-1 bg-[#f7f7f8] p-6">{children}</div>
+          <div className="flex-1 bg-[var(--surface-muted)] p-6">{children}</div>
         </div>
         <InstructorFooter />
       </InstructorShell>

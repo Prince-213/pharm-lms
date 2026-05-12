@@ -1,11 +1,12 @@
 "use client";
 
-import { clsx } from "clsx";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { CourseStatus } from "@/generated/prisma/enums";
+import { cn } from "@/lib/utils";
 
 type Item = {
   label: string;
@@ -133,18 +134,18 @@ export function CourseManageSidebar({
           "Your course is now pending review. You'll be notified once it's processed.",
       });
       router.refresh();
-    } catch (error) {
+    } catch (_error) {
       setSubmitting(false);
       toast.error("An unexpected error occurred", { id: toastId });
     }
   }
 
   return (
-    <aside className="sticky top-0 flex h-screen w-[230px] flex-col border-r border-[#d1d7dc] bg-white p-6 overflow-y-auto">
+    <aside className="sticky top-0 flex h-screen w-[230px] shrink-0 flex-col overflow-y-auto border-r border-[var(--border)] bg-[var(--surface)] p-6">
       <div className="space-y-6">
         {sections.map((section) => (
           <div key={section.title}>
-            <h3 className="mb-2 text-base font-bold text-[#1c1d1f]">
+            <h3 className="mb-2 text-base font-bold text-[var(--foreground)]">
               {section.title}
             </h3>
             <ul className="space-y-2">
@@ -152,14 +153,15 @@ export function CourseManageSidebar({
                 <li key={item.label}>
                   <Link
                     href={item.href(courseId)}
-                    className={clsx(
-                      "block border-l-2 pl-2 text-sm",
+                    className={cn(
+                      "block border-l-2 pl-2 text-sm transition-colors",
                       activeLabel === item.label
-                        ? "border-[var(--primary)] font-semibold text-[#1c1d1f]"
-                        : "border-transparent text-[#6a6f73]",
+                        ? "border-[var(--primary)] font-semibold text-[var(--foreground)]"
+                        : "border-transparent text-[var(--muted)] hover:text-[var(--foreground)]",
                     )}
                   >
-                    ○ {item.label}
+                    <span className="mr-1.5 text-[var(--muted-soft)]">○</span>
+                    {item.label}
                   </Link>
                 </li>
               ))}
@@ -167,11 +169,13 @@ export function CourseManageSidebar({
           </div>
         ))}
       </div>
-      <button
+      <Button
         type="button"
+        variant="default"
+        size="sm"
         disabled={locked || submitting}
         onClick={() => void submitForReview()}
-        className="mt-6 w-full rounded-sm bg-[var(--primary)] py-2 text-xs font-semibold text-white disabled:opacity-50"
+        className="mt-6 w-full text-xs font-semibold"
       >
         {locked
           ? "Pending review"
@@ -180,7 +184,7 @@ export function CourseManageSidebar({
             : courseStatus === CourseStatus.REJECTED
               ? "Resubmit for review"
               : "Submit for Review"}
-      </button>
+      </Button>
     </aside>
   );
 }

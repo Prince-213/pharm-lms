@@ -31,8 +31,8 @@ export default function NewCourseStep3Page() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#f7f7f8]">
-      <header className="border-b border-[#d1d7dc] bg-white">
+    <div className="min-h-screen bg-[var(--surface-muted)]">
+      <header className="border-b border-[var(--border)] bg-[var(--surface)]">
         <div className="flex h-10 items-center justify-between px-4 text-xs">
           <span className="text-lg font-bold">PharmLms</span>
           <span>Step 2 of 3</span>
@@ -46,14 +46,14 @@ export default function NewCourseStep3Page() {
         <h1 className="text-center text-4xl font-bold">
           What category best fits the knowledge you'll share?
         </h1>
-        <p className="mt-3 text-center text-sm text-[#6a6f73]">
+        <p className="mt-3 text-center text-sm text-[var(--muted)]">
           If you're not sure about the right category, you can change it later.
         </p>
         <div className="mt-10">
           <select
             value={category}
             onChange={(event) => setCategory(event.target.value)}
-            className="h-12 w-full border border-[#d1d7dc] bg-white px-3 text-sm"
+            className="h-12 w-full border border-[var(--border)] bg-[var(--surface)] px-3 text-sm"
           >
             <option value="">Choose a category</option>
             {categories.map((option) => (
@@ -64,7 +64,7 @@ export default function NewCourseStep3Page() {
           </select>
         </div>
       </main>
-      <footer className="fixed bottom-0 left-0 right-0 flex items-center justify-between border-t border-[#d1d7dc] bg-white px-4 py-3">
+      <footer className="fixed bottom-0 left-0 right-0 flex items-center justify-between border-t border-[var(--border)] bg-[var(--surface)] px-4 py-3">
         <Link
           href="/tutor/courses/new/step-2"
           className="rounded-sm border border-[var(--primary)] px-3 py-1 text-xs text-[var(--primary)]"

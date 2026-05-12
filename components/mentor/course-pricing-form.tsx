@@ -74,12 +74,12 @@ export function CoursePricingForm({
   return (
     <div className="space-y-5 px-6 py-5">
       {readOnly ? (
-        <p className="rounded border border-[#d1d7dc] bg-[#f6f7f9] p-3 text-sm text-[#6a6f73]">
+        <p className="rounded border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-sm text-[var(--muted)]">
           This course is pending review. Pricing is locked.
         </p>
       ) : null}
 
-      <p className="text-sm text-[#6a6f73]">
+      <p className="text-sm text-[var(--muted)]">
         Prices are in Nigerian Naira (NGN). Amounts include VAT-style precision
         in kobo (stored as minor units: ₦1 = 100).
       </p>
@@ -87,7 +87,7 @@ export function CoursePricingForm({
       <div className="grid max-w-[420px] gap-3 sm:grid-cols-2">
         <div>
           <label className="mb-1 block text-xs font-semibold">Currency</label>
-          <div className="flex h-10 items-center border border-[#d1d7dc] bg-[#f6f7f9] px-3 text-sm font-medium">
+          <div className="flex h-10 items-center border border-[var(--border)] bg-[var(--surface-muted)] px-3 text-sm font-medium">
             NGN (₦)
           </div>
         </div>
@@ -103,7 +103,7 @@ export function CoursePricingForm({
             value={tier}
             onChange={(e) => setTier(e.target.value)}
             disabled={readOnly}
-            className="h-10 w-full border border-[#d1d7dc] bg-white px-2 text-sm disabled:bg-[#f6f7f9]"
+            className="h-10 w-full border border-[var(--border)] bg-white px-2 text-sm disabled:bg-[var(--surface-muted)]"
           >
             <option value="">— Select —</option>
             {choices.map((minor) => (
@@ -116,7 +116,7 @@ export function CoursePricingForm({
       </div>
 
       {preview ? (
-        <p className="text-sm text-[#1c1d1f]">
+        <p className="text-sm text-[var(--foreground)]">
           Selected: <strong>{preview}</strong>
         </p>
       ) : null}

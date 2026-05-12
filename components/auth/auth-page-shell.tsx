@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/card";
 
 export function AuthPageShell({ children }: { children: React.ReactNode }) {
   return (
@@ -18,9 +19,9 @@ export function AuthPageShell({ children }: { children: React.ReactNode }) {
       </header>
 
       <main className="flex flex-1 flex-col px-4 pb-12 pt-8">
-        <div className="mx-auto w-full max-w-[400px] flex-1 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)] sm:p-8">
-          {children}
-        </div>
+        <Card className="mx-auto w-full max-w-[400px] flex-1 rounded-2xl">
+          <CardContent className="p-6 sm:p-8">{children}</CardContent>
+        </Card>
       </main>
 
       <footer className="shrink-0 border-t border-[var(--border)] bg-[var(--surface-muted)] px-4 py-6">

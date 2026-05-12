@@ -1,3 +1,4 @@
+import { Settings } from "lucide-react";
 import Link from "next/link";
 
 type InstructorShellProps = {
@@ -38,7 +39,7 @@ export function InstructorShell({
             </span>
             <span className="text-[var(--muted)]">{topMeta}</span>
             {readOnly ? (
-              <span className="font-medium text-amber-600">
+              <span className="font-medium text-[var(--warning-star)]">
                 Editing is locked for this course.
               </span>
             ) : null}
@@ -47,7 +48,7 @@ export function InstructorShell({
             {showReview && courseId ? (
               <Link
                 href={`/tutor/courses/${courseId}/preview`}
-                className="rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--background)] px-3 py-1 text-xs font-semibold text-[var(--foreground)] transition hover:bg-[var(--surface-muted)]"
+                className="inline-flex items-center justify-center rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--background)] px-3 py-1 text-xs font-semibold text-[var(--foreground)] transition hover:bg-[var(--surface-muted)]"
               >
                 Review
               </Link>
@@ -55,14 +56,16 @@ export function InstructorShell({
             {settingsHref ? (
               <Link
                 href={settingsHref}
-                className="inline-flex h-7 w-7 items-center justify-center rounded-[var(--radius-sm)] text-sm text-[var(--muted)] transition hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-sm)] text-[var(--muted)] transition hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
                 aria-label="Course settings"
                 title="Course settings"
               >
-                ⚙
+                <Settings className="h-4 w-4" aria-hidden />
               </Link>
             ) : (
-              <span className="text-sm text-[var(--muted)]">⚙</span>
+              <span className="inline-flex h-8 w-8 items-center justify-center text-[var(--muted)]">
+                <Settings className="h-4 w-4 opacity-50" aria-hidden />
+              </span>
             )}
           </div>
         </div>
