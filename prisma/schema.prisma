@@ -115,6 +115,7 @@ model User {
   auditEntries             AuditLog[]
   notifications            Notification[]
   courseReviews            CourseReview[]
+  studentLessonNotes       StudentLessonNote[]
 
   @@index([role, isActive])
   @@index([mentorProfileSubmittedAt])
@@ -200,6 +201,7 @@ model Lesson {
   updatedAt       DateTime         @updatedAt
   section         CourseSection    @relation(fields: [sectionId], references: [id])
   progresses      LessonProgress[]
+  studentNotes    StudentLessonNote[]
 }
 
 model Enrollment {
@@ -226,6 +228,21 @@ model LessonProgress {
 
   @@unique([lessonId, studentId])
   @@index([studentId, completed])
+}
+
+model StudentLessonNote {
+  id             String   @id @default(cuid())
+  studentId      String
+  lessonId       String
+  body           String   @db.Text
+  videoOffsetSec Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  student        User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  lesson         Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, lessonId])
+  @@index([lessonId])
 }
 
 model Wishlist {

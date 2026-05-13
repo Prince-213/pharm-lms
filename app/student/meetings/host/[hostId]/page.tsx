@@ -82,6 +82,7 @@ export default async function StudentMeetingHostPage({
           fullName: true,
           bio: true,
           avatarUrl: true,
+          mentorHeadline: true,
           createdAt: true,
           availability: availabilitySelect,
         },
@@ -135,6 +136,7 @@ export default async function StudentMeetingHostPage({
       "Hosts live sessions and keeps material aligned with current practice expectations.";
 
     const tagline =
+      instructor.mentorHeadline?.trim() ||
       enrollment.course.subtitle?.trim() ||
       `Instructor for ${enrollment.course.title}.`;
 
@@ -337,6 +339,7 @@ export default async function StudentMeetingHostPage({
       fullName: true,
       bio: true,
       avatarUrl: true,
+      mentorHeadline: true,
       createdAt: true,
       availability: availabilitySelect,
     },
@@ -412,7 +415,8 @@ export default async function StudentMeetingHostPage({
                     {mentor.fullName}
                   </h1>
                   <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">
-                    Book a private mentoring session. Video is powered by Jitsi.
+                    {mentor.mentorHeadline?.trim() ||
+                      "Book a private mentoring session. Video is powered by Jitsi."}
                   </p>
                 </div>
               </div>

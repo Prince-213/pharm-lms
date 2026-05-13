@@ -10,6 +10,7 @@ import {
   Menu,
   MessageSquare,
   Search,
+  UserCircle,
   Wrench,
   X,
 } from "lucide-react";
@@ -64,6 +65,7 @@ const mainNav: ShellNavItem[] = [
 const bottomNav: ShellNavItem[] = [
   { href: `${WORKSPACE}/students`, label: "Resources", icon: FolderOpen },
   { href: `${WORKSPACE}/meetings`, label: "Meetings", icon: Calendar },
+  { href: `${WORKSPACE}/profile`, label: "Profile", icon: UserCircle },
 ];
 
 export function MentorShell({ children }: { children: React.ReactNode }) {

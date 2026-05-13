@@ -36,6 +36,7 @@ export default async function CourseForumPage({
     if (!enrollment) {
       redirect(`/student/browse/${courseId}`);
     }
+    redirect(`/student/course/${courseId}?tab=forum`);
   } else if (role === UserRole.MENTOR || role === UserRole.TUTOR) {
     if (course.mentorId !== session.user.id) {
       redirect(role === UserRole.TUTOR ? "/tutor/courses" : "/mentor/courses");

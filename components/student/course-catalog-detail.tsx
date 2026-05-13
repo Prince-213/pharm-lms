@@ -1,48 +1,141 @@
 import {
   BarChart,
-  BookOpen,
   Check,
   ChevronRight,
-  ClipboardList,
   Clock,
   Download,
   ExternalLink,
   FileText,
   Globe,
-  HelpCircle,
   Link2,
   Lock,
+  MessageSquareQuote,
   Play,
   ShieldCheck,
+  Star,
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import type { ReactNode } from "react";
+import { CatalogCourseContent } from "@/components/student/catalog-course-content";
+import { CatalogPreviewMedia } from "@/components/student/catalog-preview-media";
+import { CatalogPurchaseRail } from "@/components/student/catalog-purchase-rail";
 import { EnrollCourseButton } from "@/components/student/enroll-course-button";
 import { WishlistHeartButton } from "@/components/student/wishlist-heart-button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+} from "@/components/ui/card";
 import type { CatalogCoursePayload } from "@/lib/course-catalog-detail";
 import { formatMinorUnitsToCurrency } from "@/lib/format-currency";
+import { formatTotalDuration } from "@/lib/lesson-duration";
 import {
   formatResourceMetaLine,
   resourceDownloadFilename,
 } from "@/lib/section-resource-meta";
-import { formatLessonDuration, formatTotalDuration } from "@/lib/lesson-duration";
+import { cn } from "@/lib/utils";
 
 type Variant = "catalog" | "tutorPreview";
 
+export type CatalogInteraction = "student" | "readonly";
+
+/** Udemy-like neutral chrome (works with Pharm tokens on body) */
+const udemyBorder = "border-[#d1d7dc]";
+const udemySurfaceMuted = "bg-[#f7f9fa]";
+const udemyShadow =
+  "shadow-[0_2px_4px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.12)]";
+
+function SectionHeading({
+  title,
+  description,
+  action,
+}: {
+  title: string;
+  description?: string;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h2 className="text-[1.375rem] font-bold leading-snug tracking-tight text-[var(--foreground)]">
+          {title}
+        </h2>
+        {description ? (
+          <p className="mt-1 max-w-2xl text-sm text-[var(--muted-soft)]">
+            {description}
+          </p>
+        ) : null}
+      </div>
+      {action ? <div className="shrink-0">{action}</div> : null}
+    </div>
+  );
+}
+
+function nameInitials(fullName: string): string {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) {
+    const w = parts[0];
+    if (!w) return "?";
+    return w.length >= 2 ? w.slice(0, 2).toUpperCase() : w[0].toUpperCase();
+  }
+  const first = parts[0]?.[0];
+  const last = parts[parts.length - 1]?.[0];
+  const out = `${first ?? ""}${last ?? ""}`.toUpperCase();
+  return out || "?";
+}
+
+function CatalogReviewStars({ rating }: { rating: number }) {
+  const clamped = Math.min(5, Math.max(0, rating));
+  return (
+    <span
+      role="img"
+      className="flex gap-0.5"
+      aria-label={`${clamped} out of 5 stars`}
+    >
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Star
+          key={star}
+          className={cn(
+            "h-3.5 w-3.5",
+            star <= clamped
+              ? "fill-amber-400 text-amber-400"
+              : "text-[#e3e5e8]",
+          )}
+          strokeWidth={star <= clamped ? 0 : 1}
+          aria-hidden
+        />
+      ))}
+    </span>
+  );
+}
+
 export function CourseCatalogDetail({
   variant,
+  interaction,
   data,
+  catalogNavOverride,
 }: {
   variant: Variant;
+  interaction: CatalogInteraction;
   data: CatalogCoursePayload;
+  /** When set (e.g. admin overview), replaces the first catalog breadcrumb target. */
+  catalogNavOverride?: { href: string; label: string };
 }) {
   const {
     course,
     courseId,
     thumb,
+    promoVideoHref,
     enrollment,
     wishlistRow,
     isStudent,
+    ratingAverage,
+    reviewCount,
+    reviews,
     totalSeconds,
     totalLectures,
     totalQuizzes,
@@ -51,283 +144,371 @@ export function CourseCatalogDetail({
     bullets,
   } = data;
 
-  const showResourceLinks =
-    variant === "catalog" && Boolean(enrollment);
+  const canAct = interaction === "student" && variant === "catalog";
+  const showResourceLinks = canAct && Boolean(enrollment);
+
+  const sectionCount = course.sections.length;
+  const contentSummary = [
+    `${sectionCount} section${sectionCount === 1 ? "" : "s"}`,
+    `${totalLectures} lecture${totalLectures === 1 ? "" : "s"}`,
+    `${formatTotalDuration(totalSeconds)} total length`,
+  ].join(" · ");
+
+  const enrollCount = course._count.enrollments;
+  const showBestseller = enrollCount >= 50;
 
   return (
-    <div className="min-h-screen bg-[#f8faff] font-sans selection:bg-[var(--primary-soft)] selection:text-[var(--primary-strong)]">
-      <div className="relative overflow-hidden bg-[var(--ink-deep)] py-12 lg:py-20">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-[-10%] left-[-10%] h-[120%] w-[120%] animate-aurora opacity-30 blur-3xl [background:linear-gradient(135deg,var(--primary-strong)_0%,transparent_25%,var(--primary)_50%,transparent_75%,var(--primary-soft)_100%)]" />
-          <div className="absolute inset-0 bg-black/40" />
-        </div>
+    <div
+      className={cn(
+        "min-h-screen font-sans text-[var(--foreground)]",
+        udemySurfaceMuted,
+        "selection:bg-[var(--primary-soft)] selection:text-[var(--primary-strong)]",
+      )}
+    >
+      {/* Udemy-style full-bleed hero (dark band) */}
+      <div className="bg-[var(--header)] text-[var(--header-fg)]">
+        <div className="mx-auto max-w-[1184px] px-4 pt-6 pb-28 sm:px-6 sm:pb-32 lg:px-8 lg:pb-40">
+          <nav className="mb-3 flex flex-wrap items-center gap-1.5 text-xs font-semibold text-[#c0c4fc] sm:text-sm">
+            {variant === "catalog" ? (
+              <>
+                <Link
+                  href={catalogNavOverride?.href ?? "/student/browse"}
+                  className="text-[#c0c4fc] underline-offset-2 hover:text-white hover:underline"
+                >
+                  {catalogNavOverride?.label ?? "Catalog"}
+                </Link>
+                <ChevronRight className="h-3 w-3 opacity-70" aria-hidden />
+              </>
+            ) : (
+              <>
+                <Link
+                  href={`/tutor/courses/${courseId}/manage`}
+                  className="text-[#c0c4fc] underline-offset-2 hover:text-white hover:underline"
+                >
+                  Course editor
+                </Link>
+                <ChevronRight className="h-3 w-3 opacity-70" aria-hidden />
+              </>
+            )}
+            <span className="text-[var(--header-fg-muted)]">
+              {course.category || "Pharmacy"}
+            </span>
+          </nav>
 
-        <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="grid gap-12 lg:grid-cols-[1fr_400px]">
-            <div className="flex flex-col justify-center text-white">
-              <nav className="mb-6 flex items-center gap-2 text-sm font-medium text-[var(--primary-soft)]">
-                {variant === "catalog" ? (
-                  <>
-                    <Link
-                      href="/student/browse"
-                      className="transition-colors hover:text-white"
-                    >
-                      Catalog
-                    </Link>
-                    <ChevronRight className="h-4 w-4" />
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      href={`/tutor/courses/${courseId}/manage`}
-                      className="transition-colors hover:text-white"
-                    >
-                      Course editor
-                    </Link>
-                    <ChevronRight className="h-4 w-4" />
-                  </>
-                )}
-                <span className="text-white/60">{course.category || "Pharmacy"}</span>
-              </nav>
+          <h1 className="max-w-4xl text-2xl font-bold leading-snug tracking-tight sm:text-3xl md:text-[2rem] md:leading-tight lg:text-[2.375rem]">
+            {course.title}
+          </h1>
 
-              <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl lg:leading-[1.1]">
-                {course.title}
-              </h1>
+          {course.subtitle ? (
+            <p className="mt-3 max-w-3xl text-base font-normal leading-relaxed text-[var(--header-fg)]/90 sm:text-lg">
+              {course.subtitle}
+            </p>
+          ) : null}
 
-              {course.subtitle ? (
-                <p className="mt-6 text-lg leading-relaxed text-white/80 md:text-xl">
-                  {course.subtitle}
-                </p>
-              ) : null}
+          <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-2 text-sm">
+            {showBestseller ? (
+              <span className="rounded-sm bg-[#eceb98] px-2 py-0.5 text-xs font-bold tracking-wide text-[#3d3c0a]">
+                Bestseller
+              </span>
+            ) : null}
+            {showBestseller ? (
+              <span
+                className="text-[var(--header-fg-muted)]"
+                aria-hidden="true"
+              >
+                ·
+              </span>
+            ) : null}
+            {ratingAverage != null && reviewCount > 0 ? (
+              <>
+                <span className="inline-flex items-center gap-1 font-bold text-[#ffd60f]">
+                  <Star
+                    className="h-4 w-4 shrink-0 fill-current text-[#ffd60f]"
+                    aria-hidden
+                  />
+                  {ratingAverage.toFixed(1)}
+                </span>
+                <span className="font-semibold text-[#c0c4fc] underline decoration-[#c0c4fc] underline-offset-2">
+                  ({reviewCount.toLocaleString()}{" "}
+                  {reviewCount === 1 ? "rating" : "ratings"})
+                </span>
+              </>
+            ) : (
+              <span className="text-[var(--header-fg-muted)]">
+                No ratings yet
+              </span>
+            )}
+            <span className="text-[var(--header-fg-muted)]" aria-hidden="true">
+              ·
+            </span>
+            <span className="font-bold text-[#c0c4fc] underline decoration-[#c0c4fc] underline-offset-2">
+              {enrollCount.toLocaleString()} students
+            </span>
+          </div>
 
-              <div className="mt-8 flex flex-wrap items-center gap-6 text-sm font-medium">
-                <div className="flex items-center gap-2">
-                  <BarChart className="h-4 w-4 text-[var(--primary-soft)]" />
-                  <span>{course.level || "All Levels"}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-[var(--primary-soft)]" />
-                  <span>{course._count.enrollments} Learners enrolled</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-[var(--primary-soft)]" />
-                  <span>{course.language || "English"}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-[var(--primary-soft)]" />
-                  <span>{formatTotalDuration(totalSeconds)}</span>
-                </div>
-              </div>
+          <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-[var(--header-fg-muted)]">
+            <span className="inline-flex items-center gap-1.5">
+              <BarChart className="h-4 w-4 shrink-0 text-[var(--header-fg)]" />
+              {course.level || "All levels"}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Globe className="h-4 w-4 shrink-0 text-[var(--header-fg)]" />
+              {course.language || "English"}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Clock className="h-4 w-4 shrink-0 text-[var(--header-fg)]" />
+              {formatTotalDuration(totalSeconds)}
+            </span>
+          </div>
 
-              <div className="mt-10 flex items-center gap-4">
-                <div className="h-10 w-10 overflow-hidden rounded-full border-2 border-[var(--primary-soft)] bg-white/10 p-0.5">
-                  {course.mentor.avatarUrl ? (
-                    <img
-                      src={course.mentor.avatarUrl}
-                      alt=""
-                      className="h-full w-full rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-sm font-bold text-white">
-                      {course.mentor.fullName[0]}
-                    </div>
-                  )}
+          <div className="mt-8 flex items-center gap-3">
+            <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full border-2 border-white/30 bg-white/10">
+              {course.mentor.avatarUrl ? (
+                // biome-ignore lint/performance/noImgElement: Mentor avatars may be OAuth/CDN URLs.
+                <img
+                  src={course.mentor.avatarUrl}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-sm font-bold text-white">
+                  {course.mentor.fullName[0]}
                 </div>
-                <div>
-                  <p className="text-sm font-semibold leading-none">Created by</p>
-                  <p className="mt-1 text-base font-bold text-[var(--primary-soft)]">
-                    {course.mentor.fullName}
-                  </p>
-                </div>
-              </div>
+              )}
             </div>
-
-            <div className="lg:hidden">
-              <div className="aspect-video overflow-hidden rounded-2xl border border-white/20 bg-white/5 shadow-2xl backdrop-blur-sm">
-                {thumb ? (
-                  <img src={thumb} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <div className="flex h-full items-center justify-center bg-white/10">
-                    <BookOpen className="h-12 w-12 text-white/20" />
-                  </div>
-                )}
-              </div>
+            <div className="min-w-0 text-sm">
+              <span className="text-[var(--header-fg-muted)]">Created by </span>
+              <span className="font-bold text-[#c0c4fc] underline decoration-[#c0c4fc] underline-offset-2">
+                {course.mentor.fullName}
+              </span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
-        <div className="grid gap-12 lg:grid-cols-[1fr_400px]">
-          <div className="space-y-16">
-            <section>
-              <h2 className="flex items-center gap-3 text-2xl font-bold tracking-tight text-slate-900">
-                <div className="h-8 w-1.5 rounded-full bg-[var(--primary)]" />
-                What you&apos;ll achieve
-              </h2>
-              <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                {bullets.map((b) => (
-                  <div
-                    key={b}
-                    className="flex gap-4 rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-[var(--primary-soft)] hover:shadow-md"
-                  >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary-soft)]/20 text-[var(--primary)]">
-                      <Check className="h-5 w-5" strokeWidth={3} />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-slate-900">{b} Mastery</h3>
-                      <p className="mt-1 text-sm text-slate-500">
-                        Comprehensive understanding of {b.toLowerCase()} principles.
-                      </p>
-                    </div>
-                  </div>
-                ))}
+      {/* Overlapping two-column band (stats + main | sticky purchase card) */}
+      <div className="relative z-10 mx-auto max-w-[1184px] px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-10">
+          <div className="order-2 min-w-0 space-y-8 lg:order-1 lg:col-span-8 lg:-mt-24 lg:space-y-10">
+            {/* Stats strip — Udemy “Premium” bar adapted to Pharm */}
+            <div
+              className={cn(
+                "flex flex-col overflow-hidden rounded-sm border bg-white sm:flex-row sm:items-stretch",
+                udemyBorder,
+                "shadow-[0_2px_4px_rgba(0,0,0,0.08)]",
+              )}
+            >
+              <div className="flex shrink-0 items-center gap-2 bg-[var(--primary)] px-4 py-3.5 text-[var(--primary-foreground)] sm:py-4">
+                <Check className="h-5 w-5 shrink-0" strokeWidth={2.5} />
+                <span className="text-sm font-bold uppercase tracking-wide">
+                  Featured
+                </span>
               </div>
-            </section>
-
-            <section>
-              <div className="flex flex-wrap items-end justify-between gap-4">
-                <div>
-                  <h2 className="flex items-center gap-3 text-2xl font-bold tracking-tight text-slate-900">
-                    <div className="h-8 w-1.5 rounded-full bg-[var(--primary)]" />
-                    Course Blueprint
-                  </h2>
-                  <p className="mt-2 text-slate-500">
-                    Structured path designed by clinical experts.
-                  </p>
-                </div>
-                <div className="flex items-center gap-4 text-sm font-semibold text-slate-600">
-                  <span className="flex items-center gap-1.5">
-                    <Play className="h-4 w-4 text-[var(--primary)]" fill="currentColor" />{" "}
-                    {totalLectures} Lectures
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <HelpCircle className="h-4 w-4 text-amber-500" /> {totalQuizzes}{" "}
-                    Quizzes
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <ClipboardList className="h-4 w-4 text-emerald-500" />{" "}
-                    {totalAssignments} Tasks
-                  </span>
-                </div>
+              <div className="flex min-w-0 flex-1 items-center border-t px-4 py-3.5 text-sm leading-snug text-[var(--muted)] sm:border-t-0 sm:border-l sm:py-4 sm:pl-5 sm:pr-4">
+                Mentor-led curriculum with video lessons, quizzes, and
+                downloadable resources.
               </div>
+              <div className="flex flex-col justify-center gap-1 border-t px-4 py-3.5 sm:border-t-0 sm:border-l sm:px-5 sm:py-4">
+                {ratingAverage != null && reviewCount > 0 ? (
+                  <>
+                    <div className="flex items-center gap-2 text-sm font-bold text-[var(--foreground)]">
+                      <Star
+                        className="h-5 w-5 shrink-0 fill-amber-400 text-amber-400"
+                        aria-hidden
+                      />
+                      {ratingAverage.toFixed(1)}
+                    </div>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-soft)]">
+                      {reviewCount.toLocaleString()}{" "}
+                      {reviewCount === 1 ? "rating" : "ratings"}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-sm font-semibold text-[var(--muted)]">
+                      —
+                    </div>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-soft)]">
+                      Ratings
+                    </span>
+                  </>
+                )}
+              </div>
+              <div className="flex items-center justify-between gap-4 border-t px-4 py-3.5 sm:border-t-0 sm:border-l sm:px-5 sm:py-4">
+                <div className="flex items-center gap-2 text-sm font-bold text-[var(--foreground)]">
+                  <Users className="h-5 w-5 text-[var(--muted-soft)]" />
+                  {enrollCount.toLocaleString()}
+                </div>
+                <span className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-soft)]">
+                  Learners
+                </span>
+              </div>
+            </div>
 
-              <div className="mt-8 space-y-4">
-                {course.sections.map((section, idx) => {
-                  const sectionAssignments = course.assignments.filter((a) =>
-                    a.description?.includes(`Section:${section.id}`),
-                  );
-                  return (
-                    <details
-                      key={section.id}
-                      className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all open:ring-2 open:ring-[var(--primary-soft)]/50"
-                      open={idx === 0}
+            {/* What you'll learn */}
+            <section className="space-y-3">
+              <SectionHeading title="What you'll learn" />
+              <div
+                className={cn(
+                  "border bg-white",
+                  udemyBorder,
+                  "shadow-[0_2px_4px_rgba(0,0,0,0.05)]",
+                )}
+              >
+                <div className="grid divide-y divide-[#d1d7dc] sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+                  {bullets.map((b) => (
+                    <div
+                      key={b}
+                      className="flex gap-3 px-5 py-4 text-sm leading-snug sm:px-6 sm:py-5"
                     >
-                      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 bg-slate-50/50 px-6 py-5 hover:bg-slate-50">
-                        <div className="flex min-w-0 items-center gap-4">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-sm font-bold text-slate-400 group-open:border-transparent group-open:bg-[var(--primary)] group-open:text-white">
-                            {idx + 1}
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-slate-900">{section.title}</h3>
-                            <p className="mt-0.5 text-xs text-slate-500">
-                              {section.lessons.length} lessons · {section.quizzes.length}{" "}
-                              quizzes
-                            </p>
-                          </div>
-                        </div>
-                        <ChevronRight className="h-5 w-5 text-slate-400 transition-transform group-open:rotate-90" />
-                      </summary>
-                      <div className="border-t border-slate-100 p-2">
-                        <div className="space-y-1">
-                          {section.lessons.map((lesson) => (
-                            <div
-                              key={lesson.id}
-                              className="group/item flex items-center justify-between rounded-xl px-4 py-3 text-sm transition-colors hover:bg-slate-50"
-                            >
-                              <div className="flex items-center gap-4 text-slate-700">
-                                <Play
-                                  className="h-4 w-4 text-slate-400 transition-colors group-hover/item:text-[var(--primary)]"
-                                  fill="currentColor"
-                                />
-                                <span className="font-medium">{lesson.title}</span>
-                              </div>
-                              <span className="text-xs text-slate-400">
-                                {formatLessonDuration(lesson.durationSec)}
-                              </span>
-                            </div>
-                          ))}
-                          {section.quizzes.map((quiz) => (
-                            <div
-                              key={quiz.id}
-                              className="group/item flex items-center justify-between rounded-xl px-4 py-3 text-sm transition-colors hover:bg-amber-50/50"
-                            >
-                              <div className="flex items-center gap-4 font-medium text-slate-700">
-                                <HelpCircle className="h-4 w-4 text-amber-400" />
-                                <span>Section Quiz: {quiz.title}</span>
-                              </div>
-                              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-700">
-                                Quiz
-                              </span>
-                            </div>
-                          ))}
-                          {sectionAssignments.map((assignment) => (
-                            <div
-                              key={assignment.id}
-                              className="group/item flex items-center justify-between rounded-xl px-4 py-3 text-sm transition-colors hover:bg-emerald-50/50"
-                            >
-                              <div className="flex items-center gap-4 font-medium text-slate-700">
-                                <ClipboardList className="h-4 w-4 text-emerald-400" />
-                                <span>{assignment.title}</span>
-                              </div>
-                              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-700">
-                                Assignment
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </details>
-                  );
-                })}
+                      <Check
+                        className="mt-0.5 h-[18px] w-[18px] shrink-0 text-[#6a6f73]"
+                        strokeWidth={2}
+                        aria-hidden
+                      />
+                      <span className="text-[var(--foreground)]">{b}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </section>
 
-            <section>
-              <h2 className="flex items-center gap-3 text-2xl font-bold tracking-tight text-slate-900">
-                <div className="h-8 w-1.5 rounded-full bg-[var(--primary)]" />
-                About this course
-              </h2>
-              <div className="mt-8">
+            <CatalogCourseContent
+              sections={course.sections}
+              assignments={course.assignments}
+              contentSummary={contentSummary}
+              totalLectures={totalLectures}
+              totalQuizzes={totalQuizzes}
+              totalAssignments={totalAssignments}
+            />
+
+            <section className="space-y-3">
+              <SectionHeading title="Description" />
+              <div
+                className={cn(
+                  "border bg-white px-5 py-6 sm:px-8 sm:py-8",
+                  udemyBorder,
+                  "shadow-[0_2px_4px_rgba(0,0,0,0.05)]",
+                )}
+              >
                 <div
-                  className="prose-custom max-w-none text-base leading-relaxed text-slate-600 [&_a]:text-[var(--primary)] [&_a]:underline [&_a]:font-semibold [&_li]:mb-1 [&_p]:mb-4 [&_strong]:text-slate-900 [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-6"
+                  className="prose-custom max-w-none text-base leading-relaxed text-[var(--muted)] [&_a]:font-semibold [&_a]:text-[var(--primary)] [&_a]:underline [&_li]:mb-1 [&_p]:mb-4 [&_strong]:text-[var(--foreground)] [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-5"
+                  // biome-ignore lint/security/noDangerouslySetInnerHtml: Rich text from course editor (mentor-controlled).
                   dangerouslySetInnerHTML={{ __html: course.description }}
                 />
               </div>
             </section>
 
+            <section id="course-reviews" className="space-y-3">
+              <SectionHeading
+                title="Reviews"
+                description={
+                  reviewCount > 0
+                    ? `Student feedback (${reviewCount.toLocaleString()} ${reviewCount === 1 ? "rating" : "ratings"}).`
+                    : "Ratings and comments from enrolled students."
+                }
+              />
+              <div
+                className={cn(
+                  "border bg-white",
+                  udemyBorder,
+                  "shadow-[0_2px_4px_rgba(0,0,0,0.05)]",
+                )}
+              >
+                {reviews.length === 0 ? (
+                  <div className="flex flex-col items-center gap-3 px-6 py-14 text-center sm:py-16">
+                    <div
+                      className="flex h-14 w-14 items-center justify-center rounded-full border border-[#d1d7dc] bg-[#f7f9fa] text-[var(--muted-soft)]"
+                      aria-hidden
+                    >
+                      <MessageSquareQuote
+                        className="h-7 w-7"
+                        strokeWidth={1.5}
+                      />
+                    </div>
+                    <p className="text-base font-bold text-[var(--foreground)]">
+                      No reviews yet
+                    </p>
+                    <p className="max-w-sm text-sm leading-relaxed text-[var(--muted-soft)]">
+                      When learners rate this course and share optional written
+                      feedback, their reviews will show up here.
+                    </p>
+                  </div>
+                ) : (
+                  <ul className="divide-y divide-[#d1d7dc]">
+                    {reviews.map((r) => (
+                      <li key={r.id} className="px-5 py-5 sm:px-6 sm:py-5">
+                        <div className="flex gap-4">
+                          <Avatar className="h-10 w-10">
+                            <AvatarFallback>
+                              {nameInitials(r.student.fullName)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0 flex-1 space-y-2">
+                            <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1">
+                              <p className="truncate text-sm font-bold text-[var(--foreground)]">
+                                {r.student.fullName}
+                              </p>
+                              <time
+                                dateTime={r.createdAt.toISOString()}
+                                className="shrink-0 text-xs tabular-nums text-[var(--muted-soft)]"
+                              >
+                                {r.createdAt.toLocaleDateString(undefined, {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                })}
+                              </time>
+                            </div>
+                            <CatalogReviewStars rating={r.rating} />
+                            {r.comment?.trim() ? (
+                              <p className="text-sm leading-relaxed text-[var(--muted)]">
+                                {r.comment.trim()}
+                              </p>
+                            ) : null}
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </section>
+
             {allResources.length > 0 ? (
-              <section>
-                <h2 className="flex items-center gap-3 text-2xl font-bold tracking-tight text-slate-900">
-                  <div className="h-8 w-1.5 rounded-full bg-indigo-500" />
-                  Course Resources
-                </h2>
-                <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              <section className="space-y-3">
+                <SectionHeading
+                  title="Resources"
+                  description={
+                    showResourceLinks
+                      ? undefined
+                      : variant === "tutorPreview"
+                        ? "Students unlock downloads after they enroll."
+                        : "Enroll to unlock downloadable files and links."
+                  }
+                />
+                <div className="grid gap-3 sm:grid-cols-2">
                   {allResources.map((res, i) => (
                     <div
                       key={`${res.id}-${i}`}
-                      className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:ring-2 hover:ring-indigo-100"
+                      className={cn(
+                        "flex items-center gap-3 border bg-white p-4",
+                        udemyBorder,
+                        "shadow-[0_2px_4px_rgba(0,0,0,0.05)] transition-shadow hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]",
+                      )}
                     >
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-500">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border border-[#d1d7dc] bg-[#f7f9fa] text-[var(--primary)]">
                         {res.type === "FILE" ? (
-                          <FileText className="h-6 w-6" />
+                          <FileText className="h-5 w-5" />
                         ) : (
-                          <Link2 className="h-6 w-6" />
+                          <Link2 className="h-5 w-5" />
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate font-bold text-slate-900">{res.title}</p>
-                        <p className="mt-0.5 truncate text-xs text-slate-500">
+                        <p className="truncate text-sm font-bold text-[var(--foreground)]">
+                          {res.title}
+                        </p>
+                        <p className="truncate text-xs text-[var(--muted-soft)]">
                           {formatResourceMetaLine(res)}
                         </p>
                       </div>
@@ -337,233 +518,256 @@ export function CourseCatalogDetail({
                             <a
                               href={res.href}
                               download={resourceDownloadFilename(res)}
-                              className="shrink-0 rounded-lg bg-slate-100 p-2.5 text-slate-600 transition-colors hover:bg-indigo-100 hover:text-indigo-700"
+                              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-[#d1d7dc] bg-white text-[var(--muted)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)]"
                               aria-label={`Download ${res.title}`}
                             >
-                              <Download className="h-5 w-5" />
+                              <Download className="h-4 w-4" />
                             </a>
                           ) : (
                             <a
                               href={res.href}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="shrink-0 rounded-lg bg-slate-100 p-2.5 text-slate-600 transition-colors hover:bg-indigo-100 hover:text-indigo-700"
+                              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-[#d1d7dc] bg-white text-[var(--muted)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)]"
                               aria-label={`Open link: ${res.title}`}
                             >
-                              <ExternalLink className="h-5 w-5" />
+                              <ExternalLink className="h-4 w-4" />
                             </a>
                           )
                         ) : (
                           <span
-                            className="shrink-0 rounded-lg bg-slate-50 p-2.5 text-slate-300"
+                            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-[#d1d7dc] bg-[#f7f9fa] text-[var(--muted)]/50"
                             title="File link could not be resolved"
                           >
-                            <Download className="h-5 w-5" />
+                            <Download className="h-4 w-4" />
                           </span>
                         )
                       ) : (
-                        <div className="shrink-0 rounded-lg bg-slate-50 p-2.5 text-slate-300 backdrop-grayscale">
-                          <Lock className="h-5 w-5" />
+                        <div
+                          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-[#d1d7dc] bg-[#f7f9fa] text-[var(--muted)]/40"
+                          title="Enroll to access"
+                        >
+                          <Lock className="h-4 w-4" />
                         </div>
                       )}
                     </div>
                   ))}
                 </div>
-                {!showResourceLinks ? (
-                  <p className="mt-4 text-center text-sm font-medium italic text-slate-400">
-                    {variant === "tutorPreview"
-                      ? "Students unlock resources after they enroll."
-                      : "Enroll now to unlock all downloadable resources and links."}
-                  </p>
-                ) : null}
               </section>
             ) : null}
 
-            <section className="rounded-3xl border border-slate-200 bg-white p-8 lg:p-10">
-              <div className="flex flex-col gap-8 md:flex-row md:items-start">
-                <div className="h-32 w-32 shrink-0 overflow-hidden rounded-2xl bg-slate-100 shadow-inner ring-4 ring-slate-100">
+            <div
+              className={cn(
+                "border bg-white px-5 py-6 sm:px-8 sm:py-8",
+                udemyBorder,
+                "shadow-[0_2px_4px_rgba(0,0,0,0.05)]",
+              )}
+            >
+              <h2 className="text-[1.375rem] font-bold text-[var(--foreground)]">
+                Instructor
+              </h2>
+              <p className="mt-1 text-sm text-[var(--muted-soft)]">
+                Your course mentor on this program.
+              </p>
+              <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-start">
+                <div className="h-28 w-28 shrink-0 overflow-hidden rounded-sm border border-[#d1d7dc] bg-[#f7f9fa]">
                   {course.mentor.avatarUrl ? (
+                    // biome-ignore lint/performance/noImgElement: Mentor avatars may be OAuth/CDN URLs.
                     <img
                       src={course.mentor.avatarUrl}
                       alt=""
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-3xl font-black text-slate-300">
+                    <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-[var(--muted-soft)]">
                       {course.mentor.fullName[0]}
                     </div>
                   )}
                 </div>
-                <div className="flex-1">
-                  <h2 className="text-2xl font-black text-slate-900">{course.mentor.fullName}</h2>
-                  <p className="mt-1 text-xs font-bold uppercase tracking-wider text-[var(--primary)]">
-                    Instructor & Clinical Mentor
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-xl font-bold text-[var(--foreground)]">
+                    {course.mentor.fullName}
+                  </h3>
+                  <p className="mt-1 text-xs font-bold uppercase tracking-wide text-[var(--primary)]">
+                    Mentor
                   </p>
-                  <div className="mt-6 flex flex-wrap gap-4">
-                    <div className="flex items-center gap-1.5 rounded-lg bg-slate-50 px-3 py-1.5 text-sm font-bold text-slate-600">
-                      <ShieldCheck className="h-4 w-4 text-emerald-500" />
-                      Identity Verified
-                    </div>
-                    <div className="flex items-center gap-1.5 rounded-lg bg-slate-50 px-3 py-1.5 text-sm font-bold text-slate-600">
-                      <BarChart className="h-4 w-4 text-indigo-500" />
-                      Expert Mentor
-                    </div>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-sm border border-[#d1d7dc] bg-[#f7f9fa] px-2.5 py-1 text-xs font-bold text-[var(--foreground)]">
+                      <ShieldCheck className="h-3.5 w-3.5 text-[var(--primary)]" />
+                      Verified
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-sm border border-[#d1d7dc] bg-[#f7f9fa] px-2.5 py-1 text-xs font-bold text-[var(--foreground)]">
+                      <BarChart className="h-3.5 w-3.5 text-[var(--primary)]" />
+                      Expert mentor
+                    </span>
                   </div>
                   {course.mentor.bio ? (
-                    <p className="mt-8 text-base leading-relaxed text-slate-600">
+                    <p className="mt-5 text-sm leading-relaxed text-[var(--muted)]">
                       {course.mentor.bio}
                     </p>
                   ) : null}
                 </div>
               </div>
-            </section>
+            </div>
           </div>
 
-          <aside className="lg:sticky lg:top-8">
-            <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-2xl shadow-slate-200/50">
-              <div className="group relative aspect-video overflow-hidden bg-slate-900">
-                {thumb ? (
-                  <img
-                    src={thumb}
-                    alt=""
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center">
-                    <BookOpen className="h-16 w-16 text-white/10" />
-                  </div>
+          <aside className="order-1 lg:order-2 lg:col-span-4 lg:-mt-[22rem] lg:self-start">
+            <CatalogPurchaseRail>
+              <Card
+                className={cn(
+                  "overflow-hidden rounded-sm bg-white",
+                  udemyBorder,
+                  udemyShadow,
                 )}
-                <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-[var(--primary)] shadow-xl">
-                    <Play className="ml-1 h-6 w-6" fill="currentColor" />
-                  </div>
-                </div>
-                <div className="absolute bottom-4 left-4 right-4 text-center">
-                  <div className="inline-block rounded-full bg-white/20 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-md">
-                    Preview this course
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-8">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-black leading-none text-slate-900">
-                    {formatMinorUnitsToCurrency(course.priceMinorUnits, course.priceCurrency)}
-                  </span>
-                </div>
-                {variant === "tutorPreview" ? (
-                  <p className="mt-2 text-xs text-slate-500">
-                    Price reflects your current settings; publish to appear in the student catalog.
+              >
+                <CatalogPreviewMedia
+                  thumb={thumb}
+                  promoVideoHref={promoVideoHref}
+                />
+                <CardHeader className="space-y-1 border-b border-[#d1d7dc] px-5 pb-4 pt-5 sm:px-6">
+                  <p className="text-[2rem] font-bold tabular-nums leading-none tracking-tight text-[var(--foreground)]">
+                    {formatMinorUnitsToCurrency(
+                      course.priceMinorUnits,
+                      course.priceCurrency,
+                    )}
                   </p>
-                ) : null}
+                  {variant === "tutorPreview" ? (
+                    <CardDescription className="text-xs leading-relaxed">
+                      Price reflects your settings; publish to show in the
+                      student catalog.
+                    </CardDescription>
+                  ) : null}
+                </CardHeader>
 
-                <div className="mt-8 space-y-4">
+                <CardContent className="space-y-3 px-5 pb-6 pt-4 sm:px-6">
                   {variant === "catalog" ? (
                     <>
-                      {enrollment ? (
+                      {enrollment && canAct ? (
                         <Link
                           href={`/student/course/${courseId}`}
-                          className="flex h-14 w-full items-center justify-center rounded-2xl bg-[var(--primary)] text-base font-black text-white shadow-lg shadow-[var(--primary-soft)]/40 transition-all hover:scale-[1.02] active:scale-95"
+                          className="flex h-12 w-full items-center justify-center rounded-sm bg-[var(--primary)] text-base font-bold text-[var(--primary-foreground)] transition-colors hover:bg-[var(--primary-strong)]"
                         >
-                          Continue Learning
+                          Continue learning
                         </Link>
-                      ) : isStudent ? (
-                        <>
+                      ) : enrollment && !canAct ? (
+                        <div
+                          className="flex h-12 w-full cursor-not-allowed items-center justify-center rounded-sm bg-[var(--surface-muted)] text-center text-sm font-bold text-[var(--muted)]"
+                          title="Preview mode"
+                        >
+                          Continue learning (preview)
+                        </div>
+                      ) : canAct && isStudent ? (
+                        <div className="flex gap-2">
                           <EnrollCourseButton
                             courseId={courseId}
-                            label="Enroll Now"
+                            label="Enroll now"
                             variant="catalog"
-                            className="h-14 w-full text-base font-black shadow-lg shadow-[var(--primary-soft)]/40 hover:scale-[1.02] active:scale-95"
+                            className="min-h-12 flex-1 rounded-sm py-3 text-base font-bold"
                           />
                           <WishlistHeartButton
                             courseId={courseId}
                             initialSaved={Boolean(wishlistRow)}
-                            variant="labeled"
-                            className="h-14 w-full rounded-2xl border-2 border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50"
+                            variant="toolbar"
                           />
-                        </>
-                      ) : (
-                        <div className="rounded-2xl bg-amber-50 p-4 text-center">
-                          <p className="text-sm font-bold text-amber-800">
-                            Please sign in to enroll
+                        </div>
+                      ) : canAct && !isStudent ? (
+                        <div className="rounded-sm border border-[#d1d7dc] bg-[#f7f9fa] p-4 text-center">
+                          <p className="text-sm font-bold text-[var(--foreground)]">
+                            Sign in to enroll
                           </p>
                           <Link
                             href="/student/login"
-                            className="mt-2 inline-block text-xs font-black uppercase tracking-wider text-amber-700 underline"
+                            className="mt-2 inline-block text-sm font-bold text-[var(--primary)] underline underline-offset-2"
                           >
-                            Login as student
+                            Student login
                           </Link>
                         </div>
+                      ) : (
+                        <div className="rounded-sm border border-[#d1d7dc] bg-[#f7f9fa] p-4 text-center text-sm font-semibold text-[var(--muted)]">
+                          Preview mode — enroll and wishlist are disabled.
+                        </div>
                       )}
-                      <Link
-                        href="/student/browse"
-                        className="flex h-12 w-full items-center justify-center rounded-xl bg-slate-50 text-sm font-bold text-slate-500 transition-colors hover:bg-slate-100"
-                      >
-                        Explore other courses
-                      </Link>
+                      {canAct ? (
+                        <Link
+                          href="/student/browse"
+                          className="flex h-11 w-full items-center justify-center rounded-sm border-2 border-[var(--foreground)] bg-transparent text-sm font-bold text-[var(--foreground)] transition-colors hover:bg-[#f7f9fa]"
+                        >
+                          Browse more courses
+                        </Link>
+                      ) : (
+                        <span className="flex h-11 w-full cursor-not-allowed items-center justify-center rounded-sm border-2 border-[#d1d7dc] bg-[#f7f9fa] text-sm font-bold text-[var(--muted)]">
+                          Browse more courses
+                        </span>
+                      )}
                     </>
                   ) : (
                     <>
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-center">
-                        <p className="text-sm font-semibold text-slate-800">Student preview</p>
-                        <p className="mt-1 text-xs leading-relaxed text-slate-600">
-                          This is how your listing appears before enrollment. Students enroll from the
-                          catalog after you publish.
+                      <div className="rounded-sm border border-[#d1d7dc] bg-[#f7f9fa] p-4 text-sm text-[var(--muted)]">
+                        <p className="font-bold text-[var(--foreground)]">
+                          Student preview
+                        </p>
+                        <p className="mt-1 leading-relaxed">
+                          This is how your listing appears before enrollment.
+                          Students enroll from the catalog after you publish.
                         </p>
                       </div>
                       <Link
                         href={`/tutor/courses/${courseId}/manage`}
-                        className="flex h-12 w-full items-center justify-center rounded-xl bg-slate-50 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-100"
+                        className="flex h-11 w-full items-center justify-center rounded-sm border-2 border-[var(--foreground)] bg-transparent text-sm font-bold text-[var(--foreground)] transition-colors hover:bg-[#f7f9fa]"
                       >
-                        Back to course editor
+                        Back to editor
                       </Link>
                     </>
                   )}
-                </div>
 
-                <div className="mt-10 space-y-5 border-t border-slate-100 pt-8">
-                  <p className="text-sm font-black uppercase tracking-widest text-slate-900">
-                    This course includes:
-                  </p>
-                  <ul className="space-y-4">
-                    <li className="flex items-start gap-4">
-                      <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-500">
-                        <Clock className="h-3 w-3" />
-                      </div>
-                      <p className="text-sm font-medium text-slate-600">
-                        <span className="font-bold text-slate-900">
-                          {formatTotalDuration(totalSeconds)}
-                        </span>{" "}
-                        content on-demand
-                      </p>
-                    </li>
-                    <li className="flex items-start gap-4">
-                      <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-500">
-                        <FileText className="h-3 w-3" />
-                      </div>
-                      <p className="text-sm font-medium text-slate-600">
-                        <span className="font-bold text-slate-900">{allResources.length}</span>{" "}
-                        Downloadable resources
-                      </p>
-                    </li>
-                    <li className="flex items-start gap-4">
-                      <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-500">
-                        <Globe className="h-3 w-3" />
-                      </div>
-                      <p className="text-sm font-medium text-slate-600">Full lifetime access</p>
-                    </li>
-                    <li className="flex items-start gap-4">
-                      <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-500">
-                        <ShieldCheck className="h-3 w-3" />
-                      </div>
-                      <p className="text-sm font-medium text-slate-600">
-                        Curated & Verified content
-                      </p>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
+                  <div className="border-t border-[#d1d7dc] pt-5">
+                    <p className="text-sm font-bold text-[var(--foreground)]">
+                      This course includes:
+                    </p>
+                    <ul className="mt-4 grid gap-x-6 gap-y-3 text-sm text-[var(--muted)] sm:grid-cols-2">
+                      <li className="flex gap-2">
+                        <Play
+                          className="mt-0.5 h-4 w-4 shrink-0 text-[var(--foreground)]"
+                          aria-hidden
+                        />
+                        <span>
+                          <span className="font-bold text-[var(--foreground)]">
+                            {formatTotalDuration(totalSeconds)}
+                          </span>{" "}
+                          on-demand video
+                        </span>
+                      </li>
+                      <li className="flex gap-2">
+                        <FileText
+                          className="mt-0.5 h-4 w-4 shrink-0 text-[var(--foreground)]"
+                          aria-hidden
+                        />
+                        <span>
+                          <span className="font-bold text-[var(--foreground)]">
+                            {allResources.length}
+                          </span>{" "}
+                          articles & resources
+                        </span>
+                      </li>
+                      <li className="flex gap-2">
+                        <Globe
+                          className="mt-0.5 h-4 w-4 shrink-0 text-[var(--foreground)]"
+                          aria-hidden
+                        />
+                        <span>Full lifetime access</span>
+                      </li>
+                      <li className="flex gap-2">
+                        <ShieldCheck
+                          className="mt-0.5 h-4 w-4 shrink-0 text-[var(--foreground)]"
+                          aria-hidden
+                        />
+                        <span>Certificate of completion</span>
+                      </li>
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
+            </CatalogPurchaseRail>
           </aside>
         </div>
       </div>

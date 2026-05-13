@@ -46,7 +46,7 @@ export default async function StudentAchievementsPage() {
   return (
     <div className="space-y-8 text-[var(--foreground)]">
       <BadgeToastTrigger newBadges={newBadges} />
-      <StudentSecondaryNav />
+      {/* <StudentSecondaryNav /> */}
       <div>
         <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
           Badges & achievements

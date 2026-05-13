@@ -1,8 +1,8 @@
 "use client";
 
-import { useTransition, useState } from "react";
-import { CheckCircle2, PartyPopper, Trophy, X } from "lucide-react";
 import confetti from "canvas-confetti";
+import { CheckCircle2, PartyPopper, Trophy, X } from "lucide-react";
+import { useState, useTransition } from "react";
 import { completeCourseAction } from "@/app/student/course/[courseId]/actions";
 import { cn } from "@/lib/utils";
 
@@ -35,10 +35,10 @@ export function CourseCompletionCta({
       if (res.ok) {
         setShowCelebration(true);
         confetti({
-          particleCount: 150,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ["#10b981", "#3b82f6", "#f59e0b"],
+          particleCount: 120,
+          spread: 68,
+          origin: { y: 0.58 },
+          colors: ["#10b981", "#3b82f6", "#0d9488"],
         });
       }
     });
@@ -49,73 +49,99 @@ export function CourseCompletionCta({
   return (
     <>
       {showCelebration && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/90 p-4 backdrop-blur-sm transition-all animate-in fade-in duration-500">
-          <div className="relative w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl animate-in zoom-in slide-in-from-bottom-8 duration-700">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[var(--foreground)]/55 p-4 backdrop-blur-[2px]"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="course-celebration-title"
+        >
+          <div
+            className={cn(
+              "relative w-full max-w-3xl overflow-hidden rounded-2xl border border-[var(--border)]",
+              "bg-[var(--surface)] shadow-[var(--shadow-lg)]",
+            )}
+          >
             <button
               type="button"
               onClick={() => setShowCelebration(false)}
-              className="absolute right-6 top-6 z-10 rounded-full bg-slate-100 p-2 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-600"
-              aria-label="Close"
+              className="absolute right-4 top-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] transition hover:bg-[#fafafa] hover:text-[var(--foreground)]"
+              aria-label="Close celebration"
             >
-              <X className="h-6 w-6" strokeWidth={2} />
+              <X className="h-5 w-5" strokeWidth={2} />
             </button>
 
-            <div className="flex flex-col items-center p-8 text-center sm:p-12">
-              <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-emerald-100 text-emerald-600 shadow-inner">
-                <Trophy className="h-14 w-14" />
+            <div className="px-6 pb-8 pt-10 text-center sm:px-10 sm:pb-10 sm:pt-12">
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--success-soft)] text-[var(--success)] ring-1 ring-[var(--success)]/20">
+                <Trophy className="h-9 w-9" aria-hidden />
               </div>
-              
-              <h2 className="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
-                {congratulatoryTitle || "Legendary Achievement!"}
+
+              <h2
+                id="course-celebration-title"
+                className="text-2xl font-bold tracking-tight text-[var(--foreground)] sm:text-3xl"
+              >
+                {congratulatoryTitle || "Course complete"}
               </h2>
-              <p className="mt-4 max-w-md text-lg font-medium text-slate-500">
-                You have successfully mastered this course and earned your certification. Your hard work has paid off!
+              <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-[var(--muted)] sm:text-base">
+                You have finished all required lessons. Your progress is saved
+                and your completion is on record.
               </p>
 
-              <div className="mt-8 w-full">
+              <div className="mt-8 w-full text-left">
                 {congratsKind === "VIDEO" && congratulatoryVideoUrl ? (
-                  <div className="aspect-video w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-lg">
+                  <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-[#0a0a0a] shadow-inner">
+                    {/* biome-ignore lint/a11y/useMediaCaption: Mentor-uploaded congratulatory reel; captions not modeled in schema. */}
                     <video
                       src={congratulatoryVideoUrl}
                       controls
                       autoPlay
-                      className="h-full w-full object-cover"
+                      className="aspect-video w-full object-contain"
                     />
                   </div>
                 ) : congratsKind === "ARTICLE" && congratulatoryArticle ? (
-                  <div className="max-h-[400px] w-full overflow-y-auto rounded-2xl border border-slate-100 bg-slate-50 p-6 text-left shadow-inner">
-                    <div 
-                      className="prose prose-emerald max-w-none text-slate-800"
-                      dangerouslySetInnerHTML={{ __html: congratulatoryArticle }}
+                  <div className="max-h-[min(400px,50vh)] overflow-y-auto rounded-xl border border-[var(--border)] bg-[#fafafa] p-5 sm:p-6">
+                    <div
+                      className="prose prose-sm max-w-none text-[var(--foreground)] sm:prose-base [&_a]:text-[var(--primary)]"
+                      // biome-ignore lint/security/noDangerouslySetInnerHtml: Mentor-authored congratulatory HTML.
+                      dangerouslySetInnerHTML={{
+                        __html: congratulatoryArticle,
+                      }}
                     />
                   </div>
                 ) : (
-                  <div className="rounded-2xl bg-emerald-50 p-8">
-                    <PartyPopper className="mx-auto h-12 w-12 text-emerald-600" />
-                    <p className="mt-4 font-bold text-emerald-900">Your badge has been added to your profile.</p>
+                  <div className="rounded-xl border border-[var(--border)] bg-[var(--success-soft)]/60 px-6 py-8 text-center">
+                    <PartyPopper
+                      className="mx-auto h-10 w-10 text-[var(--success)]"
+                      aria-hidden
+                    />
+                    <p className="mt-3 text-sm font-semibold text-[var(--foreground)]">
+                      Your completion badge is available on your profile.
+                    </p>
                   </div>
                 )}
               </div>
 
-              <div className="mt-10 flex flex-wrap justify-center gap-4">
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
                 <button
+                  type="button"
                   onClick={() => {
                     confetti({
-                      particleCount: 80,
-                      spread: 60,
-                      origin: { y: 0.5 }
+                      particleCount: 64,
+                      spread: 56,
+                      origin: { y: 0.52 },
+                      colors: ["#10b981", "#3b82f6"],
                     });
                   }}
-                  className="inline-flex h-14 items-center gap-2 rounded-2xl bg-emerald-600 px-8 font-bold text-white shadow-xl shadow-emerald-200 transition hover:bg-emerald-700 active:scale-95"
+                  className="inline-flex h-11 items-center gap-2 rounded-[var(--radius-md)] bg-[var(--primary)] px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--primary-strong)]"
                 >
-                  <PartyPopper className="h-6 w-6" />
-                  Celebrate Again
+                  <PartyPopper className="h-4 w-4" aria-hidden />
+                  Celebrate again
                 </button>
                 <button
+                  type="button"
                   onClick={() => setShowCelebration(false)}
-                  className="inline-flex h-14 items-center gap-2 rounded-2xl bg-slate-100 px-8 font-bold text-slate-900 transition hover:bg-slate-200"
+                  className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] bg-white px-6 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[#fafafa]"
                 >
-                  Back to Course
+                  Back to course
                 </button>
               </div>
             </div>
@@ -124,52 +150,58 @@ export function CourseCompletionCta({
       )}
 
       {alreadyCompleted ? (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 text-center">
-          <p className="text-sm font-bold text-emerald-800 flex items-center justify-center gap-2">
-            <Trophy className="h-4 w-4" />
-            Course Completed! 
-            <button 
+        <div className="rounded-xl border border-[var(--success)]/25 bg-[var(--success-soft)]/50 px-4 py-3 text-center">
+          <p className="flex flex-wrap items-center justify-center gap-2 text-sm font-semibold text-[var(--foreground)]">
+            <Trophy className="h-4 w-4 shrink-0 text-[var(--success)]" />
+            <span>Course completed</span>
+            <button
+              type="button"
               onClick={() => setShowCelebration(true)}
-              className="ml-2 text-emerald-600 underline hover:text-emerald-700"
+              className="text-sm font-semibold text-[var(--primary)] underline-offset-2 hover:underline"
             >
               View celebration
             </button>
           </p>
         </div>
       ) : (
-        <div className="group relative overflow-hidden rounded-2xl bg-linear-to-r from-emerald-600 to-teal-600 p-1 shadow-xl transition-all hover:shadow-emerald-200/50">
-          <div className="relative flex flex-col items-center justify-between gap-6 rounded-[14px] bg-white p-6 md:flex-row md:p-8">
-            <div className="flex items-center gap-5">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 ring-1 ring-emerald-100 group-hover:scale-110 transition-transform">
-                <CheckCircle2 className="h-8 w-8" />
+        <div className="overflow-hidden rounded-xl border border-[var(--primary)]/20 bg-linear-to-r from-[var(--primary)] to-[#0d9488] p-[1px] shadow-sm">
+          <div className="relative flex flex-col items-stretch justify-between gap-5 rounded-[calc(var(--radius-xl)-1px)] bg-[var(--surface)] p-5 sm:flex-row sm:items-center sm:gap-6 sm:p-6">
+            <div className="flex items-start gap-4 text-left sm:items-center">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--primary-soft)] text-[var(--primary-strong)] ring-1 ring-[var(--primary)]/15">
+                <CheckCircle2 className="h-6 w-6" aria-hidden />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-slate-900">Wrap up your learning</h3>
-                <p className="text-slate-600">You've finished all lessons. Mark this course as complete to earn your badge.</p>
+                <h3 className="text-base font-bold text-[var(--foreground)] sm:text-lg">
+                  Ready to finish?
+                </h3>
+                <p className="mt-1 text-sm leading-relaxed text-[var(--muted)]">
+                  You have reached the end of the curriculum. Mark the course
+                  complete to lock in your achievement.
+                </p>
               </div>
             </div>
 
             <button
+              type="button"
               onClick={handleComplete}
               disabled={isPending}
               className={cn(
-                "relative inline-flex h-14 min-w-[200px] items-center justify-center overflow-hidden rounded-xl bg-emerald-600 px-8 text-lg font-bold text-white transition-all hover:bg-emerald-700 active:scale-95 disabled:opacity-70",
-                isPending && "cursor-not-allowed"
+                "inline-flex h-11 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--primary)] px-6 text-sm font-semibold text-white transition hover:bg-[var(--primary-strong)] disabled:cursor-not-allowed disabled:opacity-70 sm:min-w-[10rem]",
               )}
             >
               {isPending ? (
-                <div className="flex items-center gap-2">
-                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                  Completing...
-                </div>
+                <span className="flex items-center gap-2">
+                  <span
+                    className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                    aria-hidden
+                  />
+                  Completing…
+                </span>
               ) : (
-                "Complete Course"
+                "Complete course"
               )}
             </button>
           </div>
-
-          <div className="absolute -left-20 -top-20 h-40 w-40 rounded-full bg-emerald-400/10 blur-3xl" />
-          <div className="absolute -right-20 -bottom-20 h-40 w-40 rounded-full bg-teal-400/10 blur-3xl" />
         </div>
       )}
     </>

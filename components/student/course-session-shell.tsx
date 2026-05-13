@@ -138,10 +138,18 @@ export function CourseSessionShell({
           <LayoutGrid className="h-5 w-5" strokeWidth={2.2} />
         </Link>
         <div className="my-2 h-px w-8 bg-slate-200" />
-        <Link href={`/student/course/${courseId}/forum`} className={railLink} title="Forum">
+        <Link
+          href={`/student/course/${courseId}?tab=forum`}
+          className={railLink}
+          title="Forum"
+        >
           <MessageSquare className="h-5 w-5" strokeWidth={2.2} />
         </Link>
-        <Link href={`/student/course/${courseId}/ai-quiz`} className={railLink} title="AI quiz">
+        <Link
+          href={`/student/course/${courseId}?tab=ai-quiz`}
+          className={railLink}
+          title="AI quiz"
+        >
           <Sparkles className="h-5 w-5" strokeWidth={2.2} />
         </Link>
       </aside>

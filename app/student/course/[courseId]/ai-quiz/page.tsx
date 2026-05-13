@@ -1,6 +1,5 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { AiQuizWorkspace } from "@/components/student/ai-quiz-workspace";
 import { CourseStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { roleHomePath } from "@/lib/rbac";
@@ -29,31 +28,9 @@ export default async function AIQuizPage({
 
   const course = await db.course.findFirst({
     where: { id: courseId, status: CourseStatus.PUBLISHED },
-    select: {
-      id: true,
-      title: true,
-      sections: { select: { id: true } },
-    },
+    select: { id: true },
   });
   if (!course) notFound();
 
-  const completedLessons = await db.lessonProgress.findMany({
-    where: {
-      studentId: session.user.id,
-      completed: true,
-      lesson: { section: { courseId } },
-    },
-    select: { lesson: { select: { sectionId: true } } },
-  });
-  const completedSectionIds = [
-    ...new Set(completedLessons.map((p) => p.lesson.sectionId)),
-  ];
-
-  return (
-    <AiQuizWorkspace
-      courseId={course.id}
-      courseTitle={course.title}
-      completedSectionsCount={completedSectionIds.length}
-    />
-  );
+  redirect(`/student/course/${courseId}?tab=ai-quiz`);
 }

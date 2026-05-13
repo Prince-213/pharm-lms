@@ -12,6 +12,8 @@ import { signOut, useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import type { UserRole } from "@/generated/prisma/enums";
+import { profilePathForRole } from "@/lib/rbac";
 import { userRoleLabel } from "@/lib/user-role-label";
 import { cn } from "@/lib/utils";
 
@@ -40,6 +42,9 @@ export function UserMenu() {
   }, []);
 
   if (!user) return null;
+
+  const role = user.role as UserRole | undefined;
+  const profileHref = role ? profilePathForRole(role) : "/student/profile";
 
   return (
     <div className="relative" ref={menuRef}>
@@ -90,7 +95,11 @@ export function UserMenu() {
 
             <div className="space-y-0.5">
               <Link
-                href={`/${user.role?.toLowerCase()}/dashboard`}
+                href={
+                  role
+                    ? `/${role.toLowerCase()}/dashboard`
+                    : "/student/dashboard"
+                }
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[var(--muted)] transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
                 role="menuitem"
               >
@@ -98,7 +107,7 @@ export function UserMenu() {
                 Dashboard
               </Link>
               <Link
-                href="/profile"
+                href={profileHref}
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[var(--muted)] transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
                 role="menuitem"
               >
@@ -106,7 +115,7 @@ export function UserMenu() {
                 My Profile
               </Link>
               <Link
-                href="/settings"
+                href={profileHref}
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[var(--muted)] transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
                 role="menuitem"
               >

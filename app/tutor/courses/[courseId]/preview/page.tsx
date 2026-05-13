@@ -47,7 +47,11 @@ export default async function TutorCourseCatalogPreviewPage({
           </Link>
         </div>
       </header>
-      <CourseCatalogDetail variant="tutorPreview" data={data} />
+      <CourseCatalogDetail
+        variant="tutorPreview"
+        interaction="readonly"
+        data={data}
+      />
     </div>
   );
 }

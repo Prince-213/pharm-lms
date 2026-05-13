@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { CourseCatalogDetail } from "@/components/student/course-catalog-detail";
+import { UserRole } from "@/generated/prisma/enums";
 import { loadCourseCatalogDetail } from "@/lib/course-catalog-detail";
 
 export default async function StudentCourseCatalogDetailPage({
@@ -22,5 +23,14 @@ export default async function StudentCourseCatalogDetailPage({
   });
   if (!data) notFound();
 
-  return <CourseCatalogDetail variant="catalog" data={data} />;
+  const interaction =
+    session.user.role === UserRole.STUDENT ? "student" : "readonly";
+
+  return (
+    <CourseCatalogDetail
+      variant="catalog"
+      interaction={interaction}
+      data={data}
+    />
+  );
 }

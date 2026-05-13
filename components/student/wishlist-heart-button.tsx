@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toggleWishlistAction } from "@/app/student/actions/wishlist";
 
-type Variant = "icon" | "labeled";
+type Variant = "icon" | "labeled" | "toolbar";
 
 export function WishlistHeartButton({
   courseId,
@@ -15,6 +15,7 @@ export function WishlistHeartButton({
 }: {
   courseId: string;
   initialSaved: boolean;
+  /** toolbar: square outline next to primary CTA (catalog sidebar) */
   variant?: Variant;
   className?: string;
 }) {
@@ -57,6 +58,30 @@ export function WishlistHeartButton({
           fill={saved ? "currentColor" : "none"}
         />
         {saved ? "Saved to wishlist" : "Add to wishlist"}
+        {error ? <span className="sr-only">{error}</span> : null}
+      </button>
+    );
+  }
+
+  if (variant === "toolbar") {
+    return (
+      <button
+        type="button"
+        onClick={onToggle}
+        disabled={pending}
+        aria-label={saved ? "Remove from wishlist" : "Add to wishlist"}
+        aria-pressed={saved}
+        className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-[2px] border-2 border-[var(--foreground)] bg-[var(--surface)] text-[var(--foreground)] transition hover:bg-[var(--surface-muted)] disabled:opacity-60${className ? ` ${className}` : ""}`}
+      >
+        <Heart
+          className={
+            saved
+              ? "h-5 w-5 text-[var(--primary)]"
+              : "h-5 w-5 text-[var(--foreground)]"
+          }
+          strokeWidth={1.75}
+          fill={saved ? "currentColor" : "none"}
+        />
         {error ? <span className="sr-only">{error}</span> : null}
       </button>
     );

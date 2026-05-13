@@ -35,6 +35,18 @@ const tabs = [
       p === "/student/meetings" || p.startsWith("/student/meetings/"),
   },
   {
+    href: "/student/tutors",
+    label: "Tutors",
+    isActive: (p: string) =>
+      p === "/student/tutors" || p.startsWith("/student/tutors/"),
+  },
+  {
+    href: "/student/mentors",
+    label: "Mentors",
+    isActive: (p: string) =>
+      p === "/student/mentors" || p.startsWith("/student/mentors/"),
+  },
+  {
     href: "/student/messages",
     label: "Messages",
     isActive: (p: string) =>

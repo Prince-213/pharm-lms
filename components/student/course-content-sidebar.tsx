@@ -1,6 +1,5 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
 import { clsx } from "clsx";
 import {
   ChevronDown,
@@ -13,9 +12,10 @@ import {
   Play,
 } from "lucide-react";
 import Link from "next/link";
-import { formatLessonDuration } from "@/lib/lesson-duration";
+import { useMemo, useState } from "react";
 import type { SectionResource } from "@/components/mentor/curriculum-editor-v2";
 import type { CatalogResourceItem } from "@/lib/course-catalog-detail";
+import { formatLessonDuration } from "@/lib/lesson-duration";
 import {
   formatResourceMetaLine,
   resourceDownloadFilename,
@@ -40,7 +40,9 @@ export type SidebarSection = {
 };
 
 /** Parse resources out of the section description JSON (same logic as curriculum editor) */
-function parseSectionResources(description: string | null | undefined): SectionResource[] {
+function parseSectionResources(
+  description: string | null | undefined,
+): SectionResource[] {
   if (!description) return [];
   try {
     const p = JSON.parse(description) as { resources?: SectionResource[] };
@@ -65,6 +67,17 @@ function effectiveResourceHref(
   return null;
 }
 
+function buildLessonHref(
+  courseId: string,
+  lessonId: string,
+  currentTab: string,
+): string {
+  const p = new URLSearchParams();
+  p.set("lesson", lessonId);
+  if (currentTab !== "overview") p.set("tab", currentTab);
+  return `/student/course/${courseId}?${p.toString()}`;
+}
+
 export function CourseContentSidebar({
   courseId,
   sections,
@@ -72,6 +85,7 @@ export function CourseContentSidebar({
   progressMap: initialProgressMap,
   intelHeading = "Course outline",
   intelBadge = "Progress",
+  currentTab = "overview",
 }: {
   courseId: string;
   sections: SidebarSection[];
@@ -79,6 +93,7 @@ export function CourseContentSidebar({
   progressMap: Record<string, boolean>;
   intelHeading?: string;
   intelBadge?: string;
+  currentTab?: string;
 }) {
   const { progressMap: contextMap } = useProgress();
   const progressMap = contextMap || initialProgressMap;
@@ -88,6 +103,19 @@ export function CourseContentSidebar({
     for (const s of sections) init[s.id] = true;
     return init;
   });
+
+  const [filterQuery, setFilterQuery] = useState("");
+
+  const filteredSections = useMemo(() => {
+    const q = filterQuery.trim().toLowerCase();
+    if (!q) return sections;
+    return sections
+      .map((s) => ({
+        ...s,
+        lessons: s.lessons.filter((l) => l.title.toLowerCase().includes(q)),
+      }))
+      .filter((s) => s.lessons.length > 0);
+  }, [sections, filterQuery]);
 
   const stats = useMemo(() => {
     let total = 0;
@@ -116,12 +144,33 @@ export function CourseContentSidebar({
         <p className="mt-2 text-xs text-[var(--muted)]">
           {stats.done}/{stats.total} completed
         </p>
+        <div className="mt-3">
+          <label htmlFor="course-curriculum-filter" className="sr-only">
+            Filter lessons by title
+          </label>
+          <input
+            id="course-curriculum-filter"
+            type="search"
+            value={filterQuery}
+            onChange={(e) => setFilterQuery(e.target.value)}
+            placeholder="Search curriculum…"
+            className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-xs text-[var(--foreground)] placeholder:text-[var(--muted)] focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+          />
+        </div>
       </div>
 
       {/* Scrollable nav */}
       <nav className="min-h-0 flex-1 overflow-y-auto px-2 py-3">
-        {sections.map((section, si) => {
-          const sectionDone = section.lessons.filter((l) => progressMap[l.id]).length;
+        {filterQuery.trim() && filteredSections.length === 0 ? (
+          <p className="px-2 py-6 text-center text-xs text-[var(--muted)]">
+            No lessons match “{filterQuery.trim()}”.
+          </p>
+        ) : null}
+        {filteredSections.map((section) => {
+          const si = sections.findIndex((x) => x.id === section.id);
+          const sectionDone = section.lessons.filter(
+            (l) => progressMap[l.id],
+          ).length;
           const isOpen = open[section.id] ?? true;
           const resources: CatalogResourceItem[] =
             section.resources ??
@@ -134,7 +183,9 @@ export function CourseContentSidebar({
             <div key={section.id} className="mb-1">
               <button
                 type="button"
-                onClick={() => setOpen((o) => ({ ...o, [section.id]: !isOpen }))}
+                onClick={() =>
+                  setOpen((o) => ({ ...o, [section.id]: !isOpen }))
+                }
                 className="flex w-full items-center gap-2 rounded-[var(--radius-md)] px-2 py-2 text-left text-sm font-bold text-[var(--foreground)] hover:bg-[var(--surface-muted)]"
               >
                 {isOpen ? (
@@ -160,7 +211,11 @@ export function CourseContentSidebar({
                       return (
                         <li key={lesson.id}>
                           <Link
-                            href={`/student/course/${courseId}?lesson=${lesson.id}`}
+                            href={buildLessonHref(
+                              courseId,
+                              lesson.id,
+                              currentTab,
+                            )}
                             className={clsx(
                               "flex items-start gap-2 rounded-[var(--radius-md)] px-2 py-2 text-xs leading-snug transition",
                               active
@@ -180,12 +235,20 @@ export function CourseContentSidebar({
                             <span className="min-w-0 flex-1">
                               <span className="mr-1 inline-block align-middle text-[var(--muted)]">
                                 {isVideo ? (
-                                  <Play className="inline h-3.5 w-3.5" fill="currentColor" />
+                                  <Play
+                                    className="inline h-3.5 w-3.5"
+                                    fill="currentColor"
+                                  />
                                 ) : (
-                                  <FileText className="inline h-3.5 w-3.5" strokeWidth={2} />
+                                  <FileText
+                                    className="inline h-3.5 w-3.5"
+                                    strokeWidth={2}
+                                  />
                                 )}
                               </span>
-                              <span className="align-middle">{lesson.title}</span>
+                              <span className="align-middle">
+                                {lesson.title}
+                              </span>
                               {formatLessonDuration(lesson.durationSec) ? (
                                 <span className="mt-0.5 block text-[11px] font-normal text-[var(--muted)]">
                                   {formatLessonDuration(lesson.durationSec)}

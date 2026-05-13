@@ -14,3 +14,11 @@ export function roleHomePath(role: UserRole) {
   if (role === UserRole.MENTOR) return "/mentor/dashboard";
   return "/student/dashboard";
 }
+
+/** Account profile editor (or home when no dedicated profile exists). */
+export function profilePathForRole(role: UserRole) {
+  if (role === UserRole.TUTOR) return "/tutor/profile";
+  if (role === UserRole.MENTOR) return "/mentor/profile";
+  if (role === UserRole.STUDENT) return "/student/profile";
+  return "/admin/dashboard";
+}

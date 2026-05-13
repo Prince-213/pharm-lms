@@ -6,9 +6,9 @@ import {
   Check,
   ChevronDown,
   Copy,
-  ExternalLink,
   Loader2,
   Mail,
+  MessagesSquare,
   MoreHorizontal,
   Search,
   Trash2,
@@ -16,8 +16,15 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from "react";
 import { createPortal } from "react-dom";
+import { toast } from "sonner";
 import {
   approveCourseAction,
   deleteCourseAction,
@@ -25,7 +32,6 @@ import {
 } from "@/app/admin/course-approvals/actions";
 import { AdminCourseStatusBadge } from "@/components/admin/admin-course-status-badge";
 import { CourseStatus } from "@/generated/prisma/enums";
-import { toast } from "sonner";
 import { formatMinorUnitsToCurrency } from "@/lib/format-currency";
 
 export type AdminCourseRow = {
@@ -44,7 +50,13 @@ export type AdminCourseRow = {
 };
 
 type Filter = "all" | "queue" | "published" | "draft" | "rejected";
-type SortKey = "updatedAt" | "title" | "mentorName" | "lessonCount" | "enrollmentCount" | "status";
+type SortKey =
+  | "updatedAt"
+  | "title"
+  | "mentorName"
+  | "lessonCount"
+  | "enrollmentCount"
+  | "status";
 type SortDir = "asc" | "desc";
 
 type PanelState =
@@ -61,7 +73,10 @@ const POPOVER_GAP = 8;
 /** Anchor point above the button; dialog uses translateY(-100%) so the panel sits above the trigger. */
 function placePopover(anchor: DOMRect) {
   const vw = typeof window !== "undefined" ? window.innerWidth : 1024;
-  const left = Math.min(vw - POPOVER_W - 8, Math.max(8, anchor.right - POPOVER_W));
+  const left = Math.min(
+    vw - POPOVER_W - 8,
+    Math.max(8, anchor.right - POPOVER_W),
+  );
   const top = anchor.top - POPOVER_GAP;
   return { left, top };
 }
@@ -109,6 +124,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [panel, closePanel]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Reset pagination when browse filters or sort change.
   useEffect(() => {
     setPage(1);
   }, [filter, search, sortKey, sortDir, pageSize]);
@@ -116,7 +132,10 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
   function copyCourseId(courseId: string) {
     void navigator.clipboard.writeText(courseId).then(() => {
       setCopiedId(courseId);
-      window.setTimeout(() => setCopiedId((id) => (id === courseId ? null : id)), 2000);
+      window.setTimeout(
+        () => setCopiedId((id) => (id === courseId ? null : id)),
+        2000,
+      );
     });
   }
 
@@ -133,13 +152,23 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
 
   function openRejectFromMenu() {
     if (!panel || panel.phase !== "menu") return;
-    setPanel({ courseId: panel.courseId, phase: "reject", left: panel.left, top: panel.top });
+    setPanel({
+      courseId: panel.courseId,
+      phase: "reject",
+      left: panel.left,
+      top: panel.top,
+    });
     setRejectReason("");
   }
 
   function openDeleteFromMenu() {
     if (!panel || panel.phase !== "menu") return;
-    setPanel({ courseId: panel.courseId, phase: "delete", left: panel.left, top: panel.top });
+    setPanel({
+      courseId: panel.courseId,
+      phase: "delete",
+      left: panel.left,
+      top: panel.top,
+    });
     setDeleteConfirmTitle("");
   }
 
@@ -152,7 +181,9 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
     setSortDir(nextKey === "updatedAt" ? "desc" : "asc");
   }
 
-  const queueCount = courses.filter((c) => c.status === CourseStatus.SUBMITTED).length;
+  const queueCount = courses.filter(
+    (c) => c.status === CourseStatus.SUBMITTED,
+  ).length;
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -167,7 +198,15 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
 
     const bySearch = term
       ? byFilter.filter((c) => {
-          const haystack = [c.title, c.id, c.mentorName, c.mentorEmail, c.status].join(" ").toLowerCase();
+          const haystack = [
+            c.title,
+            c.id,
+            c.mentorName,
+            c.mentorEmail,
+            c.status,
+          ]
+            .join(" ")
+            .toLowerCase();
           return haystack.includes(term);
         })
       : byFilter;
@@ -190,9 +229,9 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
         case "status":
           cmp = STATUS_WEIGHT[a.status] - STATUS_WEIGHT[b.status];
           break;
-        case "updatedAt":
         default:
-          cmp = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+          cmp =
+            new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
       }
       return sortDir === "asc" ? cmp : -cmp;
     });
@@ -202,7 +241,9 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
   const safePage = Math.min(page, totalPages);
   const paged = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
 
-  const activeCourse = panel ? courses.find((c) => c.id === panel.courseId) ?? null : null;
+  const activeCourse = panel
+    ? (courses.find((c) => c.id === panel.courseId) ?? null)
+    : null;
 
   function runApprove(courseId: string) {
     const toastId = toast.loading("Publishing course...");
@@ -248,7 +289,10 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
 
   const filters: { id: Filter; label: string }[] = [
     { id: "all", label: "All" },
-    { id: "queue", label: `Review queue${queueCount ? ` (${queueCount})` : ""}` },
+    {
+      id: "queue",
+      label: `Review queue${queueCount ? ` (${queueCount})` : ""}`,
+    },
     { id: "published", label: "Published" },
     { id: "draft", label: "Drafts" },
     { id: "rejected", label: "Rejected" },
@@ -277,16 +321,28 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
             >
               {panel.phase === "menu" ? (
                 <div className="px-1">
-                  <p className="truncate px-2.5 pb-1.5 pt-0.5 text-xs font-semibold text-[var(--foreground)]">{activeCourse.title}</p>
-                  <p className="border-b border-[var(--border)] px-2.5 pb-2 text-[10px] text-[var(--muted)]">Choose an action</p>
+                  <p className="truncate px-2.5 pb-1.5 pt-0.5 text-xs font-semibold text-[var(--foreground)]">
+                    {activeCourse.title}
+                  </p>
+                  <p className="border-b border-[var(--border)] px-2.5 pb-2 text-[10px] text-[var(--muted)]">
+                    Choose an action
+                  </p>
                   <div className="max-h-[min(70vh,460px)] overflow-y-auto py-1">
+                    <Link
+                      href={`/admin/courses/${activeCourse.id}/overview`}
+                      onClick={closePanel}
+                      className="flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)]"
+                    >
+                      <BookOpen className="h-4 w-4 shrink-0 text-[var(--muted)]" />
+                      Catalog overview
+                    </Link>
                     <Link
                       href={`/admin/courses/${activeCourse.id}/preview`}
                       onClick={closePanel}
                       className="flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)]"
                     >
-                      <BookOpen className="h-4 w-4 shrink-0 text-[var(--muted)]" />
-                      Preview overview
+                      <MessagesSquare className="h-4 w-4 shrink-0 text-[var(--muted)]" />
+                      Curriculum & forums
                     </Link>
                     <div className="my-1 border-t border-[var(--border)]" />
 
@@ -296,7 +352,12 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                           type="button"
                           disabled={pending}
                           onClick={() => {
-                            if (!confirm("Publish this course to the student catalog?")) return;
+                            if (
+                              !confirm(
+                                "Publish this course to the student catalog?",
+                              )
+                            )
+                              return;
                             runApprove(activeCourse.id);
                           }}
                           className="flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-medium text-[var(--foreground)] hover:bg-[var(--primary-soft)] disabled:opacity-50"
@@ -321,8 +382,6 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                       </>
                     ) : null}
 
-                  
-
                     <a
                       href={`mailto:${encodeURIComponent(activeCourse.mentorEmail)}?subject=${encodeURIComponent(`Course: ${activeCourse.title}`)}&body=${encodeURIComponent(`Course ID: ${activeCourse.id}\n\n`)}`}
                       onClick={closePanel}
@@ -338,7 +397,9 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                       className="flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)]"
                     >
                       <Copy className="h-4 w-4 shrink-0 text-[var(--muted)]" />
-                      {copiedId === activeCourse.id ? "Course ID copied" : "Copy course ID"}
+                      {copiedId === activeCourse.id
+                        ? "Course ID copied"
+                        : "Copy course ID"}
                     </button>
 
                     <div className="my-1 border-t border-[var(--border)]" />
@@ -355,13 +416,20 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
               ) : panel.phase === "reject" ? (
                 <div className="px-3 py-2">
                   <div className="mb-2 flex items-center justify-between gap-2">
-                    <p className="text-xs font-semibold text-[var(--foreground)]">Reject course</p>
+                    <p className="text-xs font-semibold text-[var(--foreground)]">
+                      Reject course
+                    </p>
                     <button
                       type="button"
                       onClick={() =>
                         setPanel((p) =>
                           p && p.courseId === activeCourse.id
-                            ? { courseId: p.courseId, phase: "menu", left: p.left, top: p.top }
+                            ? {
+                                courseId: p.courseId,
+                                phase: "menu",
+                                left: p.left,
+                                top: p.top,
+                              }
                             : p,
                         )
                       }
@@ -371,7 +439,9 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                       <ChevronDown className="h-4 w-4 -rotate-90" />
                     </button>
                   </div>
-                  <p className="mb-2 line-clamp-2 text-[11px] text-[var(--muted)]">{activeCourse.title}</p>
+                  <p className="mb-2 line-clamp-2 text-[11px] text-[var(--muted)]">
+                    {activeCourse.title}
+                  </p>
                   <label className="block text-xs font-medium text-[var(--foreground)]">
                     Reason for tutor
                     <textarea
@@ -396,7 +466,11 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                       onClick={() => runReject(activeCourse.id)}
                       className="inline-flex items-center gap-1 rounded-md bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700 disabled:opacity-50"
                     >
-                      {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
+                      {pending ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <X className="h-3.5 w-3.5" />
+                      )}
                       Confirm reject
                     </button>
                   </div>
@@ -404,13 +478,20 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
               ) : (
                 <div className="px-3 py-2">
                   <div className="mb-2 flex items-center justify-between gap-2">
-                    <p className="text-xs font-semibold text-rose-800">Delete course</p>
+                    <p className="text-xs font-semibold text-rose-800">
+                      Delete course
+                    </p>
                     <button
                       type="button"
                       onClick={() =>
                         setPanel((p) =>
                           p && p.courseId === activeCourse.id
-                            ? { courseId: p.courseId, phase: "menu", left: p.left, top: p.top }
+                            ? {
+                                courseId: p.courseId,
+                                phase: "menu",
+                                left: p.left,
+                                top: p.top,
+                              }
                             : p,
                         )
                       }
@@ -422,9 +503,12 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                   </div>
 
                   <p className="text-xs text-[var(--muted)]">
-                    This permanently deletes lessons, enrollments, assignments, forum threads, meetings, and review history for this course.
+                    This permanently deletes lessons, enrollments, assignments,
+                    forum threads, meetings, and review history for this course.
                   </p>
-                  <p className="mt-2 line-clamp-2 text-[11px] font-semibold text-[var(--foreground)]">{activeCourse.title}</p>
+                  <p className="mt-2 line-clamp-2 text-[11px] font-semibold text-[var(--foreground)]">
+                    {activeCourse.title}
+                  </p>
 
                   <label className="mt-3 block text-xs font-medium text-[var(--foreground)]">
                     Type the exact course title to confirm
@@ -446,11 +530,18 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                     </button>
                     <button
                       type="button"
-                      disabled={pending || deleteConfirmTitle.trim() !== activeCourse.title}
+                      disabled={
+                        pending ||
+                        deleteConfirmTitle.trim() !== activeCourse.title
+                      }
                       onClick={() => runDelete(activeCourse.id)}
                       className="inline-flex items-center gap-1 rounded-md bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700 disabled:opacity-50"
                     >
-                      {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                      {pending ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-3.5 w-3.5" />
+                      )}
                       Delete permanently
                     </button>
                   </div>
@@ -533,10 +624,13 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
         ))}
 
         <div className="ml-auto text-xs text-[var(--muted)]">
-          Showing <span className="font-semibold text-[var(--foreground)]">{filtered.length}</span> matching records
+          Showing{" "}
+          <span className="font-semibold text-[var(--foreground)]">
+            {filtered.length}
+          </span>{" "}
+          matching records
         </div>
       </div>
-
 
       <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-sm">
         <div className="overflow-x-auto">
@@ -544,33 +638,57 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
             <thead className="border-b border-[var(--border)] bg-[var(--background)] text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
               <tr>
                 <th className="px-4 py-3">
-                  <button type="button" className="inline-flex items-center gap-1" onClick={() => sortBy("title")}>
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1"
+                    onClick={() => sortBy("title")}
+                  >
                     Course <ChevronDown className="h-3.5 w-3.5" />
                   </button>
                 </th>
                 <th className="px-4 py-3">
-                  <button type="button" className="inline-flex items-center gap-1" onClick={() => sortBy("mentorName")}>
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1"
+                    onClick={() => sortBy("mentorName")}
+                  >
                     Tutor <ChevronDown className="h-3.5 w-3.5" />
                   </button>
                 </th>
                 <th className="px-4 py-3">
-                  <button type="button" className="inline-flex items-center gap-1" onClick={() => sortBy("status")}>
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1"
+                    onClick={() => sortBy("status")}
+                  >
                     Status <ChevronDown className="h-3.5 w-3.5" />
                   </button>
                 </th>
                 <th className="px-4 py-3 text-right">
-                  <button type="button" className="inline-flex items-center gap-1" onClick={() => sortBy("lessonCount")}>
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1"
+                    onClick={() => sortBy("lessonCount")}
+                  >
                     Lessons <ChevronDown className="h-3.5 w-3.5" />
                   </button>
                 </th>
                 <th className="px-4 py-3 text-right">
-                  <button type="button" className="inline-flex items-center gap-1" onClick={() => sortBy("enrollmentCount")}>
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1"
+                    onClick={() => sortBy("enrollmentCount")}
+                  >
                     Enrollments <ChevronDown className="h-3.5 w-3.5" />
                   </button>
                 </th>
                 <th className="px-4 py-3">Price</th>
                 <th className="px-4 py-3">
-                  <button type="button" className="inline-flex items-center gap-1" onClick={() => sortBy("updatedAt")}>
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1"
+                    onClick={() => sortBy("updatedAt")}
+                  >
                     Updated <ChevronDown className="h-3.5 w-3.5" />
                   </button>
                 </th>
@@ -580,7 +698,10 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
             <tbody className="divide-y divide-[var(--border)]">
               {paged.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-16 text-center text-[var(--muted)]">
+                  <td
+                    colSpan={8}
+                    className="px-4 py-16 text-center text-[var(--muted)]"
+                  >
                     No courses match these filters.
                   </td>
                 </tr>
@@ -588,9 +709,14 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                 paged.map((c) => (
                   <tr key={c.id} className="align-top text-[var(--foreground)]">
                     <td className="px-4 py-3">
-                      <p className="max-w-[260px] font-medium leading-snug">{c.title}</p>
-                      <p className="mt-1 text-[11px] text-[var(--muted)]">ID: {c.id}</p>
-                      {c.status === CourseStatus.REJECTED && c.rejectionReason ? (
+                      <p className="max-w-[260px] font-medium leading-snug">
+                        {c.title}
+                      </p>
+                      <p className="mt-1 text-[11px] text-[var(--muted)]">
+                        ID: {c.id}
+                      </p>
+                      {c.status === CourseStatus.REJECTED &&
+                      c.rejectionReason ? (
                         <p className="mt-1 max-w-[300px] text-xs text-rose-700">
                           <span className="font-semibold">Reason: </span>
                           {c.rejectionReason}
@@ -599,15 +725,28 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                     </td>
                     <td className="px-4 py-3">
                       <p className="font-medium">{c.mentorName}</p>
-                      <p className="text-xs text-[var(--muted)]">{c.mentorEmail}</p>
+                      <p className="text-xs text-[var(--muted)]">
+                        {c.mentorEmail}
+                      </p>
                     </td>
                     <td className="px-4 py-3">
                       <AdminCourseStatusBadge status={c.status} />
                     </td>
-                    <td className="px-4 py-3 text-right tabular-nums">{c.lessonCount}</td>
-                    <td className="px-4 py-3 text-right tabular-nums">{c.enrollmentCount}</td>
-                    <td className="px-4 py-3 tabular-nums">{formatMinorUnitsToCurrency(c.priceMinorUnits, c.priceCurrency)}</td>
-                    <td className="px-4 py-3 text-xs text-[var(--muted)]">{new Date(c.updatedAt).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right tabular-nums">
+                      {c.lessonCount}
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums">
+                      {c.enrollmentCount}
+                    </td>
+                    <td className="px-4 py-3 tabular-nums">
+                      {formatMinorUnitsToCurrency(
+                        c.priceMinorUnits,
+                        c.priceCurrency,
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-[var(--muted)]">
+                      {new Date(c.updatedAt).toLocaleString()}
+                    </td>
                     <td className="px-4 py-3 text-right">
                       <button
                         type="button"
@@ -623,7 +762,10 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                       >
                         <MoreHorizontal className="h-4 w-4" aria-hidden />
                         Actions
-                        <ChevronDown className="h-3.5 w-3.5 opacity-70" aria-hidden />
+                        <ChevronDown
+                          className="h-3.5 w-3.5 opacity-70"
+                          aria-hidden
+                        />
                       </button>
                     </td>
                   </tr>
@@ -635,7 +777,11 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
 
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] bg-[var(--background)] px-4 py-3 text-xs text-[var(--muted)]">
           <p>
-            Page <span className="font-semibold text-[var(--foreground)]">{safePage}</span> of {totalPages}
+            Page{" "}
+            <span className="font-semibold text-[var(--foreground)]">
+              {safePage}
+            </span>{" "}
+            of {totalPages}
           </p>
           <div className="flex items-center gap-2">
             <button

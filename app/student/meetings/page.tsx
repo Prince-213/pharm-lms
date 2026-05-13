@@ -1,19 +1,28 @@
-import { CalendarClock, Sparkles, Users, Video } from "lucide-react";
+import { CalendarClock, Video } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { StudentSecondaryNav } from "@/components/student/student-secondary-nav";
 import { RouterRefreshInterval } from "@/components/system/router-refresh-interval";
-import { MentorProfileStatus, UserRole } from "@/generated/prisma/enums";
+import { Card, CardContent } from "@/components/ui/card";
+import { UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { withDbRetry } from "@/lib/db-retry";
 import { formatMeetingCrmDate } from "@/lib/meetings/crm-display";
-import {
-  isMeetingJoinable,
-  isMeetingLiveForDashboard,
-} from "@/lib/meetings/meeting-joinable";
+import { isMeetingJoinable } from "@/lib/meetings/meeting-joinable";
 import { reconcileStaleMeetingsThrottled } from "@/lib/meetings/reconcile-stale-meetings";
+import {
+  studentMeetingHubKpis,
+  studentMeetingRowStatus,
+} from "@/lib/meetings/student-meeting-request-status";
 import { roleHomePath } from "@/lib/rbac";
+import { cn } from "@/lib/utils";
+
+function hostRoleLabel(role: UserRole): string {
+  if (role === UserRole.TUTOR) return "Tutor";
+  if (role === UserRole.MENTOR) return "Mentor";
+  return "Host";
+}
 
 export default async function StudentMeetingsPage() {
   const session = await auth();
@@ -23,328 +32,180 @@ export default async function StudentMeetingsPage() {
 
   await reconcileStaleMeetingsThrottled();
 
-  const [enrollments, meetingRequests, mentors] = await withDbRetry(() =>
-    Promise.all([
-      db.enrollment.findMany({
-        where: { studentId: session.user.id },
-        include: {
-          course: {
-            select: {
-              id: true,
-              title: true,
-              mentor: { select: { id: true, fullName: true, bio: true } },
-            },
-          },
-        },
-      }),
-      db.meetingRequest.findMany({
-        where: { studentId: session.user.id },
-        orderBy: { requestedAt: "desc" },
-        include: {
-          course: { select: { title: true } },
-          mentor: { select: { id: true, fullName: true } },
-          meeting: true,
-        },
-      }),
-      db.user.findMany({
-        where: {
-          role: UserRole.MENTOR,
-          mentorProfileStatus: MentorProfileStatus.APPROVED,
-        },
-        select: {
-          id: true,
-          fullName: true,
-          bio: true,
-        },
-        orderBy: { fullName: "asc" },
-        take: 48,
-      }),
-    ]),
+  const meetingRequests = await withDbRetry(() =>
+    db.meetingRequest.findMany({
+      where: { studentId: session.user.id },
+      orderBy: { requestedAt: "desc" },
+      include: {
+        course: { select: { title: true } },
+        mentor: { select: { id: true, fullName: true, role: true } },
+        meeting: true,
+      },
+    }),
   );
 
-  const mentorMap = new Map<
-    string,
-    {
-      id: string;
-      fullName: string;
-      bio: string | null;
-      courseIds: Set<string>;
-      totalRequests: number;
-      pendingRequests: number;
-      activeMeetings: number;
-    }
-  >();
-
-  for (const enrollment of enrollments) {
-    const mentor = enrollment.course.mentor;
-    const existing = mentorMap.get(mentor.id);
-    if (existing) {
-      existing.courseIds.add(enrollment.course.id);
-      continue;
-    }
-    mentorMap.set(mentor.id, {
-      id: mentor.id,
-      fullName: mentor.fullName,
-      bio: mentor.bio,
-      courseIds: new Set([enrollment.course.id]),
-      totalRequests: 0,
-      pendingRequests: 0,
-      activeMeetings: 0,
-    });
-  }
-
-  for (const req of meetingRequests) {
-    const mentor = mentorMap.get(req.mentor.id);
-    if (!mentor) continue;
-    mentor.totalRequests += 1;
-    if (req.status === "PENDING") mentor.pendingRequests += 1;
-    if (req.meeting && isMeetingLiveForDashboard(req.meeting)) {
-      mentor.activeMeetings += 1;
-    }
-  }
-
-  const instructors = Array.from(mentorMap.values()).sort((a, b) =>
-    a.fullName.localeCompare(b.fullName),
-  );
-  const activeMeetingsTotal = instructors.reduce(
-    (sum, m) => sum + m.activeMeetings,
-    0,
-  );
-  const pendingTotal = meetingRequests.filter(
-    (r) => r.status === "PENDING",
-  ).length;
+  const nowMs = Date.now();
+  const kpis = studentMeetingHubKpis(meetingRequests, nowMs);
 
   return (
     <div className="space-y-8 text-[var(--foreground)]">
       <RouterRefreshInterval intervalMs={20000} />
-      <StudentSecondaryNav />
+      {/* <StudentSecondaryNav /> */}
 
-      <header className="space-y-1">
+      <header className="space-y-2">
         <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
           Meetings
         </h1>
-        <p className="max-w-2xl text-sm text-[var(--muted)]">
-          Book your course tutors for class-linked sessions, or mentors for
-          independent coaching. Join Jitsi video when a meeting is open.
+        <p className="max-w-2xl text-sm leading-relaxed text-[var(--muted)]">
+          Track requests, scheduled times, and join live sessions. To book a
+          course instructor go to{" "}
+          <Link
+            href="/student/tutors"
+            className="font-semibold text-[var(--primary)] hover:underline"
+          >
+            Tutors
+          </Link>
+          ; for coaching-only sessions browse{" "}
+          <Link
+            href="/student/mentors"
+            className="font-semibold text-[var(--primary)] hover:underline"
+          >
+            Mentors
+          </Link>
+          .
         </p>
       </header>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <div className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-center shadow-[var(--shadow-sm)]">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">
-            Instructors
-          </p>
-          <p className="mt-0.5 text-lg font-semibold tabular-nums">
-            {instructors.length}
-          </p>
-        </div>
-        <div className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-center shadow-[var(--shadow-sm)]">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">
-            Mentors
-          </p>
-          <p className="mt-0.5 text-lg font-semibold tabular-nums">
-            {mentors.length}
-          </p>
-        </div>
-        <div className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-center shadow-[var(--shadow-sm)]">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">
-            Pending
-          </p>
-          <p className="mt-0.5 text-lg font-semibold tabular-nums">
-            {pendingTotal}
-          </p>
-        </div>
-        <div className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-center shadow-[var(--shadow-sm)]">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">
-            Active
-          </p>
-          <p className="mt-0.5 text-lg font-semibold tabular-nums">
-            {activeMeetingsTotal}
-          </p>
-        </div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Card className="border-[var(--border)] shadow-[var(--shadow-sm)]">
+          <CardContent className="px-4 py-3 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">
+              Pending
+            </p>
+            <p className="mt-1 text-xl font-semibold tabular-nums text-[var(--foreground)]">
+              {kpis.pending}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="border-[var(--border)] shadow-[var(--shadow-sm)]">
+          <CardContent className="px-4 py-3 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">
+              Upcoming
+            </p>
+            <p className="mt-1 text-xl font-semibold tabular-nums text-[var(--foreground)]">
+              {kpis.upcoming}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="border-[var(--border)] shadow-[var(--shadow-sm)]">
+          <CardContent className="px-4 py-3 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">
+              Active
+            </p>
+            <p className="mt-1 text-xl font-semibold tabular-nums text-[var(--foreground)]">
+              {kpis.active}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="border-[var(--border)] shadow-[var(--shadow-sm)]">
+          <CardContent className="px-4 py-3 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">
+              Joined
+            </p>
+            <p className="mt-1 text-xl font-semibold tabular-nums text-[var(--foreground)]">
+              {kpis.completed}
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
-      <section className="rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)] sm:p-6">
-        <div className="flex items-center gap-2 text-[var(--foreground)]">
-          <Users className="h-5 w-5 text-[var(--muted)]" strokeWidth={1.75} />
-          <h2 className="text-base font-semibold">
-            Course instructors (tutors)
-          </h2>
-        </div>
-        <p className="mt-1 text-xs text-[var(--muted)]">
-          Tutors from your enrollments. Booking includes your course so they
-          know the context.
-        </p>
-        {instructors.length ? (
-          <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-            {instructors.map((row) => (
-              <li
-                key={row.id}
-                className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--background)] p-4"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold">{row.fullName}</p>
-                    <p className="mt-1 line-clamp-2 text-xs text-[var(--muted)]">
-                      {row.bio?.trim() || "Profile and booking"}
-                    </p>
-                  </div>
-                  <span className="shrink-0 rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-[10px] font-semibold text-[var(--muted)]">
-                    {row.courseIds.size} course
-                    {row.courseIds.size === 1 ? "" : "s"}
-                  </span>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-3 text-[11px] text-[var(--muted)]">
-                  <span>{row.pendingRequests} pending</span>
-                  <span>{row.activeMeetings} active</span>
-                </div>
-                <Link
-                  href={`/student/meetings/host/${row.id}?courseId=${Array.from(row.courseIds)[0]}`}
-                  className="mt-3 inline-flex text-xs font-semibold text-[var(--primary)] hover:underline"
-                >
-                  View profile & schedule
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div className="mt-4 rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] bg-[var(--background)] px-4 py-6 text-sm text-[var(--muted)]">
-            <p>Enroll in a course to see instructors here.</p>
-            <Link
-              href="/student/browse"
-              className="mt-2 inline-flex text-xs font-semibold text-[var(--primary)] hover:underline"
-            >
-              Browse courses
-            </Link>
-          </div>
-        )}
-      </section>
-
-      <section className="rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)] sm:p-6">
-        <div className="flex items-center gap-2 text-[var(--foreground)]">
-          <Sparkles
-            className="h-5 w-5 text-[var(--muted)]"
-            strokeWidth={1.75}
-          />
-          <h2 className="text-base font-semibold">Mentors (coaching only)</h2>
-        </div>
-        <p className="mt-1 text-xs text-[var(--muted)]">
-          Approved mentors focus on 1:1 coaching—no course enrollment required.
-        </p>
-        {mentors.length ? (
-          <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {mentors.map((c) => (
-              <li
-                key={c.id}
-                className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--background)] p-4"
-              >
-                <p className="text-sm font-semibold">{c.fullName}</p>
-                <p className="mt-1 line-clamp-3 text-xs text-[var(--muted)]">
-                  {c.bio?.trim() || "One-on-one mentoring available."}
-                </p>
-                <Link
-                  href={`/student/meetings/host/${c.id}`}
-                  className="mt-3 inline-flex text-xs font-semibold text-[var(--primary)] hover:underline"
-                >
-                  Profile & book
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-4 text-sm text-[var(--muted)]">
-            No mentors are listed yet.
-          </p>
-        )}
-      </section>
-
-      <section className="rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)] sm:p-6">
-        <div className="flex items-center gap-2">
+      <Card className="overflow-hidden border-[var(--border)] shadow-[var(--shadow-sm)]">
+        <div className="flex items-center gap-2 border-b border-[var(--border)] bg-[var(--surface-muted)]/40 px-5 py-4">
           <CalendarClock
-            className="h-5 w-5 text-[var(--muted)]"
+            className="h-5 w-5 shrink-0 text-[var(--muted)]"
             strokeWidth={1.75}
           />
-          <h2 className="text-base font-semibold">Activity</h2>
+          <div>
+            <h2 className="text-base font-semibold">Activity</h2>
+            <p className="text-xs text-[var(--muted)]">
+              {kpis.total} request{kpis.total === 1 ? "" : "s"} total
+            </p>
+          </div>
         </div>
         {meetingRequests.length ? (
           <>
-            <div className="mt-4 hidden overflow-hidden rounded-[var(--radius-md)] border border-[var(--border)] md:block">
+            <div className="hidden md:block">
               <table className="w-full min-w-[720px] text-left text-sm">
                 <thead className="border-b border-[var(--border)] bg-[var(--background)] text-[10px] font-bold uppercase tracking-wide text-[var(--muted)]">
                   <tr>
-                    <th className="px-3 py-2.5">Context</th>
-                    <th className="px-3 py-2.5">Host</th>
-                    <th className="px-3 py-2.5">Submitted</th>
-                    <th className="px-3 py-2.5">When</th>
-                    <th className="px-3 py-2.5">Status</th>
-                    <th className="px-3 py-2.5"> </th>
+                    <th className="px-4 py-3">Context</th>
+                    <th className="px-4 py-3">Host</th>
+                    <th className="px-4 py-3">Submitted</th>
+                    <th className="px-4 py-3">When</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3 text-right"> </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border)]">
                   {meetingRequests.map((req) => {
                     const meeting = req.meeting;
-                    const now = Date.now();
-                    const startsAt = meeting?.startsAt
-                      ? new Date(meeting.startsAt).getTime()
-                      : null;
-                    const status = !meeting
-                      ? req.status === "PENDING"
-                        ? "Pending"
-                        : req.status === "REJECTED"
-                          ? "Rejected"
-                          : "Requested"
-                      : meeting.status === "EXPIRED"
-                        ? "Expired"
-                        : meeting.status === "COMPLETED"
-                          ? "Joined"
-                          : meeting.status === "CANCELLED"
-                            ? "Cancelled"
-                            : meeting.status === "SCHEDULED" &&
-                                startsAt &&
-                                startsAt > now
-                              ? "Upcoming"
-                              : meeting.status === "SCHEDULED" &&
-                                  isMeetingLiveForDashboard(meeting)
-                                ? "Active"
-                                : "Ended";
+                    const status = studentMeetingRowStatus(req, nowMs);
                     return (
-                      <tr key={req.id} className="bg-[var(--surface)]">
-                        <td className="px-3 py-2.5 font-medium">
-                          {req.course?.title ?? "Coach session"}
+                      <tr
+                        key={req.id}
+                        className="bg-[var(--surface)] transition-colors hover:bg-[var(--surface-muted)]/40"
+                      >
+                        <td className="px-4 py-3">
+                          <p className="font-medium leading-snug">
+                            {req.course?.title ?? "Coach session"}
+                          </p>
                         </td>
-                        <td className="px-3 py-2.5 text-xs text-[var(--muted)]">
-                          {req.mentor.fullName}
+                        <td className="px-4 py-3">
+                          <div className="flex flex-col gap-1">
+                            <span className="text-xs text-[var(--foreground)]">
+                              {req.mentor.fullName}
+                            </span>
+                            <span
+                              className={cn(
+                                "w-fit rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide",
+                                req.mentor.role === UserRole.TUTOR
+                                  ? "bg-[var(--primary-soft)]/50 text-[var(--primary-strong)]"
+                                  : "bg-[var(--surface-muted)] text-[var(--muted)]",
+                              )}
+                            >
+                              {hostRoleLabel(req.mentor.role)}
+                            </span>
+                          </div>
                         </td>
-                        <td className="whitespace-nowrap px-3 py-2.5 text-[11px] text-[var(--muted)]">
+                        <td className="whitespace-nowrap px-4 py-3 text-xs text-[var(--muted)]">
                           {formatMeetingCrmDate(req.requestedAt)}
                         </td>
-                        <td className="px-3 py-2.5 text-[11px] text-[var(--muted)]">
+                        <td className="max-w-[200px] px-4 py-3 text-xs leading-snug text-[var(--muted)]">
                           {meeting?.startsAt ? (
                             <>
-                              Scheduled:{" "}
-                              {formatMeetingCrmDate(meeting.startsAt)}
+                              Scheduled {formatMeetingCrmDate(meeting.startsAt)}
                             </>
                           ) : req.preferredTime ? (
                             <>
-                              Preferred:{" "}
+                              Preferred{" "}
                               {formatMeetingCrmDate(req.preferredTime)}
                             </>
                           ) : (
                             "—"
                           )}
                         </td>
-                        <td className="px-3 py-2.5">
-                          <span className="rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-[10px] font-semibold text-[var(--muted)]">
+                        <td className="px-4 py-3">
+                          <span className="inline-flex rounded-full bg-[var(--surface-muted)] px-2.5 py-0.5 text-[10px] font-semibold text-[var(--muted)]">
                             {status}
                           </span>
                         </td>
-                        <td className="px-3 py-2.5 text-right">
+                        <td className="px-4 py-3 text-right">
                           {meeting?.joinUrl && isMeetingJoinable(meeting) ? (
                             <Link
                               href={`/student/meetings/join/${meeting.id}`}
-                              className="inline-flex items-center gap-1 rounded-md bg-[var(--primary)] px-2.5 py-1 text-[11px] font-semibold text-[var(--primary-foreground)]"
+                              className="inline-flex items-center gap-1 rounded-lg bg-[var(--primary)] px-3 py-1.5 text-xs font-semibold text-[var(--primary-foreground)] transition-opacity hover:opacity-90"
                             >
-                              <Video className="h-3 w-3" />
+                              <Video className="h-3.5 w-3.5" />
                               Join
                             </Link>
                           ) : null}
@@ -355,63 +216,51 @@ export default async function StudentMeetingsPage() {
                 </tbody>
               </table>
             </div>
-            <ul className="mt-4 space-y-2 md:hidden">
+            <ul className="divide-y divide-[var(--border)] md:hidden">
               {meetingRequests.map((req) => {
                 const meeting = req.meeting;
-                const now = Date.now();
-                const startsAt = meeting?.startsAt
-                  ? new Date(meeting.startsAt).getTime()
-                  : null;
-                const status = !meeting
-                  ? req.status === "PENDING"
-                    ? "Pending"
-                    : req.status === "REJECTED"
-                      ? "Rejected"
-                      : "Requested"
-                  : meeting.status === "EXPIRED"
-                    ? "Expired"
-                    : meeting.status === "COMPLETED"
-                      ? "Joined"
-                      : meeting.status === "CANCELLED"
-                        ? "Cancelled"
-                        : meeting.status === "SCHEDULED" &&
-                            startsAt &&
-                            startsAt > now
-                          ? "Upcoming"
-                          : meeting.status === "SCHEDULED" &&
-                              isMeetingLiveForDashboard(meeting)
-                            ? "Active"
-                            : "Ended";
+                const status = studentMeetingRowStatus(req, nowMs);
                 return (
-                  <li
-                    key={req.id}
-                    className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--background)] p-3 text-sm"
-                  >
-                    <p className="font-semibold">
-                      {req.course?.title ?? "Coach session"}
-                    </p>
-                    <p className="text-xs text-[var(--muted)]">
-                      {req.mentor.fullName}
-                    </p>
-                    <p className="mt-1 text-[11px] text-[var(--muted)]">
-                      Submitted: {formatMeetingCrmDate(req.requestedAt)}
+                  <li key={req.id} className="bg-[var(--surface)] p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-semibold leading-snug">
+                          {req.course?.title ?? "Coach session"}
+                        </p>
+                        <p className="mt-1 text-xs text-[var(--foreground)]">
+                          {req.mentor.fullName}
+                        </p>
+                        <span
+                          className={cn(
+                            "mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide",
+                            req.mentor.role === UserRole.TUTOR
+                              ? "bg-[var(--primary-soft)]/50 text-[var(--primary-strong)]"
+                              : "bg-[var(--surface-muted)] text-[var(--muted)]",
+                          )}
+                        >
+                          {hostRoleLabel(req.mentor.role)}
+                        </span>
+                      </div>
+                      <span className="shrink-0 rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-[10px] font-semibold text-[var(--muted)]">
+                        {status}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-[11px] text-[var(--muted)]">
+                      Submitted {formatMeetingCrmDate(req.requestedAt)}
                     </p>
                     <p className="text-[11px] text-[var(--muted)]">
                       {meeting?.startsAt
-                        ? `Scheduled: ${formatMeetingCrmDate(meeting.startsAt)}`
+                        ? `Scheduled ${formatMeetingCrmDate(meeting.startsAt)}`
                         : req.preferredTime
-                          ? `Preferred: ${formatMeetingCrmDate(req.preferredTime)}`
+                          ? `Preferred ${formatMeetingCrmDate(req.preferredTime)}`
                           : null}
-                    </p>
-                    <p className="mt-1 text-[11px] font-semibold text-[var(--muted)]">
-                      {status}
                     </p>
                     {meeting?.joinUrl && isMeetingJoinable(meeting) ? (
                       <Link
                         href={`/student/meetings/join/${meeting.id}`}
-                        className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-[var(--primary)]"
+                        className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--primary)]"
                       >
-                        <Video className="h-3.5 w-3.5" />
+                        <Video className="h-4 w-4" />
                         Join meeting
                       </Link>
                     ) : !meeting?.startsAt && !req.preferredTime ? (
@@ -425,12 +274,15 @@ export default async function StudentMeetingsPage() {
             </ul>
           </>
         ) : (
-          <div className="mt-6 flex flex-col items-center py-8 text-center text-sm text-[var(--muted)]">
-            <CalendarClock className="h-8 w-8 text-[var(--border)]" />
-            <p className="mt-3">No meeting activity yet.</p>
+          <div className="flex flex-col items-center px-4 py-12 text-center text-sm text-[var(--muted)]">
+            <CalendarClock className="h-10 w-10 text-[var(--border)]" />
+            <p className="mt-3 max-w-sm">
+              No meeting activity yet. When you book from Tutors or Mentors,
+              requests and scheduled sessions appear here.
+            </p>
           </div>
         )}
-      </section>
+      </Card>
 
       <div>
         <Link

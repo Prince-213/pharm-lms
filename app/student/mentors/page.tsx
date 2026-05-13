@@ -1,15 +1,17 @@
-import Link from "next/link";
+import { BookOpen, Sparkles, User } from "lucide-react";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { MeetingHostCard } from "@/components/meetings/meeting-host-card";
+import { StudentSecondaryNav } from "@/components/student/student-secondary-nav";
 import { UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { roleHomePath } from "@/lib/rbac";
-import { StudentSecondaryNav } from "@/components/student/student-secondary-nav";
 
 export default async function StudentMentorsPage() {
   const session = await auth();
   if (!session?.user) redirect("/student/login?callbackUrl=/student/mentors");
-  if (session.user.role !== UserRole.STUDENT) redirect(roleHomePath(session.user.role));
+  if (session.user.role !== UserRole.STUDENT)
+    redirect(roleHomePath(session.user.role));
 
   const mentors = await db.user.findMany({
     where: {
@@ -29,66 +31,59 @@ export default async function StudentMentorsPage() {
   });
 
   return (
-    <div className="space-y-6 text-[var(--foreground)]">
-      <StudentSecondaryNav />
+    <div className="space-y-8 text-[var(--foreground)]">
+      {/* <StudentSecondaryNav /> */}
 
-      <div>
+      <header className="space-y-2">
         <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
           Mentors
         </h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">
-          Browse approved mentors and book a 1-on-1 session.
+        <p className="max-w-2xl text-sm leading-relaxed text-[var(--muted)]">
+          Browse mentors and book a 1-on-1 coaching session (no course
+          enrollment required).
         </p>
-      </div>
+      </header>
 
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {mentors.length ? (
-          mentors.map((m) => (
-            <Link
-              key={m.id}
-              href={`/student/mentors/${m.id}`}
-              className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)]"
-            >
-              <div className="flex items-start gap-3">
-                <div className="aspect-square h-12 w-12 shrink-0 overflow-hidden rounded-full border border-[var(--border)] bg-[var(--surface-muted)]">
-                  {m.avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={m.avatarUrl}
-                      alt=""
-                      className="block h-full w-full object-cover object-center"
-                    />
-                  ) : null}
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold">{m.fullName}</p>
-                  {m.mentorHeadline ? (
-                    <p className="mt-0.5 truncate text-xs text-[var(--muted)]">
-                      {m.mentorHeadline}
-                    </p>
-                  ) : null}
-                  <p className="mt-1 line-clamp-3 text-xs text-[var(--muted)]">
-                    {m.bio?.trim() || "Mentor profile available."}
-                  </p>
-                  {m.mentorSpecialties ? (
-                    <p className="mt-2 line-clamp-1 text-[11px] font-semibold text-[var(--muted)]">
-                      {m.mentorSpecialties}
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-              <p className="mt-3 text-xs font-semibold text-[var(--primary)]">
-                View & book →
-              </p>
-            </Link>
-          ))
-        ) : (
-          <div className="col-span-full rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface)] p-8 text-center text-sm text-[var(--muted)]">
-            No mentors are available yet.
-          </div>
-        )}
-      </section>
+      {mentors.length ? (
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {mentors.map((m) => {
+            const rows = [
+              {
+                icon: Sparkles,
+                text: "Independent coaching — no course enrollment required",
+              },
+            ];
+            if (m.mentorHeadline?.trim()) {
+              rows.push({
+                icon: User,
+                text: m.mentorHeadline.trim(),
+              });
+            }
+            if (m.mentorSpecialties?.trim()) {
+              rows.push({
+                icon: BookOpen,
+                text: m.mentorSpecialties.trim(),
+              });
+            }
+            return (
+              <MeetingHostCard
+                key={m.id}
+                href={`/student/mentors/${m.id}`}
+                fullName={m.fullName}
+                bio={m.bio}
+                fallbackBio="One-on-one mentoring available."
+                avatarUrl={m.avatarUrl}
+                rows={rows}
+                ctaLabel="View profile"
+              />
+            );
+          })}
+        </ul>
+      ) : (
+        <div className="rounded-[var(--radius-xl)] border border-dashed border-[var(--border)] bg-[var(--surface)] px-6 py-12 text-center text-sm text-[var(--muted)]">
+          No mentors are available yet.
+        </div>
+      )}
     </div>
   );
 }
-

@@ -45,38 +45,78 @@ export type CatalogCoursePayload = NonNullable<
   Awaited<ReturnType<typeof loadCourseCatalogDetail>>
 >;
 
+export type LoadCourseCatalogOptions = {
+  /**
+   * When true **and** `viewer.role === ADMIN`, loads the course by id only (any status).
+   * Caller must enforce admin auth on the route.
+   */
+  adminCatalogAccess?: boolean;
+};
+
 /**
- * Loads catalog detail data for /student/browse/[courseId] (published or viewer is mentor).
+ * Loads catalog detail data for /student/browse/[courseId] (published or viewer is mentor),
+ * or any course for admins when `adminCatalogAccess` is set with an ADMIN viewer.
  */
 export async function loadCourseCatalogDetail(
   courseId: string,
   viewer: { id: string; role: UserRole },
+  options?: LoadCourseCatalogOptions,
 ) {
+  const useAdminAccess =
+    Boolean(options?.adminCatalogAccess) && viewer.role === UserRole.ADMIN;
+
   const course = await db.course.findFirst({
-    where: {
-      id: courseId,
-      OR: [{ status: CourseStatus.PUBLISHED }, { mentorId: viewer.id }],
-    },
+    where: useAdminAccess
+      ? { id: courseId }
+      : {
+          id: courseId,
+          OR: [{ status: CourseStatus.PUBLISHED }, { mentorId: viewer.id }],
+        },
     include: catalogInclude,
   });
   if (!course) return null;
 
   const isStudent = viewer.role === UserRole.STUDENT;
-  const enrollment = isStudent
-    ? await db.enrollment.findUnique({
-        where: {
-          courseId_studentId: { courseId, studentId: viewer.id },
-        },
-      })
-    : null;
-  const wishlistRow = isStudent
-    ? await db.wishlist.findUnique({
-        where: {
-          studentId_courseId: { studentId: viewer.id, courseId },
-        },
-        select: { id: true },
-      })
-    : null;
+  const [enrollment, wishlistRow, reviewAgg, reviews] = await Promise.all([
+    isStudent
+      ? db.enrollment.findUnique({
+          where: {
+            courseId_studentId: { courseId, studentId: viewer.id },
+          },
+        })
+      : Promise.resolve(null),
+    isStudent
+      ? db.wishlist.findUnique({
+          where: {
+            studentId_courseId: { studentId: viewer.id, courseId },
+          },
+          select: { id: true },
+        })
+      : Promise.resolve(null),
+    db.courseReview.aggregate({
+      where: { courseId },
+      _avg: { rating: true },
+      _count: true,
+    }),
+    db.courseReview.findMany({
+      where: { courseId },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      select: {
+        id: true,
+        rating: true,
+        comment: true,
+        createdAt: true,
+        student: { select: { fullName: true } },
+      },
+    }),
+  ]);
+
+  const reviewCount = reviewAgg._count;
+  const ratingAverage =
+    reviewCount > 0 && reviewAgg._avg.rating != null
+      ? Math.round(reviewAgg._avg.rating * 10) / 10
+      : null;
 
   const totalLectures = course.sections.reduce(
     (n, s) => n + s.lessons.length,
@@ -96,6 +136,7 @@ export async function loadCourseCatalogDetail(
   }
 
   const thumb = await resolveMediaUrl(course.thumbnailUrl);
+  const promoVideoHref = await resolveMediaUrl(course.promoVideoUrl);
   const bullets = CATEGORY_CHIPS.slice(0, 4);
   const rawResources = course.sections.flatMap(
     (s) => parseSectionDescription(s.description).resources,
@@ -111,9 +152,13 @@ export async function loadCourseCatalogDetail(
     course,
     courseId,
     thumb,
+    promoVideoHref,
     enrollment,
     wishlistRow,
     isStudent,
+    ratingAverage,
+    reviewCount,
+    reviews,
     totalSeconds,
     totalLectures,
     totalQuizzes,

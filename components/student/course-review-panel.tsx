@@ -1,11 +1,12 @@
 "use client";
 
 import { Star } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
-  upsertCourseReviewAction,
   type UpsertCourseReviewResult,
+  upsertCourseReviewAction,
 } from "@/app/student/actions/course-review";
 
 export function CourseReviewPanel({
@@ -19,6 +20,7 @@ export function CourseReviewPanel({
   initialRating: number | null;
   initialComment: string | null;
 }) {
+  const router = useRouter();
   const [rating, setRating] = useState(initialRating ?? 0);
   const [comment, setComment] = useState(initialComment ?? "");
   const [isPending, startTransition] = useTransition();
@@ -46,6 +48,7 @@ export function CourseReviewPanel({
         toast.success(
           hasExisting ? "Your review was updated." : "Thanks for your review!",
         );
+        router.refresh();
       } else {
         toast.error(res.message);
       }
@@ -76,7 +79,8 @@ export function CourseReviewPanel({
           ? "Update your rating or comment anytime."
           : "Share how this course worked for you."}
       </p>
-      <div className="mt-3 flex items-center gap-1" role="group" aria-label="Rating">
+      <fieldset className="mt-3 border-0 p-0">
+        <legend className="sr-only">Rating</legend>
         {[1, 2, 3, 4, 5].map((n) => (
           <button
             key={n}
@@ -96,7 +100,7 @@ export function CourseReviewPanel({
             />
           </button>
         ))}
-      </div>
+      </fieldset>
       <label className="mt-4 block">
         <span className="text-xs font-medium text-[var(--muted)]">
           Comment (optional)
@@ -117,7 +121,11 @@ export function CourseReviewPanel({
         onClick={handleSubmit}
         className="mt-3 inline-flex h-10 items-center justify-center rounded-[var(--radius-md)] bg-[var(--primary)] px-5 text-sm font-bold text-[var(--primary-foreground)] transition hover:bg-[var(--primary-strong)] disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {isPending ? "Saving…" : hasExisting ? "Update review" : "Submit review"}
+        {isPending
+          ? "Saving…"
+          : hasExisting
+            ? "Update review"
+            : "Submit review"}
       </button>
     </div>
   );
