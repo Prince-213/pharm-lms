@@ -3,6 +3,49 @@ export function formatMeetingCrmDate(d: Date): string {
   return d.toLocaleString();
 }
 
+/**
+ * Short label for upcoming sessions on dashboards (today / tomorrow / weekday + time).
+ */
+export function formatMeetingRelativeSchedule(
+  startsAt: Date,
+  now = new Date(),
+): string {
+  const start = new Date(startsAt);
+  const time = start.toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  const dayKey = (d: Date) =>
+    `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  const todayKey = dayKey(new Date(now));
+  const startKey = dayKey(new Date(start));
+  if (startKey === todayKey) {
+    return `Today · ${time}`;
+  }
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  if (startKey === dayKey(tomorrow)) {
+    return `Tomorrow · ${time}`;
+  }
+  const startMid = new Date(start);
+  startMid.setHours(0, 0, 0, 0);
+  const nowMid = new Date(now);
+  nowMid.setHours(0, 0, 0, 0);
+  const diffDays = Math.round(
+    (startMid.getTime() - nowMid.getTime()) / (24 * 60 * 60 * 1000),
+  );
+  if (diffDays >= 2 && diffDays <= 6) {
+    const weekday = startsAt.toLocaleDateString(undefined, {
+      weekday: "short",
+    });
+    return `${weekday} · ${time}`;
+  }
+  return `${startsAt.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  })} · ${time}`;
+}
+
 export function formatEnrolledCoursesLine(
   courses: { id: string; title: string }[],
 ): string | null {

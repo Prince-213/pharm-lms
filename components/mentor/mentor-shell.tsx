@@ -9,19 +9,18 @@ import {
   FolderOpen,
   Menu,
   MessageSquare,
-  Search,
   UserCircle,
   Wrench,
   X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { UserMenu } from "@/components/auth/user-menu";
 import { HeaderNotificationBell } from "@/components/notifications/header-notification-bell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { shellHeaderTitleFromNav } from "@/lib/shell-header-title";
 import { cn } from "@/lib/utils";
 
 /** Tutor workspace routes use `/tutor/*` (see proxy RBAC: only MENTOR may use `/mentor/*`). */
@@ -71,6 +70,12 @@ const bottomNav: ShellNavItem[] = [
 export function MentorShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  const headerTitle = useMemo(
+    () =>
+      shellHeaderTitleFromNav(pathname, [...mainNav, ...bottomNav], "Tutor"),
+    [pathname],
+  );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Close mobile nav when the route changes.
   useEffect(() => {
@@ -207,25 +212,19 @@ export function MentorShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-18.5 items-center justify-between border-b border-[var(--border)] bg-[var(--surface)]/80 px-4 backdrop-blur-md lg:px-8">
-          <div className="flex items-center gap-4">
+          <div className="flex min-w-0 flex-1 items-center gap-3 lg:gap-4">
             <Button
               type="button"
               variant="chrome"
-              className="lg:hidden"
+              className="shrink-0 lg:hidden"
               onClick={() => setMobileNavOpen(true)}
               aria-label="Open navigation"
             >
               <Menu className="h-6 w-6" />
             </Button>
-            <div className="relative hidden sm:block">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted-soft)]" />
-              <Input
-                type="search"
-                placeholder="Search workspace..."
-                aria-label="Search workspace"
-                className="h-10 w-64 rounded-full border-0 bg-[var(--surface-muted)] py-0 pl-10 pr-4 shadow-none focus-visible:ring-1 focus-visible:ring-[var(--primary)]/20"
-              />
-            </div>
+            <h1 className="min-w-0 truncate text-base font-bold tracking-tight text-[var(--foreground)] sm:text-lg">
+              {headerTitle}
+            </h1>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">

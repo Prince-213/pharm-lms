@@ -4,11 +4,12 @@ import type { LucideIcon } from "lucide-react";
 import { ChevronRight, GraduationCap, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { UserMenu } from "@/components/auth/user-menu";
 import { HeaderNotificationBell } from "@/components/notifications/header-notification-bell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { shellHeaderTitleFromNav } from "@/lib/shell-header-title";
 import { cn } from "@/lib/utils";
 
 export type AppShellNavItem = {
@@ -47,6 +48,21 @@ export function AppShell({
 }: AppShellProps) {
   const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  const flatNavItems = useMemo(() => {
+    if (navGroups && navGroups.length > 0) {
+      return navGroups.flatMap((g) => g.items);
+    }
+    return nav;
+  }, [navGroups, nav]);
+
+  const headerTitle = useMemo(
+    () =>
+      flatNavItems.length > 0
+        ? shellHeaderTitleFromNav(pathname, flatNavItems, title)
+        : title,
+    [pathname, flatNavItems, title],
+  );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Close mobile nav when the route changes.
   useEffect(() => {
@@ -192,19 +208,19 @@ export function AppShell({
 
       <div className="flex flex-1 flex-col min-w-0">
         <header className="sticky top-0 z-30 flex h-18.5 items-center justify-between border-b border-[var(--border)] bg-[var(--surface)]/70 px-4 backdrop-blur-xl lg:px-10">
-          <div className="flex items-center gap-4">
+          <div className="flex min-w-0 flex-1 items-center gap-3 lg:gap-4">
             <Button
               type="button"
               variant="chrome"
-              className="lg:hidden"
+              className="shrink-0 lg:hidden"
               onClick={() => setMobileNavOpen(true)}
               aria-label="Open navigation"
             >
               <Menu className="h-6 w-6" />
             </Button>
-            <div className="flex flex-col">
-              <h1 className="text-base font-black tracking-tight text-[var(--foreground)] sm:text-lg">
-                {title}
+            <div className="min-w-0 flex flex-col">
+              <h1 className="truncate text-base font-black tracking-tight text-[var(--foreground)] sm:text-lg">
+                {headerTitle}
               </h1>
               <p className="hidden text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] sm:block">
                 {subtitle}

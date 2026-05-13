@@ -68,7 +68,7 @@ export default function StudentLayout({
 
   return (
     <AppShell
-      title="STUDENT DASHBOARD"
+      title="Student"
       subtitle="Browse the catalog, read course pages, enroll, and learn section by section."
       navGroups={navGroups}
       homeHref="/student/dashboard"
