@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
+import { evaluateStudentBadges } from "@/lib/badges/evaluate-student-badges";
 import { COURSE_GENERAL_FORUM_THREAD_TITLE } from "@/lib/course-discussions";
 import { db } from "@/lib/db";
 
@@ -90,5 +91,8 @@ export async function createForumPostAction(courseId: string, body: string) {
   revalidatePath(`/tutor/courses/${courseId}/overview`);
   revalidatePath(`/tutor/communication/forums/${courseId}`);
   revalidatePath(`/student/course/${courseId}`);
+  if (session.user.role === UserRole.STUDENT) {
+    void evaluateStudentBadges(session.user.id);
+  }
   return { ok: true as const };
 }

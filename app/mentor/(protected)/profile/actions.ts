@@ -100,7 +100,7 @@ export async function submitMentorProfileAction(): Promise<ActionResult> {
   const avatarUrl = (user.avatarUrl ?? "").trim();
   if (fullName.length < 2) return { ok: false, message: "Full name is required." };
   if (bio.length < 40) return { ok: false, message: "Bio must be at least 40 characters." };
-  if (avatarUrl.length < 6) return { ok: false, message: "Profile photo URL is required." };
+  if (avatarUrl.length < 6) return { ok: false, message: "Profile photo is required." };
   if (!user.phoneNumber?.trim()) return { ok: false, message: "Phone number is required." };
   if (!user.country?.trim()) return { ok: false, message: "Country is required." };
   if (!user.state?.trim()) return { ok: false, message: "State is required." };

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
+import { resolveMediaUrl } from "@/lib/media-url";
 import { roleHomePath } from "@/lib/rbac";
 import { StudentProfileClient } from "./student-profile-client";
 
@@ -37,5 +38,9 @@ export default async function StudentProfilePage() {
   });
   if (!user) redirect("/student/login");
 
-  return <StudentProfileClient user={user} />;
+  const avatarPreviewSrc = await resolveMediaUrl(user.avatarUrl);
+
+  return (
+    <StudentProfileClient user={user} avatarPreviewSrc={avatarPreviewSrc} />
+  );
 }

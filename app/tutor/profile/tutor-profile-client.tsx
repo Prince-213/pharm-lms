@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { ProfileAvatarPicker } from "@/components/profile/profile-avatar-picker";
 import {
   ProfileEditorHeader,
   ProfileEditorRoot,
@@ -14,11 +15,23 @@ import {
 import { updateTutorProfileAction } from "./actions";
 import type { TutorProfileRow } from "./types";
 
-export function TutorProfileClient({ user }: { user: TutorProfileRow }) {
+export function TutorProfileClient({
+  user,
+  avatarPreviewSrc,
+}: {
+  user: TutorProfileRow;
+  avatarPreviewSrc: string | null;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl ?? "");
+
+  useEffect(() => {
+    setAvatarUrl(user.avatarUrl ?? "");
+  }, [user.avatarUrl]);
 
   function onSubmit(fd: FormData) {
+    fd.set("avatarUrl", avatarUrl.trim());
     const tid = toast.loading("Saving profile…");
     startTransition(async () => {
       const res = await updateTutorProfileAction(fd);
@@ -69,13 +82,13 @@ export function TutorProfileClient({ user }: { user: TutorProfileRow }) {
               placeholder="+234…"
             />
           </div>
-          <ProfileTextField
-            id="tutor-avatar"
-            name="avatarUrl"
-            label="Profile photo URL"
-            hint="Paste a direct image link (e.g. from Google profile or your site). Shown on your booking profile."
-            defaultValue={user.avatarUrl ?? ""}
-            placeholder="https://…"
+          <ProfileAvatarPicker
+            fullName={user.fullName}
+            serverAvatarUrl={user.avatarUrl}
+            resolvedPreviewSrc={avatarPreviewSrc}
+            value={avatarUrl}
+            onChange={setAvatarUrl}
+            hint="Shown on your booking profile. Square images look best. Upload replaces your stored photo when you save."
           />
           <ProfileTextareaField
             id="tutor-bio"

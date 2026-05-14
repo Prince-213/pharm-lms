@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { CourseStatus, UserRole } from "@/generated/prisma/enums";
+import { evaluateStudentBadges } from "@/lib/badges/evaluate-student-badges";
 import { db } from "@/lib/db";
 
 export type WishlistResult =
@@ -57,6 +58,7 @@ export async function toggleWishlistAction(
     if (code !== "P2002") throw error;
   }
   revalidateWishlistPaths(courseId);
+  void evaluateStudentBadges(user.id);
   return { ok: true, saved: true };
 }
 

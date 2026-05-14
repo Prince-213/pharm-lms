@@ -1,4 +1,4 @@
-import { MeetingStatus } from "@/generated/prisma/enums";
+import { EnrollmentStatus, MeetingStatus } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { withDbRetry } from "@/lib/db-retry";
 import { shiftDateKey } from "@/lib/date-keys";
@@ -18,7 +18,13 @@ export type BadgeRuleType =
   | "perfect_quiz_score"
   | "course_streak_days"
   | "ai_quiz_min_score"
-  | "mentor_meetings_completed";
+  | "mentor_meetings_completed"
+  | "wishlist_courses_saved"
+  | "forum_posts_count"
+  | "course_reviews_count"
+  | "assignment_submissions_count"
+  | "courses_completed_count"
+  | "lesson_notes_count";
 
 type StudentStats = {
   enrollments: number;
@@ -29,6 +35,12 @@ type StudentStats = {
   longestCourseStreakDays: number;
   aiQuizScores: number[];
   completedMentorMeetings: number;
+  wishlistCourses: number;
+  forumPosts: number;
+  courseReviews: number;
+  assignmentSubmissions: number;
+  completedCourses: number;
+  lessonNotes: number;
 };
 
 function asNumber(value: unknown, fallback: number): number {
@@ -83,6 +95,18 @@ function evaluateRule(
       );
     case "mentor_meetings_completed":
       return stats.completedMentorMeetings >= asNumber(config.minMeetings, 1);
+    case "wishlist_courses_saved":
+      return stats.wishlistCourses >= asNumber(config.minWishlist, 1);
+    case "forum_posts_count":
+      return stats.forumPosts >= asNumber(config.minForumPosts, 1);
+    case "course_reviews_count":
+      return stats.courseReviews >= asNumber(config.minReviews, 1);
+    case "assignment_submissions_count":
+      return stats.assignmentSubmissions >= asNumber(config.minSubmissions, 1);
+    case "courses_completed_count":
+      return stats.completedCourses >= asNumber(config.minCompletedCourses, 1);
+    case "lesson_notes_count":
+      return stats.lessonNotes >= asNumber(config.minLessonNotes, 1);
     default:
       return false;
   }
@@ -174,6 +198,12 @@ async function loadStudentStats(studentId: string): Promise<StudentStats> {
     visitDateRows,
     aiAttemptScoreRows,
     completedMentorMeetings,
+    wishlistCourses,
+    forumPosts,
+    courseReviews,
+    assignmentSubmissions,
+    completedCourses,
+    lessonNotes,
   ] = await Promise.all([
     db.enrollment.count({ where: { studentId } }),
     db.lessonProgress.count({ where: { studentId, completed: true } }),
@@ -195,6 +225,16 @@ async function loadStudentStats(studentId: string): Promise<StudentStats> {
     db.meeting.count({
       where: { studentId, status: MeetingStatus.COMPLETED },
     }),
+    db.wishlist.count({ where: { studentId } }),
+    db.forumPost.count({ where: { authorId: studentId } }),
+    db.courseReview.count({ where: { studentId } }),
+    db.assignmentSubmission.count({
+      where: { studentId, submittedAt: { not: null } },
+    }),
+    db.enrollment.count({
+      where: { studentId, status: EnrollmentStatus.COMPLETED },
+    }),
+    db.studentLessonNote.count({ where: { studentId } }),
   ]);
 
   const longestCourseStreakDays = longestConsecutiveRun(
@@ -214,6 +254,12 @@ async function loadStudentStats(studentId: string): Promise<StudentStats> {
     longestCourseStreakDays,
     aiQuizScores,
     completedMentorMeetings,
+    wishlistCourses,
+    forumPosts,
+    courseReviews,
+    assignmentSubmissions,
+    completedCourses,
+    lessonNotes,
   };
 }
 

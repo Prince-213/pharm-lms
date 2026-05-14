@@ -5,6 +5,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { studentHasCompletedAtLeastOneFullSection } from "@/lib/course-review-eligibility";
 import { emailTutorCourseReview } from "@/lib/course-review-emails";
+import { evaluateStudentBadges } from "@/lib/badges/evaluate-student-badges";
 import { EnrollmentStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 
@@ -134,5 +135,6 @@ export async function upsertCourseReviewAction(
 
   revalidatePath(`/student/course/${courseId}`);
   revalidatePath(href);
+  void evaluateStudentBadges(session.user.id);
   return { ok: true };
 }

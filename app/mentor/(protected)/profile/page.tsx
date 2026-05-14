@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
+import { resolveMediaUrl } from "@/lib/media-url";
 import { roleHomePath } from "@/lib/rbac";
 import { MentorProfileClient } from "./mentor-profile-client";
 
@@ -35,6 +36,8 @@ export default async function MentorProfilePage() {
   });
   if (!user) redirect("/mentor/login");
 
+  const avatarPreviewSrc = await resolveMediaUrl(user.avatarUrl);
+
   return (
     <MentorProfileClient
       user={{
@@ -43,6 +46,7 @@ export default async function MentorProfilePage() {
           ? user.mentorProfileSubmittedAt.toISOString()
           : null,
       }}
+      avatarPreviewSrc={avatarPreviewSrc}
     />
   );
 }

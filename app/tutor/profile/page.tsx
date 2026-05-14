@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
+import { resolveMediaUrl } from "@/lib/media-url";
 import { roleHomePath } from "@/lib/rbac";
 import { TutorProfileClient } from "./tutor-profile-client";
 
@@ -34,5 +35,7 @@ export default async function TutorProfilePage() {
   });
   if (!user) redirect("/tutor/login");
 
-  return <TutorProfileClient user={user} />;
+  const avatarPreviewSrc = await resolveMediaUrl(user.avatarUrl);
+
+  return <TutorProfileClient user={user} avatarPreviewSrc={avatarPreviewSrc} />;
 }

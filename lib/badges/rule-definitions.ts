@@ -16,7 +16,13 @@ export type BadgeRuleDefinition = {
     | "minPerfect"
     | "minStreakDays"
     | "minScore"
-    | "minMeetings";
+    | "minMeetings"
+    | "minWishlist"
+    | "minForumPosts"
+    | "minReviews"
+    | "minSubmissions"
+    | "minCompletedCourses"
+    | "minLessonNotes";
   thresholdLabel: string;
   defaultThreshold: number;
   example: string;
@@ -120,6 +126,66 @@ export const BADGE_RULE_DEFINITIONS: readonly BadgeRuleDefinition[] = [
     defaultThreshold: 1,
     example: '{ "minMeetings": 1 }',
   },
+  {
+    value: "wishlist_courses_saved",
+    label: "Wishlist courses",
+    description:
+      "Awards when a student has at least N distinct published courses on their wishlist.",
+    configKey: "minWishlist",
+    thresholdLabel: "Minimum wishlisted courses",
+    defaultThreshold: 1,
+    example: '{ "minWishlist": 1 }',
+  },
+  {
+    value: "forum_posts_count",
+    label: "Course forum posts",
+    description:
+      "Awards after a student publishes at least N posts in course forums.",
+    configKey: "minForumPosts",
+    thresholdLabel: "Minimum forum posts",
+    defaultThreshold: 1,
+    example: '{ "minForumPosts": 5 }',
+  },
+  {
+    value: "course_reviews_count",
+    label: "Course reviews written",
+    description:
+      "Awards when a student has submitted at least N course ratings/reviews.",
+    configKey: "minReviews",
+    thresholdLabel: "Minimum reviews",
+    defaultThreshold: 1,
+    example: '{ "minReviews": 1 }',
+  },
+  {
+    value: "assignment_submissions_count",
+    label: "Assignment submissions",
+    description:
+      "Awards when a student has at least N submitted assignments (any course).",
+    configKey: "minSubmissions",
+    thresholdLabel: "Minimum submissions",
+    defaultThreshold: 1,
+    example: '{ "minSubmissions": 3 }',
+  },
+  {
+    value: "courses_completed_count",
+    label: "Courses fully completed",
+    description:
+      "Awards when a student has fully completed at least N enrollments.",
+    configKey: "minCompletedCourses",
+    thresholdLabel: "Minimum completed courses",
+    defaultThreshold: 1,
+    example: '{ "minCompletedCourses": 1 }',
+  },
+  {
+    value: "lesson_notes_count",
+    label: "Lesson notes created",
+    description:
+      "Awards when a student creates at least N lesson notes across their courses.",
+    configKey: "minLessonNotes",
+    thresholdLabel: "Minimum lesson notes",
+    defaultThreshold: 1,
+    example: '{ "minLessonNotes": 5 }',
+  },
 ] as const;
 
 export const BADGE_RULE_VALUES = BADGE_RULE_DEFINITIONS.map((r) => r.value) as [
@@ -174,6 +240,18 @@ export function describeRuleConfig(
     }
     case "mentor_meetings_completed":
       return `Complete ${num("minMeetings", 1)} mentor meeting(s).`;
+    case "wishlist_courses_saved":
+      return `Save ${num("minWishlist", 1)} course(s) to your wishlist.`;
+    case "forum_posts_count":
+      return `Post ${num("minForumPosts", 1)} time(s) in course forums.`;
+    case "course_reviews_count":
+      return `Write ${num("minReviews", 1)} course review(s).`;
+    case "assignment_submissions_count":
+      return `Submit ${num("minSubmissions", 1)} assignment(s).`;
+    case "courses_completed_count":
+      return `Fully complete ${num("minCompletedCourses", 1)} course(s).`;
+    case "lesson_notes_count":
+      return `Create ${num("minLessonNotes", 1)} lesson note(s).`;
     default:
       return def?.label ?? ruleType;
   }

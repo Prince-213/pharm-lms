@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
+import { evaluateStudentBadges } from "@/lib/badges/evaluate-student-badges";
 import { db } from "@/lib/db";
 
 async function assertStudentOwnsLessonNote(studentId: string, noteId: string) {
@@ -68,6 +69,7 @@ export async function createLessonNoteAction(input: {
   });
 
   revalidatePath(`/student/course/${input.courseId}`);
+  void evaluateStudentBadges(session.user.id);
   return { ok: true as const };
 }
 

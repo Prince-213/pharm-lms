@@ -102,6 +102,72 @@ async function main() {
       ruleConfig: { minMeetings: 1 },
       iconUrl: "/badges/mentor-match.svg",
     },
+    {
+      name: "Bookmarker",
+      description: "Save your first course to the wishlist.",
+      ruleType: "wishlist_courses_saved",
+      ruleConfig: { minWishlist: 1 },
+    },
+    {
+      name: "Shelf Collector",
+      description: "Save at least 5 courses to your wishlist.",
+      ruleType: "wishlist_courses_saved",
+      ruleConfig: { minWishlist: 5 },
+    },
+    {
+      name: "Forum Voice",
+      description: "Post your first message in a course forum.",
+      ruleType: "forum_posts_count",
+      ruleConfig: { minForumPosts: 1 },
+    },
+    {
+      name: "Community Regular",
+      description: "Publish at least 10 posts across course forums.",
+      ruleType: "forum_posts_count",
+      ruleConfig: { minForumPosts: 10 },
+    },
+    {
+      name: "Star Reviewer",
+      description: "Leave your first rating and review on a course.",
+      ruleType: "course_reviews_count",
+      ruleConfig: { minReviews: 1 },
+    },
+    {
+      name: "Homework Hand-in",
+      description: "Submit your first assignment.",
+      ruleType: "assignment_submissions_count",
+      ruleConfig: { minSubmissions: 1 },
+    },
+    {
+      name: "Assignment Grinder",
+      description: "Submit at least 5 assignments across your courses.",
+      ruleType: "assignment_submissions_count",
+      ruleConfig: { minSubmissions: 5 },
+    },
+    {
+      name: "Finisher",
+      description: "Fully complete your first course.",
+      ruleType: "courses_completed_count",
+      ruleConfig: { minCompletedCourses: 1 },
+    },
+    {
+      name: "Program Graduate",
+      description: "Fully complete at least 3 courses.",
+      ruleType: "courses_completed_count",
+      ruleConfig: { minCompletedCourses: 3 },
+    },
+    {
+      name: "Note Taker",
+      description: "Create your first lesson note.",
+      ruleType: "lesson_notes_count",
+      ruleConfig: { minLessonNotes: 1 },
+    },
+    {
+      name: "Deep Notes",
+      description: "Create at least 10 lesson notes while you study.",
+      ruleType: "lesson_notes_count",
+      ruleConfig: { minLessonNotes: 10 },
+    },
   ];
 
   for (const b of defaultBadges) {

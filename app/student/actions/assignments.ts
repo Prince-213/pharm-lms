@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { emailTutorAssignmentSubmitted } from "@/lib/assignment-emails";
+import { evaluateStudentBadges } from "@/lib/badges/evaluate-student-badges";
 import {
   AssignmentStatus,
   SubmissionStatus,
@@ -146,5 +147,6 @@ export async function submitAssignmentAction(
   revalidatePath("/student/assignments");
   revalidatePath("/tutor/assignments");
   revalidatePath(href);
+  void evaluateStudentBadges(session.user.id);
   return { ok: true, submissionId: submission.id };
 }
