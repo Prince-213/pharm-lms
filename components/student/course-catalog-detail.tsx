@@ -21,6 +21,7 @@ import { CatalogCourseContent } from "@/components/student/catalog-course-conten
 import { CatalogPreviewMedia } from "@/components/student/catalog-preview-media";
 import { CatalogPurchaseRail } from "@/components/student/catalog-purchase-rail";
 import { EnrollCourseButton } from "@/components/student/enroll-course-button";
+import { PurchaseCourseButton } from "@/components/student/purchase-course-button";
 import { WishlistHeartButton } from "@/components/student/wishlist-heart-button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -629,6 +630,7 @@ export function CourseCatalogDetail({
                     {formatMinorUnitsToCurrency(
                       course.priceMinorUnits,
                       course.priceCurrency,
+                      { zeroAsFree: true },
                     )}
                   </p>
                   {variant === "tutorPreview" ? (
@@ -658,16 +660,26 @@ export function CourseCatalogDetail({
                         </div>
                       ) : canAct && isStudent ? (
                         <div className="flex gap-2">
-                          <EnrollCourseButton
-                            courseId={courseId}
-                            label="Enroll now"
-                            variant="catalog"
-                            className="min-h-12 flex-1 rounded-sm py-3 text-base font-bold"
-                          />
+                          <div className="w-[80%] min-w-0 shrink-0">
+                            {(course.priceMinorUnits ?? 0) > 0 ? (
+                              <PurchaseCourseButton
+                                courseId={courseId}
+                                className="min-h-12 w-full rounded-sm py-3 text-base font-bold"
+                              />
+                            ) : (
+                              <EnrollCourseButton
+                                courseId={courseId}
+                                label="Enroll now"
+                                variant="catalog"
+                                className="min-h-12 w-full rounded-sm px-6 py-3 text-base font-bold"
+                              />
+                            )}
+                          </div>
                           <WishlistHeartButton
                             courseId={courseId}
                             initialSaved={Boolean(wishlistRow)}
                             variant="toolbar"
+                            className="h-12 max-w-[18%] min-w-0 shrink-0"
                           />
                         </div>
                       ) : canAct && !isStudent ? (

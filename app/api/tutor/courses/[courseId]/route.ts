@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import {
+  tutorDeleteCourse,
+  type TutorDeleteCourseErrorCode,
+} from "@/lib/courses/tutor-delete-course";
+import {
   requireMentorCourse,
   requireMentorCourseEditable,
 } from "@/lib/mentor-course-auth";
@@ -31,6 +35,34 @@ const patchCourseSchema = z.object({
     .nullable()
     .optional(),
 });
+
+const deleteCourseSchema = z.object({
+  confirmText: z.string().min(1),
+});
+
+function deleteErrorMessage(code: TutorDeleteCourseErrorCode): string {
+  switch (code) {
+    case "NOT_FOUND":
+      return "Course not found.";
+    case "LOCKED_STATUS":
+      return "Only draft or rejected courses can be deleted.";
+    case "HAS_SALES":
+      return "Courses with successful purchases cannot be deleted.";
+    case "CONFIRM_MISMATCH":
+      return "Course name does not match.";
+  }
+}
+
+function deleteErrorStatus(code: TutorDeleteCourseErrorCode): number {
+  switch (code) {
+    case "NOT_FOUND":
+      return 404;
+    case "CONFIRM_MISMATCH":
+      return 400;
+    default:
+      return 403;
+  }
+}
 
 export async function GET(
   _request: Request,
@@ -94,56 +126,34 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ courseId: string }> },
 ) {
   const { courseId } = await params;
-
-  // Verify mentor owns course and it's editable (not SUBMITTED/APPROVED/PUBLISHED)
-  const authz = await requireMentorCourseEditable(courseId);
+  const authz = await requireMentorCourse(courseId);
   if ("error" in authz) return authz.error;
 
-  // Double-check: only DRAFT courses may be deleted
-  const { CourseStatus } = await import("@/generated/prisma/enums");
-  const course = await db.course.findFirst({
-    where: { id: courseId },
-    select: { id: true, status: true },
-  });
-  if (!course) {
-    return NextResponse.json({ error: "Course not found" }, { status: 404 });
-  }
-  if (course.status !== CourseStatus.DRAFT) {
+  const body = await request.json().catch(() => null);
+  const parsed = deleteCourseSchema.safeParse(body);
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "Only draft courses can be deleted." },
-      { status: 403 },
+      { error: "Type the exact course name to confirm deletion." },
+      { status: 400 },
     );
   }
 
-  // Full cascade delete
-  await db.$transaction(async (tx) => {
-    const sections = await tx.courseSection.findMany({
-      where: { courseId },
-      select: { id: true },
-    });
-    const sectionIds = sections.map((s) => s.id);
+  const result = await tutorDeleteCourse(
+    authz.session.user.id,
+    courseId,
+    parsed.data.confirmText,
+  );
 
-    await tx.lessonProgress.deleteMany({
-      where: { lesson: { sectionId: { in: sectionIds } } },
-    });
-    await tx.lesson.deleteMany({ where: { sectionId: { in: sectionIds } } });
-    await tx.sectionQuizAttempt.deleteMany({
-      where: { quiz: { sectionId: { in: sectionIds } } },
-    });
-    await tx.sectionQuiz.deleteMany({
-      where: { sectionId: { in: sectionIds } },
-    });
-    await tx.courseSection.deleteMany({ where: { courseId } });
-    await tx.assignment.deleteMany({ where: { courseId } });
-    await tx.wishlist.deleteMany({ where: { courseId } });
-    await tx.courseVisit.deleteMany({ where: { courseId } });
-    await tx.courseApprovalWorkflow.deleteMany({ where: { courseId } });
-    await tx.course.delete({ where: { id: courseId } });
-  });
+  if (!result.ok) {
+    return NextResponse.json(
+      { error: deleteErrorMessage(result.error) },
+      { status: deleteErrorStatus(result.error) },
+    );
+  }
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, title: result.title });
 }

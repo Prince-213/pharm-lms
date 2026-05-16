@@ -27,6 +27,7 @@ import { db } from "@/lib/db";
 import { resolveMediaUrl } from "@/lib/media-url";
 import { roleHomePath } from "@/lib/rbac";
 import { ProgressProvider } from "@/lib/student/progress-context";
+import { studentHasPaidCourseAccess } from "@/lib/payments/student-course-access";
 import { cn } from "@/lib/utils";
 
 const COURSE_PLAYER_TABS = [
@@ -103,6 +104,7 @@ export default async function StudentCourseLearningPage({
       select: {
         id: true,
         title: true,
+        priceMinorUnits: true,
         congratulatoryTitle: true,
         congratulatoryContentType: true,
         congratulatoryArticle: true,
@@ -140,6 +142,11 @@ export default async function StudentCourseLearningPage({
   if (!course) notFound();
   if (!enrollment) redirect(`/student/browse/${courseId}`);
 
+  const paidOk = await studentHasPaidCourseAccess(session.user.id, {
+    id: course.id,
+    priceMinorUnits: course.priceMinorUnits,
+  });
+  if (!paidOk) redirect(`/student/browse/${courseId}`);
   const congratulatoryVideoSrc = await resolveMediaUrl(
     course.congratulatoryVideoUrl,
   );

@@ -4,6 +4,7 @@ import {
   Award,
   BookOpen,
   ClipboardList,
+  CreditCard,
   GraduationCap,
   Inbox,
   Library,
@@ -27,9 +28,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CourseStatus, UserRole } from "@/generated/prisma/enums";
+import { CoursePurchaseStatus, CourseStatus, UserRole, WithdrawalRequestStatus } from "@/generated/prisma/enums";
 import { requireAdminSession } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
+import { formatMinorUnitsToCurrency } from "@/lib/format-currency";
 
 const NEXT_ACTIONS = [
   {
@@ -83,6 +85,8 @@ export default async function AdminDashboardPage() {
   sixMonthsAgo.setDate(1);
   sixMonthsAgo.setHours(0, 0, 0, 0);
 
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
   const [
     pendingReview,
     publishedCourses,
@@ -98,6 +102,8 @@ export default async function AdminDashboardPage() {
     recentWorkflow,
     enrollmentTrendRaw,
     courseStatusGroups,
+    sales30d,
+    pendingWithdrawals,
   ] = await Promise.all([
     db.course.count({ where: { status: CourseStatus.SUBMITTED } }),
     db.course.count({ where: { status: CourseStatus.PUBLISHED } }),
@@ -138,6 +144,18 @@ export default async function AdminDashboardPage() {
     db.course.groupBy({
       by: ["status"],
       _count: { status: true },
+    }),
+    db.coursePurchase.aggregate({
+      where: {
+        status: CoursePurchaseStatus.SUCCESS,
+        paidAt: { gte: thirtyDaysAgo },
+      },
+      _sum: { amountMinorUnits: true, platformFeeMinorUnits: true },
+    }),
+    db.withdrawalRequest.aggregate({
+      where: { status: WithdrawalRequestStatus.PENDING },
+      _count: { _all: true },
+      _sum: { amountMinorUnits: true },
     }),
   ]);
 
@@ -228,6 +246,39 @@ export default async function AdminDashboardPage() {
           hint="Learner accounts"
           icon={GraduationCap}
           href="/admin/students"
+        />
+      </div>
+
+      <div className="mb-6 grid gap-4 sm:grid-cols-3 md:mb-8">
+        <AdminStatCard
+          label="Gross sales (30d)"
+          value={formatMinorUnitsToCurrency(
+            sales30d._sum.amountMinorUnits ?? 0,
+            "NGN",
+          )}
+          hint="Successful Paystack checkouts"
+          icon={CreditCard}
+          href="/admin/payments/transactions"
+        />
+        <AdminStatCard
+          label="Platform fees (30d)"
+          value={formatMinorUnitsToCurrency(
+            sales30d._sum.platformFeeMinorUnits ?? 0,
+            "NGN",
+          )}
+          hint="Retained by platform"
+          icon={TrendingUp}
+          href="/admin/payments/settings"
+        />
+        <AdminStatCard
+          label="Pending withdrawals"
+          value={String(pendingWithdrawals._count._all)}
+          hint={formatMinorUnitsToCurrency(
+            pendingWithdrawals._sum.amountMinorUnits ?? 0,
+            "NGN",
+          )}
+          icon={Activity}
+          href="/admin/payments/withdrawals"
         />
       </div>
 

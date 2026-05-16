@@ -8,6 +8,7 @@ import { emailTutorCourseReview } from "@/lib/course-review-emails";
 import { evaluateStudentBadges } from "@/lib/badges/evaluate-student-badges";
 import { EnrollmentStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
+import { studentMayAccessCourseContent } from "@/lib/payments/student-course-access";
 
 const reviewSchema = z.object({
   courseId: z.string().min(1),
@@ -55,6 +56,13 @@ export async function upsertCourseReviewAction(
     return {
       ok: false,
       message: "You must be enrolled on this course to leave a review.",
+    };
+  }
+
+  if (!(await studentMayAccessCourseContent(session.user.id, courseId))) {
+    return {
+      ok: false,
+      message: "Complete payment before leaving a review.",
     };
   }
 

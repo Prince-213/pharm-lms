@@ -1,5 +1,7 @@
 import {
+  DeleteObjectsCommand,
   GetObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   type PutObjectCommandInput,
   S3Client,
@@ -60,4 +62,47 @@ export async function getR2SignedPutUrl(
     ContentLength: contentLength,
   });
   return getSignedUrl(r2Client, command, { expiresIn });
+}
+
+/** List all object keys under a prefix (paginated). */
+export async function listR2ObjectKeys(prefix: string): Promise<string[]> {
+  if (!isR2Configured() || !r2Bucket) return [];
+
+  const keys: string[] = [];
+  let continuationToken: string | undefined;
+
+  do {
+    const res = await r2Client.send(
+      new ListObjectsV2Command({
+        Bucket: r2Bucket,
+        Prefix: prefix,
+        ContinuationToken: continuationToken,
+      }),
+    );
+    for (const obj of res.Contents ?? []) {
+      if (obj.Key) keys.push(obj.Key);
+    }
+    continuationToken = res.IsTruncated ? res.NextContinuationToken : undefined;
+  } while (continuationToken);
+
+  return keys;
+}
+
+/** Delete up to 1000 keys per request (S3 limit). */
+export async function deleteR2ObjectKeys(keys: string[]): Promise<void> {
+  if (!isR2Configured() || !r2Bucket || keys.length === 0) return;
+
+  const chunkSize = 1000;
+  for (let i = 0; i < keys.length; i += chunkSize) {
+    const chunk = keys.slice(i, i + chunkSize);
+    await r2Client.send(
+      new DeleteObjectsCommand({
+        Bucket: r2Bucket,
+        Delete: {
+          Objects: chunk.map((Key) => ({ Key })),
+          Quiet: true,
+        },
+      }),
+    );
+  }
 }

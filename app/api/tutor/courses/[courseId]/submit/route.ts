@@ -50,7 +50,7 @@ export async function POST(
     course.priceMinorUnits === undefined ||
     course.priceMinorUnits < 0
   ) {
-    details.push("Set a course price in Naira (use ₦0 for a free course).");
+    details.push("Mark as free or set a price on the pricing step.");
   }
   if (!course.congratulatoryTitle?.trim()) {
     details.push("Congratulations title is required.");

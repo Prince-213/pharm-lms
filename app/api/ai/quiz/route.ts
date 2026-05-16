@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
 import { generateSectionQuiz } from "@/lib/ai/huggingface";
 import { db } from "@/lib/db";
+import { studentMayAccessCourseContent } from "@/lib/payments/student-course-access";
 
 const schema = z.object({
   courseId: z.string().cuid(),
@@ -38,6 +39,15 @@ export async function POST(request: Request) {
   });
   if (!enrollment) {
     return NextResponse.json({ error: "Enroll in this course to generate a quiz." }, { status: 403 });
+  }
+
+  if (
+    !(await studentMayAccessCourseContent(session.user.id, parsed.data.courseId))
+  ) {
+    return NextResponse.json(
+      { error: "Complete payment to generate a quiz." },
+      { status: 403 },
+    );
   }
 
   let sectionIds: string[] = [];

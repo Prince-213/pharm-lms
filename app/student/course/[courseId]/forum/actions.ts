@@ -6,6 +6,7 @@ import { UserRole } from "@/generated/prisma/enums";
 import { evaluateStudentBadges } from "@/lib/badges/evaluate-student-badges";
 import { COURSE_GENERAL_FORUM_THREAD_TITLE } from "@/lib/course-discussions";
 import { db } from "@/lib/db";
+import { studentMayAccessCourseContent } from "@/lib/payments/student-course-access";
 
 export async function createForumPostAction(courseId: string, body: string) {
   const session = await auth();
@@ -44,6 +45,12 @@ export async function createForumPostAction(courseId: string, body: string) {
       return {
         ok: false as const,
         message: "Only enrolled students can post here.",
+      };
+    }
+    if (!(await studentMayAccessCourseContent(session.user.id, courseId))) {
+      return {
+        ok: false as const,
+        message: "Complete payment to participate in the forum.",
       };
     }
   } else if (role === UserRole.MENTOR || role === UserRole.TUTOR) {

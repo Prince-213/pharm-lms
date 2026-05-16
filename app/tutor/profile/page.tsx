@@ -6,7 +6,13 @@ import { resolveMediaUrl } from "@/lib/media-url";
 import { roleHomePath } from "@/lib/rbac";
 import { TutorProfileClient } from "./tutor-profile-client";
 
-export default async function TutorProfilePage() {
+export default async function TutorProfilePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const { tab } = await searchParams;
+  const initialSettingsTab = tab === "accounts" ? "accounts" : undefined;
   const session = await auth();
   if (!session?.user) redirect("/tutor/login?callbackUrl=/tutor/profile");
   if (session.user.role !== UserRole.TUTOR)
@@ -37,5 +43,34 @@ export default async function TutorProfilePage() {
 
   const avatarPreviewSrc = await resolveMediaUrl(user.avatarUrl);
 
-  return <TutorProfileClient user={user} avatarPreviewSrc={avatarPreviewSrc} />;
+  const payoutRow = await db.tutorPayoutAccount.findUnique({
+    where: { userId: session.user.id },
+    select: {
+      accountName: true,
+      bankCode: true,
+      accountNumber: true,
+      verifiedAt: true,
+    },
+  });
+
+  const payoutSummary = payoutRow?.accountName
+    ? {
+        accountName: payoutRow.accountName,
+        bankCode: payoutRow.bankCode,
+        accountMasked:
+          payoutRow.accountNumber.length <= 4
+            ? "••••"
+            : `••••${payoutRow.accountNumber.slice(-4)}`,
+        verified: Boolean(payoutRow.verifiedAt),
+      }
+    : null;
+
+  return (
+    <TutorProfileClient
+      user={user}
+      avatarPreviewSrc={avatarPreviewSrc}
+      payoutSummary={payoutSummary}
+      initialSettingsTab={initialSettingsTab}
+    />
+  );
 }

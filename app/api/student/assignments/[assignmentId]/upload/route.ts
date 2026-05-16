@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { AssignmentStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
+import { studentMayAccessCourseContent } from "@/lib/payments/student-course-access";
 import { isR2Configured, uploadToR2 } from "@/lib/storage/r2";
 
 const submissionMimes = [
@@ -59,6 +60,15 @@ export async function POST(
   if (!enrollment) {
     return NextResponse.json(
       { error: "Enroll in the course before uploading a submission file." },
+      { status: 403 },
+    );
+  }
+
+  if (
+    !(await studentMayAccessCourseContent(session.user.id, assignment.courseId))
+  ) {
+    return NextResponse.json(
+      { error: "Complete payment before uploading a submission file." },
       { status: 403 },
     );
   }

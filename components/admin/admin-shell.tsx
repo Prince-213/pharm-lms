@@ -5,6 +5,7 @@ import {
   BookOpen,
   ChevronRight,
   ClipboardList,
+  CreditCard,
   GraduationCap,
   LayoutDashboard,
   Menu,
@@ -32,6 +33,11 @@ const nav = [
   { href: "/admin/students", label: "Students", icon: GraduationCap },
   { href: "/admin/tutors", label: "Tutors", icon: BookOpen },
   { href: "/admin/mentors", label: "Mentors", icon: Users },
+  {
+    href: "/admin/payments/transactions",
+    label: "Payments",
+    icon: CreditCard,
+  },
   { href: "/admin/badges", label: "Badges", icon: Award },
   { href: "/admin/messages", label: "Messages", icon: MessageSquare },
 ] as const;
@@ -41,6 +47,9 @@ const adminNavTitleExtras: { href: string; label: string }[] = [
   { href: "/admin/users", label: "All users" },
   { href: "/admin/mentor-applications", label: "Mentor applications" },
   { href: "/admin/courses", label: "Courses" },
+  { href: "/admin/payments/transactions", label: "Payments" },
+  { href: "/admin/payments/withdrawals", label: "Payments" },
+  { href: "/admin/payments/settings", label: "Payments" },
 ];
 
 const navForShellTitle: { href: string; label: string }[] = [

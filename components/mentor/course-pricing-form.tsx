@@ -6,21 +6,11 @@ import { toast } from "sonner";
 import { useCourseStudio } from "@/components/mentor/course-studio-context";
 
 /** Stored as minor units (kobo): 1 NGN = 100 kobo */
-const PRICE_TIERS_NGN = [
-  0, 2500, 5000, 10000, 15000, 25000, 50000, 75000, 100000,
-] as const;
-
 function formatNairaFromMinor(minor: number | null) {
   if (minor === null || minor === undefined) return "";
   const naira = minor / 100;
   if (naira === 0) return "Free";
   return `₦${naira.toLocaleString("en-NG", { maximumFractionDigits: 0 })}`;
-}
-
-function tierChoices(initialMinorUnits: number | null) {
-  const set = new Set<number>(PRICE_TIERS_NGN);
-  if (initialMinorUnits != null) set.add(initialMinorUnits);
-  return [...set].sort((a, b) => a - b);
 }
 
 export function CoursePricingForm({
@@ -32,27 +22,31 @@ export function CoursePricingForm({
 }) {
   const { readOnly } = useCourseStudio();
   const router = useRouter();
-  const choices = useMemo(
-    () => tierChoices(initialMinorUnits),
-    [initialMinorUnits],
-  );
-  const [tier, setTier] = useState<string>(
-    initialMinorUnits != null ? String(initialMinorUnits) : "",
-  );
+  const [isFree, setIsFree] = useState(initialMinorUnits === 0);
+  const [nairaInput, setNairaInput] = useState(() => {
+    if (initialMinorUnits == null || initialMinorUnits === 0) return "";
+    return String(Math.floor(initialMinorUnits / 100));
+  });
   const [saving, setSaving] = useState(false);
 
   const preview = useMemo(() => {
-    const v = Number(tier);
-    if (Number.isNaN(v)) return "";
-    return formatNairaFromMinor(v);
-  }, [tier]);
+    if (isFree) return "Free";
+    const n = Number.parseInt(nairaInput.replace(/[^\d]/g, ""), 10);
+    if (Number.isNaN(n) || n < 0) return "";
+    return formatNairaFromMinor(n * 100);
+  }, [isFree, nairaInput]);
 
   async function save() {
-    if (tier === "") {
-      toast.error("Select a price tier.");
+    const priceMinorUnits = isFree
+      ? 0
+      : Math.floor(Number.parseInt(nairaInput.replace(/[^\d]/g, ""), 10) || 0) *
+        100;
+
+    if (!isFree && priceMinorUnits <= 0) {
+      toast.error("Enter a price in Naira or mark the course as free.");
       return;
     }
-    const priceMinorUnits = Number(tier);
+
     setSaving(true);
     try {
       const response = await fetch(`/api/tutor/courses/${courseId}`, {
@@ -80,9 +74,23 @@ export function CoursePricingForm({
       ) : null}
 
       <p className="text-sm text-[var(--muted)]">
-        Prices are in Nigerian Naira (NGN). Amounts include VAT-style precision
-        in kobo (stored as minor units: ₦1 = 100).
+        Prices are in Nigerian Naira (NGN). Stored as minor units (₦1 = 100
+        kobo).
       </p>
+
+      <label className="flex cursor-pointer items-center gap-3">
+        <input
+          type="checkbox"
+          checked={isFree}
+          disabled={readOnly}
+          onChange={(e) => {
+            setIsFree(e.target.checked);
+            if (e.target.checked) setNairaInput("");
+          }}
+          className="h-4 w-4 rounded border-[var(--border)]"
+        />
+        <span className="text-sm font-semibold">This course is free</span>
+      </label>
 
       <div className="grid max-w-[420px] gap-3 sm:grid-cols-2">
         <div>
@@ -93,25 +101,21 @@ export function CoursePricingForm({
         </div>
         <div>
           <label
-            htmlFor="price-tier"
+            htmlFor="price-naira"
             className="mb-1 block text-xs font-semibold"
           >
-            Price tier
+            Price (Naira)
           </label>
-          <select
-            id="price-tier"
-            value={tier}
-            onChange={(e) => setTier(e.target.value)}
-            disabled={readOnly}
-            className="h-10 w-full border border-[var(--border)] bg-white px-2 text-sm disabled:bg-[var(--surface-muted)]"
-          >
-            <option value="">— Select —</option>
-            {choices.map((minor) => (
-              <option key={minor} value={String(minor)}>
-                {formatNairaFromMinor(minor)}
-              </option>
-            ))}
-          </select>
+          <input
+            id="price-naira"
+            type="text"
+            inputMode="numeric"
+            disabled={readOnly || isFree}
+            value={isFree ? "" : nairaInput}
+            onChange={(e) => setNairaInput(e.target.value.replace(/[^\d]/g, ""))}
+            placeholder={isFree ? "—" : "e.g. 15000"}
+            className="h-10 w-full border border-[var(--border)] bg-white px-3 text-sm disabled:bg-[var(--surface-muted)]"
+          />
         </div>
       </div>
 
@@ -121,10 +125,9 @@ export function CoursePricingForm({
         </p>
       ) : null}
 
-
       <button
         type="button"
-        disabled={readOnly || saving || tier === ""}
+        disabled={readOnly || saving || (!isFree && !nairaInput.trim())}
         onClick={() => void save()}
         className="rounded-sm bg-[var(--primary)] px-5 py-2 text-sm font-semibold text-white disabled:opacity-50"
       >

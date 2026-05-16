@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { CourseStatus, UserRole, EnrollmentStatus } from "@/generated/prisma/enums";
 import { evaluateStudentBadges } from "@/lib/badges/evaluate-student-badges";
 import { db } from "@/lib/db";
+import { studentMayAccessCourseContent } from "@/lib/payments/student-course-access";
 
 export type ProgressResult = { ok: true } | { ok: false; message: string };
 
@@ -42,6 +43,10 @@ export async function setLessonCompletedAction(
   });
   if (!enrollment) {
     return { ok: false, message: "Enroll in this course first." };
+  }
+
+  if (!(await studentMayAccessCourseContent(session.user.id, courseId))) {
+    return { ok: false, message: "Complete payment to update lesson progress." };
   }
 
   await db.lessonProgress.upsert({
@@ -85,6 +90,10 @@ export async function completeCourseAction(
 
   if (!enrollment) {
     return { ok: false, message: "Enrollment not found." };
+  }
+
+  if (!(await studentMayAccessCourseContent(session.user.id, courseId))) {
+    return { ok: false, message: "Complete payment to complete this course." };
   }
 
   if (enrollment.status === EnrollmentStatus.COMPLETED) {

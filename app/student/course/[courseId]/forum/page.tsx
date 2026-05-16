@@ -4,6 +4,7 @@ import { CourseForumExperience } from "@/components/course-forum/course-forum-ex
 import { UserRole } from "@/generated/prisma/enums";
 import { getCourseForumData } from "@/lib/course-forum/get-course-forum-data";
 import { db } from "@/lib/db";
+import { studentMayAccessCourseContent } from "@/lib/payments/student-course-access";
 import { roleHomePath } from "@/lib/rbac";
 
 export default async function CourseForumPage({
@@ -34,6 +35,9 @@ export default async function CourseForumPage({
       select: { id: true },
     });
     if (!enrollment) {
+      redirect(`/student/browse/${courseId}`);
+    }
+    if (!(await studentMayAccessCourseContent(session.user.id, courseId))) {
       redirect(`/student/browse/${courseId}`);
     }
     redirect(`/student/course/${courseId}?tab=forum`);

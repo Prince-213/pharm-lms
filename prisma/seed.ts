@@ -1,5 +1,6 @@
 import { hash } from "bcryptjs";
 import { MentorProfileStatus, UserRole } from "../generated/prisma/enums";
+import { getOrCreatePlatformSettings } from "../lib/payments/platform-settings";
 import { prisma } from "../lib/prisma";
 
 async function main() {
@@ -193,7 +194,8 @@ async function main() {
   const tutorEmail = process.env.SEED_TUTOR_EMAIL ?? "tutor@pharmlms.com";
   const tutorPasswordPlain = process.env.SEED_TUTOR_PASSWORD ?? "ChangeMe123!";
   const mentorEmail = process.env.SEED_MENTOR_EMAIL ?? "mentor@pharmlms.com";
-  const mentorPasswordPlain = process.env.SEED_MENTOR_PASSWORD ?? "ChangeMe123!";
+  const mentorPasswordPlain =
+    process.env.SEED_MENTOR_PASSWORD ?? "ChangeMe123!";
 
   const tutorPasswordHash = await hash(tutorPasswordPlain, 10);
   const mentorPasswordHash = await hash(mentorPasswordPlain, 10);
@@ -220,7 +222,8 @@ async function main() {
       role: UserRole.MENTOR,
       passwordHash: mentorPasswordHash,
       bio: "I help students plan clinical rotations, interview prep, and pharmacology study strategy.",
-      avatarUrl: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=256&h=256&fit=crop",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=256&h=256&fit=crop",
       mentorProfileStatus: MentorProfileStatus.APPROVED,
       mentorReviewRequestedAt: new Date(),
       mentorReviewedAt: new Date(),
@@ -232,7 +235,8 @@ async function main() {
       role: UserRole.MENTOR,
       passwordHash: mentorPasswordHash,
       bio: "I help students plan clinical rotations, interview prep, and pharmacology study strategy.",
-      avatarUrl: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=256&h=256&fit=crop",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=256&h=256&fit=crop",
       mentorProfileStatus: MentorProfileStatus.APPROVED,
       mentorReviewRequestedAt: new Date(),
       mentorReviewedAt: new Date(),
@@ -249,6 +253,10 @@ async function main() {
   console.log(
     "Change the admin password from your development secret after first login in production.",
   );
+
+  await getOrCreatePlatformSettings();
+
+  console.log("Platform payment settings row ensured.");
 }
 
 main()

@@ -1,5 +1,5 @@
 import type { SectionResource } from "@/components/mentor/curriculum-editor-v2";
-import { CourseStatus, UserRole } from "@/generated/prisma/enums";
+import { CoursePurchaseStatus, CourseStatus, UserRole } from "@/generated/prisma/enums";
 import { catalogTotalSeconds } from "@/lib/course-duration";
 import { parseSectionDescription } from "@/lib/curriculum";
 import { db } from "@/lib/db";
@@ -77,7 +77,8 @@ export async function loadCourseCatalogDetail(
   if (!course) return null;
 
   const isStudent = viewer.role === UserRole.STUDENT;
-  const [enrollment, wishlistRow, reviewAgg, reviews] = await Promise.all([
+  const [enrollment, wishlistRow, reviewAgg, reviews, successfulPurchase] =
+    await Promise.all([
     isStudent
       ? db.enrollment.findUnique({
           where: {
@@ -110,6 +111,17 @@ export async function loadCourseCatalogDetail(
         student: { select: { fullName: true } },
       },
     }),
+    isStudent
+      ? db.coursePurchase.findFirst({
+          where: {
+            courseId,
+            studentId: viewer.id,
+            status: CoursePurchaseStatus.SUCCESS,
+          },
+          select: { paidAt: true, amountMinorUnits: true },
+          orderBy: { paidAt: "desc" },
+        })
+      : Promise.resolve(null),
   ]);
 
   const reviewCount = reviewAgg._count;
@@ -165,5 +177,6 @@ export async function loadCourseCatalogDetail(
     totalAssignments,
     allResources,
     bullets,
+    successfulPurchase,
   };
 }

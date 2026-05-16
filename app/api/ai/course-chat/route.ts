@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
 import { chatWithCourseContext } from "@/lib/ai/huggingface";
 import { db } from "@/lib/db";
+import { studentMayAccessCourseContent } from "@/lib/payments/student-course-access";
 
 const schema = z.object({
   courseId: z.string().cuid(),
@@ -43,6 +44,13 @@ export async function POST(request: Request) {
   });
   if (!enrollment) {
     return NextResponse.json({ error: "Enroll in this course to use the assistant." }, { status: 403 });
+  }
+
+  if (!(await studentMayAccessCourseContent(session.user.id, courseId))) {
+    return NextResponse.json(
+      { error: "Complete payment to use the course assistant." },
+      { status: 403 },
+    );
   }
 
   const completed = await db.lessonProgress.findMany({

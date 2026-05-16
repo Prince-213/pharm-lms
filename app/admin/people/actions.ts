@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
-import { deleteCourseGraph } from "@/lib/admin/delete-course-graph";
+import { deleteCourseGraph } from "@/lib/courses/delete-course-graph";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
 import { notifyMentorAccountActivated } from "@/lib/notifications/mentor-events";

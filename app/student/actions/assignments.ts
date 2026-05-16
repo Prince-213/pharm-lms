@@ -11,6 +11,7 @@ import {
   UserRole,
 } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
+import { studentMayAccessCourseContent } from "@/lib/payments/student-course-access";
 
 const submitSchema = z
   .object({
@@ -86,6 +87,15 @@ export async function submitAssignmentAction(
   });
   if (!enrollment)
     return { ok: false, message: "Enroll in the course before submitting." };
+
+  if (
+    !(await studentMayAccessCourseContent(session.user.id, assignment.courseId))
+  ) {
+    return {
+      ok: false,
+      message: "Complete payment before submitting assignments.",
+    };
+  }
 
   const isLate = assignment.dueDate
     ? assignment.dueDate.getTime() < Date.now()

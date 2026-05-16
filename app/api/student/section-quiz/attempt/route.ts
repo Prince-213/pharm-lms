@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
 import { evaluateStudentBadges } from "@/lib/badges/evaluate-student-badges";
 import { db } from "@/lib/db";
+import { studentMayAccessCourseContent } from "@/lib/payments/student-course-access";
 import { gradeSubmission, normalizeQuizQuestions } from "@/lib/section-quiz-questions";
 
 const schema = z.object({
@@ -54,6 +55,17 @@ export async function POST(request: Request) {
   if (!enrollment) {
     return NextResponse.json(
       { error: "Enroll in this course to submit the quiz." },
+      { status: 403 },
+    );
+  }
+
+  const mayAccess = await studentMayAccessCourseContent(
+    session.user.id,
+    quiz.section.courseId,
+  );
+  if (!mayAccess) {
+    return NextResponse.json(
+      { error: "Complete payment to submit the quiz." },
       { status: 403 },
     );
   }

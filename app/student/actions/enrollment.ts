@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
-import { CourseStatus, UserRole } from "@/generated/prisma/enums";
+import { CoursePurchaseStatus, CourseStatus, UserRole } from "@/generated/prisma/enums";
 import { evaluateStudentBadges } from "@/lib/badges/evaluate-student-badges";
 import { db } from "@/lib/db";
 
@@ -20,7 +20,7 @@ export async function enrollInCourseAction(
 
   const course = await db.course.findUnique({
     where: { id: courseId },
-    select: { id: true, status: true },
+    select: { id: true, status: true, priceMinorUnits: true },
   });
   if (!course || course.status !== CourseStatus.PUBLISHED) {
     return {
@@ -36,6 +36,24 @@ export async function enrollInCourseAction(
   });
   if (existing) {
     return { ok: true, courseId };
+  }
+
+  const price = course.priceMinorUnits ?? 0;
+  if (price > 0) {
+    const paid = await db.coursePurchase.findFirst({
+      where: {
+        courseId,
+        studentId: session.user.id,
+        status: CoursePurchaseStatus.SUCCESS,
+      },
+      select: { id: true },
+    });
+    if (!paid) {
+      return {
+        ok: false,
+        message: "Complete payment to enroll in this course.",
+      };
+    }
   }
 
   try {

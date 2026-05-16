@@ -1,28 +1,76 @@
+import { auth } from "@/auth";
+import { CoursePurchaseStatus, UserRole } from "@/generated/prisma/enums";
 import { PerformanceChartPanel } from "@/components/mentor/performance/performance-chart-panel";
 import { PerformanceToolbar } from "@/components/mentor/performance/performance-toolbar";
+import { db } from "@/lib/db";
+import { roleHomePath } from "@/lib/rbac";
+import { redirect } from "next/navigation";
 
-const funnel = [
-  { label: "Landing views", value: "0", width: 100 },
-  { label: "Curriculum expand", value: "0", width: 78 },
-  { label: "Add to cart / intent", value: "0", width: 56 },
-  { label: "Checkout started", value: "0", width: 40 },
-  { label: "Purchase complete", value: "0", width: 24 },
-];
+export default async function PerformanceTrafficPage() {
+  const session = await auth();
+  if (!session?.user) redirect("/tutor/login");
+  if (session.user.role !== UserRole.TUTOR) redirect(roleHomePath(session.user.role));
 
-export default function PerformanceTrafficPage() {
+  const mentorId = session.user.id;
+
+  const [enrollments, checkoutStarted, purchaseComplete] = await Promise.all([
+    db.enrollment.count({ where: { course: { mentorId } } }),
+    db.coursePurchase.count({
+      where: { mentorId, status: CoursePurchaseStatus.PENDING },
+    }),
+    db.coursePurchase.count({
+      where: { mentorId, status: CoursePurchaseStatus.SUCCESS },
+    }),
+  ]);
+
+  const checkoutAll =
+    (await db.coursePurchase.count({ where: { mentorId } })) || 1;
+
+  const funnel = [
+    {
+      label: "Landing views",
+      value: "—",
+      width: 100,
+    },
+    {
+      label: "Curriculum expand",
+      value: "—",
+      width: 78,
+    },
+    {
+      label: "Checkout started (pending)",
+      value: String(checkoutStarted),
+      width: Math.max(24, Math.round((checkoutStarted / checkoutAll) * 100)),
+    },
+    {
+      label: "Purchase complete",
+      value: String(purchaseComplete),
+      width: Math.max(
+        24,
+        Math.round((purchaseComplete / Math.max(checkoutAll, 1)) * 100),
+      ),
+    },
+  ];
+
   return (
     <>
       <PerformanceToolbar
         title="Traffic & conversion"
-        subtitle="Follow visitors from discovery to enrollment and tune your course landing experience."
-        dateRangeLabel="Last 12 months"
+        subtitle="Enrollment and checkout signals from your catalog (traffic analytics still placeholder)."
+        dateRangeLabel="All time"
       />
       <div className="mb-8 grid gap-4 sm:grid-cols-4">
         {[
-          { label: "Visitors", value: "0" },
-          { label: "Conversion rate", value: "—" },
-          { label: "Bounce rate", value: "—" },
-          { label: "Avg. time on landing", value: "—" },
+          { label: "Visitors", value: "—" },
+          {
+            label: "Total enrollments",
+            value: String(enrollments),
+          },
+          {
+            label: "Paid sales",
+            value: String(purchaseComplete),
+          },
+          { label: "Pending checkouts", value: String(checkoutStarted) },
         ].map((k) => (
           <div
             key={k.label}
@@ -38,11 +86,11 @@ export default function PerformanceTrafficPage() {
       <div className="mb-8 grid gap-6 lg:grid-cols-2">
         <section className="rounded-xl border border-[#e3e5e8] bg-white p-6 shadow-sm">
           <h2 className="text-sm font-bold text-[#1c1d1f]">
-            Acquisition funnel
+            Checkout funnel (Paystack)
           </h2>
           <p className="mt-1 text-xs text-[#6a6f73]">
-            Relative drop-off between key steps (placeholder widths for empty
-            state).
+            Relative bar widths use purchase counts. Full traffic tracking is
+            not wired yet.
           </p>
           <ul className="mt-6 space-y-4">
             {funnel.map((step) => (
@@ -54,7 +102,7 @@ export default function PerformanceTrafficPage() {
                 <div className="flex justify-center">
                   <div
                     className="h-9 rounded-md bg-gradient-to-r from-[var(--primary)]/15 to-[var(--primary)]/40 ring-1 ring-[var(--primary)]/25 transition-all"
-                    style={{ width: `${step.width}%` }}
+                    style={{ width: `${Math.min(100, step.width)}%` }}
                   />
                 </div>
               </li>

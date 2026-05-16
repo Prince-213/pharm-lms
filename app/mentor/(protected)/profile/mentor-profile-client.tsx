@@ -13,6 +13,7 @@ import {
   ProfileTextareaField,
   ProfileTextField,
 } from "@/components/profile/profile-editor-shell";
+import { ProfileSettingsTabs } from "@/components/profile/profile-settings-tabs";
 import {
   submitMentorProfileAction,
   updateMentorProfileAction,
@@ -66,184 +67,214 @@ export function MentorProfileClient({
   const submitted = Boolean(user.mentorProfileSubmittedAt);
 
   return (
-    <ProfileEditorRoot>
+    <ProfileEditorRoot className="max-w-3xl">
       <ProfileEditorHeader
-        title="Profile"
+        title="Settings"
         description="Complete your profile and submit it for review. Your account becomes visible to students after an admin activates it."
       />
 
-      <ProfileSegment
-        title="Account status"
-        description="Visibility and review state."
-      >
-        <ProfileReadOnlySwitchRow
-          label="Visible to students"
-          description={
-            user.isActive
-              ? "Your mentor profile is active and bookable."
-              : "Students cannot book you until an admin activates your account."
-          }
-          on={user.isActive}
-        />
-        <p className="text-sm font-medium text-[var(--foreground)]">
-          {user.isActive
-            ? "Active"
-            : submitted
-              ? "Pending activation"
-              : "Profile not submitted"}
-        </p>
-        {submitted ? (
-          <p className="text-xs text-[var(--muted)]">
-            Submitted:{" "}
-            {new Date(user.mentorProfileSubmittedAt as string).toLocaleString()}
-          </p>
-        ) : null}
-      </ProfileSegment>
-
       <form action={submitUpdate} className="space-y-8">
-        <ProfileSegment
-          title="Bio data"
-          description="Identity, contact, and how you introduce yourself."
-        >
-          <ProfileTextField
-            id="mentor-email"
-            name="email"
-            label="Email"
-            hint="From your account."
-            defaultValue={user.email}
-            readOnly
-          />
-          <div className="grid gap-5 sm:grid-cols-2">
-            <ProfileTextField
-              id="mentor-fullName"
-              name="fullName"
-              label="Full name"
-              hint="Shown on your public mentor profile."
-              defaultValue={user.fullName}
-              required
-            />
-            <ProfileTextField
-              id="mentor-phone"
-              name="phoneNumber"
-              label="Phone number"
-              hint="Required before you can submit for review."
-              defaultValue={user.phoneNumber ?? ""}
-              placeholder="+234…"
-            />
-          </div>
-          <ProfileAvatarPicker
-            fullName={user.fullName}
-            serverAvatarUrl={user.avatarUrl}
-            resolvedPreviewSrc={avatarPreviewSrc}
-            value={avatarUrl}
-            onChange={setAvatarUrl}
-            hint="Required before you submit for review (e.g. from Google sign-in or an upload). Square images look best. Save after uploading."
-          />
-          <ProfileTextareaField
-            id="mentor-bio"
-            name="bio"
-            label="Bio"
-            hint="At least 40 characters. Tell students what you can help with."
-            defaultValue={user.bio ?? ""}
-            required
-            rows={6}
-            placeholder="Your background, coaching style, and outcomes you focus on."
-          />
-        </ProfileSegment>
-
-        <ProfileSegment
-          title="Professional"
-          description="Headline, experience, and links."
-        >
-          <div className="grid gap-5 sm:grid-cols-2">
-            <ProfileTextField
-              id="mentor-headline"
-              name="mentorHeadline"
-              label="Headline"
-              hint="Short positioning line."
-              defaultValue={user.mentorHeadline ?? ""}
-              placeholder="e.g., Clinical Pharmacist • Career Coach"
-            />
-            <ProfileTextField
-              id="mentor-years"
-              name="mentorYearsExperience"
-              label="Years of experience"
-              defaultValue={user.mentorYearsExperience?.toString() ?? ""}
-              inputMode="numeric"
-              placeholder="e.g., 5"
-            />
-          </div>
-          <ProfileTextField
-            id="mentor-specialties"
-            name="mentorSpecialties"
-            label="Specialties"
-            hint="Comma-separated topics you support."
-            defaultValue={user.mentorSpecialties ?? ""}
-            placeholder="e.g., CV review, Residency, Interview prep"
-          />
-          <div className="grid gap-5 sm:grid-cols-2">
-            <ProfileTextField
-              id="mentor-website"
-              name="websiteUrl"
-              label="Website URL"
-              defaultValue={user.websiteUrl ?? ""}
-              placeholder="https://…"
-            />
-            <ProfileTextField
-              id="mentor-linkedin"
-              name="linkedinUrl"
-              label="LinkedIn URL"
-              defaultValue={user.linkedinUrl ?? ""}
-              placeholder="https://linkedin.com/in/…"
-            />
-          </div>
-        </ProfileSegment>
-
-        <ProfileSegment
-          title="Location"
-          description="Required fields must be filled before you submit for review."
-        >
-          <div className="grid gap-5 sm:grid-cols-2">
-            <ProfileTextField
-              id="mentor-country"
-              name="country"
-              label="Country"
-              defaultValue={user.country ?? ""}
-            />
-            <ProfileTextField
-              id="mentor-state"
-              name="state"
-              label="State / region"
-              defaultValue={user.state ?? ""}
-            />
-          </div>
-          <div className="grid gap-5 sm:grid-cols-2">
-            <ProfileTextField
-              id="mentor-city"
-              name="city"
-              label="City"
-              defaultValue={user.city ?? ""}
-            />
-            <ProfileTextField
-              id="mentor-postal"
-              name="postalCode"
-              label="Postal code"
-              defaultValue={user.postalCode ?? ""}
-            />
-          </div>
-          <ProfileTextField
-            id="mentor-address1"
-            name="addressLine1"
-            label="Address line 1"
-            defaultValue={user.addressLine1 ?? ""}
-          />
-          <ProfileTextField
-            id="mentor-address2"
-            name="addressLine2"
-            label="Address line 2 (optional)"
-            defaultValue={user.addressLine2 ?? ""}
-          />
-        </ProfileSegment>
+        <ProfileSettingsTabs
+          defaultTabId="account"
+          tabs={[
+            {
+              id: "account",
+              label: "Account",
+              content: (
+                <ProfileSegment
+                  title="Account status"
+                  description="Visibility and review state."
+                >
+                  <ProfileReadOnlySwitchRow
+                    label="Visible to students"
+                    description={
+                      user.isActive
+                        ? "Your mentor profile is active and bookable."
+                        : "Students cannot book you until an admin activates your account."
+                    }
+                    on={user.isActive}
+                  />
+                  <p className="text-sm font-medium text-[var(--foreground)]">
+                    {user.isActive
+                      ? "Active"
+                      : submitted
+                        ? "Pending activation"
+                        : "Profile not submitted"}
+                  </p>
+                  {submitted ? (
+                    <p className="text-xs text-[var(--muted)]">
+                      Submitted:{" "}
+                      {new Date(
+                        user.mentorProfileSubmittedAt as string,
+                      ).toLocaleString()}
+                    </p>
+                  ) : null}
+                </ProfileSegment>
+              ),
+            },
+            {
+              id: "profile",
+              label: "Profile",
+              content: (
+                <ProfileSegment
+                  title="Personal information"
+                  description="Identity, contact, and how you introduce yourself."
+                >
+                  <ProfileTextField
+                    id="mentor-email"
+                    name="email"
+                    label="Email"
+                    hint="From your account."
+                    defaultValue={user.email}
+                    readOnly
+                  />
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <ProfileTextField
+                      id="mentor-fullName"
+                      name="fullName"
+                      label="Full name"
+                      hint="Shown on your public mentor profile."
+                      defaultValue={user.fullName}
+                      required
+                    />
+                    <ProfileTextField
+                      id="mentor-phone"
+                      name="phoneNumber"
+                      label="Phone number"
+                      hint="Required before you can submit for review."
+                      defaultValue={user.phoneNumber ?? ""}
+                      placeholder="+234…"
+                    />
+                  </div>
+                  <ProfileAvatarPicker
+                    fullName={user.fullName}
+                    serverAvatarUrl={user.avatarUrl}
+                    resolvedPreviewSrc={avatarPreviewSrc}
+                    value={avatarUrl}
+                    onChange={setAvatarUrl}
+                    hint="Required before you submit for review (e.g. from Google sign-in or an upload). Square images look best. Save after uploading."
+                  />
+                  <ProfileTextareaField
+                    id="mentor-bio"
+                    name="bio"
+                    label="Bio"
+                    hint="At least 40 characters. Tell students what you can help with."
+                    defaultValue={user.bio ?? ""}
+                    required
+                    rows={6}
+                    placeholder="Your background, coaching style, and outcomes you focus on."
+                  />
+                </ProfileSegment>
+              ),
+            },
+            {
+              id: "professional",
+              label: "Professional",
+              content: (
+                <ProfileSegment
+                  title="Professional"
+                  description="Headline, experience, and links."
+                >
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <ProfileTextField
+                      id="mentor-headline"
+                      name="mentorHeadline"
+                      label="Headline"
+                      hint="Short positioning line."
+                      defaultValue={user.mentorHeadline ?? ""}
+                      placeholder="e.g., Clinical Pharmacist • Career Coach"
+                    />
+                    <ProfileTextField
+                      id="mentor-years"
+                      name="mentorYearsExperience"
+                      label="Years of experience"
+                      defaultValue={
+                        user.mentorYearsExperience?.toString() ?? ""
+                      }
+                      inputMode="numeric"
+                      placeholder="e.g., 5"
+                    />
+                  </div>
+                  <ProfileTextField
+                    id="mentor-specialties"
+                    name="mentorSpecialties"
+                    label="Specialties"
+                    hint="Comma-separated topics you support."
+                    defaultValue={user.mentorSpecialties ?? ""}
+                    placeholder="e.g., CV review, Residency, Interview prep"
+                  />
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <ProfileTextField
+                      id="mentor-website"
+                      name="websiteUrl"
+                      label="Website URL"
+                      defaultValue={user.websiteUrl ?? ""}
+                      placeholder="https://…"
+                    />
+                    <ProfileTextField
+                      id="mentor-linkedin"
+                      name="linkedinUrl"
+                      label="LinkedIn URL"
+                      defaultValue={user.linkedinUrl ?? ""}
+                      placeholder="https://linkedin.com/in/…"
+                    />
+                  </div>
+                </ProfileSegment>
+              ),
+            },
+            {
+              id: "location",
+              label: "Location",
+              content: (
+                <ProfileSegment
+                  title="Location"
+                  description="Required fields must be filled before you submit for review."
+                >
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <ProfileTextField
+                      id="mentor-country"
+                      name="country"
+                      label="Country"
+                      defaultValue={user.country ?? ""}
+                    />
+                    <ProfileTextField
+                      id="mentor-state"
+                      name="state"
+                      label="State / region"
+                      defaultValue={user.state ?? ""}
+                    />
+                  </div>
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <ProfileTextField
+                      id="mentor-city"
+                      name="city"
+                      label="City"
+                      defaultValue={user.city ?? ""}
+                    />
+                    <ProfileTextField
+                      id="mentor-postal"
+                      name="postalCode"
+                      label="Postal code"
+                      defaultValue={user.postalCode ?? ""}
+                    />
+                  </div>
+                  <ProfileTextField
+                    id="mentor-address1"
+                    name="addressLine1"
+                    label="Address line 1"
+                    defaultValue={user.addressLine1 ?? ""}
+                  />
+                  <ProfileTextField
+                    id="mentor-address2"
+                    name="addressLine2"
+                    label="Address line 2 (optional)"
+                    defaultValue={user.addressLine2 ?? ""}
+                  />
+                </ProfileSegment>
+              ),
+            },
+          ]}
+        />
 
         <ProfileFormFooter
           cancelHref="/mentor/dashboard"

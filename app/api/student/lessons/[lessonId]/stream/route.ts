@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { CourseStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
+import { studentHasPaidCourseAccess } from "@/lib/payments/student-course-access";
 import { getR2SignedGetUrl, isR2Configured } from "@/lib/storage/r2";
 
 export async function GET(
@@ -19,7 +20,7 @@ export async function GET(
     include: {
       section: {
         include: {
-          course: { select: { id: true, status: true } },
+          course: { select: { id: true, status: true, priceMinorUnits: true } },
         },
       },
     },
@@ -41,6 +42,17 @@ export async function GET(
   });
   if (!enrollment) {
     return NextResponse.json({ error: "Enroll to access lessons" }, { status: 403 });
+  }
+
+  const paidOk = await studentHasPaidCourseAccess(session.user.id, {
+    id: lesson.section.course.id,
+    priceMinorUnits: lesson.section.course.priceMinorUnits,
+  });
+  if (!paidOk) {
+    return NextResponse.json(
+      { error: "Complete payment to access lessons" },
+      { status: 403 },
+    );
   }
 
   const url = lesson.videoUrl;

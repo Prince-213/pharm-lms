@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
 import { evaluateStudentBadges } from "@/lib/badges/evaluate-student-badges";
 import { db } from "@/lib/db";
+import { studentMayAccessCourseContent } from "@/lib/payments/student-course-access";
 
 async function assertStudentOwnsLessonNote(studentId: string, noteId: string) {
   const row = await db.studentLessonNote.findFirst({
@@ -46,6 +47,15 @@ export async function createLessonNoteAction(input: {
   });
   if (!enrollment) {
     return { ok: false as const, message: "Not enrolled in this course." };
+  }
+
+  if (
+    !(await studentMayAccessCourseContent(session.user.id, input.courseId))
+  ) {
+    return {
+      ok: false as const,
+      message: "Complete payment to use this course.",
+    };
   }
 
   const lesson = await db.lesson.findFirst({

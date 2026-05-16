@@ -1,3 +1,10 @@
+export type TutorPayoutSummary = {
+  accountName: string;
+  bankCode: string;
+  accountMasked: string;
+  verified: boolean;
+};
+
 export type TutorProfileRow = {
   email: string;
   fullName: string;

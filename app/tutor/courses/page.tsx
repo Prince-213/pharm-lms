@@ -2,7 +2,7 @@ import { Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { CourseCardMenu } from "@/components/mentor/course-card-menu";
-import { CourseStatus } from "@/generated/prisma/enums";
+import { CoursePurchaseStatus, CourseStatus } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { resolveMediaUrl } from "@/lib/media-url";
 import { courseStatusLabel } from "@/lib/mentor-course-auth";
@@ -50,6 +50,13 @@ export default async function MentorCoursesPage() {
           title: true,
           status: true,
           thumbnailUrl: true,
+          _count: {
+            select: {
+              purchases: {
+                where: { status: CoursePurchaseStatus.SUCCESS },
+              },
+            },
+          },
         },
       })
     : [];
@@ -175,6 +182,7 @@ export default async function MentorCoursesPage() {
                         courseId={course.id}
                         courseTitle={course.title}
                         status={course.status}
+                        hasSuccessfulPurchases={course._count.purchases > 0}
                       />
                     </div>
                     <div>

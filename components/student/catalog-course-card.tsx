@@ -90,6 +90,7 @@ export function CatalogCourseCard({
               {formatMinorUnitsToCurrency(
                 course.priceMinorUnits,
                 course.priceCurrency,
+                { zeroAsFree: true },
               )}
             </span>
             <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)] group-hover:text-[var(--primary)]">

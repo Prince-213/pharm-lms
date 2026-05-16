@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
-import { deleteDraftCourseAction } from "@/app/tutor/courses/[courseId]/manage/settings/actions";
 import { auth } from "@/auth";
-import { CourseStatus, UserRole } from "@/generated/prisma/enums";
+import { CoursePurchaseStatus, UserRole } from "@/generated/prisma/enums";
+import { CourseSettingsDangerZone } from "@/components/mentor/course-settings-danger-zone";
+import { canTutorDeleteCourse } from "@/lib/courses/tutor-delete-course-policy";
 import { db } from "@/lib/db";
 import { courseStatusLabel } from "@/lib/mentor-course-auth";
 
@@ -22,13 +23,29 @@ export default async function MentorCourseSettingsPage({
 
   const course = await db.course.findFirst({
     where: { id: courseId, mentorId: session.user.id },
-    select: { id: true, title: true, status: true, updatedAt: true },
+    select: {
+      id: true,
+      title: true,
+      status: true,
+      updatedAt: true,
+      _count: {
+        select: {
+          purchases: {
+            where: { status: CoursePurchaseStatus.SUCCESS },
+          },
+        },
+      },
+    },
   });
   if (!course) {
     redirect("/tutor/courses");
   }
 
-  const canDeleteDraft = course.status === CourseStatus.DRAFT;
+  const hasSuccessfulPurchases = course._count.purchases > 0;
+  const canDelete = canTutorDeleteCourse(
+    course.status,
+    hasSuccessfulPurchases,
+  );
 
   return (
     <section className="mx-auto max-w-[960px] border border-[var(--border)] bg-[var(--surface)]">
@@ -41,9 +58,14 @@ export default async function MentorCourseSettingsPage({
       </div>
 
       <div className="space-y-6 px-6 py-5">
-        {error === "only-draft" ? (
+        {error === "locked-status" ? (
           <p className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
-            Only draft courses can be deleted by tutors at this time.
+            Only draft or rejected courses can be deleted.
+          </p>
+        ) : null}
+        {error === "has-sales" ? (
+          <p className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            Courses with successful purchases cannot be deleted. Contact an administrator.
           </p>
         ) : null}
         {error === "confirm-title" ? (
@@ -52,42 +74,13 @@ export default async function MentorCourseSettingsPage({
           </p>
         ) : null}
 
-        <div className="border border-[#e5e7eb] bg-[#f8fafc] p-4">
-          <h2 className="text-sm font-semibold text-[#0f172a]">Danger zone</h2>
-          <p className="mt-1 text-xs text-[#475569]">
-            Deleting a draft course permanently removes its sections, lessons,
-            resources, and related records. This action cannot be undone.
-          </p>
-
-          {canDeleteDraft ? (
-            <form
-              action={deleteDraftCourseAction}
-              className="mt-4 max-w-[520px] space-y-3"
-            >
-              <input type="hidden" name="courseId" value={course.id} />
-              <label className="block text-xs font-medium text-[var(--foreground)]">
-                Type the course title to confirm deletion:
-                <input
-                  name="confirmText"
-                  className="mt-1 h-10 w-full border border-[var(--border)] px-3 text-sm"
-                  placeholder={course.title}
-                  required
-                />
-              </label>
-              <button
-                type="submit"
-                className="rounded bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-700"
-              >
-                Delete draft course
-              </button>
-            </form>
-          ) : (
-            <p className="mt-3 text-xs text-[var(--muted)]">
-              This course is <strong>{courseStatusLabel(course.status)}</strong>
-              . Tutor deletion is currently limited to draft courses only.
-            </p>
-          )}
-        </div>
+        <CourseSettingsDangerZone
+          courseId={course.id}
+          courseTitle={course.title}
+          status={course.status}
+          canDelete={canDelete}
+          hasSuccessfulPurchases={hasSuccessfulPurchases}
+        />
       </div>
     </section>
   );

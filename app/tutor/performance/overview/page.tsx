@@ -13,8 +13,10 @@ import { AdminPanel } from "@/components/admin/admin-panel";
 import { AdminStatCard } from "@/components/admin/admin-stat-card";
 import { MentorEnrollmentChart } from "@/components/mentor/performance/mentor-enrollment-chart";
 import { PerformanceToolbar } from "@/components/mentor/performance/performance-toolbar";
-import { CourseStatus } from "@/generated/prisma/enums";
+import { CoursePurchaseStatus, CourseStatus } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
+import { formatMinorUnitsToCurrency } from "@/lib/format-currency";
+import { getTutorRevenueSummary } from "@/lib/payments/tutor-revenue";
 
 const MONTH_SHORT = [
   "Jan",
@@ -40,6 +42,8 @@ export default async function PerformanceOverviewPage() {
   sixMonthsAgo.setDate(1);
   sixMonthsAgo.setHours(0, 0, 0, 0);
 
+  const revenueSince = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000);
+
   const [
     courses,
     totalEnrollments,
@@ -49,6 +53,8 @@ export default async function PerformanceOverviewPage() {
     activeLearners,
     enrollmentTrendRaw,
     unreadReviewAlerts,
+    revenueHalfYear,
+    purchaseCount,
   ] = mentorId
     ? await Promise.all([
         db.course.findMany({
@@ -101,8 +107,15 @@ export default async function PerformanceOverviewPage() {
             readAt: null,
           },
         }),
+        getTutorRevenueSummary(mentorId, revenueSince),
+        db.coursePurchase.count({
+          where: {
+            mentorId,
+            status: CoursePurchaseStatus.SUCCESS,
+          },
+        }),
       ])
-    : [[], 0, 0, 0, 0, 0, [], 0];
+    : [[], 0, 0, 0, 0, 0, [], 0, { grossMinor: 0, netMinor: 0, purchaseCount: 0 }, 0];
 
   // ── Enrollment trend: 6-month monthly buckets ──────────────────────────────
   const now = new Date();
@@ -186,13 +199,17 @@ export default async function PerformanceOverviewPage() {
           <div className="space-y-4">
             <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
               <p className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
-                Projected Revenue
+                Course revenue (6 mo.)
               </p>
               <p className="mt-1 text-2xl font-bold text-[var(--foreground)]">
-                $0.00
+                {formatMinorUnitsToCurrency(
+                  (revenueHalfYear as { netMinor: number }).netMinor,
+                  "NGN",
+                )}
               </p>
-              <p className="mt-1 text-xs text-[var(--muted)] underline decoration-dotted">
-                Connect Stripe to enable payments
+              <p className="mt-1 text-xs text-[var(--muted)]">
+                Net to you after fees · {(purchaseCount as number).toLocaleString()}{" "}
+                lifetime sales
               </p>
             </div>
 

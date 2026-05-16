@@ -5,6 +5,7 @@ import {
   UserRole,
 } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
+import { studentMayAccessCourseContent } from "@/lib/payments/student-course-access";
 import { buildJitsiJoinUrl, buildJitsiRoomName } from "@/lib/meetings/jitsi";
 import { notifyHostNewMeetingRequest } from "@/lib/notifications/meeting-events";
 import { meetingRequestSchema } from "@/lib/validation/lms";
@@ -51,6 +52,12 @@ export async function POST(request: Request) {
     if (!enrollment) {
       return NextResponse.json(
         { error: "You must be enrolled to book this tutor." },
+        { status: 403 },
+      );
+    }
+    if (!(await studentMayAccessCourseContent(session.user.id, courseId))) {
+      return NextResponse.json(
+        { error: "Complete payment for this course before booking the tutor." },
         { status: 403 },
       );
     }

@@ -71,7 +71,7 @@ export function WishlistHeartButton({
         disabled={pending}
         aria-label={saved ? "Remove from wishlist" : "Add to wishlist"}
         aria-pressed={saved}
-        className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-[2px] border-2 border-[var(--foreground)] bg-[var(--surface)] text-[var(--foreground)] transition hover:bg-[var(--surface-muted)] disabled:opacity-60${className ? ` ${className}` : ""}`}
+        className={`inline-flex h-12 w-full shrink-0 items-center justify-center rounded-[2px] border-2 border-[var(--foreground)] bg-[var(--surface)] text-[var(--foreground)] transition hover:bg-[var(--surface-muted)] disabled:opacity-60${className ? ` ${className}` : ""}`}
       >
         <Heart
           className={

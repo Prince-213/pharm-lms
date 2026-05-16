@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { CourseStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { roleHomePath } from "@/lib/rbac";
+import { studentMayAccessCourseContent } from "@/lib/payments/student-course-access";
 
 export default async function AIQuizPage({
   params,
@@ -23,6 +24,10 @@ export default async function AIQuizPage({
     select: { id: true },
   });
   if (!enrollment) {
+    redirect(`/student/browse/${courseId}`);
+  }
+
+  if (!(await studentMayAccessCourseContent(session.user.id, courseId))) {
     redirect(`/student/browse/${courseId}`);
   }
 

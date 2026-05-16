@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Banknote,
   BarChart3,
   Gauge,
   MessageSquareQuote,
@@ -16,6 +17,7 @@ import { cn } from "@/lib/utils";
 const items = [
   { href: "/tutor/performance/overview", label: "Overview", icon: Gauge },
   { href: "/tutor/performance/revenue", label: "Revenue", icon: Wallet },
+  { href: "/tutor/performance/payments", label: "Payments", icon: Banknote },
   { href: "/tutor/performance/students", label: "Students", icon: Users },
   {
     href: "/tutor/performance/reviews",
