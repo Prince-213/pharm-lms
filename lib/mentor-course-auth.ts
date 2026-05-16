@@ -3,22 +3,7 @@ import { auth } from "@/auth";
 import { CourseStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 
-export function courseStatusLabel(status: CourseStatus) {
-  switch (status) {
-    case CourseStatus.DRAFT:
-      return "DRAFT";
-    case CourseStatus.SUBMITTED:
-      return "Pending review";
-    case CourseStatus.APPROVED:
-      return "Approved";
-    case CourseStatus.REJECTED:
-      return "Rejected";
-    case CourseStatus.PUBLISHED:
-      return "Published";
-    default:
-      return status;
-  }
-}
+export { courseStatusLabel } from "@/lib/course-status-label";
 
 export async function requireMentorCourse(courseId: string) {
   const session = await auth();

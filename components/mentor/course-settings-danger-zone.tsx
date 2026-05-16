@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 import { deleteCourseAction } from "@/app/tutor/courses/[courseId]/manage/settings/actions";
 import { DeleteCourseConfirmModal } from "@/components/mentor/delete-course-confirm-modal";
-import { courseStatusLabel } from "@/lib/mentor-course-auth";
+import { courseStatusLabel } from "@/lib/course-status-label";
 
 export function CourseSettingsDangerZone({
   courseId,
