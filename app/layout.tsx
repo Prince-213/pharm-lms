@@ -3,6 +3,7 @@ import { Inter, Manrope, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { SessionProviderWrapper } from "@/components/session-provider-wrapper";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const interSans = Inter({
   variable: "--font-inter-sans",
@@ -35,7 +36,9 @@ export default function RootLayout({
       className={`${interSans.variable} ${manrope.variable} ${robotoMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <SessionProviderWrapper>{children}</SessionProviderWrapper>
+        <TooltipProvider>
+          <SessionProviderWrapper>{children}</SessionProviderWrapper>
+        </TooltipProvider>
         <Toaster position="top-center" />
       </body>
     </html>

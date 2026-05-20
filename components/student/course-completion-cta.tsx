@@ -50,43 +50,41 @@ export function CourseCompletionCta({
     <>
       {showCelebration && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[var(--foreground)]/55 p-4 backdrop-blur-[2px]"
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-[var(--foreground)]/55 p-3 backdrop-blur-[2px] sm:p-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="course-celebration-title"
         >
           <div
             className={cn(
-              "relative w-full max-w-3xl overflow-hidden rounded-2xl border border-[var(--border)]",
-              "bg-[var(--surface)] shadow-[var(--shadow-lg)]",
+              "relative flex h-[min(88dvh,600px)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-[var(--border)]",
+              "bg-[var(--surface)] shadow-[var(--shadow-lg)] sm:h-[min(80vh,720px)]",
             )}
           >
             <button
               type="button"
               onClick={() => setShowCelebration(false)}
-              className="absolute right-4 top-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] transition hover:bg-[#fafafa] hover:text-[var(--foreground)]"
+              className="absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] transition hover:bg-[#fafafa] hover:text-[var(--foreground)] sm:right-4 sm:top-4"
               aria-label="Close celebration"
             >
               <X className="h-5 w-5" strokeWidth={2} />
             </button>
 
-            <div className="px-6 pb-8 pt-10 text-center sm:px-10 sm:pb-10 sm:pt-12">
-              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--success-soft)] text-[var(--success)] ring-1 ring-[var(--success)]/20">
-                <Trophy className="h-9 w-9" aria-hidden />
-              </div>
-
+            <header className="shrink-0 border-b border-[var(--border)] px-5 pb-4 pt-10 text-center sm:px-8 sm:pt-12">
               <h2
                 id="course-celebration-title"
-                className="text-2xl font-bold tracking-tight text-[var(--foreground)] sm:text-3xl"
+                className="pr-10 text-xl font-bold tracking-tight text-[var(--foreground)] sm:pr-0 sm:text-3xl"
               >
                 {congratulatoryTitle || "Course complete"}
               </h2>
-              <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-[var(--muted)] sm:text-base">
+              <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-[var(--muted)] sm:mt-3 sm:text-base">
                 You have finished all required lessons. Your progress is saved
                 and your completion is on record.
               </p>
+            </header>
 
-              <div className="mt-8 w-full text-left">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-8 sm:py-6">
+              <div className="w-full text-left">
                 {congratsKind === "VIDEO" && congratulatoryVideoUrl ? (
                   <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-[#0a0a0a] shadow-inner">
                     {/* biome-ignore lint/a11y/useMediaCaption: Mentor-uploaded congratulatory reel; captions not modeled in schema. */}
@@ -98,7 +96,7 @@ export function CourseCompletionCta({
                     />
                   </div>
                 ) : congratsKind === "ARTICLE" && congratulatoryArticle ? (
-                  <div className="max-h-[min(400px,50vh)] overflow-y-auto rounded-xl border border-[var(--border)] bg-[#fafafa] p-5 sm:p-6">
+                  <div className="rounded-xl border border-[var(--border)] bg-[#fafafa] p-4 sm:p-6">
                     <div
                       className="prose prose-sm max-w-none text-[var(--foreground)] sm:prose-base [&_a]:text-[var(--primary)]"
                       // biome-ignore lint/security/noDangerouslySetInnerHtml: Mentor-authored congratulatory HTML.
@@ -119,8 +117,10 @@ export function CourseCompletionCta({
                   </div>
                 )}
               </div>
+            </div>
 
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <footer className="shrink-0 border-t border-[var(--border)] px-5 py-4 sm:px-8 sm:py-5">
+              <div className="flex flex-wrap items-center justify-center gap-3">
                 <button
                   type="button"
                   onClick={() => {
@@ -136,15 +136,8 @@ export function CourseCompletionCta({
                   <PartyPopper className="h-4 w-4" aria-hidden />
                   Celebrate again
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setShowCelebration(false)}
-                  className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] bg-white px-6 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[#fafafa]"
-                >
-                  Back to course
-                </button>
               </div>
-            </div>
+            </footer>
           </div>
         </div>
       )}

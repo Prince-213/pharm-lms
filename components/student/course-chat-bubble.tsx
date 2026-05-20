@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Bot, Loader2, MessageCircle, Send, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type Turn = { role: "user" | "assistant"; content: string };
 
@@ -44,7 +45,10 @@ export function CourseChatBubble({
           history: nextTurns.slice(-8),
         }),
       });
-      const body = (await res.json().catch(() => null)) as { error?: string; reply?: string } | null;
+      const body = (await res.json().catch(() => null)) as {
+        error?: string;
+        reply?: string;
+      } | null;
       if (!res.ok) {
         setError(body?.error ?? "Assistant is unavailable right now.");
         return;
@@ -66,19 +70,41 @@ export function CourseChatBubble({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="fixed bottom-5 right-5 z-[85] inline-flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)] text-[var(--primary-foreground)] shadow-[var(--shadow-lg)] transition hover:bg-[var(--primary-strong)]"
+        className={cn(
+          "fixed z-[85] inline-flex items-center justify-center bg-[var(--primary)] text-[var(--primary-foreground)] shadow-[var(--shadow-lg)] transition hover:bg-[var(--primary-strong)]",
+          "bottom-32 right-4 md:bottom-28 lg:bottom-5 lg:right-5",
+          open
+            ? "h-12 w-12 rounded-full"
+            : "gap-1.5 rounded-full px-3 py-2.5 sm:px-4",
+        )}
         aria-label="Open course assistant"
       >
-        {open ? <X className="h-5 w-5" /> : <MessageCircle className="h-5 w-5" />}
+        {open ? (
+          <X className="h-5 w-5 shrink-0" />
+        ) : (
+          <MessageCircle className="h-5 w-5 shrink-0" />
+        )}
+        {!open ? (
+          <span className="text-xs font-semibold lg:hidden">Help</span>
+        ) : null}
       </button>
 
       {open ? (
-        <div className="fixed bottom-20 right-5 z-[85] w-[min(92vw,380px)] overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-lg)]">
+        <div
+          className={cn(
+            "fixed z-[85] w-[min(92vw,380px)] overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-lg)]",
+            "bottom-44 right-4 md:bottom-40 lg:bottom-20 lg:right-5",
+          )}
+        >
           <div className="flex items-center gap-2 border-b border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3">
             <Bot className="h-4 w-4 text-[var(--primary)]" />
             <div>
-              <p className="text-sm font-semibold text-[var(--foreground)]">Course assistant</p>
-              <p className="text-[11px] text-[var(--muted)]">Grounded in your completed sections</p>
+              <p className="text-sm font-semibold text-[var(--foreground)]">
+                Course assistant
+              </p>
+              <p className="text-[11px] text-[var(--muted)]">
+                Grounded in your completed sections
+              </p>
             </div>
           </div>
 
@@ -113,7 +139,11 @@ export function CourseChatBubble({
                 }}
                 disabled={sending || disabled}
                 className="h-10 w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 text-sm"
-                placeholder={disabled ? "Complete lessons to unlock context chat" : "Ask a question"}
+                placeholder={
+                  disabled
+                    ? "Complete lessons to unlock context chat"
+                    : "Ask a question"
+                }
               />
               <button
                 type="button"

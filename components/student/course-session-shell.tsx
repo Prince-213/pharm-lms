@@ -1,15 +1,114 @@
 "use client";
 
-import { type ReactNode, useState, useEffect } from "react";
+import { type ReactNode, useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { BookOpen, Home, LayoutGrid, MessageSquare, Sparkles, Menu, X, ChevronRight, GraduationCap } from "lucide-react";
+import {
+  BookOpen,
+  Home,
+  LayoutGrid,
+  MessageSquare,
+  Sparkles,
+  Menu,
+  X,
+  ChevronRight,
+  GraduationCap,
+  ListOrdered,
+} from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { cn } from "@/lib/utils";
 import { useProgress } from "@/lib/student/progress-context";
-import { useMemo } from "react";
+import { 
+  Tooltip, 
+  TooltipProvider, 
+  TooltipContent, 
+  TooltipTrigger 
+} from "@/components/ui/tooltip";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { LabeledIconButton } from "@/components/student/labeled-icon-button";
 
-const railLink =
-  "flex h-11 w-11 items-center justify-center rounded-lg text-[var(--ink-mid)] transition hover:bg-slate-200/90 hover:text-[var(--primary)]";
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type RailLinkItem = {
+  href: string;
+  icon: React.ElementType;
+  label: string;
+};
+
+// ─── Sub-components ────────────────────────────────────────────────────────────
+
+function RailLink({
+  href,
+  icon: Icon,
+  label,
+  isActive = false,
+}: RailLinkItem & { isActive?: boolean }) {
+  return (
+    <Tooltip content={label} side="right">
+      <Link
+        href={href}
+        className={cn(
+          "relative flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-150 active:scale-95",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-soft)]",
+          isActive
+            ? "bg-white/10 text-white"
+            : "text-slate-300/70 hover:bg-white/8 hover:text-white",
+        )}
+        aria-label={label}
+      >
+        {isActive && (
+          <span
+            className="absolute left-0 h-5 w-0.5 rounded-r-full bg-[var(--primary-soft)]"
+            aria-hidden
+          />
+        )}
+        <Icon className="h-5 w-5" strokeWidth={isActive ? 2.5 : 2} />
+      </Link>
+    </Tooltip>
+  );
+}
+
+function ProgressRing({ pct }: { pct: number }) {
+  const r = 18;
+  const circ = 2 * Math.PI * r;
+  return (
+    <Tooltip content={`${pct}% complete`} side="bottom">
+      <div className="relative flex h-10 w-10 shrink-0 cursor-default items-center justify-center">
+        <svg className="absolute inset-0 h-full w-full -rotate-90">
+          <circle
+            cx={20}
+            cy={20}
+            r={r}
+            fill="transparent"
+            stroke="currentColor"
+            strokeWidth={3}
+            className="text-white/10"
+          />
+          <circle
+            cx={20}
+            cy={20}
+            r={r}
+            fill="transparent"
+            stroke="currentColor"
+            strokeWidth={3}
+            strokeDasharray={circ}
+            strokeDashoffset={circ * (1 - pct / 100)}
+            strokeLinecap="round"
+            className="text-emerald-400 transition-all duration-700 ease-in-out"
+          />
+        </svg>
+        <span className="text-[10px] font-black tracking-tighter text-[var(--header-fg)]">
+          {pct}%
+        </span>
+      </div>
+    </Tooltip>
+  );
+}
+
+// ─── Main Component ────────────────────────────────────────────────────────────
 
 export function CourseSessionShell({
   courseTitle,
@@ -30,7 +129,6 @@ export function CourseSessionShell({
   childrenLessonPanel: ReactNode;
   childrenSidebar: ReactNode;
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { progressMap } = useProgress();
 
   const realTimePct = useMemo(() => {
@@ -41,186 +139,217 @@ export function CourseSessionShell({
 
   const displayPct = Math.max(initialProgressPct, realTimePct);
 
+  const railItems: RailLinkItem[] = [
+    { href: "/student/dashboard", icon: Home, label: "My learning" },
+    { href: "/student/browse", icon: BookOpen, label: "Browse catalog" },
+    { href: "/student/courses", icon: LayoutGrid, label: "My courses" },
+  ];
+
+  const courseRailItems: RailLinkItem[] = [
+    {
+      href: `/student/course/${courseId}?tab=forum`,
+      icon: MessageSquare,
+      label: "Course forum",
+    },
+    {
+      href: `/student/course/${courseId}?tab=ai-quiz`,
+      icon: Sparkles,
+      label: "AI quiz generator",
+    },
+  ];
+
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const main = document.querySelector("main");
+    if (!main) return;
+    const handleScroll = () => {
+       setScrolled(main.scrollTop > 100);
+    };
+    main.addEventListener("scroll", handleScroll);
+    return () => main.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--background)] text-[var(--foreground)]">
-      <header className="fixed inset-x-0 top-0 z-[60] flex h-16 items-center justify-between gap-3 border-b border-white/10 bg-[var(--header)] px-3 text-[var(--header-fg)] shadow-lg sm:px-6">
-        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10 text-[var(--header-fg)] lg:hidden hover:bg-white/20 transition-colors"
-            title="Toggle curriculum"
-          >
-            {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-          
-          <Link
-            href="/student/dashboard"
-            className="flex items-center gap-2 font-display shrink-0 text-xs font-black uppercase tracking-[0.05em] text-[var(--header-fg)] sm:text-sm"
-          >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white p-1.5 shadow-sm">
-              <GraduationCap className="h-full w-full text-[var(--primary)]" />
-            </div>
-            <span className="hidden sm:inline">PharmLMS</span>
-          </Link>
-          
-          <span className="hidden h-4 w-px shrink-0 bg-white/20 sm:block" aria-hidden />
-          
-          <div className="min-w-0">
-            <h1 className="truncate font-display text-sm font-bold tracking-tight text-[var(--header-fg)] sm:text-base">
-              {courseTitle}
-            </h1>
-            {lessonLine ? (
-              <div className="flex items-center gap-1.5 opacity-80">
-                <p className="truncate text-[10px] sm:text-xs">
+    <TooltipProvider>
+      <div className="flex h-screen flex-col bg-[var(--background)] text-[var(--foreground)] overflow-hidden">
+        {/* ─── Sleek Top Progress Bar ─── */}
+        <div className="fixed top-0 left-0 right-0 z-[75] h-1 w-full bg-slate-100 md:pl-[60px]">
+          <Progress value={displayPct} className="h-1 rounded-none bg-transparent" />
+        </div>
+
+        {/* ─── Fixed Top Header ─── */}
+        <header className={cn(
+          "fixed inset-x-0 top-0 z-[60] flex items-center justify-between gap-3 border-b border-white/8 bg-[var(--header)]/90 px-3 text-[var(--header-fg)] backdrop-blur-lg transition-all duration-300 sm:px-6 md:pl-20",
+          scrolled ? "h-12 opacity-90 mt-0" : "h-16 mt-1"
+        )}>
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
+            <Link
+              href="/student/dashboard"
+              className="flex shrink-0 items-center gap-2 font-display text-xs font-black uppercase tracking-[0.05em] text-[var(--header-fg)] transition-opacity hover:opacity-80 sm:text-sm"
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white p-1.5 shadow-sm">
+                <GraduationCap className="h-full w-full text-[var(--primary)]" />
+              </div>
+              <span className="hidden sm:inline">PharmLMS</span>
+            </Link>
+
+            <span
+              className="hidden h-4 w-px shrink-0 bg-white/20 sm:block"
+              aria-hidden
+            />
+
+            <div className="min-w-0">
+              <h1 className="truncate font-display text-sm font-bold tracking-tight text-[var(--header-fg)] sm:text-base">
+                {courseTitle}
+              </h1>
+              {lessonLine && (
+                <p className="truncate text-[10px] text-white/60 sm:text-xs">
                   {lessonLine}
                 </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            {/* Mobile Contents Trigger */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="sm" className="h-9 gap-2 border-white/20 bg-white/10 text-white hover:bg-white/20 lg:hidden">
+                  <ListOrdered className="h-4 w-4" />
+                  <span className="text-xs font-bold uppercase tracking-wide">Contents</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[340px] p-0 border-l border-slate-200/50 bg-white/95 backdrop-blur-md">
+                <SheetHeader className="px-5 pt-6 pb-4 border-b border-slate-100">
+                  <SheetTitle className="font-display text-base font-bold text-slate-800">Course Curriculum</SheetTitle>
+                </SheetHeader>
+                <ScrollArea className="h-full">
+                  <div className="pb-20">{childrenSidebar}</div>
+                </ScrollArea>
+              </SheetContent>
+            </Sheet>
+
+            <div className="hidden items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-950/40 px-3 py-1 sm:flex">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              </span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-100">
+                Live
+              </span>
+            </div>
+
+            <ProgressRing pct={displayPct} />
+
+            <div className="hidden sm:block">
+              <LogoutButton variant="onDark" />
+            </div>
+          </div>
+        </header>
+
+        {/* ─── Desktop Left Rail ─── */}
+        <aside
+          className="fixed bottom-0 left-0 top-0 z-[65] hidden w-[60px] flex-col items-center gap-1.5 overflow-y-auto border-r border-white/6 bg-[var(--header)] py-8 md:flex"
+          aria-label="Course navigation rail"
+        >
+          {railItems.map((item) => (
+            <RailLink key={item.href} {...item} />
+          ))}
+
+          <span className="my-2.5 h-px w-8 rounded-full bg-white/10" aria-hidden />
+
+          {courseRailItems.map((item) => (
+            <RailLink key={item.href} {...item} />
+          ))}
+        </aside>
+
+        {/* ─── Main Content ─── */}
+        <main className="flex flex-1 overflow-hidden pt-16 md:pl-[60px]">
+          <div className="flex flex-1 min-w-0 lg:flex-row">
+            <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
+              <div className="relative w-full bg-slate-900">
+                {childrenStage}
               </div>
-            ) : null}
-          </div>
-        </div>
-        
-        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
-          <div className="hidden items-center gap-2 rounded-full bg-emerald-950/40 border border-emerald-400/20 px-3 py-1 sm:flex">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-100">
-              Live learning
-            </span>
-          </div>
-          
-          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center">
-            <svg className="absolute inset-0 h-full w-full -rotate-90 transform">
-              <circle
-                cx="20"
-                cy="20"
-                r="18"
-                fill="transparent"
-                stroke="currentColor"
-                strokeWidth="3"
-                className="text-white/10"
-              />
-              <circle
-                cx="20"
-                cy="20"
-                r="18"
-                fill="transparent"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeDasharray={`${2 * Math.PI * 18}`}
-                strokeDashoffset={`${2 * Math.PI * 18 * (1 - displayPct / 100)}`}
-                className="text-emerald-400 transition-all duration-700 ease-in-out"
-              />
-            </svg>
-            <span className="text-[10px] font-black tracking-tighter text-[var(--header-fg)]">
-              {displayPct}%
-            </span>
-          </div>
-          
-          <div className="hidden sm:block">
-            <LogoutButton variant="onDark" />
-          </div>
-        </div>
-      </header>
 
-      <aside
-        className="fixed bottom-0 left-0 top-16 z-50 hidden w-20 flex-col items-center gap-2 border-r border-[#e2e8f0] bg-[#f8fafc] py-5 md:flex"
-        aria-label="Side rail"
-      >
-        <Link href="/student/dashboard" className={railLink} title="My learning">
-          <Home className="h-5 w-5" strokeWidth={2.2} />
-        </Link>
-        <Link href="/student/browse" className={railLink} title="Browse catalog">
-          <BookOpen className="h-5 w-5" strokeWidth={2.2} />
-        </Link>
-        <Link href="/student/courses" className={railLink} title="My courses">
-          <LayoutGrid className="h-5 w-5" strokeWidth={2.2} />
-        </Link>
-        <div className="my-2 h-px w-8 bg-slate-200" />
-        <Link
-          href={`/student/course/${courseId}?tab=forum`}
-          className={railLink}
-          title="Forum"
-        >
-          <MessageSquare className="h-5 w-5" strokeWidth={2.2} />
-        </Link>
-        <Link
-          href={`/student/course/${courseId}?tab=ai-quiz`}
-          className={railLink}
-          title="AI quiz"
-        >
-          <Sparkles className="h-5 w-5" strokeWidth={2.2} />
-        </Link>
-      </aside>
-
-      {/* Mobile nav rail (Bottom) */}
-      <nav className="fixed bottom-0 inset-x-0 z-50 flex h-16 items-center justify-around border-t border-slate-200 bg-white/95 backdrop-blur-md px-2 md:hidden">
-        <Link href="/student/dashboard" className={cn(railLink, "h-12 w-12")} title="Home">
-          <Home className="h-5 w-5" />
-        </Link>
-        <Link href="/student/browse" className={cn(railLink, "h-12 w-12")} title="Explore">
-          <BookOpen className="h-5 w-5" />
-        </Link>
-        <button 
-          onClick={() => setSidebarOpen(true)}
-          className="flex h-12 w-12 -translate-y-4 items-center justify-center rounded-2xl bg-[var(--primary)] text-white shadow-lg shadow-[var(--primary)]/30 ring-4 ring-white"
-        >
-          <Menu className="h-6 w-6" />
-        </button>
-        <Link href={`/student/course/${courseId}/ai-quiz`} className={cn(railLink, "h-12 w-12")} title="AI Tool">
-          <Sparkles className="h-5 w-5" />
-        </Link>
-        <Link href={`/student/course/${courseId}/forum`} className={cn(railLink, "h-12 w-12")} title="Forum">
-          <MessageSquare className="h-5 w-5" />
-        </Link>
-      </nav>
-
-      <main className="flex flex-1 flex-col pt-16 md:pl-20 pb-16 md:pb-0">
-        <div className="flex h-full min-w-0 flex-1 flex-col lg:flex-row">
-          {/* Main Stage (Video/Content) */}
-          <div className="flex min-w-0 flex-1 flex-col">
-            <div className="flex flex-1 flex-col bg-slate-900 overflow-hidden relative min-h-[50vh] lg:min-h-0">
-              {childrenStage}
+              <div className="border-t border-slate-200/60 bg-white pb-36 md:pb-32 lg:pb-0">
+                {childrenLessonPanel}
+              </div>
             </div>
-            
-            <div className="border-t border-slate-200 bg-white">
-              {childrenLessonPanel}
-            </div>
-          </div>
 
-          {/* Sidebar / Curriculum */}
-          <aside 
-            className={cn(
-              "fixed inset-y-0 right-0 z-[70] w-full max-w-[350px] transform border-l border-slate-200 bg-white transition-transform duration-300 ease-in-out lg:relative lg:inset-y-auto lg:z-0 lg:block lg:translate-x-0",
-              sidebarOpen ? "translate-x-0" : "translate-x-full"
-            )}
-          >
-            {/* Close button for mobile sidebar */}
-            <div className="flex h-16 items-center justify-between border-b border-slate-100 px-4 lg:hidden">
-              <span className="font-bold text-slate-900">Course Outline</span>
-              <button 
-                onClick={() => setSidebarOpen(false)}
-                className="rounded-lg bg-slate-100 p-2 text-slate-500 hover:bg-slate-200"
+            {/* ─── Desktop Curriculum Sidebar ─── */}
+            <aside
+              className="hidden lg:flex h-full w-full max-w-[340px] flex-col border-l border-slate-200/50 bg-white/80 backdrop-blur-md"
+            >
+              <ScrollArea className="flex-1">
+                <div className="min-h-0">{childrenSidebar}</div>
+              </ScrollArea>
+            </aside>
+          </div>
+        </main>
+
+        {/* Mobile Control Bar - Placeholder for Next/Prev/Complete which are currently in page.tsx stage and panel */}
+        {/* We will hide the old mobile rail and use this if needed, or stick to the stage controls */}
+        <nav
+          className="fixed inset-x-0 bottom-0 z-50 flex h-[4.5rem] items-end justify-around border-t border-slate-200/80 bg-white/95 px-1 pb-1 backdrop-blur-md md:hidden"
+          aria-label="Mobile navigation"
+        >
+          <LabeledIconButton
+            icon={Home}
+            label="Home"
+            layout="stacked"
+            href="/student/dashboard"
+            className="text-slate-500"
+          />
+          <LabeledIconButton
+            icon={LayoutGrid}
+            label="Courses"
+            layout="stacked"
+            href="/student/courses"
+            className="text-slate-500"
+          />
+
+          <Sheet>
+            <SheetTrigger asChild>
+              <button
+                type="button"
+                className="-mt-5 flex min-w-[3.5rem] flex-col items-center gap-0.5 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2"
+                aria-label="Open course lessons"
               >
-                <ChevronRight className="h-5 w-5" />
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--primary)] text-white shadow-lg shadow-[var(--primary)]/30 ring-4 ring-white transition active:scale-95">
+                  <ListOrdered className="h-6 w-6" aria-hidden />
+                </span>
+                <span className="text-[10px] font-semibold leading-none text-[var(--primary-strong)]">
+                  Lessons
+                </span>
               </button>
-            </div>
-            
-            <div className="h-[calc(100vh-4rem)] overflow-y-auto">
-              {childrenSidebar}
-            </div>
-          </aside>
-          
-          {/* Mobile Overlay */}
-          {sidebarOpen && (
-            <div 
-              className="fixed inset-0 z-[65] bg-slate-900/40 backdrop-blur-sm lg:hidden"
-              onClick={() => setSidebarOpen(false)}
-            />
-          )}
-        </div>
-      </main>
-    </div>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-[80vh] rounded-t-3xl border-t border-slate-200/50 bg-white/95 backdrop-blur-lg p-0">
+              <SheetHeader className="px-6 pt-6 pb-2">
+                <SheetTitle className="font-display text-lg font-bold">Curriculum</SheetTitle>
+              </SheetHeader>
+              <ScrollArea className="h-full px-2">
+                <div className="pb-32">{childrenSidebar}</div>
+              </ScrollArea>
+            </SheetContent>
+          </Sheet>
+
+          <LabeledIconButton
+            icon={Sparkles}
+            label="AI Quiz"
+            layout="stacked"
+            href={`/student/course/${courseId}?tab=ai-quiz`}
+            className="text-slate-500"
+          />
+          <LabeledIconButton
+            icon={MessageSquare}
+            label="Forum"
+            layout="stacked"
+            href={`/student/course/${courseId}?tab=forum`}
+            className="text-slate-500"
+          />
+        </nav>
+      </div>
+    </TooltipProvider>
   );
 }

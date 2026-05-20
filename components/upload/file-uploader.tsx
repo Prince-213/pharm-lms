@@ -3,6 +3,7 @@
 import { Upload, X, FileVideo, FileText, Image as ImageIcon, AlertCircle, RefreshCw, Trash2 } from "lucide-react";
 import { useCallback, useState, useRef } from "react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 type UploadPurpose =
   | "thumbnail"
@@ -23,12 +24,18 @@ type FileUploaderProps = {
   courseId: string;
   accept?: string;
   maxSizeMb?: number;
-  onUploadComplete: (url: string) => void;
+  onUploadComplete: (
+    url: string,
+    fileMeta?: { name: string; sizeBytes: number; mimeType?: string },
+  ) => void;
   disabled?: boolean;
   currentUrl?: string | null;
+  /** Friendly label when file is already uploaded (e.g. original filename). */
+  fileName?: string | null;
   label?: string;
   description?: string;
   showPreview?: boolean;
+  compact?: boolean;
   onRemove?: () => void;
 };
 
@@ -43,6 +50,8 @@ export function FileUploader({
   label,
   description,
   showPreview = true,
+  compact = false,
+  fileName,
   onRemove,
 }: FileUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
@@ -182,7 +191,11 @@ export function FileUploader({
         }
 
         const data = (await response.json()) as { url: string };
-        onUploadComplete(data.url);
+        onUploadComplete(data.url, {
+          name: file.name,
+          sizeBytes: file.size,
+          mimeType: file.type || undefined,
+        });
         setIsReplacing(false);
         toast.success(`${getLabel()} uploaded successfully`);
         setUploadProgress(100);
@@ -251,43 +264,64 @@ export function FileUploader({
     }
     setFilePreview(null);
   };
+  const displayName =
+    fileName?.trim() ||
+    (currentUrl?.startsWith("r2://")
+      ? "Uploaded file"
+      : currentUrl?.split("/").pop()?.split("?")[0]) ||
+    "Uploaded file";
+
   if (currentUrl && !isReplacing && !isUploading) {
     return (
       <div className="space-y-2">
-        <label className="text-xs font-semibold text-[var(--foreground)]">{getLabel()}</label>
-        <div className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-white p-4 shadow-sm">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="rounded-md bg-purple-50 p-2">
-              {getFileIcon()}
+        <label className="text-xs font-semibold text-[var(--foreground)]">
+          {getLabel()}
+        </label>
+        <div
+          className={cn(
+            "rounded-lg border border-[var(--border)] bg-[var(--surface)]",
+            compact ? "p-3" : "p-4 shadow-sm",
+          )}
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-3">
+              <div
+                className={cn(
+                  "shrink-0 rounded-lg bg-[var(--surface-muted)]",
+                  compact ? "p-1.5" : "p-2",
+                )}
+              >
+                {getFileIcon()}
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-[var(--foreground)]">
+                  {displayName}
+                </p>
+                <p className="text-xs text-[var(--muted)]">Ready — replace or remove anytime</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-[var(--foreground)]">
-                {currentUrl.split("/").pop()}
-              </p>
-              <p className="text-xs text-[var(--muted)]">Successfully uploaded</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={() => setIsReplacing(true)}
-              disabled={disabled}
-              className="flex items-center gap-1 text-xs font-semibold text-[var(--primary)] hover:opacity-80"
-            >
-              <RefreshCw className="h-3 w-3" />
-              Replace
-            </button>
-            {onRemove && (
+            <div className="flex shrink-0 flex-wrap gap-2">
               <button
                 type="button"
-                onClick={onRemove}
+                onClick={() => setIsReplacing(true)}
                 disabled={disabled}
-                className="flex items-center gap-1 text-xs font-semibold text-red-600 hover:opacity-80"
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[var(--border)] bg-white px-3 text-xs font-semibold text-[var(--primary)] transition hover:bg-[var(--surface-muted)] disabled:opacity-50"
               >
-                <Trash2 className="h-3 w-3" />
-                Remove
+                <RefreshCw className="h-3.5 w-3.5" aria-hidden />
+                Replace
               </button>
-            )}
+              {onRemove ? (
+                <button
+                  type="button"
+                  onClick={onRemove}
+                  disabled={disabled}
+                  className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:opacity-50"
+                >
+                  <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                  Remove
+                </button>
+              ) : null}
+            </div>
           </div>
         </div>
       </div>
@@ -312,11 +346,16 @@ export function FileUploader({
       </div>
 
       <div
-        className={`relative rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
+        className={cn(
+          "relative rounded-lg border-2 border-dashed text-center transition-colors",
+          compact ? "p-4" : "p-6",
           isDragging
             ? "border-[var(--primary)] bg-[var(--primary)]/5"
-            : "border-[var(--border)] hover:border-[var(--muted)]"
-        } ${disabled || isUploading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+            : "border-[var(--border)] hover:border-[var(--muted)]",
+          disabled || isUploading
+            ? "cursor-not-allowed opacity-50"
+            : "cursor-pointer",
+        )}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}

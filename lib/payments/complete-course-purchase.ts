@@ -36,8 +36,37 @@ export async function completeCoursePurchaseFromReference(
       },
     });
     if (enrollment) {
+      if (!purchase.enrollmentId) {
+        await db.coursePurchase.update({
+          where: { id: purchase.id },
+          data: { enrollmentId: enrollment.id },
+        });
+      }
       return { ok: true, courseId: purchase.courseId, enrollmentId: enrollment.id };
     }
+
+    const restored = await db.$transaction(async (tx) => {
+      const en = await tx.enrollment.create({
+        data: {
+          courseId: purchase.courseId,
+          studentId: purchase.studentId,
+        },
+      });
+      await tx.coursePurchase.update({
+        where: { id: purchase.id },
+        data: { enrollmentId: en.id },
+      });
+      return en;
+    });
+    await evaluateStudentBadges(purchase.studentId);
+    revalidatePath("/student/courses");
+    revalidatePath("/student/browse");
+    revalidatePath(`/student/course/${purchase.courseId}`);
+    return {
+      ok: true,
+      courseId: purchase.courseId,
+      enrollmentId: restored.id,
+    };
   }
 
   let paystackTxId = options?.paystackTransactionId;

@@ -1,0 +1,58 @@
+"use client";
+
+import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import * as React from "react";
+import { cn } from "@/lib/utils";
+
+const TooltipProvider = TooltipPrimitive.Provider;
+const TooltipRoot = TooltipPrimitive.Root;
+const TooltipTrigger = TooltipPrimitive.Trigger;
+
+const TooltipContent = React.forwardRef<
+  React.ElementRef<typeof TooltipPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
+>(({ className, sideOffset = 6, ...props }, ref) => (
+  <TooltipPrimitive.Portal>
+    <TooltipPrimitive.Content
+      ref={ref}
+      sideOffset={sideOffset}
+      className={cn(
+        // Clinical-minimalist: dark slate with micro text, subtle fade-in
+        "z-50 overflow-hidden rounded-lg border border-slate-700/60 bg-[var(--ink-deep)] px-2.5 py-1.5 text-[11px] font-semibold leading-none tracking-wide text-white shadow-md",
+        "animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
+        "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        className,
+      )}
+      {...props}
+    />
+  </TooltipPrimitive.Portal>
+));
+TooltipContent.displayName = TooltipPrimitive.Content.displayName;
+
+/** Convenience one-liner: wrap any element with a Tooltip */
+function Tooltip({
+  children,
+  content,
+  side = "right",
+  delayDuration = 300,
+  ...rootProps
+}: {
+  children: React.ReactNode;
+  content: React.ReactNode;
+  side?: React.ComponentPropsWithoutRef<typeof TooltipContent>["side"];
+} & React.ComponentPropsWithoutRef<typeof TooltipRoot>) {
+  return (
+    <TooltipRoot delayDuration={delayDuration} {...rootProps}>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent side={side}>{content}</TooltipContent>
+    </TooltipRoot>
+  );
+}
+
+export {
+  Tooltip,
+  TooltipProvider,
+  TooltipRoot,
+  TooltipTrigger,
+  TooltipContent,
+};

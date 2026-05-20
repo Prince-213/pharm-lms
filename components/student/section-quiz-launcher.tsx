@@ -1,14 +1,16 @@
 "use client";
 
-import { CheckCircle2, ClipboardList, HelpCircle, X } from "lucide-react";
+import { CheckCircle2, HelpCircle, ListChecks, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import {
   gradeSubmission,
   type NormalizedQuestion,
   normalizeQuizQuestions,
   seededShuffle,
 } from "@/lib/section-quiz-questions";
+import { LabeledIconButton } from "@/components/student/labeled-icon-button";
 import { cn } from "@/lib/utils";
 
 type SectionQuiz = {
@@ -20,9 +22,22 @@ type SectionQuiz = {
 export function SectionQuizLauncher({
   quizzes,
   triggerVariant = "default",
+  size = "default",
+  defaultQuizId,
+  quizTitle,
 }: {
   quizzes: SectionQuiz[];
-  triggerVariant?: "default" | "icon";
+  triggerVariant?:
+    | "default"
+    | "icon"
+    | "labeled"
+    | "sidebar-link"
+    | "section-badge";
+  size?: "sm" | "default";
+  /** When set, opens this quiz first (e.g. sidebar row click). */
+  defaultQuizId?: string;
+  /** Label for sidebar-link trigger; defaults to first quiz title. */
+  quizTitle?: string;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -95,50 +110,117 @@ export function SectionQuizLauncher({
     });
   }
 
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
   if (!quizzes.length) return null;
 
-  const openQuiz = () => {
+  const openQuiz = (quizId?: string) => {
+    if (quizId && quizzes.some((q) => q.id === quizId)) {
+      setActiveQuizId(quizId);
+    } else if (defaultQuizId && quizzes.some((q) => q.id === defaultQuizId)) {
+      setActiveQuizId(defaultQuizId);
+    }
     setOpen(true);
     setShowResults(false);
   };
 
   const quizTooltip = "Take section quiz";
+  const linkLabel = quizTitle ?? quizzes[0]?.title ?? "Section quiz";
 
-  return (
-    <>
-      {triggerVariant === "icon" ? (
-        <button
-          type="button"
-          onClick={openQuiz}
-          title={quizTooltip}
-          aria-label={quizTooltip}
-          className={cn(
-            "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2",
-            open || showResults
-              ? "border-[var(--primary)] bg-[var(--primary-soft)] text-[var(--primary-strong)] ring-2 ring-[var(--primary)]/20"
-              : attemptedThisSession
-                ? "border-[var(--success)]/60 bg-[var(--success-soft)] text-[var(--success)]"
-                : "border-[#d1d7dc] bg-white text-[var(--foreground)] hover:border-[var(--primary)]/40 hover:bg-[#fafafa]",
-          )}
-        >
-          <ClipboardList className="h-5 w-5" aria-hidden />
-        </button>
-      ) : (
-        <button
-          type="button"
-          onClick={openQuiz}
-          className="inline-flex h-10 items-center justify-center rounded-[var(--radius-md)] border border-[var(--primary)]/25 bg-[var(--primary-soft)] px-4 text-sm font-semibold text-[var(--primary-strong)] transition hover:border-[var(--primary)]/45"
-        >
-          Take section quiz
-        </button>
-      )}
+  const trigger =
+    triggerVariant === "labeled" ? (
+      <LabeledIconButton
+        icon={ListChecks}
+        label="Quiz"
+        ariaLabel={quizTooltip}
+        tone={
+          open || showResults
+            ? "primary"
+            : attemptedThisSession
+              ? "success"
+              : "default"
+        }
+        onClick={() => openQuiz()}
+      />
+    ) : triggerVariant === "icon" ? (
+      <button
+        type="button"
+        onClick={() => openQuiz()}
+        title={quizTooltip}
+        aria-label={quizTooltip}
+        className={cn(
+          "inline-flex shrink-0 items-center justify-center rounded-lg border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2",
+          size === "sm" ? "h-9 w-9" : "h-10 w-10",
+          open || showResults
+            ? "border-[var(--primary)] bg-[var(--primary-soft)] text-[var(--primary-strong)] ring-2 ring-[var(--primary)]/20"
+            : attemptedThisSession
+              ? "border-[var(--success)]/60 bg-[var(--success-soft)] text-[var(--success)]"
+              : "border-[#d1d7dc] bg-white text-[var(--foreground)] hover:border-[var(--primary)]/40 hover:bg-[#fafafa]",
+        )}
+      >
+        <ListChecks
+          className={size === "sm" ? "h-4.5 w-4.5" : "h-5 w-5"}
+          aria-hidden
+        />
+      </button>
+    ) : triggerVariant === "sidebar-link" ? (
+      <button
+        type="button"
+        onClick={() => openQuiz(defaultQuizId)}
+        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-[11px] font-bold text-amber-700 transition-colors bg-amber-50/50 hover:bg-amber-100/50"
+      >
+        <ListChecks className="h-3.5 w-3.5 shrink-0" aria-hidden />
+        <span className="truncate">{linkLabel}</span>
+      </button>
+    ) : triggerVariant === "section-badge" ? (
+      <button
+        type="button"
+        onClick={() => openQuiz()}
+        title={quizTooltip}
+        aria-label={quizTooltip}
+        className="flex h-5 w-5 items-center justify-center rounded bg-amber-100 text-amber-700 ring-1 ring-amber-200 transition hover:bg-amber-200/80"
+      >
+        <ListChecks className="h-3 w-3" aria-hidden />
+      </button>
+    ) : (
+      <button
+        type="button"
+        onClick={() => openQuiz()}
+        className="inline-flex h-10 items-center justify-center rounded-[var(--radius-md)] border border-[var(--primary)]/25 bg-[var(--primary-soft)] px-4 text-sm font-semibold text-[var(--primary-strong)] transition hover:border-[var(--primary)]/45"
+      >
+        Take section quiz
+      </button>
+    );
 
-      {open ? (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/45 p-4">
-          <div className="w-full max-w-3xl rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-lg)]">
-            <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-3">
+  const modal =
+    open && typeof document !== "undefined"
+      ? createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+            <button
+              type="button"
+              className="absolute inset-0 bg-black/45"
+              aria-label="Close quiz"
+              onClick={() => setOpen(false)}
+            />
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="section-quiz-title"
+              className="relative z-[101] flex max-h-[min(90dvh,900px)] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-lg)]"
+            >
+            <div className="flex shrink-0 items-center justify-between border-b border-[var(--border)] px-5 py-3">
               <div>
-                <p className="text-sm font-semibold text-[var(--foreground)]">
+                <p
+                  id="section-quiz-title"
+                  className="text-sm font-semibold text-[var(--foreground)]"
+                >
                   Section quiz
                 </p>
                 <p className="text-xs text-[var(--muted)]">
@@ -155,7 +237,7 @@ export function SectionQuizLauncher({
               </button>
             </div>
 
-            <div className="border-b border-[var(--border)] px-5 py-3">
+            <div className="shrink-0 border-b border-[var(--border)] px-5 py-3">
               <div className="flex flex-wrap gap-2">
                 {quizzes.map((q) => (
                   <button
@@ -177,7 +259,7 @@ export function SectionQuizLauncher({
               </div>
             </div>
 
-            <div className="max-h-[65vh] overflow-auto px-5 py-4">
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
               {!activeQuiz || !questions.length ? (
                 <p className="text-sm text-[var(--muted)]">
                   No questions configured for this quiz.
@@ -267,7 +349,7 @@ export function SectionQuizLauncher({
               )}
             </div>
 
-            <div className="flex items-center justify-end gap-2 border-t border-[var(--border)] px-5 py-3">
+            <div className="flex shrink-0 items-center justify-end gap-2 border-t border-[var(--border)] px-5 py-3">
               <button
                 type="button"
                 onClick={() => setOpen(false)}
@@ -305,8 +387,15 @@ export function SectionQuizLauncher({
               )}
             </div>
           </div>
-        </div>
-      ) : null}
+        </div>,
+          document.body,
+        )
+      : null;
+
+  return (
+    <>
+      {trigger}
+      {modal}
     </>
   );
 }

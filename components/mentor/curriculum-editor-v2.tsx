@@ -8,6 +8,8 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
+import { Separator } from "@/components/ui/separator";
 import {
   arrayMove,
   SortableContext,
@@ -39,7 +41,9 @@ import {
 } from "react";
 import { useCourseStudio } from "@/components/mentor/course-studio-context";
 import { RichTextArea } from "@/components/rich-text-area";
+import { CurriculumFormPanel } from "@/components/mentor/curriculum-form-panel";
 import { FileUploader } from "@/components/upload/file-uploader";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { parseSectionDescription as parseDescription } from "@/lib/curriculum";
 
@@ -156,6 +160,14 @@ function patchSectionDescription(
   });
 }
 
+type CurriculumPanel =
+  | { kind: "lesson"; sectionId: string }
+  | { kind: "item"; sectionId: string }
+  | { kind: "resource"; sectionId: string };
+
+const fieldClass =
+  "w-full rounded-lg border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--foreground)] placeholder:text-[var(--muted)] focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/15 disabled:bg-[var(--surface-muted)] disabled:opacity-70";
+
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export function CurriculumEditorV2({ courseId }: { courseId: string }) {
@@ -173,15 +185,15 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
   const [editingSectionTitle, setEditingSectionTitle] = useState("");
 
+  const [activePanel, setActivePanel] = useState<CurriculumPanel | null>(null);
+
   // ── Lesson form ───────────────────────────────────────────────────────────
-  const [activeSectionForLesson, setActiveSectionForLesson] = useState<string | null>(null);
   const [newLessonTitle, setNewLessonTitle] = useState("");
   const [newLessonType, setNewLessonType] = useState<"VIDEO" | "ARTICLE">("VIDEO");
   const [newLessonArticleContent, setNewLessonArticleContent] = useState("");
-  const [newLessonVideoFile, setNewLessonVideoFile] = useState<File | null>(null);
+  const [newLessonVideoUrl, setNewLessonVideoUrl] = useState<string | null>(null);
 
   // ── Curriculum item form ──────────────────────────────────────────────────
-  const [activeSectionForItem, setActiveSectionForItem] = useState<string | null>(null);
   const [itemType, setItemType] = useState<"QUIZ" | "ASSIGNMENT">("QUIZ");
   const [itemTitle, setItemTitle] = useState("");
   const [quizMcqRows, setQuizMcqRows] = useState<McqFormRow[]>(() => [
@@ -191,11 +203,15 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
   const [assignmentDueDays, setAssignmentDueDays] = useState("7");
 
   // ── Resource form ─────────────────────────────────────────────────────────
-  const [activeSectionForResource, setActiveSectionForResource] = useState<string | null>(null);
   const [resourceType, setResourceType] = useState<"LINK" | "FILE">("LINK");
   const [resourceTitle, setResourceTitle] = useState("");
   const [resourceUrl, setResourceUrl] = useState("");
-  const [resourceFile, setResourceFile] = useState<File | null>(null);
+  const [resourceFileUrl, setResourceFileUrl] = useState<string | null>(null);
+  const [resourceFileMeta, setResourceFileMeta] = useState<{
+    name: string;
+    sizeBytes: number;
+    mimeType?: string;
+  } | null>(null);
   const [resourceUploading, setResourceUploading] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
@@ -210,9 +226,45 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
   const canAddResource = useMemo(
     () =>
       resourceTitle.trim().length >= 2 &&
-      (resourceType === "FILE" ? Boolean(resourceFile) : resourceUrl.trim().length >= 4),
-    [resourceTitle, resourceType, resourceFile, resourceUrl],
+      (resourceType === "FILE"
+        ? Boolean(resourceFileUrl)
+        : resourceUrl.trim().length >= 4),
+    [resourceTitle, resourceType, resourceFileUrl, resourceUrl],
   );
+
+  const canAddNewLesson = useMemo(() => {
+    if (newLessonType === "ARTICLE") {
+      return newLessonArticleContent.replace(/<[^>]+>/g, " ").trim().length > 0;
+    }
+    return Boolean(newLessonVideoUrl);
+  }, [newLessonType, newLessonArticleContent, newLessonVideoUrl]);
+
+  function openPanel(panel: CurriculumPanel) {
+    setExpandedSections((prev) => new Set([...prev, panel.sectionId]));
+    setActivePanel(panel);
+  }
+
+  function closePanel() {
+    setActivePanel(null);
+    setNewLessonTitle("");
+    setNewLessonType("VIDEO");
+    setNewLessonArticleContent("");
+    setNewLessonVideoUrl(null);
+    setItemTitle("");
+    setItemType("QUIZ");
+    setQuizMcqRows([createEmptyMcqRow()]);
+    setAssignmentDescription("");
+    setAssignmentDueDays("7");
+    setResourceType("LINK");
+    setResourceTitle("");
+    setResourceUrl("");
+    setResourceFileUrl(null);
+    setResourceFileMeta(null);
+  }
+
+  function panelOpenFor(sectionId: string, kind: CurriculumPanel["kind"]) {
+    return activePanel?.kind === kind && activePanel.sectionId === sectionId;
+  }
 
   const lessonUpdateDebounce = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
@@ -294,15 +346,6 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     const res = await runPending(() =>
       fetch(`/api/tutor/courses/${courseId}/upload`, { method: "POST", body: formData }),
     );
-    if (!res.ok) return null;
-    return (await res.json()) as { url: string };
-  }
-
-  async function uploadResourceFile(file: File) {
-    const formData = new FormData();
-    formData.set("file", file);
-    formData.set("purpose", "resource-file");
-    const res = await fetch(`/api/tutor/courses/${courseId}/upload`, { method: "POST", body: formData });
     if (!res.ok) return null;
     return (await res.json()) as { url: string };
   }
@@ -407,10 +450,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
           s.id === sectionId ? { ...s, lessons: [...s.lessons, tempLesson] } : s,
         ),
       );
-      setActiveSectionForLesson(null);
-      setNewLessonTitle("");
-      setNewLessonType("VIDEO");
-      setNewLessonArticleContent("");
+      closePanel();
 
       const res = await fetch(
         `/api/tutor/courses/${courseId}/sections/${sectionId}/lessons`,
@@ -466,9 +506,8 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
           s.id === sectionId ? { ...s, lessons: [...s.lessons, tempLesson] } : s,
         ),
       );
-      setActiveSectionForLesson(null);
-      setNewLessonTitle("");
-      setNewLessonType("VIDEO");
+      closePanel();
+      setNewLessonVideoUrl(null);
 
       const res = await fetch(
         `/api/tutor/courses/${courseId}/sections/${sectionId}/lessons`,
@@ -598,7 +637,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     setQuizMcqRows([createEmptyMcqRow()]);
     setAssignmentDescription("");
     setAssignmentDueDays("7");
-    setActiveSectionForItem(null);
+    closePanel();
 
     const res = await runPending(() =>
       fetch(`/api/tutor/courses/${courseId}/sections/${sectionId}/items`, {
@@ -644,62 +683,87 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
   async function addResource(sectionId: string) {
     if (readOnly || saving) return;
     setResourceUploading(true);
-    let uploadedMsgId: string | number | undefined;
-    
+
     try {
-      let url = resourceUrl.trim();
-      if (resourceType === "FILE") {
-        if (!resourceFile) return;
-        uploadedMsgId = toast.loading("Uploading file...");
-        const uploaded = await uploadResourceFile(resourceFile);
-        if (!uploaded) { 
-          toast.error("File upload failed.", { id: uploadedMsgId }); 
-          return; 
-        }
-        toast.dismiss(uploadedMsgId);
-        url = uploaded.url;
-      }
-      
+      const url =
+        resourceType === "FILE"
+          ? (resourceFileUrl ?? "").trim()
+          : resourceUrl.trim();
+      if (!url) return;
+
       const newResource: SectionResource = {
         id: crypto.randomUUID(),
         type: resourceType,
         title: resourceTitle.trim(),
         url,
-        ...(resourceType === "FILE" && resourceFile
+        ...(resourceType === "FILE" && resourceFileMeta
           ? {
-              originalFileName: resourceFile.name,
-              sizeBytes: resourceFile.size,
-              mimeType: resourceFile.type || undefined,
+              originalFileName: resourceFileMeta.name,
+              sizeBytes: resourceFileMeta.sizeBytes,
+              mimeType: resourceFileMeta.mimeType,
             }
           : {}),
       };
-      
+
       const section = sections.find((s) => s.id === sectionId);
       if (!section) return;
-      
+
       const oldSections = [...sections];
       const updatedResources = [...section.resources, newResource];
-      
-      // Optimistic update
+
       setSections((prev) => patchSectionDescription(prev, sectionId, updatedResources));
-      setResourceTitle("");
-      setResourceUrl("");
-      setResourceFile(null);
-      setResourceType("LINK");
-      setActiveSectionForResource(null);
-      
+      closePanel();
+
       toast.promise(pushResources(sectionId, updatedResources), {
-        loading: 'Attaching resource...',
-        success: 'Resource attached',
+        loading: "Attaching resource…",
+        success: "Resource attached",
         error: () => {
           setSections(oldSections);
-          return 'Failed to attach resource';
-        }
+          return "Failed to attach resource";
+        },
       });
     } finally {
-      if (uploadedMsgId) toast.dismiss(uploadedMsgId);
       setResourceUploading(false);
     }
+  }
+
+  async function replaceResourceFile(
+    sectionId: string,
+    resourceId: string,
+    url: string,
+    meta?: { name: string; sizeBytes: number; mimeType?: string },
+  ) {
+    if (readOnly || saving) return;
+    const section = sections.find((s) => s.id === sectionId);
+    if (!section) return;
+
+    const oldSections = [...sections];
+    const updatedResources = section.resources.map((r) =>
+      r.id === resourceId
+        ? {
+            ...r,
+            url,
+            ...(meta
+              ? {
+                  originalFileName: meta.name,
+                  sizeBytes: meta.sizeBytes,
+                  mimeType: meta.mimeType,
+                }
+              : {}),
+          }
+        : r,
+    );
+
+    setSections((prev) => patchSectionDescription(prev, sectionId, updatedResources));
+
+    toast.promise(pushResources(sectionId, updatedResources), {
+      loading: "Updating file…",
+      success: "File updated",
+      error: () => {
+        setSections(oldSections);
+        return "Failed to update file";
+      },
+    });
   }
 
   async function removeResource(sectionId: string, resourceId: string) {
@@ -766,17 +830,23 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
   if (error) return <p className="p-6 text-sm text-[#b32d0f]">{error}</p>;
 
   return (
-    <div className="space-y-5 px-6 py-5">
+    <TooltipProvider>
+    <div className="space-y-6 px-3 py-4 sm:px-6 sm:py-6">
       {readOnly ? (
-        <p className="rounded border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-sm text-[var(--muted)]">
+        <p className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-sm text-[var(--muted)]">
           This course is pending review. Curriculum is read-only.
         </p>
       ) : null}
-      <div className="rounded border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm">
-        Manage content by type: video uploads, article text, quiz questions,
-        assignment instructions, and section resources.
-      </div>
-      {saving ? <p className="text-xs text-[var(--muted)]">Saving...</p> : null}
+      <p className="text-sm text-[var(--muted)]">
+        Expand a section to edit lessons, quizzes, and resources. Add buttons open a
+        panel that stays visible on mobile.
+      </p>
+      {saving ? (
+        <p className="flex items-center gap-1.5 text-xs text-slate-400">
+          <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--primary)]" />
+          Saving changes…
+        </p>
+      ) : null}
 
       <DndContext
         sensors={sensors}
@@ -839,56 +909,76 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                     )}
                   </div>
                   
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-1 shrink-0">
                     {!editingSectionId && (
-                       <button
-                       type="button"
-                       disabled={interactionLocked}
-                       onClick={(e) => {
-                         e.stopPropagation();
-                         setEditingSectionId(section.id);
-                         setEditingSectionTitle(section.title);
-                       }}
-                       className="rounded p-1 text-[var(--muted)] hover:bg-[var(--surface-muted)]"
-                     >
-                       <Pencil className="h-4 w-4" />
-                     </button>
+                      <Tooltip content="Rename section" side="top">
+                        <button
+                          type="button"
+                          disabled={interactionLocked}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingSectionId(section.id);
+                            setEditingSectionTitle(section.title);
+                          }}
+                          className="rounded-lg p-1.5 text-slate-400 transition-all hover:bg-slate-100 hover:text-slate-600 active:scale-95 disabled:pointer-events-none disabled:opacity-40"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                      </Tooltip>
                     )}
-                    <button
-                      type="button"
-                      disabled={interactionLocked}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        void deleteSection(section.id);
-                      }}
-                      className="rounded p-1 text-red-400 hover:bg-red-50 hover:text-red-600"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                    <div className="h-4 w-px bg-gray-200 mx-1" />
+                    <Tooltip content="Delete section" side="top">
+                      <button
+                        type="button"
+                        disabled={interactionLocked}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void deleteSection(section.id);
+                        }}
+                        className="rounded-lg p-1.5 text-slate-400 transition-all hover:bg-red-50 hover:text-red-500 active:scale-95 disabled:pointer-events-none disabled:opacity-40"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </Tooltip>
+                    <div className="h-4 w-px bg-slate-200 mx-1" />
                     {expandedSections.has(section.id) ? (
-                      <ChevronUp className="h-5 w-5 text-gray-400" />
+                      <ChevronUp className="h-4 w-4 text-slate-400" />
                     ) : (
-                      <ChevronDown className="h-5 w-5 text-gray-400" />
+                      <ChevronDown className="h-4 w-4 text-slate-400" />
                     )}
                   </div>
                 </div>
               }
             >
               {/* ── Lessons ─────────────────────────────────────────────── */}
-              <div className="space-y-4">
+              <div className="space-y-3">
+                {section.lessons.length === 0 ? (
+                  <p className="rounded-lg border border-dashed border-[var(--border)] px-3 py-4 text-center text-xs text-[var(--muted)]">
+                    No lessons yet. Use &quot;Add lesson&quot; below.
+                  </p>
+                ) : null}
                 {section.lessons.map((lesson) => {
                   const lessonType: "VIDEO" | "ARTICLE" =
                     lesson.content === null ? "VIDEO" : "ARTICLE";
                   return (
                     <div
                       key={lesson.id}
-                      className="group border border-[var(--border)] bg-white p-4 rounded-md shadow-sm transition hover:shadow-md"
+                      className="rounded-xl border border-[var(--border)] bg-white p-3 sm:p-4"
                     >
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                           <div className="bg-gray-50 p-2 rounded shrink-0">
-                            {lessonType === "VIDEO" ? <FileVideo className="h-4 w-4 text-purple-600" /> : <FileText className="h-4 w-4 text-emerald-600" />}
+                      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex min-w-0 flex-1 items-center gap-2.5">
+                          <div
+                            className={cn(
+                              "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+                              lessonType === "VIDEO"
+                                ? "bg-violet-50 text-violet-700"
+                                : "bg-emerald-50 text-emerald-700",
+                            )}
+                          >
+                            {lessonType === "VIDEO" ? (
+                              <FileVideo className="h-4 w-4" aria-hidden />
+                            ) : (
+                              <FileText className="h-4 w-4" aria-hidden />
+                            )}
                           </div>
                           <input
                             defaultValue={lesson.title}
@@ -898,10 +988,11 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                                 title: e.target.value,
                               })
                             }
-                            className="w-full border-none focus:ring-0 text-sm font-medium bg-transparent overflow-hidden text-ellipsis"
+                            className="min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-1 py-1 text-sm font-semibold text-[var(--foreground)] focus:border-[var(--border)] focus:bg-[var(--surface-muted)] focus:outline-none"
+                            aria-label="Lesson title"
                           />
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex items-center gap-2">
                           <select
                             value={lessonType}
                             disabled={interactionLocked}
@@ -937,7 +1028,8 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                                     : (lesson.videoUrl ?? ""),
                               });
                             }}
-                            className="bg-gray-50 border border-gray-200 rounded px-2 py-1 text-xs font-medium text-gray-600 focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                            className="h-9 rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] px-2.5 text-xs font-medium text-[var(--foreground)]"
+                            aria-label="Lesson type"
                           >
                             <option value="VIDEO">Video</option>
                             <option value="ARTICLE">Article</option>
@@ -946,323 +1038,368 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                             type="button"
                             disabled={interactionLocked}
                             onClick={() => void deleteLesson(section.id, lesson.id)}
-                            className="p-1.5 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
-                            title="Delete lesson"
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 transition hover:bg-red-100 disabled:opacity-50"
+                            aria-label="Delete lesson"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
                       </div>
-                      
+
                       {lessonType === "ARTICLE" ? (
-                        <div className="mt-2 pl-10 border-l-2 border-emerald-100">
-                          <RichTextArea
-                            value={lesson.content ?? ""}
-                            onChange={(html) => {
-                              setSections((prev) =>
-                                prev.map((sec) => {
-                                  if (sec.id !== section.id) return sec;
-                                  return {
-                                    ...sec,
-                                    lessons: sec.lessons.map((l) =>
-                                      l.id === lesson.id
-                                        ? {
-                                            ...l,
-                                            content: html,
-                                            videoUrl: null,
-                                          }
-                                        : l,
-                                    ),
-                                  };
-                                }),
-                              );
-                              queueLessonPatch(section.id, lesson.id, {
-                                contentType: "ARTICLE",
-                                value: html,
-                              });
-                            }}
-                            disabled={interactionLocked}
-                            placeholder="Article content"
-                            minHeightClass="min-h-[120px]"
-                          />
-                        </div>
+                        <RichTextArea
+                          value={lesson.content ?? ""}
+                          onChange={(html) => {
+                            setSections((prev) =>
+                              prev.map((sec) => {
+                                if (sec.id !== section.id) return sec;
+                                return {
+                                  ...sec,
+                                  lessons: sec.lessons.map((l) =>
+                                    l.id === lesson.id
+                                      ? {
+                                          ...l,
+                                          content: html,
+                                          videoUrl: null,
+                                        }
+                                      : l,
+                                  ),
+                                };
+                              }),
+                            );
+                            queueLessonPatch(section.id, lesson.id, {
+                              contentType: "ARTICLE",
+                              value: html,
+                            });
+                          }}
+                          disabled={interactionLocked}
+                          placeholder="Article content"
+                          minHeightClass="min-h-[120px]"
+                        />
                       ) : (
-                        <div className="mt-2 pl-10 border-l-2 border-purple-100">
-                          <FileUploader
-                            purpose="lesson-video"
-                            courseId={courseId}
-                            currentUrl={lesson.videoUrl}
-                            onUploadComplete={(url) => {
-                              setSections((prev) =>
-                                prev.map((sec) => {
-                                  if (sec.id !== section.id) return sec;
-                                  return {
-                                    ...sec,
-                                    lessons: sec.lessons.map((l) =>
-                                      l.id === lesson.id
-                                        ? {
-                                            ...l,
-                                            videoUrl: url,
-                                            content: null,
-                                          }
-                                        : l,
-                                    ),
-                                  };
-                                }),
-                              );
-                              queueLessonPatch(section.id, lesson.id, {
-                                contentType: "VIDEO",
-                                value: url,
-                              });
-                            }}
-                            onRemove={() => {
-                              setSections((prev) =>
-                                prev.map((sec) => {
-                                  if (sec.id !== section.id) return sec;
-                                  return {
-                                    ...sec,
-                                    lessons: sec.lessons.map((l) =>
-                                      l.id === lesson.id ? { ...l, videoUrl: null } : l
-                                    ),
-                                  };
-                                }),
-                              );
-                              queueLessonPatch(section.id, lesson.id, {
-                                contentType: "VIDEO",
-                                value: "",
-                              });
-                            }}
-                            disabled={interactionLocked}
-                            showPreview={false}
-                          />
-                        </div>
+                        <FileUploader
+                          purpose="lesson-video"
+                          courseId={courseId}
+                          compact
+                          currentUrl={lesson.videoUrl}
+                          onUploadComplete={(url) => {
+                            setSections((prev) =>
+                              prev.map((sec) => {
+                                if (sec.id !== section.id) return sec;
+                                return {
+                                  ...sec,
+                                  lessons: sec.lessons.map((l) =>
+                                    l.id === lesson.id
+                                      ? {
+                                          ...l,
+                                          videoUrl: url,
+                                          content: null,
+                                        }
+                                      : l,
+                                  ),
+                                };
+                              }),
+                            );
+                            queueLessonPatch(section.id, lesson.id, {
+                              contentType: "VIDEO",
+                              value: url,
+                            });
+                          }}
+                          onRemove={() => {
+                            setSections((prev) =>
+                              prev.map((sec) => {
+                                if (sec.id !== section.id) return sec;
+                                return {
+                                  ...sec,
+                                  lessons: sec.lessons.map((l) =>
+                                    l.id === lesson.id
+                                      ? { ...l, videoUrl: null }
+                                      : l,
+                                  ),
+                                };
+                              }),
+                            );
+                            queueLessonPatch(section.id, lesson.id, {
+                              contentType: "VIDEO",
+                              value: "",
+                            });
+                          }}
+                          disabled={interactionLocked}
+                          showPreview={false}
+                        />
                       )}
                     </div>
                   );
                 })}
               </div>
 
-              {/* ── Resources list ───────────────────────────────────────── */}
-              {section.resources.length > 0 && (
-                <div className="mt-3 rounded-lg border border-emerald-100 bg-emerald-50/40 p-3">
-                  <p className="mb-2 text-xs font-bold uppercase tracking-wider text-emerald-700">
-                    Section Resources
+              {/* ── Resources ───────────────────────────────────────────── */}
+              {section.resources.length > 0 ? (
+                <div className="mt-4 space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                    Resources
                   </p>
-                  <ul className="space-y-1.5">
+                  <ul className="space-y-2">
                     {section.resources.map((resource) => (
                       <li
                         key={resource.id}
-                        className="flex items-center gap-2 text-xs"
+                        className="rounded-xl border border-[var(--border)] bg-white p-3"
                       >
-                        {resource.type === "LINK" ? (
-                          <Link2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
-                        ) : (
-                          <FileText className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
-                        )}
-                        <a
-                          href={resource.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 truncate font-medium text-emerald-800 hover:underline"
-                        >
-                          {resource.title}
-                        </a>
-                        <ExternalLink className="h-3 w-3 text-emerald-400" />
-                        {!interactionLocked && (
+                        <div className="mb-2 flex items-start justify-between gap-2">
+                          <div className="flex min-w-0 items-center gap-2">
+                            {resource.type === "LINK" ? (
+                              <Link2
+                                className="h-4 w-4 shrink-0 text-[var(--primary)]"
+                                aria-hidden
+                              />
+                            ) : (
+                              <FileText
+                                className="h-4 w-4 shrink-0 text-[var(--primary)]"
+                                aria-hidden
+                              />
+                            )}
+                            <span className="truncate text-sm font-medium text-[var(--foreground)]">
+                              {resource.title}
+                            </span>
+                          </div>
+                          {resource.type === "LINK" ? (
+                            <a
+                              href={resource.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-[var(--primary)] hover:underline"
+                            >
+                              Open
+                              <ExternalLink className="h-3 w-3" aria-hidden />
+                            </a>
+                          ) : null}
+                        </div>
+                        {resource.type === "FILE" && !interactionLocked ? (
+                          <FileUploader
+                            purpose="resource-file"
+                            courseId={courseId}
+                            compact
+                            currentUrl={resource.url}
+                            fileName={resource.originalFileName}
+                            onUploadComplete={(url, meta) =>
+                              void replaceResourceFile(
+                                section.id,
+                                resource.id,
+                                url,
+                                meta,
+                              )
+                            }
+                            onRemove={() =>
+                              void removeResource(section.id, resource.id)
+                            }
+                            disabled={interactionLocked}
+                            showPreview={false}
+                          />
+                        ) : !interactionLocked ? (
                           <button
                             type="button"
                             onClick={() =>
                               void removeResource(section.id, resource.id)
                             }
-                            className="ml-1 rounded p-0.5 text-red-400 hover:bg-red-50 hover:text-red-600"
-                            aria-label="Remove resource"
+                            className="text-xs font-medium text-red-600 hover:underline"
                           >
-                            <X className="h-3 w-3" />
+                            Remove link
                           </button>
-                        )}
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+
+              {/* ── Quizzes & assignments ───────────────────────────────── */}
+              {(section.quizzes.length > 0 ||
+                section.assignmentItems.length > 0) && (
+                <div className="mt-4 space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                    Quizzes & assignments
+                  </p>
+                  <ul className="space-y-1.5">
+                    {section.quizzes.map((quiz) => (
+                      <li
+                        key={quiz.id}
+                        className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2 text-sm text-[var(--foreground)]"
+                      >
+                        Quiz · {quiz.title}
+                      </li>
+                    ))}
+                    {section.assignmentItems.map((a) => (
+                      <li
+                        key={a.id}
+                        className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2 text-sm text-[var(--foreground)]"
+                      >
+                        Assignment · {a.title}
                       </li>
                     ))}
                   </ul>
                 </div>
               )}
 
-              {/* ── Curriculum items list ────────────────────────────────── */}
-              {(section.quizzes.length > 0 ||
-                section.assignmentItems.length > 0) && (
-                <div className="mt-3 rounded border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-xs">
-                  <p className="mb-2 font-semibold text-[var(--foreground)]">
-                    Curriculum items
-                  </p>
-                  <div className="space-y-1">
-                    {section.quizzes.map((quiz) => (
-                      <p key={quiz.id}>{`Quiz: ${quiz.title}`}</p>
-                    ))}
-                    {section.assignmentItems.map((a) => (
-                      <p key={a.id}>{`Assignment: ${a.title}`}</p>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* ── Action buttons ───────────────────────────────────────── */}
-              <div className="mt-3 flex flex-wrap items-center gap-2">
+              {/* ── Add actions ─────────────────────────────────────────── */}
+              <div className="mt-4 flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
                 <button
                   type="button"
                   disabled={interactionLocked}
                   onClick={() => {
-                    setActiveSectionForLesson(section.id);
+                    openPanel({ kind: "lesson", sectionId: section.id });
                     setNewLessonType(suggestContentType(section.title));
                   }}
-                  className="rounded border border-[var(--primary)] px-3 py-1 text-xs text-[var(--primary)] disabled:opacity-50"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[var(--primary)] bg-white px-3 text-xs font-semibold text-[var(--primary)] transition hover:bg-[var(--primary)]/5 disabled:opacity-50"
                 >
-                  + Add content
+                  <Plus className="h-3.5 w-3.5" aria-hidden />
+                  Add lesson
                 </button>
                 <button
                   type="button"
                   disabled={interactionLocked}
                   onClick={() => {
-                    setActiveSectionForItem(section.id);
+                    openPanel({ kind: "item", sectionId: section.id });
                     setItemTitle("");
                     setItemType("QUIZ");
                     setQuizMcqRows([createEmptyMcqRow()]);
                     setAssignmentDescription("");
                     setAssignmentDueDays("7");
                   }}
-                  className="rounded border border-[var(--primary)] px-3 py-1 text-xs text-[var(--primary)] disabled:opacity-50"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[var(--border)] bg-white px-3 text-xs font-semibold text-[var(--foreground)] transition hover:bg-[var(--surface-muted)] disabled:opacity-50"
                 >
-                  + Curriculum item
+                  <Plus className="h-3.5 w-3.5" aria-hidden />
+                  Quiz / assignment
                 </button>
                 <button
                   type="button"
                   disabled={interactionLocked}
                   onClick={() => {
-                    setActiveSectionForResource(section.id);
+                    openPanel({ kind: "resource", sectionId: section.id });
                     setResourceType("LINK");
                     setResourceTitle("");
                     setResourceUrl("");
-                    setResourceFile(null);
+                    setResourceFileUrl(null);
+                    setResourceFileMeta(null);
                   }}
-                  className="rounded border border-emerald-600 px-3 py-1 text-xs text-emerald-700 disabled:opacity-50"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[var(--border)] bg-white px-3 text-xs font-semibold text-[var(--foreground)] transition hover:bg-[var(--surface-muted)] disabled:opacity-50"
                 >
-                  + Add resource
+                  <Plus className="h-3.5 w-3.5" aria-hidden />
+                  Resource
                 </button>
               </div>
 
-              {/* ── Add lesson form ──────────────────────────────────────── */}
-              {activeSectionForLesson === section.id ? (
-                <div className="mt-3 rounded border border-[var(--border)] p-4">
+              <CurriculumFormPanel
+                open={panelOpenFor(section.id, "lesson")}
+                onClose={closePanel}
+                title="Add lesson"
+                description="Video or article for this section."
+              >
+                <div className="space-y-4">
                   <div className="grid gap-3 sm:grid-cols-[1fr_140px]">
                     <input
                       value={newLessonTitle}
                       onChange={(e) => setNewLessonTitle(e.target.value)}
                       disabled={interactionLocked}
-                      placeholder="Lecture title"
-                      className="border border-[var(--border)] px-2 py-1 text-sm disabled:bg-[var(--surface-muted)]"
+                      placeholder="Lesson title"
+                      className={fieldClass}
                     />
                     <select
                       value={newLessonType}
                       disabled={interactionLocked}
-                      onChange={(e) =>
-                        setNewLessonType(e.target.value as "VIDEO" | "ARTICLE")
-                      }
-                      className="border border-[var(--border)] px-2 py-1 text-sm disabled:bg-[var(--surface-muted)]"
+                      onChange={(e) => {
+                        setNewLessonType(e.target.value as "VIDEO" | "ARTICLE");
+                        setNewLessonVideoUrl(null);
+                      }}
+                      className={fieldClass}
                     >
                       <option value="VIDEO">Video</option>
                       <option value="ARTICLE">Article</option>
                     </select>
                   </div>
                   {newLessonType === "ARTICLE" ? (
-                    <div className="mt-3">
-                      <RichTextArea
-                        value={newLessonArticleContent}
-                        onChange={setNewLessonArticleContent}
-                        disabled={interactionLocked}
-                        placeholder="Article content"
-                        minHeightClass="min-h-[120px]"
-                      />
-                    </div>
+                    <RichTextArea
+                      value={newLessonArticleContent}
+                      onChange={setNewLessonArticleContent}
+                      disabled={interactionLocked}
+                      placeholder="Article content"
+                      minHeightClass="min-h-[140px]"
+                    />
                   ) : (
-                    <div className="mt-3">
-                      <FileUploader
-                        purpose="lesson-video"
-                        courseId={courseId}
-                        disabled={interactionLocked}
-                        onUploadComplete={(url) => {
-                          setNewLessonVideoFile(null);
-                          void addLessonWithVideo(section.id, url);
-                        }}
-                        showPreview={false}
-                      />
-                    </div>
+                    <FileUploader
+                      purpose="lesson-video"
+                      courseId={courseId}
+                      compact
+                      disabled={interactionLocked}
+                      currentUrl={newLessonVideoUrl}
+                      onUploadComplete={(url) => setNewLessonVideoUrl(url)}
+                      onRemove={() => setNewLessonVideoUrl(null)}
+                      showPreview={false}
+                    />
                   )}
-                  <div className="mt-3 flex justify-end">
+                  <div className="flex flex-wrap justify-end gap-2 border-t border-[var(--border)] pt-4">
                     <button
                       type="button"
                       disabled={interactionLocked}
-                      onClick={() => {
-                        setActiveSectionForLesson(null);
-                        setNewLessonTitle("");
-                        setNewLessonType("VIDEO");
-                        setNewLessonArticleContent("");
-                        setNewLessonVideoFile(null);
-                      }}
-                      className="rounded border border-[var(--border)] px-3 py-1 text-xs text-[var(--muted)]"
+                      onClick={closePanel}
+                      className="h-10 rounded-lg border border-[var(--border)] px-4 text-sm font-medium text-[var(--muted)]"
                     >
                       Cancel
                     </button>
-                    {newLessonType === "ARTICLE" && (
-                      <button
-                        type="button"
-                        disabled={interactionLocked || !newLessonArticleContent.trim()}
-                        onClick={() => void addLessonWithContent(section.id)}
-                        className="ml-2 rounded bg-[var(--primary)] px-4 py-1 text-xs font-semibold text-white disabled:opacity-50"
-                      >
-                        Add Lesson
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      disabled={interactionLocked || !canAddNewLesson}
+                      onClick={() =>
+                        newLessonType === "ARTICLE"
+                          ? void addLessonWithContent(section.id)
+                          : void addLessonWithVideo(
+                              section.id,
+                              newLessonVideoUrl!,
+                            )
+                      }
+                      className="h-10 rounded-lg bg-[var(--primary)] px-5 text-sm font-semibold text-white disabled:opacity-50"
+                    >
+                      Add lesson
+                    </button>
                   </div>
                 </div>
-              ) : null}
+              </CurriculumFormPanel>
 
-              {/* ── Add curriculum item form ─────────────────────────────── */}
-              {activeSectionForItem === section.id ? (
-                <div className="mt-3 grid gap-2 rounded border border-[var(--border)] p-3 md:grid-cols-[140px_1fr_auto]">
-                  <select
-                    value={itemType}
-                    disabled={interactionLocked}
-                    onChange={(e) =>
-                      setItemType(e.target.value as "QUIZ" | "ASSIGNMENT")
-                    }
-                    className="border border-[var(--border)] px-2 py-1 text-sm disabled:bg-[var(--surface-muted)]"
-                  >
-                    <option value="QUIZ">Quiz</option>
-                    <option value="ASSIGNMENT">Assignment</option>
-                  </select>
-                  <input
-                    value={itemTitle}
-                    onChange={(e) => setItemTitle(e.target.value)}
-                    disabled={interactionLocked}
-                    placeholder="Title"
-                    className="border border-[var(--border)] px-2 py-1 text-sm disabled:bg-[var(--surface-muted)]"
-                  />
-                  <button
-                    type="button"
-                    disabled={interactionLocked || !canAddItem}
-                    onClick={() => void addItem(section.id)}
-                    className="rounded bg-[var(--primary)] px-3 py-1 text-xs font-semibold text-white disabled:opacity-50"
-                  >
-                    Add
-                  </button>
+              <CurriculumFormPanel
+                open={panelOpenFor(section.id, "item")}
+                onClose={closePanel}
+                title="Add quiz or assignment"
+                description="Quizzes use multiple-choice questions; assignments include instructions."
+              >
+                <div className="space-y-4">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <select
+                      value={itemType}
+                      disabled={interactionLocked}
+                      onChange={(e) =>
+                        setItemType(e.target.value as "QUIZ" | "ASSIGNMENT")
+                      }
+                      className={fieldClass}
+                    >
+                      <option value="QUIZ">Quiz</option>
+                      <option value="ASSIGNMENT">Assignment</option>
+                    </select>
+                    <input
+                      value={itemTitle}
+                      onChange={(e) => setItemTitle(e.target.value)}
+                      disabled={interactionLocked}
+                      placeholder="Title"
+                      className={fieldClass}
+                    />
+                  </div>
                   {itemType === "QUIZ" ? (
-                    <div className="md:col-span-3 space-y-4">
+                    <div className="space-y-3">
                       <p className="text-xs text-[var(--muted)]">
-                        Multiple choice: four options per question (correct + three distractors). Students
-                        see choices in random order.
+                        One correct answer and three distractors per question.
                       </p>
                       {quizMcqRows.map((row, rowIndex) => (
                         <div
                           key={row.id}
-                          className="space-y-2 rounded border border-[var(--border)] bg-[#fafbfc] p-3"
+                          className="space-y-2 rounded-xl border border-[var(--border)] bg-[var(--surface-muted)]/50 p-3"
                         >
                           <div className="flex items-center justify-between gap-2">
                             <span className="text-xs font-semibold text-[var(--muted)]">
@@ -1277,7 +1414,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                                     prev.filter((r) => r.id !== row.id),
                                   )
                                 }
-                                className="text-xs font-medium text-rose-600 hover:underline disabled:opacity-50"
+                                className="text-xs font-medium text-red-600 hover:underline"
                               >
                                 Remove
                               </button>
@@ -1288,13 +1425,15 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                             onChange={(e) =>
                               setQuizMcqRows((prev) =>
                                 prev.map((r) =>
-                                  r.id === row.id ? { ...r, prompt: e.target.value } : r,
+                                  r.id === row.id
+                                    ? { ...r, prompt: e.target.value }
+                                    : r,
                                 ),
                               )
                             }
                             disabled={interactionLocked}
                             placeholder="Question"
-                            className="w-full border border-[var(--border)] px-2 py-1.5 text-sm disabled:bg-[var(--surface-muted)]"
+                            className={fieldClass}
                           />
                           <input
                             value={row.correctAnswer}
@@ -1309,48 +1448,33 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                             }
                             disabled={interactionLocked}
                             placeholder="Correct answer"
-                            className="w-full border border-[var(--border)] px-2 py-1.5 text-sm disabled:bg-[var(--surface-muted)]"
+                            className={fieldClass}
                           />
                           <div className="grid gap-2 sm:grid-cols-3">
-                            <input
-                              value={row.wrong1}
-                              onChange={(e) =>
-                                setQuizMcqRows((prev) =>
-                                  prev.map((r) =>
-                                    r.id === row.id ? { ...r, wrong1: e.target.value } : r,
-                                  ),
-                                )
-                              }
-                              disabled={interactionLocked}
-                              placeholder="Incorrect option 1"
-                              className="border border-[var(--border)] px-2 py-1.5 text-sm disabled:bg-[var(--surface-muted)]"
-                            />
-                            <input
-                              value={row.wrong2}
-                              onChange={(e) =>
-                                setQuizMcqRows((prev) =>
-                                  prev.map((r) =>
-                                    r.id === row.id ? { ...r, wrong2: e.target.value } : r,
-                                  ),
-                                )
-                              }
-                              disabled={interactionLocked}
-                              placeholder="Incorrect option 2"
-                              className="border border-[var(--border)] px-2 py-1.5 text-sm disabled:bg-[var(--surface-muted)]"
-                            />
-                            <input
-                              value={row.wrong3}
-                              onChange={(e) =>
-                                setQuizMcqRows((prev) =>
-                                  prev.map((r) =>
-                                    r.id === row.id ? { ...r, wrong3: e.target.value } : r,
-                                  ),
-                                )
-                              }
-                              disabled={interactionLocked}
-                              placeholder="Incorrect option 3"
-                              className="border border-[var(--border)] px-2 py-1.5 text-sm disabled:bg-[var(--surface-muted)]"
-                            />
+                            {(
+                              [
+                                ["wrong1", "Distractor 1"],
+                                ["wrong2", "Distractor 2"],
+                                ["wrong3", "Distractor 3"],
+                              ] as const
+                            ).map(([key, label]) => (
+                              <input
+                                key={key}
+                                value={row[key]}
+                                onChange={(e) =>
+                                  setQuizMcqRows((prev) =>
+                                    prev.map((r) =>
+                                      r.id === row.id
+                                        ? { ...r, [key]: e.target.value }
+                                        : r,
+                                    ),
+                                  )
+                                }
+                                disabled={interactionLocked}
+                                placeholder={label}
+                                className={fieldClass}
+                              />
+                            ))}
                           </div>
                         </div>
                       ))}
@@ -1360,160 +1484,192 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                         onClick={() =>
                           setQuizMcqRows((prev) => [...prev, createEmptyMcqRow()])
                         }
-                        className="text-xs font-semibold text-[var(--primary)] hover:underline disabled:opacity-50"
+                        className="text-xs font-semibold text-[var(--primary)] hover:underline"
                       >
-                        + Add another question
+                        + Another question
                       </button>
                     </div>
                   ) : (
-                    <>
-                      <div className="md:col-span-3">
-                        <RichTextArea
-                          value={assignmentDescription}
-                          onChange={setAssignmentDescription}
-                          disabled={interactionLocked}
-                          placeholder="Assignment instructions"
-                          minHeightClass="min-h-[100px]"
-                        />
-                      </div>
+                    <div className="space-y-3">
+                      <RichTextArea
+                        value={assignmentDescription}
+                        onChange={setAssignmentDescription}
+                        disabled={interactionLocked}
+                        placeholder="Assignment instructions"
+                        minHeightClass="min-h-[120px]"
+                      />
                       <input
                         value={assignmentDueDays}
                         onChange={(e) => setAssignmentDueDays(e.target.value)}
                         disabled={interactionLocked}
                         placeholder="Due in days (e.g. 7)"
-                        className="md:col-span-3 border border-[var(--border)] px-2 py-1 text-sm disabled:bg-[var(--surface-muted)]"
+                        className={fieldClass}
                       />
-                    </>
+                    </div>
                   )}
-                </div>
-              ) : null}
-
-              {/* ── Add resource form ────────────────────────────────────── */}
-              {activeSectionForResource === section.id ? (
-                <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50/60 p-4">
-                  <div className="mb-3 flex items-center justify-between">
-                    <p className="text-sm font-bold text-emerald-800">
-                      Add Section Resource
-                    </p>
+                  <div className="flex flex-wrap justify-end gap-2 border-t border-[var(--border)] pt-4">
                     <button
                       type="button"
-                      onClick={() => setActiveSectionForResource(null)}
-                      className="rounded p-1 text-emerald-600 hover:bg-emerald-100"
+                      disabled={interactionLocked}
+                      onClick={closePanel}
+                      className="h-10 rounded-lg border border-[var(--border)] px-4 text-sm font-medium text-[var(--muted)]"
                     >
-                      <X className="h-4 w-4" />
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      disabled={interactionLocked || !canAddItem}
+                      onClick={() => void addItem(section.id)}
+                      className="h-10 rounded-lg bg-[var(--primary)] px-5 text-sm font-semibold text-white disabled:opacity-50"
+                    >
+                      Add {itemType === "QUIZ" ? "quiz" : "assignment"}
                     </button>
                   </div>
-                  <div className="grid gap-3 sm:grid-cols-[140px_1fr]">
-                    {/* Type selector */}
-                    <div className="flex gap-2 sm:flex-col sm:gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setResourceType("LINK")}
-                        className={`flex items-center gap-1.5 rounded-md border px-3 py-2 text-xs font-semibold transition ${
-                          resourceType === "LINK"
-                            ? "border-emerald-600 bg-emerald-600 text-white"
-                            : "border-emerald-200 text-emerald-700 hover:bg-emerald-100"
-                        }`}
-                      >
-                        <Link2 className="h-3.5 w-3.5" /> Link
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setResourceType("FILE")}
-                        className={`flex items-center gap-1.5 rounded-md border px-3 py-2 text-xs font-semibold transition ${
-                          resourceType === "FILE"
-                            ? "border-emerald-600 bg-emerald-600 text-white"
-                            : "border-emerald-200 text-emerald-700 hover:bg-emerald-100"
-                        }`}
-                      >
-                        <Upload className="h-3.5 w-3.5" /> File
-                      </button>
-                    </div>
-                    {/* Input area */}
-                    <div className="space-y-2">
-                      <input
-                        value={resourceTitle}
-                        onChange={(e) => setResourceTitle(e.target.value)}
-                        placeholder="Resource title (e.g. Study Guide)"
-                        className="w-full rounded border border-emerald-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                      />
-                      {resourceType === "LINK" ? (
-                        <input
-                          value={resourceUrl}
-                          onChange={(e) => setResourceUrl(e.target.value)}
-                          placeholder="https://..."
-                          className="w-full rounded border border-emerald-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                        />
-                      ) : (
-                        <>
-                          <input
-                            type="file"
-                            onChange={(e) =>
-                              setResourceFile(e.target.files?.[0] ?? null)
-                            }
-                            className="w-full rounded border border-emerald-200 bg-white px-3 py-2 text-sm"
-                          />
-                          {resourceFile && (
-                            <p className="text-xs text-emerald-700">
-                              Selected: {resourceFile.name} (
-                              {(resourceFile.size / 1024).toFixed(1)} KB)
-                            </p>
-                          )}
-                        </>
+                </div>
+              </CurriculumFormPanel>
+
+              <CurriculumFormPanel
+                open={panelOpenFor(section.id, "resource")}
+                onClose={closePanel}
+                title="Add resource"
+                description="Link to an external page or upload a file for students."
+              >
+                <div className="space-y-4">
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setResourceType("LINK");
+                        setResourceFileUrl(null);
+                        setResourceFileMeta(null);
+                      }}
+                      className={cn(
+                        "inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-xs font-semibold transition",
+                        resourceType === "LINK"
+                          ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+                          : "border-[var(--border)] bg-white text-[var(--foreground)]",
                       )}
-                      <button
-                        type="button"
-                        disabled={
-                          !canAddResource ||
-                          resourceUploading ||
-                          interactionLocked
-                        }
-                        onClick={() => void addResource(section.id)}
-                        className="flex items-center gap-1.5 rounded-md bg-emerald-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
-                      >
-                        <Plus className="h-3.5 w-3.5" />
-                        {resourceUploading ? "Uploading…" : "Add Resource"}
-                      </button>
-                    </div>
+                    >
+                      <Link2 className="h-3.5 w-3.5" aria-hidden />
+                      Link
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setResourceType("FILE");
+                        setResourceUrl("");
+                      }}
+                      className={cn(
+                        "inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-xs font-semibold transition",
+                        resourceType === "FILE"
+                          ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+                          : "border-[var(--border)] bg-white text-[var(--foreground)]",
+                      )}
+                    >
+                      <Upload className="h-3.5 w-3.5" aria-hidden />
+                      File
+                    </button>
+                  </div>
+                  <input
+                    value={resourceTitle}
+                    onChange={(e) => setResourceTitle(e.target.value)}
+                    disabled={interactionLocked}
+                    placeholder="Resource title"
+                    className={fieldClass}
+                  />
+                  {resourceType === "LINK" ? (
+                    <input
+                      value={resourceUrl}
+                      onChange={(e) => setResourceUrl(e.target.value)}
+                      disabled={interactionLocked}
+                      placeholder="https://..."
+                      className={fieldClass}
+                    />
+                  ) : (
+                    <FileUploader
+                      purpose="resource-file"
+                      courseId={courseId}
+                      compact
+                      disabled={interactionLocked}
+                      currentUrl={resourceFileUrl}
+                      fileName={resourceFileMeta?.name}
+                      onUploadComplete={(url, meta) => {
+                        setResourceFileUrl(url);
+                        if (meta) setResourceFileMeta(meta);
+                      }}
+                      onRemove={() => {
+                        setResourceFileUrl(null);
+                        setResourceFileMeta(null);
+                      }}
+                      showPreview={false}
+                    />
+                  )}
+                  <div className="flex flex-wrap justify-end gap-2 border-t border-[var(--border)] pt-4">
+                    <button
+                      type="button"
+                      disabled={interactionLocked}
+                      onClick={closePanel}
+                      className="h-10 rounded-lg border border-[var(--border)] px-4 text-sm font-medium text-[var(--muted)]"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      disabled={
+                        !canAddResource ||
+                        resourceUploading ||
+                        interactionLocked
+                      }
+                      onClick={() => void addResource(section.id)}
+                      className="h-10 rounded-lg bg-[var(--primary)] px-5 text-sm font-semibold text-white disabled:opacity-50"
+                    >
+                      {resourceUploading ? "Saving…" : "Add resource"}
+                    </button>
                   </div>
                 </div>
-              ) : null}
+              </CurriculumFormPanel>
             </SortableSection>
           ))}
         </SortableContext>
       </DndContext>
 
       {/* ── New section form ─────────────────────────────────────────────── */}
-      <div className="border border-[var(--border)] bg-white p-4">
-        <h3 className="mb-2 text-base font-bold">New Section</h3>
-        <div className="grid gap-2">
+      <Separator className="my-2" />
+      <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface-muted)]/40 p-4 sm:p-5">
+        <h3 className="mb-3 text-sm font-bold text-[var(--foreground)]">
+          New section
+        </h3>
+        <div className="grid gap-3">
           <input
             value={newSectionTitle}
             onChange={(e) => setNewSectionTitle(e.target.value)}
             maxLength={120}
             disabled={interactionLocked}
-            placeholder="Enter section title"
-            className="border border-[var(--border)] px-2 py-2 text-sm disabled:bg-[var(--surface-muted)]"
+            placeholder="Section title"
+            className={fieldClass}
           />
           <input
             value={newSectionObjective}
             onChange={(e) => setNewSectionObjective(e.target.value)}
             maxLength={500}
             disabled={interactionLocked}
-            placeholder="Enter a learning objective"
-            className="border border-[var(--border)] px-2 py-2 text-sm disabled:bg-[var(--surface-muted)]"
+            placeholder="Learning objective (optional)"
+            className={fieldClass}
           />
-          <button
-            type="button"
-            disabled={interactionLocked || !canAddSection}
-            onClick={() => void createSection()}
-            className="ml-auto rounded bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-          >
-            Add Section
-          </button>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              disabled={interactionLocked || !canAddSection}
+              onClick={() => void createSection()}
+              className="h-10 rounded-lg bg-[var(--primary)] px-5 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              Add section
+            </button>
+          </div>
         </div>
       </div>
     </div>
+    </TooltipProvider>
   );
 }
 
@@ -1542,31 +1698,42 @@ function SortableSection(props: {
     <div
       ref={setNodeRef}
       style={style}
-      className={`border border-[var(--border)] bg-white transition-all ${
-        isExpanded ? "mb-6 shadow-sm" : "mb-2"
-      }`}
+      // Clinical card: flat rounded border, no shadow on collapsed, subtle on expanded
+      className={cn(
+        "mb-3 rounded-xl border border-[var(--border)] bg-white transition-colors",
+        isExpanded && "shadow-sm",
+      )}
       {...attributes}
     >
       <div
-        className={`flex items-center gap-2 p-3 cursor-pointer select-none transition-colors ${
-          isExpanded ? "bg-gray-50/50 border-b border-gray-100" : "hover:bg-gray-50"
-        }`}
+        className={cn(
+          "flex cursor-pointer select-none items-center gap-2 rounded-t-xl px-4 py-3 transition-colors",
+          isExpanded
+            ? "border-b border-[var(--border)] bg-[var(--surface-muted)]/50"
+            : "hover:bg-[var(--surface-muted)]/30",
+        )}
         onClick={onToggle}
       >
-        <button
-          type="button"
-          ref={setActivatorNodeRef}
-          {...listeners}
-          disabled={disabled}
-          aria-label="Reorder section"
-          className="shrink-0 touch-none cursor-grab rounded p-1 text-[var(--muted)] hover:bg-[var(--surface-muted)] disabled:cursor-not-allowed disabled:opacity-40"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <GripVertical className="h-4 w-4" />
-        </button>
+        <Tooltip content="Drag to reorder" side="right">
+          <button
+            type="button"
+            ref={setActivatorNodeRef}
+            {...listeners}
+            disabled={disabled}
+            aria-label="Drag to reorder section"
+            className="shrink-0 touch-none cursor-grab rounded-lg p-1.5 text-slate-300 transition-all hover:bg-slate-100 hover:text-slate-500 disabled:cursor-not-allowed disabled:opacity-40"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <GripVertical className="h-4 w-4" />
+          </button>
+        </Tooltip>
         {titleRow}
       </div>
-      {isExpanded && <div className="p-4 bg-white animate-in slide-in-from-top-1 duration-200">{children}</div>}
+      {isExpanded && (
+        <div className="rounded-b-xl p-4 sm:p-5">
+          {children}
+        </div>
+      )}
     </div>
   );
 }

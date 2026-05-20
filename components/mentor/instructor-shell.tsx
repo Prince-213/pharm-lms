@@ -1,5 +1,4 @@
-import { Settings } from "lucide-react";
-import Link from "next/link";
+import { InstructorCourseHeader } from "@/components/mentor/instructor-course-header";
 
 type InstructorShellProps = {
   courseId?: string;
@@ -9,6 +8,8 @@ type InstructorShellProps = {
   showReview?: boolean;
   topMeta?: string;
   settingsHref?: string;
+  /** When set, renders compact header with menu button (use CourseManageFrame instead for manage routes). */
+  onMenuClick?: () => void;
   children: React.ReactNode;
 };
 
@@ -20,56 +21,21 @@ export function InstructorShell({
   showReview = true,
   topMeta = "0min of video content uploaded",
   settingsHref,
+  onMenuClick,
   children,
 }: InstructorShellProps) {
   return (
     <div className="min-h-screen bg-[var(--surface-muted)] text-[var(--foreground)]">
-      <header className="h-12 border-b border-[var(--border)] bg-[var(--surface)]">
-        <div className="mx-auto flex h-full w-full max-w-[1280px] items-center justify-between px-4">
-          <div className="flex items-center gap-3 text-xs">
-            <Link
-              href="/tutor/courses"
-              className="font-medium text-[var(--muted)] transition hover:text-[var(--foreground)]"
-            >
-              {"<"} Back to courses
-            </Link>
-            <span className="text-sm font-semibold">{courseTitle}</span>
-            <span className="rounded bg-[var(--surface-muted)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--muted)]">
-              {statusLabel}
-            </span>
-            <span className="text-[var(--muted)]">{topMeta}</span>
-            {readOnly ? (
-              <span className="font-medium text-[var(--warning-star)]">
-                Editing is locked for this course.
-              </span>
-            ) : null}
-          </div>
-          <div className="flex items-center gap-2">
-            {showReview && courseId ? (
-              <Link
-                href={`/tutor/courses/${courseId}/preview`}
-                className="inline-flex items-center justify-center rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--background)] px-3 py-1 text-xs font-semibold text-[var(--foreground)] transition hover:bg-[var(--surface-muted)]"
-              >
-                Review
-              </Link>
-            ) : null}
-            {settingsHref ? (
-              <Link
-                href={settingsHref}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-sm)] text-[var(--muted)] transition hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
-                aria-label="Course settings"
-                title="Course settings"
-              >
-                <Settings className="h-4 w-4" aria-hidden />
-              </Link>
-            ) : (
-              <span className="inline-flex h-8 w-8 items-center justify-center text-[var(--muted)]">
-                <Settings className="h-4 w-4 opacity-50" aria-hidden />
-              </span>
-            )}
-          </div>
-        </div>
-      </header>
+      <InstructorCourseHeader
+        courseId={courseId}
+        courseTitle={courseTitle}
+        statusLabel={statusLabel}
+        readOnly={readOnly}
+        showReview={showReview}
+        topMeta={topMeta}
+        settingsHref={settingsHref}
+        onMenuClick={onMenuClick}
+      />
       {children}
     </div>
   );

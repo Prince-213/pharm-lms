@@ -1,11 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { CourseManageSidebar } from "@/components/mentor/course-manage-sidebar";
+import { CourseManageFrame } from "@/components/mentor/course-manage-frame";
 import { CourseStudioProvider } from "@/components/mentor/course-studio-context";
-import {
-  InstructorFooter,
-  InstructorShell,
-} from "@/components/mentor/instructor-shell";
+import { InstructorFooter } from "@/components/mentor/instructor-shell";
 import { CourseStatus } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { courseStatusLabel } from "@/lib/mentor-course-auth";
@@ -34,22 +31,19 @@ export default async function MentorCourseManageLayout({
 
   return (
     <CourseStudioProvider value={{ readOnly }}>
-      <InstructorShell
-        courseId={courseId}
-        courseTitle={course.title}
-        statusLabel={courseStatusLabel(course.status)}
-        readOnly={readOnly}
-        settingsHref={`/tutor/courses/${courseId}/manage/settings`}
-      >
-        <div className="mx-auto flex min-h-[calc(100vh-48px)] w-full max-w-[1280px] bg-[var(--surface)]">
-          <CourseManageSidebar
-            courseId={courseId}
-            courseStatus={course.status}
-          />
-          <div className="flex-1 bg-[var(--surface-muted)] p-6">{children}</div>
-        </div>
+      <div className="min-h-screen bg-[var(--surface-muted)] text-[var(--foreground)]">
+        <CourseManageFrame
+          courseId={courseId}
+          courseTitle={course.title}
+          statusLabel={courseStatusLabel(course.status)}
+          courseStatus={course.status}
+          readOnly={readOnly}
+          settingsHref={`/tutor/courses/${courseId}/manage/settings`}
+        >
+          {children}
+        </CourseManageFrame>
         <InstructorFooter />
-      </InstructorShell>
+      </div>
     </CourseStudioProvider>
   );
 }

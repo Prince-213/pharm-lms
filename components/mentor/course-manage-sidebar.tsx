@@ -80,9 +80,14 @@ function activeSegment(pathname: string) {
 export function CourseManageSidebar({
   courseId,
   courseStatus,
+  onNavigate,
+  className,
 }: {
   courseId: string;
   courseStatus: CourseStatus;
+  /** Close mobile drawer after choosing a nav item. */
+  onNavigate?: () => void;
+  className?: string;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -133,6 +138,7 @@ export function CourseManageSidebar({
         description:
           "Your course is now pending review. You'll be notified once it's processed.",
       });
+      onNavigate?.();
       router.refresh();
     } catch (_error) {
       setSubmitting(false);
@@ -141,8 +147,11 @@ export function CourseManageSidebar({
   }
 
   return (
-    <aside className="sticky top-0 flex h-screen w-[230px] shrink-0 flex-col overflow-y-auto border-r border-[var(--border)] bg-[var(--surface)] p-6">
-      <div className="space-y-6">
+    <nav
+      className={cn("flex min-h-0 flex-1 flex-col", className)}
+      aria-label="Course planner"
+    >
+      <div className="min-h-0 flex-1 space-y-6 overflow-y-auto">
         {sections.map((section) => (
           <div key={section.title}>
             <h3 className="mb-2 text-base font-bold text-[var(--foreground)]">
@@ -153,6 +162,7 @@ export function CourseManageSidebar({
                 <li key={item.label}>
                   <Link
                     href={item.href(courseId)}
+                    onClick={onNavigate}
                     className={cn(
                       "block border-l-2 pl-2 text-sm transition-colors",
                       activeLabel === item.label
@@ -175,7 +185,7 @@ export function CourseManageSidebar({
         size="sm"
         disabled={locked || submitting}
         onClick={() => void submitForReview()}
-        className="mt-6 w-full text-xs font-semibold"
+        className="mt-6 w-full shrink-0 text-xs font-semibold"
       >
         {locked
           ? "Pending review"
@@ -185,6 +195,6 @@ export function CourseManageSidebar({
               ? "Resubmit for review"
               : "Submit for Review"}
       </Button>
-    </aside>
+    </nav>
   );
 }

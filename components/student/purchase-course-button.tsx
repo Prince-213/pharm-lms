@@ -46,6 +46,8 @@ export function PurchaseCourseButton({
         });
         const data = (await res.json().catch(() => ({}))) as {
           error?: string;
+          reEnrolled?: boolean;
+          courseId?: string;
           reference?: string;
           amount?: number;
           email?: string | null;
@@ -54,6 +56,12 @@ export function PurchaseCourseButton({
         };
         if (!res.ok) {
           setMsg(data.error ?? "Could not start checkout.");
+          return;
+        }
+        if (data.reEnrolled && data.courseId) {
+          toast.success("You're enrolled again — opening your course.");
+          router.push(`/student/course/${data.courseId}`);
+          router.refresh();
           return;
         }
         if (

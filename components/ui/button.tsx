@@ -20,15 +20,22 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     <button
       ref={ref}
       className={cn(
-        "inline-flex shrink-0 items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-soft)] disabled:pointer-events-none disabled:opacity-60",
+        // Base: transitions for color AND scale — the active:scale-95 gives tactile micro-feedback
+        "inline-flex shrink-0 items-center justify-center gap-2 rounded-xl text-sm font-semibold",
+        "transition-all duration-150 ease-in-out",
+        "active:scale-95",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-soft)] focus-visible:ring-offset-1",
+        "disabled:pointer-events-none disabled:opacity-60",
+        // Variants
         variant === "default" &&
-          "h-12 px-4 bg-[var(--auth-accent)] text-[var(--auth-primary-foreground)] shadow-[var(--shadow-1)] hover:bg-[var(--auth-accent-hover)]",
+          "h-12 px-4 bg-[var(--auth-accent)] text-[var(--auth-primary-foreground)] shadow-[var(--shadow-2)] hover:bg-[var(--auth-accent-hover)]",
         variant === "outline" &&
           "h-12 border border-[var(--auth-border)] bg-[var(--surface-muted)] px-4 text-[var(--primary)] hover:bg-[var(--primary-soft)]/50",
         variant === "secondary" &&
           "h-12 border border-[var(--auth-border)] bg-[var(--surface)] px-4 text-[var(--auth-text)] hover:bg-[var(--surface-muted)]",
+        // Ghost: 10% mint tint on hover — signals interactivity without aggression
         variant === "ghost" &&
-          "text-[var(--auth-muted)] hover:bg-[var(--surface-muted)]/80 hover:text-[var(--auth-text)]",
+          "text-[var(--muted-soft)] hover:bg-[var(--primary-soft)]/10 hover:text-[var(--primary)]",
         variant === "destructive" &&
           "font-bold text-[var(--live)] hover:bg-[var(--live)]/10",
         variant === "chrome" &&

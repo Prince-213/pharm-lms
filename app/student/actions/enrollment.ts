@@ -39,6 +39,7 @@ export async function enrollInCourseAction(
   }
 
   const price = course.priceMinorUnits ?? 0;
+  let purchaseId: string | null = null;
   if (price > 0) {
     const paid = await db.coursePurchase.findFirst({
       where: {
@@ -47,6 +48,7 @@ export async function enrollInCourseAction(
         status: CoursePurchaseStatus.SUCCESS,
       },
       select: { id: true },
+      orderBy: { paidAt: "desc" },
     });
     if (!paid) {
       return {
@@ -54,15 +56,18 @@ export async function enrollInCourseAction(
         message: "Complete payment to enroll in this course.",
       };
     }
+    purchaseId = paid.id;
   }
 
+  let enrollmentId: string;
   try {
-    await db.enrollment.create({
+    const enrollment = await db.enrollment.create({
       data: {
         courseId,
         studentId: session.user.id,
       },
     });
+    enrollmentId = enrollment.id;
   } catch (e) {
     const code =
       typeof e === "object" && e !== null && "code" in e
@@ -72,6 +77,13 @@ export async function enrollInCourseAction(
       return { ok: true, courseId };
     }
     throw e;
+  }
+
+  if (purchaseId) {
+    await db.coursePurchase.update({
+      where: { id: purchaseId },
+      data: { enrollmentId },
+    });
   }
 
   await evaluateStudentBadges(session.user.id);

@@ -24,37 +24,48 @@ export function AdminStatCard({
   const isDecreasing = trend && trend.value < 0;
 
   const card = (
-    <div className="group rounded-xl border-none bg-[var(--surface)] p-6 shadow-[var(--shadow-1)] transition hover:shadow-[var(--shadow-2)] dark:bg-gray-dark dark:shadow-card">
+    <div
+      className={clsx(
+        // Clinical flat card: hairline border, zero shadow at rest
+        "group relative overflow-hidden rounded-xl border border-slate-200/60 bg-[var(--surface)] p-5 transition-all duration-200",
+        // Clickable: left accent stripe slides in + slight shadow on hover
+        href && "hover:border-[var(--primary)]/25 hover:shadow-sm",
+      )}
+    >
+      {/* Left accent line — slides in on hover for clickable cards */}
+      {href && (
+        <span className="absolute left-0 top-4 h-8 w-0.5 origin-center scale-y-0 rounded-r-full bg-[var(--primary)] transition-transform duration-200 group-hover:scale-y-100" />
+      )}
+
       {Icon ? (
         <div
-          className="mb-6 flex h-11.5 w-11.5 items-center justify-center rounded-full"
+          className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl"
           style={{ backgroundColor: accentBg ?? "var(--surface-muted)" }}
         >
-          <Icon
-            className="h-6 w-6 text-[var(--primary)]"
-            strokeWidth={1.5}
-          />
+          <Icon className="h-5 w-5 text-[var(--primary)]" strokeWidth={1.75} />
         </div>
       ) : null}
 
-      <div className="flex items-end justify-between">
-        <div>
-          <h4 className="text-2xl font-bold text-[var(--foreground)] tabular-nums">
-            {typeof value === "number" ? value.toLocaleString() : value}
-          </h4>
-          <p className="mt-1 text-sm font-medium text-[var(--muted-soft)]">
+      <div className="flex items-end justify-between gap-2">
+        <div className="min-w-0">
+          <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
             {label}
           </p>
+          <h3 className="font-display text-2xl font-black tabular-nums tracking-tight text-[var(--foreground)]">
+            {typeof value === "number" ? value.toLocaleString() : value}
+          </h3>
           {hint ? (
-             <p className="mt-1 text-[11px] text-[var(--muted)]/60 italic">{hint}</p>
+            <p className="mt-0.5 text-[11px] italic text-slate-400">{hint}</p>
           ) : null}
         </div>
 
         {trend ? (
           <div
             className={clsx(
-              "flex items-center gap-1 text-sm font-medium",
-              isDecreasing ? "text-[var(--live)]" : "text-[var(--success)]"
+              "shrink-0 flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold",
+              isDecreasing
+                ? "bg-red-50 text-[var(--live)]"
+                : "bg-emerald-50 text-[var(--success)]",
             )}
           >
             <span>{Math.abs(trend.value)}%</span>
@@ -66,7 +77,7 @@ export function AdminStatCard({
   );
 
   return href ? (
-    <Link href={href} className="block">
+    <Link href={href} className="block transition-transform active:scale-95">
       {card}
     </Link>
   ) : (

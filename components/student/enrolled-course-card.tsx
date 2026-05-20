@@ -26,7 +26,7 @@ export function EnrolledCourseCard({
   const boundedProgress = Math.min(100, Math.max(0, progressPct));
 
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-sm)] transition hover:shadow-[var(--shadow-md)]">
+    <article className="flex h-full flex-col overflow-hidden rounded-xl border border-slate-200/60 bg-[var(--surface)] transition-all duration-200 hover:border-slate-300/70 hover:shadow-sm">
       <div className="relative h-44 w-full bg-[var(--ink-deep)] sm:h-40 lg:h-44">
         {thumb ? (
           <img src={thumb} alt={title} className="h-full w-full object-cover" />
@@ -64,13 +64,13 @@ export function EnrolledCourseCard({
         <div className="mt-auto space-y-2 border-t border-[var(--border)]/60 pt-3">
           <Link
             href={`/student/course/${courseId}`}
-            className="flex h-10 items-center justify-center rounded-[var(--radius-md)] bg-[var(--primary)] px-3 text-sm font-bold text-[var(--primary-foreground)] transition hover:bg-[var(--primary-strong)]"
+            className="flex h-10 items-center justify-center rounded-xl bg-[var(--primary)] px-3 text-sm font-bold text-[var(--primary-foreground)] transition-all hover:bg-[var(--primary-strong)] active:scale-95"
           >
             {hasStarted ? "Continue learning" : "Start course"}
           </Link>
           <Link
             href={`/student/browse/${courseId}`}
-            className="flex h-9 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] text-xs font-semibold text-[var(--muted)] transition hover:border-[var(--primary)]/35 hover:text-[var(--primary)]"
+            className="flex h-9 items-center justify-center rounded-xl border border-slate-200/60 text-xs font-semibold text-[var(--muted)] transition-all hover:border-[var(--primary)]/35 hover:text-[var(--primary)] active:scale-95"
           >
             View overview
           </Link>

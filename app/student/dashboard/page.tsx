@@ -102,35 +102,37 @@ export default async function StudentDashboardPage({
     ]);
 
   return (
-    <div className="space-y-6 md:space-y-8 lg:space-y-10">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="space-y-8">
+      {/* ─── Page header ─── */}
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-(--foreground) sm:text-3xl">
+          <h1 className="font-display text-2xl font-black tracking-tight text-[var(--foreground)] sm:text-3xl">
             Welcome back, {firstName} 👋
           </h1>
-          <p className="mt-1 text-sm text-(--muted)">
+          <p className="mt-1 text-sm text-slate-500">
             Resume your courses or explore new pharmacy certifications.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/student/assignments"
-            className="inline-flex items-center gap-2 rounded-full border border-(--border) bg-(--background) px-5 py-2.5 text-sm font-bold text-(--foreground) shadow-sm transition hover:bg-(--surface-muted)"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white px-4 py-2.5 text-sm font-semibold text-[var(--foreground)] transition-all hover:bg-slate-50 hover:shadow-sm active:scale-95"
           >
-            <ClipboardList className="h-4 w-4 text-(--primary)" />
+            <ClipboardList className="h-4 w-4 text-[var(--primary)]" />
             Assignments
           </Link>
           <Link
             href="/student/browse"
-            className="rounded-full bg-(--primary) px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-(--primary-strong) hover:shadow-md"
+            className="inline-flex items-center rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-[var(--primary-strong)] active:scale-95"
           >
             Explore Courses
           </Link>
         </div>
       </div>
 
-      <div className=" w-full ">
-        <div className="grid gap-4 sm:grid-cols-4 lg:grid-cols-4 md:gap-6">
+      {/* ─── Stat cards + streak ─── */}
+      <div className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2 md:gap-5 lg:grid-cols-4">
           <AdminStatCard
             label="Achievements"
             value={badgesEarned}
@@ -158,12 +160,7 @@ export default async function StudentDashboardPage({
             hint="All-time progress"
           />
         </div>
-
-        <br />
-
-        <div className="">
-          <StreakMetric days={streakData.days} active={streakData.activeToday} />
-        </div>
+        <StreakMetric days={streakData.days} active={streakData.activeToday} />
       </div>
 
       <AdminPanel

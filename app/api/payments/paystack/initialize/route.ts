@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { CoursePurchaseStatus, CourseStatus, UserRole } from "@/generated/prisma/enums";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { reEnrollFromSuccessfulPurchase } from "@/lib/payments/re-enroll-purchased-course";
 import { getPaystackPublicKey } from "@/lib/paystack/client";
 import { NextResponse } from "next/server";
 
@@ -51,12 +52,21 @@ export async function POST(req: Request) {
         studentId: session.user.id,
         status: CoursePurchaseStatus.SUCCESS,
       },
+      select: { id: true },
     });
     if (existingSuccess) {
-      return NextResponse.json(
-        { error: "Already purchased", courseId },
-        { status: 409 },
+      const reEnrolled = await reEnrollFromSuccessfulPurchase(
+        session.user.id,
+        courseId,
       );
+      if (!reEnrolled.ok) {
+        return NextResponse.json({ error: reEnrolled.message }, { status: 400 });
+      }
+      return NextResponse.json({
+        reEnrolled: true,
+        courseId: reEnrolled.courseId,
+        enrollmentId: reEnrolled.enrollmentId,
+      });
     }
 
     const reference = generateReference();
