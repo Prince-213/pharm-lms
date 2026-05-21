@@ -134,6 +134,8 @@ export function CourseCatalogDetail({
     enrollment,
     wishlistRow,
     isStudent,
+    displayPriceMinorUnits,
+    displayPriceCurrency,
     ratingAverage,
     reviewCount,
     reviews,
@@ -628,8 +630,8 @@ export function CourseCatalogDetail({
                 <CardHeader className="space-y-1 border-b border-[#d1d7dc] px-5 pb-4 pt-5 sm:px-6">
                   <p className="text-[2rem] font-bold tabular-nums leading-none tracking-tight text-[var(--foreground)]">
                     {formatMinorUnitsToCurrency(
-                      course.priceMinorUnits,
-                      course.priceCurrency,
+                      displayPriceMinorUnits ?? course.priceMinorUnits,
+                      displayPriceCurrency ?? course.priceCurrency,
                       { zeroAsFree: true },
                     )}
                   </p>
@@ -664,6 +666,7 @@ export function CourseCatalogDetail({
                             {(course.priceMinorUnits ?? 0) > 0 ? (
                               <PurchaseCourseButton
                                 courseId={courseId}
+                                displayCurrency={displayPriceCurrency}
                                 className="min-h-12 w-full rounded-sm py-3 text-base font-bold"
                               />
                             ) : (

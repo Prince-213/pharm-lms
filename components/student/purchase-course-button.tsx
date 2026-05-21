@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState, useTransition } from "react";
 import { usePaystackPayment } from "react-paystack";
 import { toast } from "sonner";
+import type { DisplayCurrency } from "@/lib/currency/types";
 
 const btnCatalog =
   "w-full rounded-[var(--radius-md)] bg-[var(--primary)] px-6 py-3 text-sm font-bold text-[var(--primary-foreground)] shadow-[var(--shadow-sm)] transition hover:bg-[var(--primary-strong)] disabled:opacity-50";
@@ -11,9 +12,12 @@ const btnCatalog =
 export function PurchaseCourseButton({
   courseId,
   className,
+  displayCurrency,
 }: {
   courseId: string;
   className?: string;
+  /** Resolved display currency from server (USD users see NGN charge note). */
+  displayCurrency?: DisplayCurrency;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -90,7 +94,7 @@ export function PurchaseCourseButton({
           email: init.email!,
           amount: init.amount,
           reference: init.reference,
-          currency: (init.currency as "NGN") ?? "NGN",
+          currency: "NGN",
         },
         onSuccess: () => {
           void (async () => {
@@ -123,6 +127,8 @@ export function PurchaseCourseButton({
     });
   }, [courseId, initializePayment, publicKey, router]);
 
+  const showNgnChargeNote = displayCurrency === "USD";
+
   return (
     <div className="flex w-full min-w-0 flex-col items-stretch gap-1">
       <button
@@ -133,6 +139,12 @@ export function PurchaseCourseButton({
       >
         {pending ? "Preparing checkout…" : "Buy now"}
       </button>
+      {showNgnChargeNote ? (
+        <p className="text-[11px] leading-snug text-[var(--muted)]">
+          You will be charged in Nigerian Naira (NGN) at the current exchange
+          rate.
+        </p>
+      ) : null}
       {msg ? <p className="text-xs text-rose-700">{msg}</p> : null}
     </div>
   );

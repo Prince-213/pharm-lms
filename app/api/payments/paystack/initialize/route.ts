@@ -1,6 +1,8 @@
 import { randomBytes } from "node:crypto";
 import { CoursePurchaseStatus, CourseStatus, UserRole } from "@/generated/prisma/enums";
 import { auth } from "@/auth";
+import { buildPurchasePricing } from "@/lib/currency/build-purchase-pricing";
+import { resolveDisplayCurrency } from "@/lib/currency/resolve-display-currency";
 import { db } from "@/lib/db";
 import { reEnrollFromSuccessfulPurchase } from "@/lib/payments/re-enroll-purchased-course";
 import { getPaystackPublicKey } from "@/lib/paystack/client";
@@ -23,16 +25,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "courseId required" }, { status: 400 });
     }
 
-    const course = await db.course.findUnique({
-      where: { id: courseId },
-      select: {
-        id: true,
-        status: true,
-        priceMinorUnits: true,
-        priceCurrency: true,
-        mentorId: true,
-      },
-    });
+    const [course, student] = await Promise.all([
+      db.course.findUnique({
+        where: { id: courseId },
+        select: {
+          id: true,
+          status: true,
+          priceMinorUnits: true,
+          mentorId: true,
+        },
+      }),
+      db.user.findUnique({
+        where: { id: session.user.id },
+        select: { country: true },
+      }),
+    ]);
 
     if (!course || course.status !== CourseStatus.PUBLISHED) {
       return NextResponse.json({ error: "Course not available" }, { status: 404 });
@@ -69,6 +76,11 @@ export async function POST(req: Request) {
       });
     }
 
+    const displayCurrency = await resolveDisplayCurrency({
+      profileCountry: student?.country,
+    });
+    const pricing = await buildPurchasePricing(price, displayCurrency);
+
     const reference = generateReference();
 
     await db.coursePurchase.create({
@@ -76,8 +88,11 @@ export async function POST(req: Request) {
         courseId: course.id,
         studentId: session.user.id,
         mentorId: course.mentorId,
-        amountMinorUnits: price,
-        currency: course.priceCurrency || "NGN",
+        amountMinorUnits: pricing.chargeMinorUnits,
+        currency: pricing.chargeCurrency,
+        displayCurrency: pricing.displayCurrency,
+        displayAmountMinorUnits: pricing.displayAmountMinorUnits,
+        fxRateNgnPerUsd: pricing.fxRateNgnPerUsd,
         paystackReference: reference,
         status: CoursePurchaseStatus.PENDING,
       },
@@ -86,10 +101,12 @@ export async function POST(req: Request) {
     const publicKey = getPaystackPublicKey();
     return NextResponse.json({
       reference,
-      amount: price,
+      amount: pricing.chargeMinorUnits,
       email: session.user.email,
       publicKey,
-      currency: course.priceCurrency || "NGN",
+      currency: pricing.chargeCurrency,
+      displayAmount: pricing.displayAmountMinorUnits,
+      displayCurrency: pricing.displayCurrency,
     });
   } catch (e) {
     console.error("paystack initialize", e);

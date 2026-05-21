@@ -5,6 +5,10 @@ import { auth } from "@/auth";
 import { CatalogCourseCard } from "@/components/student/catalog-course-card";
 import { StudentSecondaryNav } from "@/components/student/student-secondary-nav";
 import { CourseStatus, UserRole } from "@/generated/prisma/enums";
+import {
+  getStudentPricingContext,
+  mapCoursesWithDisplayPrices,
+} from "@/lib/currency/student-pricing-context";
 import { db } from "@/lib/db";
 import { resolveMediaUrl } from "@/lib/media-url";
 import { roleHomePath } from "@/lib/rbac";
@@ -31,8 +35,13 @@ export default async function StudentWishlistPage() {
   const visible = items.filter(
     (i) => i.course.status === CourseStatus.PUBLISHED,
   );
+  const { displayCurrency } = await getStudentPricingContext(session.user.id);
+  const visibleCourses = await mapCoursesWithDisplayPrices(
+    visible.map((i) => i.course),
+    displayCurrency,
+  );
   const resolvedThumbnails = await Promise.all(
-    visible.map((i) => resolveMediaUrl(i.course.thumbnailUrl)),
+    visibleCourses.map((c) => resolveMediaUrl(c.thumbnailUrl)),
   );
 
   return (
@@ -76,24 +85,27 @@ export default async function StudentWishlistPage() {
         </div>
       ) : (
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {visible.map((item, i) => (
+          {visible.map((item, i) => {
+            const course = visibleCourses[i];
+            return (
             <li key={item.id}>
               <CatalogCourseCard
-                href={`/student/browse/${item.course.id}`}
+                href={`/student/browse/${course.id}`}
                 course={{
-                  id: item.course.id,
-                  title: item.course.title,
-                  subtitle: item.course.subtitle,
+                  id: course.id,
+                  title: course.title,
+                  subtitle: course.subtitle,
                   thumbnailUrl: resolvedThumbnails[i] ?? null,
-                  mentorName: item.course.mentor.fullName,
-                  learnerCount: item.course._count.enrollments,
-                  priceMinorUnits: item.course.priceMinorUnits,
-                  priceCurrency: item.course.priceCurrency,
+                  mentorName: course.mentor.fullName,
+                  learnerCount: course._count.enrollments,
+                  priceMinorUnits: course.priceMinorUnits,
+                  priceCurrency: course.priceCurrency,
                 }}
                 wishlist={{ saved: true }}
               />
             </li>
-          ))}
+          );
+          })}
         </ul>
       )}
     </div>

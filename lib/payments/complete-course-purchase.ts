@@ -82,8 +82,13 @@ export async function completeCoursePurchaseFromReference(
       return { ok: false, message: "Payment was not successful." };
     }
 
-  if (Number(data.amount) !== purchase.amountMinorUnits) {
+    if (Number(data.amount) !== purchase.amountMinorUnits) {
       return { ok: false, message: "Payment amount mismatch." };
+    }
+
+    const paidCurrency = (data.currency ?? "NGN").toUpperCase();
+    if (paidCurrency !== purchase.currency.toUpperCase()) {
+      return { ok: false, message: "Payment currency mismatch." };
     }
 
     paystackTxId = paystackTxId ?? String(data.id ?? "");

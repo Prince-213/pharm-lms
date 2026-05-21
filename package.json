@@ -22,7 +22,8 @@
     "db:repair-course-authors": "tsx scripts/repair-course-author-roles.ts",
     "db:repair-course-authors:apply": "tsx scripts/repair-course-author-roles.ts --apply",
     "db:backfill-course-duration": "tsx scripts/backfill-course-estimated-duration.ts",
-    "db:backfill-course-duration:apply": "tsx scripts/backfill-course-estimated-duration.ts --apply"
+    "db:backfill-course-duration:apply": "tsx scripts/backfill-course-estimated-duration.ts --apply",
+    "report:pdf": "tsx scripts/generate-project-report-pdf.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",

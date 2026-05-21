@@ -2,6 +2,11 @@ import type { SectionResource } from "@/components/mentor/curriculum-editor-v2";
 import { CoursePurchaseStatus, CourseStatus, UserRole } from "@/generated/prisma/enums";
 import { catalogTotalSeconds } from "@/lib/course-duration";
 import { parseSectionDescription } from "@/lib/curriculum";
+import {
+  getStudentPricingContext,
+  toDisplayCoursePrice,
+} from "@/lib/currency/student-pricing-context";
+import type { DisplayCurrency } from "@/lib/currency/types";
 import { db } from "@/lib/db";
 import { resolveMediaUrl } from "@/lib/media-url";
 
@@ -160,8 +165,24 @@ export async function loadCourseCatalogDetail(
     })),
   );
 
+  let displayPriceMinorUnits: number | null = course.priceMinorUnits;
+  let displayPriceCurrency: DisplayCurrency =
+    (course.priceCurrency?.toUpperCase() === "USD" ? "USD" : "NGN") as DisplayCurrency;
+
+  if (isStudent) {
+    const { displayCurrency } = await getStudentPricingContext(viewer.id);
+    const display = await toDisplayCoursePrice(
+      course.priceMinorUnits,
+      displayCurrency,
+    );
+    displayPriceMinorUnits = display.priceMinorUnits;
+    displayPriceCurrency = display.priceCurrency;
+  }
+
   return {
     course,
+    displayPriceMinorUnits,
+    displayPriceCurrency,
     courseId,
     thumb,
     promoVideoHref,

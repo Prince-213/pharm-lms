@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { CourseStatus, UserRole, EnrollmentStatus } from "@/generated/prisma/enums";
 import { evaluateStudentBadges } from "@/lib/badges/evaluate-student-badges";
+import { issueCertificateForEnrollment } from "@/lib/certificates/issue-certificate";
 import { db } from "@/lib/db";
 import { studentMayAccessCourseContent } from "@/lib/payments/student-course-access";
 
@@ -97,20 +98,24 @@ export async function completeCourseAction(
   }
 
   if (enrollment.status === EnrollmentStatus.COMPLETED) {
+    await issueCertificateForEnrollment(enrollment.id);
     return { ok: true };
   }
 
+  const completedAt = new Date();
   await db.enrollment.update({
     where: { id: enrollment.id },
     data: {
       status: EnrollmentStatus.COMPLETED,
-      completedAt: new Date(),
+      completedAt,
     },
   });
 
+  await issueCertificateForEnrollment(enrollment.id);
   await evaluateStudentBadges(session.user.id);
   
   revalidatePath(`/student/course/${courseId}`);
+  revalidatePath(`/student/course/${courseId}/certificate`);
   revalidatePath("/student/dashboard");
   revalidatePath("/student/courses");
   

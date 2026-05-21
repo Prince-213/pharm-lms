@@ -477,8 +477,8 @@ export default async function StudentCourseLearningPage({
         </div>
       </div>
 
-      <div className="bg-white px-4 py-8 sm:px-8">
-        <div className="mx-auto min-h-[50vh] max-w-5xl">
+      <div className="bg-white px-4 pt-8 pb-0 sm:px-8 sm:py-8">
+        <div className="mx-auto min-h-[100dvh] max-w-5xl pb-48 lg:min-h-[50vh] lg:pb-0">
           {tab === "overview" ? (
             <div className="space-y-6">
                <div className="space-y-1">

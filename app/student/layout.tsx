@@ -60,11 +60,12 @@ export default function StudentLayout({
   const isAuthRoute = path === "/student/login" || path === "/student/signup";
 
   const isLearningPlayer = /^\/student\/course\/[^/]+$/.test(path);
+  const isCertificatePage = /^\/student\/course\/[^/]+\/certificate$/.test(path);
 
   if (isAuthRoute) return children;
 
   /* Figma session screen: full chrome is rendered on the course player page */
-  if (isLearningPlayer) return <>{children}</>;
+  if (isLearningPlayer || isCertificatePage) return <>{children}</>;
 
   return (
     <AppShell

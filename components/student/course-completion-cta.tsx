@@ -1,7 +1,8 @@
 "use client";
 
 import confetti from "canvas-confetti";
-import { CheckCircle2, PartyPopper, Trophy, X } from "lucide-react";
+import { Award, CheckCircle2, PartyPopper, Trophy, X } from "lucide-react";
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { completeCourseAction } from "@/app/student/course/[courseId]/actions";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,9 @@ export function CourseCompletionCta({
   const [isPending, startTransition] = useTransition();
   const [showCelebration, setShowCelebration] = useState(alreadyCompleted);
   const congratsKind = congratulatoryContentType?.toUpperCase() ?? "";
+  const certificateHref = `/student/course/${courseId}/certificate`;
+  const showCertificate =
+    alreadyCompleted || (showCelebration && !isPending);
 
   const handleComplete = () => {
     startTransition(async () => {
@@ -57,8 +61,8 @@ export function CourseCompletionCta({
         >
           <div
             className={cn(
-              "relative flex h-[min(88dvh,600px)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-[var(--border)]",
-              "bg-[var(--surface)] shadow-[var(--shadow-lg)] sm:h-[min(80vh,720px)]",
+              "relative flex h-[70dvh] max-h-[70dvh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-[var(--border)]",
+              "bg-[var(--surface)] shadow-[var(--shadow-lg)] sm:h-[min(80vh,720px)] sm:max-h-none",
             )}
           >
             <button
@@ -92,7 +96,7 @@ export function CourseCompletionCta({
                       src={congratulatoryVideoUrl}
                       controls
                       autoPlay
-                      className="aspect-video w-full object-contain"
+                      className="aspect-video max-h-[50dvh] w-full object-contain sm:max-h-none"
                     />
                   </div>
                 ) : congratsKind === "ARTICLE" && congratulatoryArticle ? (
@@ -121,6 +125,13 @@ export function CourseCompletionCta({
 
             <footer className="shrink-0 border-t border-[var(--border)] px-5 py-4 sm:px-8 sm:py-5">
               <div className="flex flex-wrap items-center justify-center gap-3">
+                <Link
+                  href={certificateHref}
+                  className="inline-flex h-11 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--primary)] bg-white px-6 text-sm font-semibold text-[var(--primary)] shadow-sm transition hover:bg-[var(--primary-soft)]"
+                >
+                  <Award className="h-4 w-4" aria-hidden />
+                  View & print certificate
+                </Link>
                 <button
                   type="button"
                   onClick={() => {
@@ -143,8 +154,8 @@ export function CourseCompletionCta({
       )}
 
       {alreadyCompleted ? (
-        <div className="rounded-xl border border-[var(--success)]/25 bg-[var(--success-soft)]/50 px-4 py-3 text-center">
-          <p className="flex flex-wrap items-center justify-center gap-2 text-sm font-semibold text-[var(--foreground)]">
+        <div className="rounded-xl border border-[var(--success)]/25 bg-[var(--success-soft)]/50 px-4 py-4 sm:px-5">
+          <p className="flex flex-wrap items-center justify-center gap-2 text-center text-sm font-semibold text-[var(--foreground)]">
             <Trophy className="h-4 w-4 shrink-0 text-[var(--success)]" />
             <span>Course completed</span>
             <button
@@ -155,6 +166,17 @@ export function CourseCompletionCta({
               View celebration
             </button>
           </p>
+          {showCertificate ? (
+            <div className="mt-3 flex justify-center">
+              <Link
+                href={certificateHref}
+                className="inline-flex h-11 items-center gap-2 rounded-[var(--radius-md)] bg-[var(--primary)] px-6 text-sm font-bold text-white shadow-sm transition hover:bg-[var(--primary-strong)]"
+              >
+                <Award className="h-4 w-4" aria-hidden />
+                View & print certificate
+              </Link>
+            </div>
+          ) : null}
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl border border-[var(--primary)]/20 bg-linear-to-r from-[var(--primary)] to-[#0d9488] p-[1px] shadow-sm">

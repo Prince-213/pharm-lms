@@ -64,11 +64,14 @@ If you have only 20 minutes, shorten role journeys to 4 minutes and demo to
   Beyond lessons
     • Book or join mentor meetings (where availability and workflow allow).
     • View achievements and badges on a dedicated page as milestones are met.
+  • Complete a course and download a Pharm LMS digital certificate (print to
+    PDF from the browser).
 
   What to say
     "For learners, the product is the full loop from first login to completion
      and recognition — not just video or text, but also engagement, mentoring,
-     and proof of progress through badges."
+     proof of progress through badges, and a printable certificate when they
+     finish."
 
 
 3.2 Mentor (instructor) journey
@@ -178,6 +181,17 @@ Why clients care
   • Simplified to three user-facing steps after removing an unnecessary
     "type of product" step; product naming shows PharmLms in the flow.
 
+5.6 Paid courses and multi-currency
+  • Paystack checkout for priced courses; tutor wallet and admin withdrawal
+    approval.
+  • International learners can see USD prices; Nigeria sees NGN; Paystack
+    charges in NGN (MVP).
+
+5.7 Digital certificates
+  • On course completion, students receive a branded Pharm LMS certificate
+    (student name, course, hours, instructor, date, certificate ID).
+  • View and print from the course player completion area.
+
 
 --------------------------------------------------------------------------------
 6) LIVE DEMO SCRIPT (SUGGESTED CLICK PATH)
@@ -198,6 +212,8 @@ Demo A — The story order (12–15 minutes)
      Say: "Structured sections and lessons; progress is the product."
   4. Student — achievements
      Say: "Recognition is visible and program-driven."
+  4b. Student — complete course + certificate (if demo account is complete)
+     Say: "Completion unlocks a printable Pharm LMS certificate."
   5. Mentor — new course (short)
      Say: "We create a draft, then the studio opens."
   6. Mentor — curriculum

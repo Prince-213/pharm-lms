@@ -4,6 +4,10 @@ import { auth } from "@/auth";
 import { BrowseSearchForm } from "@/components/student/browse-search-form";
 import { CatalogCourseCard } from "@/components/student/catalog-course-card";
 import { CourseStatus, UserRole } from "@/generated/prisma/enums";
+import {
+  getStudentPricingContext,
+  mapCoursesWithDisplayPrices,
+} from "@/lib/currency/student-pricing-context";
 import { db } from "@/lib/db";
 import { resolveMediaUrl } from "@/lib/media-url";
 
@@ -71,8 +75,14 @@ export default async function BrowseCoursesPage({
     : [];
   const wishlistSet = new Set(wishlistRows.map((w) => w.courseId));
 
+  const { displayCurrency } = await getStudentPricingContext(session.user.id);
+  const coursesWithDisplayPrices = await mapCoursesWithDisplayPrices(
+    courses,
+    displayCurrency,
+  );
+
   const resolvedThumbnails = await Promise.all(
-    courses.map((c) => resolveMediaUrl(c.thumbnailUrl)),
+    coursesWithDisplayPrices.map((c) => resolveMediaUrl(c.thumbnailUrl)),
   );
 
   const firstName =
@@ -163,7 +173,7 @@ export default async function BrowseCoursesPage({
           </p>
         ) : (
           <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {courses.map((course, i) => (
+            {coursesWithDisplayPrices.map((course, i) => (
               <li key={course.id}>
                 <CatalogCourseCard
                   href={`/student/browse/${course.id}`}
