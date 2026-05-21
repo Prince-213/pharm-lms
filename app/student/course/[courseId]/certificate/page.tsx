@@ -43,7 +43,7 @@ export default async function CourseCertificatePage({
   if (!data) notFound();
 
   return (
-    <main className="certificate-page mx-auto max-w-[1100px] px-4 py-8 sm:px-6 sm:py-10">
+    <main className="certificate-page mx-auto max-w-[1100px] overflow-x-hidden px-3 py-6 sm:px-6 sm:py-10">
       <CourseCertificatePrintToolbar courseId={courseId} />
       <CourseCertificateDocument data={data} />
       <style>{`
@@ -65,6 +65,8 @@ export default async function CourseCertificatePage({
           .certificate-sheet {
             max-width: none !important;
             box-shadow: none !important;
+            aspect-ratio: 297 / 210 !important;
+            min-height: auto !important;
           }
         }
       `}</style>
