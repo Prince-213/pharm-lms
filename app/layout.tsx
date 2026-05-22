@@ -1,24 +1,10 @@
 import type { Metadata } from "next";
-import { Inter, Manrope, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { SessionProviderWrapper } from "@/components/session-provider-wrapper";
 import { TooltipProvider } from "@/components/ui/tooltip";
-
-const interSans = Inter({
-  variable: "--font-inter-sans",
-  subsets: ["latin"],
-});
-
-const manrope = Manrope({
-  variable: "--font-manrope",
-  subsets: ["latin"],
-});
-
-const robotoMono = Roboto_Mono({
-  variable: "--font-roboto-mono",
-  subsets: ["latin"],
-});
+import { TITLE_FONT } from "@/lib/font-config";
+import { fontVariables } from "@/lib/fonts";
 
 export const metadata: Metadata = {
   title: "Pharm LMS",
@@ -33,9 +19,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${interSans.variable} ${manrope.variable} ${robotoMono.variable} h-full antialiased`}
+      data-title-font={TITLE_FONT}
+      className={`${fontVariables} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
+      <body className="flex min-h-full flex-col font-sans">
         <TooltipProvider>
           <SessionProviderWrapper>{children}</SessionProviderWrapper>
         </TooltipProvider>

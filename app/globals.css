@@ -42,12 +42,39 @@
   --shadow-card: 0px 1px 2px 0px rgba(0, 0, 0, 0.12);
   
   --header-blur: 12px;
+
+  /* Heading font — overridden when html[data-title-font="satoshi"] */
+  --font-title-active: var(--font-plus-jakarta), "Plus Jakarta Sans", system-ui,
+    sans-serif;
+}
+
+html[data-title-font="satoshi"] {
+  --font-title-active: "Satoshi", var(--font-plus-jakarta), "Plus Jakarta Sans",
+    system-ui, sans-serif;
+}
+
+/* Satoshi (optional): drop Satoshi-Variable.woff2 into public/fonts/satoshi/, then set TITLE_FONT to "satoshi" in lib/font-config.ts */
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/satoshi/Satoshi-Variable.woff2") format("woff2");
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/satoshi/Satoshi-VariableItalic.woff2") format("woff2");
+  font-weight: 300 900;
+  font-style: italic;
+  font-display: swap;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter-sans);
+  --font-sans: var(--font-outfit), "Outfit", system-ui, sans-serif;
+  --font-display: var(--font-title-active);
   --font-mono: var(--font-roboto-mono);
   --shadow-1: var(--shadow-1);
   --shadow-2: var(--shadow-2);
@@ -77,11 +104,19 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter-sans), "Inter", system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-title-active);
 }
 
 .font-display {
-  font-family: var(--font-manrope), var(--font-inter-sans), system-ui, sans-serif;
+  font-family: var(--font-title-active);
 }
 
 /**
