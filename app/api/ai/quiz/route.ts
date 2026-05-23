@@ -5,6 +5,7 @@ import { UserRole } from "@/generated/prisma/enums";
 import { generateSectionQuiz } from "@/lib/ai/huggingface";
 import { db } from "@/lib/db";
 import { studentMayAccessCourseContent } from "@/lib/payments/student-course-access";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 const schema = z.object({
   courseId: z.string().cuid(),
@@ -18,6 +19,12 @@ export async function POST(request: Request) {
   if (!session?.user || session.user.role !== UserRole.STUDENT) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const limit = checkRateLimit(`ai:quiz:${session.user.id}`, {
+    limit: 20,
+    windowMs: 60_000,
+  });
+  if (!limit.allowed) return rateLimitResponse(limit.resetAt);
 
   const body = await request.json();
   const parsed = schema.safeParse(body);
@@ -38,11 +45,17 @@ export async function POST(request: Request) {
     select: { id: true },
   });
   if (!enrollment) {
-    return NextResponse.json({ error: "Enroll in this course to generate a quiz." }, { status: 403 });
+    return NextResponse.json(
+      { error: "Enroll in this course to generate a quiz." },
+      { status: 403 },
+    );
   }
 
   if (
-    !(await studentMayAccessCourseContent(session.user.id, parsed.data.courseId))
+    !(await studentMayAccessCourseContent(
+      session.user.id,
+      parsed.data.courseId,
+    ))
   ) {
     return NextResponse.json(
       { error: "Complete payment to generate a quiz." },
@@ -53,7 +66,10 @@ export async function POST(request: Request) {
   let sectionIds: string[] = [];
   if (parsed.data.source === "section") {
     if (!parsed.data.sectionId) {
-      return NextResponse.json({ error: "sectionId is required for section mode." }, { status: 400 });
+      return NextResponse.json(
+        { error: "sectionId is required for section mode." },
+        { status: 400 },
+      );
     }
     sectionIds = [parsed.data.sectionId];
   } else {
@@ -68,14 +84,19 @@ export async function POST(request: Request) {
     sectionIds = [...new Set(completed.map((c) => c.lesson.sectionId))];
     if (!sectionIds.length) {
       return NextResponse.json(
-        { error: "Complete at least one lesson to generate a personalized quiz." },
+        {
+          error:
+            "Complete at least one lesson to generate a personalized quiz.",
+        },
         { status: 400 },
       );
     }
   }
 
   const lessons = await db.lesson.findMany({
-    where: { section: { courseId: parsed.data.courseId, id: { in: sectionIds } } },
+    where: {
+      section: { courseId: parsed.data.courseId, id: { in: sectionIds } },
+    },
     select: {
       title: true,
       content: true,
@@ -84,19 +105,30 @@ export async function POST(request: Request) {
     orderBy: [{ section: { position: "asc" } }, { position: "asc" }],
   });
   if (!lessons.length) {
-    return NextResponse.json({ error: "No lesson content found for quiz generation." }, { status: 400 });
+    return NextResponse.json(
+      { error: "No lesson content found for quiz generation." },
+      { status: 400 },
+    );
   }
 
   const sectionContext = lessons
-    .map((lesson) => `Section: ${lesson.section.title}\nLesson: ${lesson.title}\n${lesson.content ?? ""}`)
+    .map(
+      (lesson) =>
+        `Section: ${lesson.section.title}\nLesson: ${lesson.title}\n${lesson.content ?? ""}`,
+    )
     .join("\n\n");
 
   let questions;
   try {
-    questions = await generateSectionQuiz(sectionContext, parsed.data.questionCount);
+    questions = await generateSectionQuiz(
+      sectionContext,
+      parsed.data.questionCount,
+    );
   } catch {
     return NextResponse.json(
-      { error: "Quiz generation is temporarily unavailable. Please try again." },
+      {
+        error: "Quiz generation is temporarily unavailable. Please try again.",
+      },
       { status: 503 },
     );
   }
@@ -111,7 +143,10 @@ export async function POST(request: Request) {
     data: {
       studentId: session.user.id,
       courseId: parsed.data.courseId,
-      sectionId: parsed.data.source === "section" ? parsed.data.sectionId ?? null : null,
+      sectionId:
+        parsed.data.source === "section"
+          ? (parsed.data.sectionId ?? null)
+          : null,
       promptSource: {
         source: parsed.data.source,
         sectionIds,

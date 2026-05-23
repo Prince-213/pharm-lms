@@ -1,11 +1,12 @@
-import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
 import { gradeQuiz } from "@/lib/ai/huggingface";
 import { evaluateStudentBadges } from "@/lib/badges/evaluate-student-badges";
 import { db } from "@/lib/db";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 const schema = z.object({
   attemptId: z.string().cuid(),
@@ -25,10 +26,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const limit = checkRateLimit(`ai:grade:${session.user.id}`, {
+    limit: 30,
+    windowMs: 60_000,
+  });
+  if (!limit.allowed) return rateLimitResponse(limit.resetAt);
+
   const body = await request.json();
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json(
+      { error: parsed.error.flatten() },
+      { status: 400 },
+    );
   }
 
   const attempt = await db.aIQuizAttempt.findFirst({
@@ -36,14 +46,23 @@ export async function POST(request: Request) {
     include: { questions: true },
   });
   if (!attempt) {
-    return NextResponse.json({ error: "Quiz attempt not found." }, { status: 404 });
+    return NextResponse.json(
+      { error: "Quiz attempt not found." },
+      { status: 404 },
+    );
   }
 
-  const attemptQuestions = [...attempt.questions].sort((a, b) => a.id.localeCompare(b.id));
+  const attemptQuestions = [...attempt.questions].sort((a, b) =>
+    a.id.localeCompare(b.id),
+  );
 
   const questions: GradeQuestion[] = attemptQuestions.map((q) => ({
     question: q.question,
-    options: Array.isArray(q.options) ? (q.options.filter((o): o is string => typeof o === "string") as string[]) : [],
+    options: Array.isArray(q.options)
+      ? (q.options.filter(
+          (o): o is string => typeof o === "string",
+        ) as string[])
+      : [],
     answer: q.correctAnswer,
     explanation: q.explanation ?? "",
   }));

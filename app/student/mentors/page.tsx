@@ -2,8 +2,7 @@ import { BookOpen, Sparkles, User } from "lucide-react";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { MeetingHostCard } from "@/components/meetings/meeting-host-card";
-import { StudentSecondaryNav } from "@/components/student/student-secondary-nav";
-import { UserRole } from "@/generated/prisma/enums";
+import { MentorProfileStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { resolveMediaUrl } from "@/lib/media-url";
 import { roleHomePath } from "@/lib/rbac";
@@ -18,6 +17,7 @@ export default async function StudentMentorsPage() {
     where: {
       role: UserRole.MENTOR,
       isActive: true,
+      mentorProfileStatus: MentorProfileStatus.APPROVED,
     },
     orderBy: { updatedAt: "desc" },
     select: {

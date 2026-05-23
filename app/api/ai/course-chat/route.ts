@@ -5,6 +5,7 @@ import { UserRole } from "@/generated/prisma/enums";
 import { chatWithCourseContext } from "@/lib/ai/huggingface";
 import { db } from "@/lib/db";
 import { studentMayAccessCourseContent } from "@/lib/payments/student-course-access";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 const schema = z.object({
   courseId: z.string().cuid(),
@@ -21,7 +22,10 @@ const schema = z.object({
 });
 
 function cleanText(input: string) {
-  return input.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  return input
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export async function POST(request: Request) {
@@ -30,10 +34,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const limit = checkRateLimit(`ai:chat:${session.user.id}`, {
+    limit: 30,
+    windowMs: 60_000,
+  });
+  if (!limit.allowed) return rateLimitResponse(limit.resetAt);
+
   const body = await request.json();
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json(
+      { error: parsed.error.flatten() },
+      { status: 400 },
+    );
   }
 
   const { courseId, message, history = [] } = parsed.data;
@@ -43,7 +56,10 @@ export async function POST(request: Request) {
     select: { id: true },
   });
   if (!enrollment) {
-    return NextResponse.json({ error: "Enroll in this course to use the assistant." }, { status: 403 });
+    return NextResponse.json(
+      { error: "Enroll in this course to use the assistant." },
+      { status: 403 },
+    );
   }
 
   if (!(await studentMayAccessCourseContent(session.user.id, courseId))) {
@@ -64,7 +80,10 @@ export async function POST(request: Request) {
   const sectionIds = [...new Set(completed.map((c) => c.lesson.sectionId))];
   if (!sectionIds.length) {
     return NextResponse.json(
-      { error: "Complete at least one lesson to chat with context-aware assistant." },
+      {
+        error:
+          "Complete at least one lesson to chat with context-aware assistant.",
+      },
       { status: 400 },
     );
   }
@@ -80,7 +99,10 @@ export async function POST(request: Request) {
   });
 
   const context = lessons
-    .map((lesson) => `Section: ${lesson.section.title}\nLesson: ${lesson.title}\n${cleanText(lesson.content ?? "")}`)
+    .map(
+      (lesson) =>
+        `Section: ${lesson.section.title}\nLesson: ${lesson.title}\n${cleanText(lesson.content ?? "")}`,
+    )
     .join("\n\n");
 
   const reply = await chatWithCourseContext(context, message, history);

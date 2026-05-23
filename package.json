@@ -12,6 +12,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "biome check",
+    "test": "tsx --test tests/**/*.test.ts",
     "format": "biome format --write",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",

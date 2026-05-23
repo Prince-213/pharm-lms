@@ -41,7 +41,7 @@ const providers: NextAuthConfig["providers"] = [
       const user = await prisma.user.findUnique({
         where: { email },
       });
-      if (!user?.passwordHash) {
+      if (!user?.passwordHash || !user.isActive) {
         return null;
       }
       const isValid = await compare(parsed.data.password, user.passwordHash);
@@ -137,10 +137,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const email = rawEmail.toLowerCase();
       const row = await prisma.user.findUnique({
         where: { email },
-        select: { role: true },
+        select: { role: true, isActive: true },
       });
       if (!row) {
         return true;
+      }
+      if (!row.isActive) {
+        return "/student/login?authError=account_disabled";
       }
       if (row.role !== expectedRole) {
         cookieStore.delete("oauth_intent");
@@ -158,21 +161,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user?.id) {
         const row = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { id: true, role: true, mentorProfileStatus: true },
+          select: {
+            id: true,
+            role: true,
+            mentorProfileStatus: true,
+            isActive: true,
+          },
         });
-        if (row) {
+        if (row?.isActive) {
           token.sub = row.id;
           token.role = row.role;
           token.mentorProfileStatus = row.mentorProfileStatus;
+        } else {
+          token.sub = undefined;
         }
       } else if (token.sub) {
         const row = await prisma.user.findUnique({
           where: { id: token.sub as string },
-          select: { role: true, mentorProfileStatus: true },
+          select: { role: true, mentorProfileStatus: true, isActive: true },
         });
-        if (row) {
+        if (row?.isActive) {
           token.role = row.role;
           token.mentorProfileStatus = row.mentorProfileStatus;
+        } else {
+          token.sub = undefined;
         }
       }
       if (token.sub) {
@@ -181,6 +193,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     session({ session, token }) {
+      if (!token.sub) {
+        return { expires: "1970-01-01T00:00:00.000Z" };
+      }
       if (session.user) {
         session.user.id = token.sub as string;
         session.user.role =

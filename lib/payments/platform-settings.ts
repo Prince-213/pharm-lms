@@ -1,5 +1,7 @@
 import { db } from "@/lib/db";
 
+export { computeFeeSplit } from "@/lib/payments/fee-split";
+
 const PLATFORM_SETTINGS_ID = "default";
 
 export async function getOrCreatePlatformSettings() {
@@ -12,14 +14,4 @@ export async function getOrCreatePlatformSettings() {
     },
     update: {},
   });
-}
-
-export function computeFeeSplit(
-  amountMinorUnits: number,
-  platformFeePercent: number,
-): { platformFeeMinorUnits: number; netToMentorMinorUnits: number } {
-  const pct = Math.max(0, Math.min(100, platformFeePercent));
-  const platformFeeMinorUnits = Math.floor((amountMinorUnits * pct) / 100);
-  const netToMentorMinorUnits = amountMinorUnits - platformFeeMinorUnits;
-  return { platformFeeMinorUnits, netToMentorMinorUnits };
 }

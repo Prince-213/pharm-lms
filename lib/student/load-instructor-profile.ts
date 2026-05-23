@@ -2,6 +2,7 @@ import {
   CourseStatus,
   MeetingRequestStatus,
   MeetingStatus,
+  MentorProfileStatus,
   UserRole,
 } from "@/generated/prisma/enums";
 import {
@@ -194,6 +195,7 @@ export async function loadMentorProfileForStudent(
       id: mentorId,
       role: UserRole.MENTOR,
       isActive: true,
+      mentorProfileStatus: MentorProfileStatus.APPROVED,
     },
     select: {
       id: true,
