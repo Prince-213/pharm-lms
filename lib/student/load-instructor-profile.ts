@@ -244,7 +244,7 @@ export async function loadMentorProfileForStudent(
     createdAt: mentor.createdAt,
     availability: mentor.availability,
     stats: {
-      studentsMentored: studentsMentored.length,
+      studentsMentored,
       completedSessions,
       avgRating: null,
       reviewCount: 0,
