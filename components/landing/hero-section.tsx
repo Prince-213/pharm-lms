@@ -72,16 +72,16 @@ export function HeroSection({ audience = "student" }: HeroSectionProps) {
             {hero.subcopy}
           </p>
 
-          <div className="mt-8 flex flex-wrap gap-5">
+          <div className="mt-8 flex lg:flex-row flex-col lg:gap-5 gap-4">
             <Link
               href={hero.primaryCta.href}
-              className="inline-flex items-center rounded-xl bg-[var(--emerald)] px-[28px] py-4.5 text-[18px] text-sm font-semibold text-white shadow-md transition hover:bg-[var(--primary)] active:scale-95"
+              className="inline-flex items-center lg:rounded-xl rounded-[8px] bg-[var(--emerald)] lg:px-[28px] px-[20px] lg:py-4.5 py-4 text-[18px] lg:text-sm text-xs font-semibold text-white shadow-md transition hover:bg-[var(--primary)] active:scale-95"
             >
               {hero.primaryCta.label}
             </Link>
             <Link
               href={hero.secondaryCta.href}
-              className="inline-flex z-50 items-center rounded-lg bg-emerald-50 px-[28px] py-4.5 text-[18px] text-sm font-semibold text-[var(--emerald)] shadow-xl shadow-gray-300/40 transition active:scale-95"
+              className="inline-flex z-20 relative  items-center lg:rounded-lg rounded-[8px] bg-emerald-50 lg:px-[28px] px-[20px] lg:py-4.5 py-4 text-[18px] lg:text-sm text-xs font-semibold text-[var(--emerald)] shadow-xl shadow-gray-300/40 transition active:scale-95"
             >
               {hero.secondaryCta.label}
             </Link>
@@ -129,10 +129,10 @@ export function HeroSection({ audience = "student" }: HeroSectionProps) {
             className="pointer-events-none absolute inset-0 flex items-center justify-center"
             aria-hidden
           >
-            <div className="absolute h-[520px] w-[520px] rounded-full border border-slate-300 sm:h-[580px] sm:w-[580px]" />
+            <div className="absolute lg:h-[520px] lg:w-[520px] h-[320px] w-[320px] rounded-full border border-slate-300 sm:h-[580px] sm:w-[580px]" />
           </div>
 
-          <div className="relative h-[550px] w-[550px] translate-x-4 translate-y-4 overflow-hidden rounded-full bg-[var(--emerald)] shadow-2xl sm:h-[550px] sm:w-[550px]">
+          <div className="relative lg:h-[550px] lg:w-[550px] h-[350px] w-[350px] translate-x-4 translate-y-4 overflow-hidden rounded-full bg-[var(--emerald)] shadow-2xl sm:h-[550px] sm:w-[550px]">
             <Image
               src={`${hero.image}`}
               alt="Pharmacy professional — Yan Krukau on Pexels"
@@ -141,33 +141,33 @@ export function HeroSection({ audience = "student" }: HeroSectionProps) {
             />
           </div>
 
-          <div className="absolute left-0 top-40 flex min-w-fit -translate-x-5 -translate-y-0 items-center gap-[23px] rounded-[18px] border border-[var(--emerald)] bg-[#F5F5F4] p-[18px] shadow-[var(--shadow-3)] backdrop-blur-sm lg:-left-4">
-            <div className="relative h-[50px] w-[50px] overflow-hidden rounded-[11px] shadow-lg shadow-gray-400/60">
+          <div className="absolute left-0 top-40 flex min-w-fit -translate-x-5 -translate-y-0 items-center lg:gap-[23px] gap-[15px] lg:rounded-[18px] rounded-[10px] border border-[var(--emerald)] bg-[#F5F5F4] lg:p-[18px] p-[10px] shadow-[var(--shadow-3)] backdrop-blur-sm lg:-left-4">
+            <div className="relative lg:h-[50px] lg:w-[50px] h-[40px] w-[40px] overflow-hidden rounded-[11px] shadow-lg shadow-gray-400/60">
               <Image src="/assets/monitor.png" className="object-contain" alt="" fill />
             </div>
             <div className="flex flex-col gap-[2px]">
-              <p className="text-[25px] font-bold leading-tight text-[var(--ink-deep)]">2K+</p>
-              <p className="text-[15px] text-gray-500">Video Courses</p>
+              <p className="lg:text-[25px] text-[20px] font-bold leading-tight text-[var(--ink-deep)]">2K+</p>
+              <p className="lg:text-[15px] text-[12px] text-gray-500">Video Courses</p>
             </div>
           </div>
 
-          <div className="absolute -top-4 right-0 flex max-w-fit -translate-y-0 flex-col items-center justify-center gap-[5px] rounded-[18px] border border-[var(--emerald)] bg-[#F5F5F4] p-[18px] shadow-[var(--shadow-3)] backdrop-blur-sm lg:right-2">
-            <div className="relative h-[80px] w-[80px] overflow-hidden rounded-full">
+          <div className="absolute -top-4 right-0 flex max-w-fit -translate-y-0 flex-col items-center justify-center gap-[5px] lg:rounded-[18px] rounded-[10px] border border-[var(--emerald)] bg-[#F5F5F4] lg:p-[18px] p-[10px] shadow-[var(--shadow-3)] backdrop-blur-sm lg:right-2">
+            <div className="relative lg:h-[80px] lg:w-[80px] h-[60px] w-[60px] overflow-hidden rounded-full">
               <Image src="/assets/Ring.png" className="object-contain" alt="" fill />
             </div>
-            <div className="flex flex-col items-center justify-center gap-[8px] text-center">
-              <p className="text-[25px] font-bold leading-tight text-[var(--ink-deep)]">5K+</p>
-              <p className="text-[15px] text-gray-500">Online Courses</p>
+            <div className="flex flex-col items-center justify-center lg:gap-[8px] gap-[5px] text-center">
+              <p className="lg:text-[25px] text-[20px] font-bold leading-tight text-[var(--ink-deep)]">5K+</p>
+              <p className="lg:text-[15px] text-[12px] text-gray-500">Online Courses</p>
             </div>
           </div>
 
-          <div className="absolute bottom-4 right-0 flex max-w-fit -translate-y-0 items-center gap-[18px] rounded-[18px] border border-[var(--emerald)] bg-[#F5F5F4] p-[18px] shadow-[var(--shadow-3)] backdrop-blur-sm lg:right-10">
-            <div className="relative h-[50px] w-[50px] overflow-hidden rounded-[11px] shadow-lg shadow-gray-400/60">
+          <div className="absolute bottom-4 right-0 flex max-w-fit -translate-y-0 items-center lg:gap-[18px] gap-[10px] lg:rounded-[18px] rounded-[10px] border border-[var(--emerald)] bg-[#F5F5F4] lg:p-[18px] p-[10px] shadow-[var(--shadow-3)] backdrop-blur-sm lg:right-10">
+            <div className="relative lg:h-[50px] lg:w-[50px] h-[40px] w-[40px] overflow-hidden lg:rounded-[11px] rounded-[8px] shadow-lg shadow-gray-400/60">
               <Image src="/assets/tutor.png" className="object-contain" alt="" fill />
             </div>
             <div className="flex flex-col gap-[2px]">
-              <p className="text-[15px] text-gray-500">Tutors</p>
-              <p className="text-[25px] font-bold leading-tight text-[var(--ink-deep)]">250+</p>
+              <p className="lg:text-[15px] text-[12px] text-gray-500">Tutors</p>
+              <p className="lg:text-[25px] text-[20px] font-bold leading-tight text-[var(--ink-deep)]">250+</p>
             </div>
           </div>
         </div>

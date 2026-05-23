@@ -27,7 +27,7 @@ export function BlogSection({ audience = "student" }: BlogSectionProps) {
         <div className="grid gap-8 lg:grid-cols-2">
           <div className="flex flex-col gap-6">
             {leftPosts.map((post) => (
-              <div key={post.title} className="group flex cursor-pointer gap-6 transition">
+              <div key={post.title} className="group flex lg:flex-row flex-col cursor-pointer gap-6 transition">
                 <img
                   src={post.image}
                   alt={post.imageAlt}
@@ -53,7 +53,7 @@ export function BlogSection({ audience = "student" }: BlogSectionProps) {
             ))}
           </div>
 
-          <div className="flex flex-col gap-6">
+          <div className="flex lg:flex-col flex-col-reverse gap-6">
             {rightPosts.map((post) =>
               post.title ? (
                 <div key={post.title} className="group cursor-pointer">
