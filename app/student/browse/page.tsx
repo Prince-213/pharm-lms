@@ -3,22 +3,16 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { BrowseSearchForm } from "@/components/student/browse-search-form";
 import { CatalogCourseCard } from "@/components/student/catalog-course-card";
-import { CourseStatus, UserRole } from "@/generated/prisma/enums";
+import { UserRole } from "@/generated/prisma/enums";
 import {
   getStudentPricingContext,
   mapCoursesWithDisplayPrices,
 } from "@/lib/currency/student-pricing-context";
+import {
+  POPULAR_CATEGORIES,
+  searchPublishedCourses,
+} from "@/lib/courses/public-catalog";
 import { db } from "@/lib/db";
-import { resolveMediaUrl } from "@/lib/media-url";
-
-const EXPLORE_CHIPS = [
-  "Clinical skills",
-  "Community pharmacy",
-  "Dosage & calculations",
-  "Patient safety",
-  "Leadership",
-  "Regulatory",
-];
 
 type SearchParams = {
   q?: string;
@@ -41,30 +35,24 @@ export default async function BrowseCoursesPage({
   const query = rawQuery.slice(0, 80);
   const topic = rawTopic.slice(0, 80);
 
-  const tokens = [query, topic].filter(Boolean);
-  const courses = await db.course.findMany({
-    where: {
-      status: CourseStatus.PUBLISHED,
-      ...(tokens.length > 0
-        ? {
-            AND: tokens.map((t) => ({
-              OR: [
-                { title: { contains: t, mode: "insensitive" as const } },
-                { subtitle: { contains: t, mode: "insensitive" as const } },
-                { description: { contains: t, mode: "insensitive" as const } },
-                { category: { contains: t, mode: "insensitive" as const } },
-                { primaryTopic: { contains: t, mode: "insensitive" as const } },
-              ],
-            })),
-          }
-        : {}),
-    },
-    orderBy: { updatedAt: "desc" },
-    include: {
-      mentor: { select: { fullName: true } },
-      _count: { select: { enrollments: true } },
-    },
+  const listItems = await searchPublishedCourses({
+    q: query || undefined,
+    topic: topic || undefined,
+    sort: "new",
   });
+
+  const courses = listItems.map((item) => ({
+    id: item.id,
+    title: item.title,
+    subtitle: item.subtitle,
+    thumbnailUrl: item.thumbnailUrl,
+    priceMinorUnits: item.priceMinorUnits,
+    priceCurrency: item.priceCurrency,
+    mentor: { fullName: item.mentorName },
+    _count: { enrollments: item.learnerCount },
+  }));
+
+  const tokens = [query, topic].filter(Boolean);
 
   const isStudent = session.user.role === UserRole.STUDENT;
   const wishlistRows = isStudent
@@ -73,7 +61,9 @@ export default async function BrowseCoursesPage({
         select: { courseId: true },
       })
     : [];
-  const wishlistSet = new Set(wishlistRows.map((w) => w.courseId));
+  const wishlistSet = new Set(
+    wishlistRows.map((w: { courseId: string }) => w.courseId),
+  );
 
   const { displayCurrency } = await getStudentPricingContext(session.user.id);
   const coursesWithDisplayPrices = await mapCoursesWithDisplayPrices(
@@ -81,8 +71,8 @@ export default async function BrowseCoursesPage({
     displayCurrency,
   );
 
-  const resolvedThumbnails = await Promise.all(
-    coursesWithDisplayPrices.map((c) => resolveMediaUrl(c.thumbnailUrl)),
+  const resolvedThumbnails = coursesWithDisplayPrices.map(
+    (c) => c.thumbnailUrl,
   );
 
   const firstName =
@@ -121,7 +111,7 @@ export default async function BrowseCoursesPage({
           Explore topics
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
-          {EXPLORE_CHIPS.map((c) => {
+          {POPULAR_CATEGORIES.map((c) => {
             const active = topic.toLowerCase() === c.toLowerCase();
             return (
               <Link

@@ -3,7 +3,6 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { SessionProviderWrapper } from "@/components/session-provider-wrapper";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { TITLE_FONT } from "@/lib/font-config";
 import { fontVariables } from "@/lib/fonts";
 
 export const metadata: Metadata = {
@@ -17,11 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      data-title-font={TITLE_FONT}
-      className={`${fontVariables} h-full antialiased`}
-    >
+    <html lang="en" className={`${fontVariables} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
         <TooltipProvider>
           <SessionProviderWrapper>{children}</SessionProviderWrapper>

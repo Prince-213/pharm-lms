@@ -7,6 +7,12 @@ import { prisma } from "@/lib/prisma";
 
 const OAUTH_INTENT = "oauth_intent";
 
+function isCustomAvatarUrl(url: string | null | undefined): boolean {
+  const s = url?.trim();
+  if (!s) return false;
+  return s.startsWith("r2://") || s.startsWith("/profiles/");
+}
+
 type DbUser = {
   id: string;
   email: string;
@@ -129,7 +135,13 @@ export function customPrismaAdapter(): Adapter {
         data.fullName = name?.trim() || "User";
       }
       if (image !== undefined) {
-        data.avatarUrl = image;
+        const existing = await prisma.user.findUnique({
+          where: { id },
+          select: { avatarUrl: true },
+        });
+        if (!isCustomAvatarUrl(existing?.avatarUrl)) {
+          data.avatarUrl = image;
+        }
       }
       if (email !== undefined) {
         data.email = email.toLowerCase();

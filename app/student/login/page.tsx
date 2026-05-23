@@ -13,7 +13,8 @@ export default async function StudentLoginPage({
   const sp = await searchParams;
   const raw = sp.callbackUrl;
   const callbackUrl =
-    typeof raw === "string" && raw.startsWith("/student")
+    typeof raw === "string" &&
+    (raw.startsWith("/student") || raw.startsWith("/courses"))
       ? raw
       : "/student/dashboard";
   const portalAuthError =

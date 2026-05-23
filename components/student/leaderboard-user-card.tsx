@@ -1,6 +1,7 @@
 "use client";
 
 import { Trophy, Flame, Award, BrainCircuit } from "lucide-react";
+import { UserAvatar } from "@/components/user/user-avatar";
 import type { LeaderboardEntry } from "@/lib/student/leaderboard";
 
 interface LeaderboardUserCardProps {
@@ -13,15 +14,12 @@ export function LeaderboardUserCard({ user }: LeaderboardUserCardProps) {
   return (
     <div className="rounded-3xl bg-white p-6 shadow-sm border border-slate-100">
       <div className="flex flex-col items-center text-center">
-        <div className="relative h-20 w-20 overflow-hidden rounded-2xl border-4 border-indigo-50 bg-indigo-100 shadow-lg">
-          {user.avatarUrl ? (
-            <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center font-bold text-indigo-600 text-2xl">
-              {user.fullName.charAt(0)}
-            </div>
-          )}
-        </div>
+        <UserAvatar
+          src={user.avatarUrl}
+          name={user.fullName}
+          className="h-20 w-20 rounded-2xl border-4 border-indigo-50 shadow-lg"
+          fallbackClassName="bg-indigo-100 text-2xl text-indigo-600"
+        />
         
         <h3 className="mt-4 text-xl font-bold text-slate-900">{user.fullName} (You)</h3>
         <p className="text-sm font-medium text-slate-400">Pharm Student</p>

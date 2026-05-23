@@ -3,9 +3,9 @@ import {
   BookOpen,
   ClipboardList,
   Heart,
-  Trophy,
   Search,
-} from "lucide-react";
+  Trophy,
+} from "@/lib/icons/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";

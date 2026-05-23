@@ -41,7 +41,7 @@ import { cn } from "@/lib/utils";
 
 type Variant = "catalog" | "tutorPreview";
 
-export type CatalogInteraction = "student" | "readonly";
+export type CatalogInteraction = "student" | "readonly" | "guest";
 
 /** Udemy-like neutral chrome (works with Pharm tokens on body) */
 const udemyBorder = "border-[#d1d7dc]";
@@ -119,12 +119,15 @@ export function CourseCatalogDetail({
   interaction,
   data,
   catalogNavOverride,
+  guestAuth,
 }: {
   variant: Variant;
   interaction: CatalogInteraction;
   data: CatalogCoursePayload;
   /** When set (e.g. admin overview), replaces the first catalog breadcrumb target. */
   catalogNavOverride?: { href: string; label: string };
+  /** Sign-in / sign-up targets for unauthenticated visitors. */
+  guestAuth?: { callbackUrl: string };
 }) {
   const {
     course,
@@ -148,7 +151,10 @@ export function CourseCatalogDetail({
   } = data;
 
   const canAct = interaction === "student" && variant === "catalog";
+  const isGuest = interaction === "guest" && variant === "catalog";
   const showResourceLinks = canAct && Boolean(enrollment);
+  const catalogHref = catalogNavOverride?.href ?? (isGuest ? "/courses" : "/student/browse");
+  const catalogLabel = catalogNavOverride?.label ?? (isGuest ? "Catalog" : "Catalog");
 
   const sectionCount = course.sections.length;
   const contentSummary = [
@@ -175,10 +181,10 @@ export function CourseCatalogDetail({
             {variant === "catalog" ? (
               <>
                 <Link
-                  href={catalogNavOverride?.href ?? "/student/browse"}
+                  href={catalogHref}
                   className="text-[#c0c4fc] underline-offset-2 hover:text-white hover:underline"
                 >
-                  {catalogNavOverride?.label ?? "Catalog"}
+                  {catalogLabel}
                 </Link>
                 <ChevronRight className="h-3 w-3 opacity-70" aria-hidden />
               </>
@@ -685,6 +691,21 @@ export function CourseCatalogDetail({
                             className="h-12 max-w-[18%] min-w-0 shrink-0"
                           />
                         </div>
+                      ) : isGuest && guestAuth ? (
+                        <div className="space-y-3">
+                          <Link
+                            href={`/student/login?callbackUrl=${encodeURIComponent(guestAuth.callbackUrl)}`}
+                            className="flex h-12 w-full items-center justify-center rounded-sm bg-[var(--primary)] text-base font-bold text-[var(--primary-foreground)] transition-colors hover:bg-[var(--primary-strong)]"
+                          >
+                            Sign in to enroll
+                          </Link>
+                          <Link
+                            href={`/student/signup?callbackUrl=${encodeURIComponent(guestAuth.callbackUrl)}`}
+                            className="flex h-11 w-full items-center justify-center rounded-sm border-2 border-[var(--foreground)] bg-transparent text-sm font-bold text-[var(--foreground)] transition-colors hover:bg-[#f7f9fa]"
+                          >
+                            Create free account
+                          </Link>
+                        </div>
                       ) : canAct && !isStudent ? (
                         <div className="rounded-sm border border-[#d1d7dc] bg-[#f7f9fa] p-4 text-center">
                           <p className="text-sm font-bold text-[var(--foreground)]">
@@ -702,9 +723,9 @@ export function CourseCatalogDetail({
                           Preview mode — enroll and wishlist are disabled.
                         </div>
                       )}
-                      {canAct ? (
+                      {canAct || isGuest ? (
                         <Link
-                          href="/student/browse"
+                          href={isGuest ? "/courses" : "/student/browse"}
                           className="flex h-11 w-full items-center justify-center rounded-sm border-2 border-[var(--foreground)] bg-transparent text-sm font-bold text-[var(--foreground)] transition-colors hover:bg-[#f7f9fa]"
                         >
                           Browse more courses

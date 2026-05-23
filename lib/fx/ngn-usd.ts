@@ -10,42 +10,64 @@ type RatesCache = {
 
 let cache: RatesCache | null = null;
 
+const DEFAULT_NGN_PER_USD = 1600;
+
 function getCacheTtlMs(): number {
   const sec = Number(process.env.FX_CACHE_TTL_SECONDS ?? "3600");
   if (!Number.isFinite(sec) || sec < 60) return 3600_000;
   return sec * 1000;
 }
 
+function getFallbackNgnPerUsd(): number {
+  const fromEnv = Number(process.env.FX_NGN_PER_USD?.trim());
+  if (Number.isFinite(fromEnv) && fromEnv > 0) return fromEnv;
+  return DEFAULT_NGN_PER_USD;
+}
+
 type ExchangeRateApiResponse = {
-  base: string;
-  rates: Record<string, number>;
+  base?: string;
+  base_code?: string;
+  rates?: Record<string, number>;
+  conversion_rates?: Record<string, number>;
+  result?: string;
 };
 
-async function fetchNgnPerUsd(): Promise<number> {
-  const key = process.env.EXCHANGERATE_API_KEY?.trim();
-  const url = key
-    ? `https://v6.exchangerate-api.com/v6/${key}/latest/NGN`
-    : "https://open.er-api.com/v6/latest/NGN";
-
-  const res = await fetch(url, { next: { revalidate: 0 } });
-  if (!res.ok) {
-    throw new Error(`Exchange rate API failed: ${res.status}`);
+function usdRateFromResponse(json: ExchangeRateApiResponse): number | null {
+  if (json.result === "error") return null;
+  const rates = json.rates ?? json.conversion_rates;
+  const usdPerNgn = rates?.USD;
+  if (usdPerNgn === undefined || !Number.isFinite(usdPerNgn) || usdPerNgn <= 0) {
+    return null;
   }
-
-  const json = (await res.json()) as ExchangeRateApiResponse & {
-    result?: string;
-  };
-
-  if (json.result === "error" || !json.rates?.USD) {
-    throw new Error("Exchange rate API returned invalid USD rate");
-  }
-
-  const usdPerNgn = json.rates.USD;
-  if (!Number.isFinite(usdPerNgn) || usdPerNgn <= 0) {
-    throw new Error("Invalid USD rate from exchange API");
-  }
-
   return 1 / usdPerNgn;
+}
+
+async function fetchFromUrl(url: string): Promise<number | null> {
+  try {
+    const res = await fetch(url, {
+      next: { revalidate: 0 },
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!res.ok) return null;
+
+    const json = (await res.json()) as ExchangeRateApiResponse;
+    return usdRateFromResponse(json);
+  } catch {
+    return null;
+  }
+}
+
+async function fetchNgnPerUsdFromApis(): Promise<number | null> {
+  const key = process.env.EXCHANGERATE_API_KEY?.trim();
+
+  if (key) {
+    const fromKey = await fetchFromUrl(
+      `https://v6.exchangerate-api.com/v6/${key}/latest/NGN`,
+    );
+    if (fromKey !== null) return fromKey;
+  }
+
+  return fetchFromUrl("https://open.er-api.com/v6/latest/NGN");
 }
 
 /** How many NGN (major units) equal 1 USD — e.g. ~1600. */
@@ -55,9 +77,19 @@ export async function getNgnPerUsd(): Promise<number> {
     return cache.ngnPerUsd;
   }
 
-  const ngnPerUsd = await fetchNgnPerUsd();
-  cache = { ngnPerUsd, fetchedAt: now };
-  return ngnPerUsd;
+  const fromApi = await fetchNgnPerUsdFromApis();
+  if (fromApi !== null) {
+    cache = { ngnPerUsd: fromApi, fetchedAt: now };
+    return fromApi;
+  }
+
+  if (cache) {
+    return cache.ngnPerUsd;
+  }
+
+  const fallback = getFallbackNgnPerUsd();
+  cache = { ngnPerUsd: fallback, fetchedAt: now };
+  return fallback;
 }
 
 /** Convert NGN kobo to USD cents (minor units). */

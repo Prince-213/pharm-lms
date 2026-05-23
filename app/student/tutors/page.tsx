@@ -6,6 +6,7 @@ import { MeetingHostCard } from "@/components/meetings/meeting-host-card";
 import { StudentSecondaryNav } from "@/components/student/student-secondary-nav";
 import { CourseStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
+import { resolveMediaUrl } from "@/lib/media-url";
 import { roleHomePath } from "@/lib/rbac";
 
 export default async function StudentTutorsPage() {
@@ -40,6 +41,13 @@ export default async function StudentTutorsPage() {
     take: 60,
   });
 
+  const tutorsWithAvatars = await Promise.all(
+    tutors.map(async (t) => ({
+      ...t,
+      avatarSrc: await resolveMediaUrl(t.avatarUrl),
+    })),
+  );
+
   return (
     <div className="space-y-8 text-foreground">
       {/* <StudentSecondaryNav /> */}
@@ -54,8 +62,8 @@ export default async function StudentTutorsPage() {
       </header>
 
       {tutors.length ? (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {tutors.map((t) => {
+        <ul className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {tutorsWithAvatars.map((t) => {
             let totalReviews = 0;
             let sumRatings = 0;
             
@@ -102,7 +110,7 @@ export default async function StudentTutorsPage() {
                 fullName={t.fullName}
                 bio={t.bio}
                 fallbackBio="Course instructor — book with course context."
-                avatarUrl={t.avatarUrl}
+                avatarUrl={t.avatarSrc}
                 rows={rows}
                 ctaLabel="View profile"
               />

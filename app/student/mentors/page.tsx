@@ -5,6 +5,7 @@ import { MeetingHostCard } from "@/components/meetings/meeting-host-card";
 import { StudentSecondaryNav } from "@/components/student/student-secondary-nav";
 import { UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
+import { resolveMediaUrl } from "@/lib/media-url";
 import { roleHomePath } from "@/lib/rbac";
 
 export default async function StudentMentorsPage() {
@@ -30,6 +31,13 @@ export default async function StudentMentorsPage() {
     take: 60,
   });
 
+  const mentorsWithAvatars = await Promise.all(
+    mentors.map(async (m) => ({
+      ...m,
+      avatarSrc: await resolveMediaUrl(m.avatarUrl),
+    })),
+  );
+
   return (
     <div className="space-y-8 text-[var(--foreground)]">
       {/* <StudentSecondaryNav /> */}
@@ -45,8 +53,8 @@ export default async function StudentMentorsPage() {
       </header>
 
       {mentors.length ? (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {mentors.map((m) => {
+        <ul className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {mentorsWithAvatars.map((m) => {
             const rows = [
               {
                 icon: Sparkles,
@@ -72,7 +80,7 @@ export default async function StudentMentorsPage() {
                 fullName={m.fullName}
                 bio={m.bio}
                 fallbackBio="One-on-one mentoring available."
-                avatarUrl={m.avatarUrl}
+                avatarUrl={m.avatarSrc}
                 rows={rows}
                 ctaLabel="View profile"
               />

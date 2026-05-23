@@ -3,14 +3,20 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { type LucideIcon, Menu, X, LogOut, ChevronRight } from "lucide-react";
+import {
+  ChevronRight,
+  LogOut,
+  Menu,
+  X,
+  type AppIcon,
+} from "@/lib/icons/client";
 import { useState, useEffect } from "react";
 import { LogoutButton } from "@/components/auth/logout-button";
 
 export type NavItem = {
   href: string;
   label: string;
-  icon: LucideIcon;
+  icon: AppIcon;
 };
 
 type DashboardShellProps = {

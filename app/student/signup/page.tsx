@@ -8,9 +8,15 @@ import { isGoogleOAuthEnabled } from "@/lib/auth/google-oauth-enabled";
 export default async function StudentSignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ authError?: string }>;
+  searchParams: Promise<{ callbackUrl?: string; authError?: string }>;
 }) {
   const sp = await searchParams;
+  const raw = sp.callbackUrl;
+  const callbackUrl =
+    typeof raw === "string" &&
+    (raw.startsWith("/student") || raw.startsWith("/courses"))
+      ? raw
+      : "/student/dashboard";
   const portalAuthError =
     sp.authError === "wrong_portal" ? ("wrong_portal" as const) : null;
 
@@ -21,7 +27,7 @@ export default async function StudentSignupPage({
           key="student-signup"
           actorType="student"
           mode="signup"
-          callbackUrl="/student/dashboard"
+          callbackUrl={callbackUrl}
           googleEnabled={isGoogleOAuthEnabled()}
           appleEnabled={isAppleOAuthEnabled()}
           portalAuthError={portalAuthError}

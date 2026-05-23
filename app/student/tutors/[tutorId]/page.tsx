@@ -24,7 +24,7 @@ export default async function StudentTutorDetailPage({
   const { tutorId } = await params;
 
   const tutor = await db.user.findFirst({
-    where: { id: tutorId, role: UserRole.TUTOR },
+    where: { id: tutorId, role: UserRole.TUTOR, isActive: true },
     select: {
       id: true,
       fullName: true,
@@ -51,8 +51,6 @@ export default async function StudentTutorDetailPage({
       },
     },
   });
-
-  if (courses.length === 0) notFound();
 
   const avatarSrc = await resolveMediaUrl(tutor.avatarUrl);
   const initials = tutor.fullName
@@ -121,38 +119,53 @@ export default async function StudentTutorDetailPage({
           Booking opens the full host page with availability and fees for that
           course.
         </p>
-        <ul className="space-y-2">
-          {courses.map(({ course }) => (
-            <li key={course.id}>
-              <Link
-                href={`/student/meetings/host/${tutor.id}?courseId=${course.id}`}
-                className={cn(
-                  "flex items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-sm)] transition-colors",
-                  "hover:border-[var(--primary)]/30 hover:bg-[var(--surface-muted)]/50",
-                )}
-              >
-                <div className="min-w-0">
-                  <p className="flex items-center gap-2 font-medium leading-snug">
-                    <BookOpen
-                      className="h-4 w-4 shrink-0 text-[var(--muted)]"
-                      aria-hidden
-                    />
-                    <span className="truncate">{course.title}</span>
-                  </p>
-                  {course.subtitle?.trim() ? (
-                    <p className="mt-0.5 truncate text-xs text-[var(--muted)]">
-                      {course.subtitle.trim()}
+        {courses.length === 0 ? (
+          <div className="rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] bg-[var(--surface-muted)]/40 px-6 py-10 text-center">
+            <p className="text-sm text-[var(--muted)]">
+              You are not enrolled in any courses with this tutor yet.
+            </p>
+            <Link
+              href="/student/browse"
+              className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[var(--primary)] hover:underline"
+            >
+              Browse courses
+              <ChevronRight className="h-4 w-4" aria-hidden />
+            </Link>
+          </div>
+        ) : (
+          <ul className="space-y-2">
+            {courses.map(({ course }) => (
+              <li key={course.id}>
+                <Link
+                  href={`/student/meetings/host/${tutor.id}?courseId=${course.id}`}
+                  className={cn(
+                    "flex items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-sm)] transition-colors",
+                    "hover:border-[var(--primary)]/30 hover:bg-[var(--surface-muted)]/50",
+                  )}
+                >
+                  <div className="min-w-0">
+                    <p className="flex items-center gap-2 font-medium leading-snug">
+                      <BookOpen
+                        className="h-4 w-4 shrink-0 text-[var(--muted)]"
+                        aria-hidden
+                      />
+                      <span className="truncate">{course.title}</span>
                     </p>
-                  ) : null}
-                </div>
-                <span className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-[var(--primary)]">
-                  Book
-                  <ChevronRight className="h-4 w-4" aria-hidden />
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+                    {course.subtitle?.trim() ? (
+                      <p className="mt-0.5 truncate text-xs text-[var(--muted)]">
+                        {course.subtitle.trim()}
+                      </p>
+                    ) : null}
+                  </div>
+                  <span className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-[var(--primary)]">
+                    Book
+                    <ChevronRight className="h-4 w-4" aria-hidden />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </div>
   );

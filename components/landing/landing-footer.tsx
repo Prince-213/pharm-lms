@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap } from "@/lib/icons/server";
 
 // Inline brand SVGs — Lucide v1 removed all brand/logo icons
 function TwitterIcon({ className }: { className?: string }) {

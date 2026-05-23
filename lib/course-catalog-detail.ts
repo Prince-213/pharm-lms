@@ -20,7 +20,7 @@ export const CATEGORY_CHIPS = [
   "Regulatory",
 ] as const;
 
-const catalogInclude = {
+export const catalogInclude = {
   mentor: { select: { fullName: true, bio: true, avatarUrl: true } },
   sections: {
     orderBy: { position: "asc" as const },

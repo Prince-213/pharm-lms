@@ -4,7 +4,7 @@ import {
   Award,
   BookOpen,
   Calendar,
-  ClipboardList,
+  ClipboardText as ClipboardList,
   GraduationCap,
   Heart,
   School,
@@ -12,7 +12,7 @@ import {
   Trophy,
   User,
   Users,
-} from "lucide-react";
+} from "@/lib/icons/client";
 import { usePathname } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 

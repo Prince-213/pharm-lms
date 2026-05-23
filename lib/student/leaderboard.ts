@@ -1,6 +1,7 @@
-import { db } from "@/lib/db";
 import { UserRole } from "@/generated/prisma/enums";
 import { todayDateKey, shiftDateKey } from "@/lib/date-keys";
+import { db } from "@/lib/db";
+import { resolveMediaUrl } from "@/lib/media-url";
 
 export type LeaderboardEntry = {
   id: string;
@@ -114,6 +115,13 @@ export async function getLeaderboardData(currentUserId?: string): Promise<{
   // 5. Sort and assign rank
   entries.sort((a, b) => b.points - a.points);
   entries = entries.map((e, index) => ({ ...e, rank: index + 1 }));
+
+  entries = await Promise.all(
+    entries.map(async (e) => ({
+      ...e,
+      avatarUrl: await resolveMediaUrl(e.avatarUrl),
+    })),
+  );
 
   const currentUser = entries.find((e) => e.isCurrentUser) || null;
 

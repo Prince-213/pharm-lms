@@ -1,6 +1,5 @@
 "use client";
 
-import type { LucideIcon } from "lucide-react";
 import {
   BarChart3,
   BookOpen,
@@ -13,7 +12,8 @@ import {
   Wallet,
   Wrench,
   X,
-} from "lucide-react";
+  type AppIcon,
+} from "@/lib/icons/client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -41,7 +41,7 @@ function navLinkActive(
 type ShellNavItem = {
   href: string;
   label: string;
-  icon: LucideIcon;
+  icon: AppIcon;
   /** When set, any path under this prefix counts as active (e.g. performance sub-pages). */
   activePrefix?: string;
 };

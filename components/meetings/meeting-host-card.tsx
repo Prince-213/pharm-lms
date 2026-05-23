@@ -1,19 +1,8 @@
 import type { LucideIcon } from "lucide-react";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { UserAvatar } from "@/components/user/user-avatar";
 import { cn } from "@/lib/utils";
-
-function hostInitials(fullName: string): string {
-  return (
-    fullName
-      .split(/\s+/)
-      .filter(Boolean)
-      .map((w) => w[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2) || "?"
-  );
-}
 
 export type MeetingHostCardRow = {
   icon: LucideIcon;
@@ -39,55 +28,34 @@ export function MeetingHostCard({
   rows,
   ctaLabel,
 }: MeetingHostCardProps) {
-  const trimmed = typeof avatarUrl === "string" ? avatarUrl.trim() : "";
-  const showImage =
-    trimmed.length > 0 &&
-    (trimmed.startsWith("http://") ||
-      trimmed.startsWith("https://") ||
-      trimmed.startsWith("/"));
   const displayBio = bio?.trim() || fallbackBio;
 
   return (
     <li
       className={cn(
-        "flex flex-col rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--background)] p-4 shadow-[var(--shadow-sm)] transition-colors",
+        "flex h-full flex-col rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--background)] p-4 shadow-[var(--shadow-sm)] transition-colors",
         "hover:border-[var(--primary)]/25 hover:bg-[var(--surface)]/60",
       )}
     >
-      <div className="flex gap-3">
-        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-[var(--primary-soft)] ring-1 ring-[var(--border)]">
-          {showImage ? (
-            // biome-ignore lint/performance/noImgElement: Host avatars use arbitrary OAuth/CDN or relative URLs.
-            <img
-              src={trimmed}
-              alt={fullName}
-              width={48}
-              height={48}
-              className="h-full w-full object-cover"
-              loading="lazy"
-              referrerPolicy="no-referrer"
-            />
-          ) : (
-            <span
-              className="flex h-full w-full items-center justify-center text-sm font-bold text-[var(--primary-strong)]"
-              aria-hidden
-            >
-              {hostInitials(fullName)}
-            </span>
-          )}
+      <div className="flex flex-1 flex-col">
+        <div className="flex gap-3">
+          <UserAvatar
+            src={avatarUrl}
+            name={fullName}
+            className="h-12 w-12 rounded-full ring-1 ring-[var(--border)]"
+          />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold leading-snug text-[var(--foreground)]">
+              {fullName}
+            </p>
+            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-[var(--muted)]">
+              {displayBio}
+            </p>
+          </div>
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold leading-snug text-[var(--foreground)]">
-            {fullName}
-          </p>
-          <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-[var(--muted)]">
-            {displayBio}
-          </p>
-        </div>
-      </div>
 
-      {rows.length > 0 ? (
-        <ul className="mt-3 space-y-1.5 border-t border-[var(--border)] pt-3">
+        {rows.length > 0 ? (
+          <ul className="mt-3 space-y-1.5 border-t border-[var(--border)] pt-3">
           {rows.map((row, i) => {
             const Icon = row.icon;
             return (
@@ -104,13 +72,14 @@ export function MeetingHostCard({
               </li>
             );
           })}
-        </ul>
-      ) : null}
+          </ul>
+        ) : null}
+      </div>
 
       <Link
         href={href}
         className={cn(
-          "mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-[var(--border)]",
+          "mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-[var(--border)] sm:mt-auto",
           "bg-[var(--surface)] py-2 text-xs font-semibold text-[var(--foreground)] transition-colors",
           "hover:border-[var(--primary)]/35 hover:bg-[var(--primary-soft)]/25 hover:text-[var(--primary-strong)]",
         )}

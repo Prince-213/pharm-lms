@@ -1,6 +1,5 @@
 "use client";
 
-import type { LucideIcon } from "lucide-react";
 import {
   Calendar,
   ChevronRight,
@@ -8,7 +7,8 @@ import {
   Menu,
   User,
   X,
-} from "lucide-react";
+  type AppIcon,
+} from "@/lib/icons/client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -24,7 +24,7 @@ const WORKSPACE = "/mentor";
 type ShellNavItem = {
   href: string;
   label: string;
-  icon: LucideIcon;
+  icon: AppIcon;
   activePrefix?: string;
 };
 

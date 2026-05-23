@@ -1,4 +1,10 @@
-import { Calendar, CalendarClock, Inbox, User, Video } from "lucide-react";
+import {
+  Calendar,
+  CalendarClock,
+  Inbox,
+  User,
+  Video,
+} from "@/lib/icons/server";
 import Link from "next/link";
 import { MeetingRequestStatus, MeetingStatus } from "@/generated/prisma/enums";
 import {

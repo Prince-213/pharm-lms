@@ -1,38 +1,5 @@
-type Tutor = {
-  name: string;
-  title: string;
-  bio: string;
-  avatar: string;
-};
+import { getLandingContent, type LandingAudience } from "@/lib/landing-content";
 
-const tutors: Tutor[] = [
-  {
-    name: "Theresa Webb",
-    title: "Clinical Pharmacy Specialist",
-    bio: "Former co-founder of ClinicalEdge. Early staff at MedRx and ClearScript.",
-    avatar: "https://i.pravatar.cc/80?u=theresawebb",
-  },
-  {
-    name: "Courtney Henry",
-    title: "Director, PharmD Programme",
-    bio: "Lead faculty teams at ASHP, NovaClin, and Protocol Labs.",
-    avatar: "https://i.pravatar.cc/80?u=courtneyhenry",
-  },
-  {
-    name: "Albert Flores",
-    title: "Pharmacokinetics Educator",
-    bio: "Former PM for PharmaLearn, Lambda School, and On Deck.",
-    avatar: "https://i.pravatar.cc/80?u=albertflores",
-  },
-  {
-    name: "Marvin McKinney",
-    title: "Drug Safety & PV Instructor",
-    bio: "Former clinical dev for GeneriCo, MedBase, and PostRx.",
-    avatar: "https://i.pravatar.cc/80?u=marvinmckinney",
-  },
-];
-
-// Inline brand SVG icons (Lucide v1 removed Twitter/LinkedIn)
 function TwitterIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -49,60 +16,59 @@ function LinkedinIcon({ className }: { className?: string }) {
   );
 }
 
-export function TutorsSection() {
+type TutorsSectionProps = {
+  audience?: LandingAudience;
+};
+
+export function TutorsSection({ audience = "student" }: TutorsSectionProps) {
+  const { people } = getLandingContent(audience);
+
   return (
-    <section className="bg-slate-50 py-16 ">
+    <section className="bg-slate-50 py-16">
       <div className="mx-auto w-[90%] lg:w-[80%] px-4 sm:px-6 lg:px-10">
-        {/* Header */}
         <div className="mb-12 text-center">
           <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-[var(--emerald)]">
-            Tutors
+            {people.eyebrow}
           </p>
-          <h2 className="font-display text-3xl font-extrabold text-[var(--ink-deep)] sm:text-4xl">
-            Meet the Heroes
+          <h2 className="font-display text-3xl font-bold text-[var(--ink-deep)] sm:text-4xl">
+            {people.title}
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-[var(--muted-soft)]">
-            On PharmLMS, instructors from all over the world instruct millions of students.
-            <br className="hidden sm:block" />
-            We offer the knowledge and abilities.
-          </p>
+          <p className="mx-auto mt-3 max-w-xl text-[var(--muted-soft)]">{people.description}</p>
         </div>
 
-        {/* Cards */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {tutors.map((tutor) => (
+          {people.members.map((person) => (
             <div
-              key={tutor.name}
+              key={person.name}
               className="group flex flex-col items-center rounded-2xl border border-slate-100 bg-white p-7 text-center shadow-[var(--shadow-1)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-3)]"
             >
               <img
-                src={tutor.avatar}
-                alt={tutor.name}
+                src={person.avatar}
+                alt={person.name}
                 className="mb-4 h-20 w-20 rounded-full object-cover ring-4 ring-white shadow-md"
               />
               <h3 className="font-display text-base font-bold text-[var(--ink-deep)]">
-                {tutor.name}
+                {person.name}
               </h3>
-              <p className="mt-1 text-sm font-semibold text-[var(--emerald)] leading-snug">
-                {tutor.title}
+              <p className="mt-1 text-sm font-semibold leading-snug text-[var(--emerald)]">
+                {person.title}
               </p>
               <p className="mt-2 flex-1 text-sm leading-relaxed text-[var(--muted-soft)]">
-                {tutor.bio}
+                {person.bio}
               </p>
 
-              {/* Social icons */}
               <div className="mt-5 flex items-center gap-3">
                 <a
                   href="#"
-                  aria-label={`${tutor.name} on Twitter`}
-                  className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+                  aria-label={`${person.name} on Twitter`}
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
                 >
                   <TwitterIcon className="h-4 w-4" />
                 </a>
                 <a
                   href="#"
-                  aria-label={`${tutor.name} on LinkedIn`}
-                  className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+                  aria-label={`${person.name} on LinkedIn`}
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
                 >
                   <LinkedinIcon className="h-4 w-4" />
                 </a>

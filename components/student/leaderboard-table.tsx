@@ -1,8 +1,9 @@
 "use client";
 
 import { Crown, Medal } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { UserAvatar } from "@/components/user/user-avatar";
 import type { LeaderboardEntry } from "@/lib/student/leaderboard";
+import { cn } from "@/lib/utils";
 
 interface LeaderboardTableProps {
   entries: LeaderboardEntry[];
@@ -42,15 +43,12 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
             </div>
 
             {/* Avatar & Name */}
-            <div className="relative h-12 w-12 overflow-hidden rounded-xl border border-slate-100 bg-slate-50 shadow-sm">
-              {entry.avatarUrl ? (
-                <img src={entry.avatarUrl} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-indigo-100 font-bold text-indigo-600">
-                  {entry.fullName.charAt(0)}
-                </div>
-              )}
-            </div>
+            <UserAvatar
+              src={entry.avatarUrl}
+              name={entry.fullName}
+              className="h-12 w-12 rounded-xl border border-slate-100 shadow-sm"
+              fallbackClassName="bg-indigo-100 text-indigo-600"
+            />
 
             <div className="min-w-0">
               <h4 className="truncate font-bold text-slate-900">

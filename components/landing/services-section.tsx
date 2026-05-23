@@ -1,102 +1,65 @@
 "use client";
 
 import { useState } from "react";
-import { FlaskConical, Stethoscope, ShieldCheck, ChevronRight } from "lucide-react";
+import {
+  BarChart3,
+  BookOpen,
+  Calendar,
+  ChevronRight,
+  FlaskConical,
+  MessageCircle,
+  ShieldCheck,
+  Stethoscope,
+  Users,
+  Video,
+  Wallet,
+  type AppIcon,
+} from "@/lib/icons/client";
+import {
+  getLandingContent,
+  type LandingAudience,
+  type ServiceIconKey,
+} from "@/lib/landing-content";
 
-const serviceGroups = [
-  [
-    {
-      icon: FlaskConical,
-      title: "Pharmaceutical Sciences",
-      description:
-        "Lessons on drug chemistry and formulation that cover the most recent developments.",
-      highlighted: true,
-    },
-    {
-      icon: Stethoscope,
-      title: "Clinical Pharmacy",
-      description:
-        "Classes in clinical practice that cover the most recent advancements in patient care.",
-      highlighted: false,
-    },
-    {
-      icon: ShieldCheck,
-      title: "Drug Safety & Pharmacovigilance",
-      description:
-        "Drug safety courses that cover the most recent regulatory trends and reporting.",
-      highlighted: false,
-    },
-  ],
-  [
-    {
-      icon: FlaskConical,
-      title: "Pharmacokinetics",
-      description:
-        "In-depth modules on drug absorption, distribution, metabolism and excretion.",
-      highlighted: true,
-    },
-    {
-      icon: Stethoscope,
-      title: "Therapeutics Management",
-      description:
-        "Evidence-based therapeutic decision-making for complex patient cases.",
-      highlighted: false,
-    },
-    {
-      icon: ShieldCheck,
-      title: "Medication Safety",
-      description:
-        "Best practices for identifying and preventing medication errors in clinical settings.",
-      highlighted: false,
-    },
-  ],
-  [
-    {
-      icon: FlaskConical,
-      title: "Compounding Practice",
-      description:
-        "Hands-on modules covering sterile and non-sterile compounding techniques.",
-      highlighted: true,
-    },
-    {
-      icon: Stethoscope,
-      title: "Pharmacy Law & Ethics",
-      description:
-        "Regulatory frameworks, ethical principles and professional responsibility.",
-      highlighted: false,
-    },
-    {
-      icon: ShieldCheck,
-      title: "Health Informatics",
-      description:
-        "Digital tools and data systems shaping modern pharmacy practice.",
-      highlighted: false,
-    },
-  ],
-];
+const serviceIconMap: Record<ServiceIconKey, AppIcon> = {
+  FlaskConical,
+  Stethoscope,
+  ShieldCheck,
+  Users,
+  Calendar,
+  Video,
+  BarChart3,
+  Wallet,
+  BookOpen,
+  MessageCircle,
+};
 
-export function ServicesSection() {
+type ServicesSectionProps = {
+  audience?: LandingAudience;
+};
+
+export function ServicesSection({ audience = "student" }: ServicesSectionProps) {
+  const { services } = getLandingContent(audience);
   const [active, setActive] = useState(0);
-  const services = serviceGroups[active];
+  const cards = services.groups[active] ?? services.groups[0];
 
   return (
-    <section className="bg-white py-16 lg:py-16">
+    <section id="services" className="bg-white py-16 lg:py-16">
       <div className="mx-auto w-[90%] lg:w-[80%] px-4 sm:px-6 lg:px-10">
-        {/* Header */}
         <div className="mb-10 text-center">
           <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-[var(--emerald)]">
-            Our Services
+            {services.eyebrow}
           </p>
-          <h2 className="font-semibold text-3xl font-extrabold text-[var(--ink-deep)] sm:text-4xl">
-            Fostering a playful &amp; engaging
-            <br className="hidden sm:block" /> learning environment
+          <h2 className="text-3xl font-bold font-semibold text-[var(--ink-deep)] sm:text-4xl">
+            {services.titleLines[0]}
+            <br className="hidden sm:block" />
+            {services.titleLines[1]}
           </h2>
         </div>
 
-        {/* Cards */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {services.map((svc) => {
-            const Icon = svc.icon;
+          {cards.map((svc) => {
+            const Icon = serviceIconMap[svc.icon];
             return (
               <div
                 key={svc.title}
@@ -110,9 +73,7 @@ export function ServicesSection() {
                 <div
                   className={[
                     "mb-5 flex h-12 w-12 items-center justify-center rounded-xl",
-                    svc.highlighted
-                      ? "bg-white/20"
-                      : "bg-emerald-50",
+                    svc.highlighted ? "bg-white/20" : "bg-emerald-50",
                   ].join(" ")}
                 >
                   <Icon
@@ -140,6 +101,7 @@ export function ServicesSection() {
                 </p>
 
                 <button
+                  type="button"
                   className={[
                     "mt-6 flex items-center gap-1 text-sm font-semibold transition-colors",
                     svc.highlighted
@@ -154,22 +116,24 @@ export function ServicesSection() {
           })}
         </div>
 
-        {/* Pagination dots */}
-        <div className="mt-8 flex justify-center gap-2">
-          {serviceGroups.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setActive(i)}
-              aria-label={`Services page ${i + 1}`}
-              className={[
-                "h-2.5 rounded-full transition-all duration-300",
-                i === active
-                  ? "w-7 bg-[var(--emerald)]"
-                  : "w-2.5 bg-slate-300 hover:bg-slate-400",
-              ].join(" ")}
-            />
-          ))}
-        </div>
+        {services.groups.length > 1 && (
+          <div className="mt-8 flex justify-center gap-2">
+            {services.groups.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setActive(i)}
+                aria-label={`Services page ${i + 1}`}
+                className={[
+                  "h-2.5 rounded-full transition-all duration-300",
+                  i === active
+                    ? "w-7 bg-[var(--emerald)]"
+                    : "w-2.5 bg-slate-300 hover:bg-slate-400",
+                ].join(" ")}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

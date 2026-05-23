@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react";
+import type { AppIcon } from "@/lib/icons";
 import Link from "next/link";
 import { clsx } from "clsx";
 
@@ -6,7 +6,7 @@ type AdminStatCardProps = {
   label: string;
   value: string | number;
   hint?: string;
-  icon?: LucideIcon;
+  icon?: AppIcon;
   trend?: { value: number; label: string };
   href?: string;
   accentBg?: string;

@@ -1,12 +1,43 @@
+import type { ComponentType } from "react";
 import Link from "next/link";
-import { BookOpen, Heart, Lightbulb, Monitor, Users } from "lucide-react";
+import {
+  BarChart3,
+  BookOpen,
+  Briefcase,
+  Calendar,
+  Lightbulb,
+  Users,
+  Video,
+  Wallet,
+} from "@/lib/icons/server";
 import Image from "next/image";
 import { PartnersSection } from "./partners-section";
+import {
+  getLandingContent,
+  type HeroBadgeIcon,
+  type LandingAudience,
+} from "@/lib/landing-content";
 
-export function HeroSection() {
+const badgeIcons: Record<HeroBadgeIcon, ComponentType<{ className?: string }>> = {
+  BookOpen,
+  Briefcase,
+  Lightbulb,
+  Users,
+  Calendar,
+  Video,
+  BarChart3,
+  Wallet,
+};
+
+type HeroSectionProps = {
+  audience?: LandingAudience;
+};
+
+export function HeroSection({ audience = "student" }: HeroSectionProps) {
+  const { hero } = getLandingContent(audience);
+
   return (
     <section className="relative overflow-x-hidden bg-gradient-to-br from-emerald-50/60 via-white to-white py-8 lg:py-16">
-      {/* Decorative background blobs */}
       <div
         className="pointer-events-none absolute -left-20 -top-20 h-72 w-72 rounded-full bg-[var(--emerald)]/8 blur-3xl"
         aria-hidden
@@ -17,61 +48,83 @@ export function HeroSection() {
       />
 
       <div className="relative mx-auto grid w-[90%] lg:w-[80%] items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:gap-8 lg:px-10">
-        {/* Left */}
         <div>
-          <Image src="/assets/twirl-top.png" className="absolute -left-34 top-0 opacity-60" alt="Hero Section Left" width={420} height={420} />
+          <Image
+            src="/assets/twirl-top.png"
+            className="absolute -left-34 top-0 opacity-60"
+            alt=""
+            width={420}
+            height={420}
+          />
 
-          <h1 className="font-display text-4xl font-extrabold leading-tight tracking-tight text-[var(--ink-deep)] sm:text-5xl lg:text-[4.25rem]">
-            Up Your{" "}
-            <span className="text-[var(--emerald)]">Skills</span>
-            <br />
-            To{" "}
-            <span className="text-[var(--emerald)]">Advance</span> Your
-            <br />
-            <span className="text-[var(--emerald)]">Career</span> Path
+          <h1 className="font-display text-4xl font-bold leading-tight tracking-tight text-[var(--ink-deep)] sm:text-5xl lg:text-[4.25rem]">
+            {hero.headline.map((line, i) => (
+              <span key={i}>
+                {i > 0 && <br />}
+                {line.before}
+                <span className="text-[var(--emerald)]">{line.highlight}</span>
+                {line.after}
+              </span>
+            ))}
           </h1>
 
           <p className="mt-5 max-w-lg text-base leading-relaxed text-[#646464] sm:text-lg">
-            Learn clinical pharmacy skills with PharmLMS. The latest online
-            learning system and material that help your knowledge growing.
+            {hero.subcopy}
           </p>
 
           <div className="mt-8 flex flex-wrap gap-5">
             <Link
-              href="/student/signup"
-              className="inline-flex items-center rounded-lg bg-[var(--emerald)] px-[28px] text-[18px] py-4.5 text-sm font-semibold text-white shadow-md transition hover:bg-[var(--primary)] active:scale-95"
+              href={hero.primaryCta.href}
+              className="inline-flex items-center rounded-xl bg-[var(--emerald)] px-[28px] py-4.5 text-[18px] text-sm font-semibold text-white shadow-md transition hover:bg-[var(--primary)] active:scale-95"
             >
-              Get Started
+              {hero.primaryCta.label}
             </Link>
             <Link
-              href="/student/browse"
-              className="inline-flex z-50 shadow-md shadow-gray-300/40 items-center rounded-lg px-[28px] text-[18px] py-4.5 text-sm font-semibold text-[var(--emerald)] transition bg-emerald-50 active:scale-95"
+              href={hero.secondaryCta.href}
+              className="inline-flex z-50 items-center rounded-lg bg-emerald-50 px-[28px] py-4.5 text-[18px] text-sm font-semibold text-[var(--emerald)] shadow-xl shadow-gray-300/40 transition active:scale-95"
             >
-              Watch Demo
+              {hero.secondaryCta.label}
             </Link>
           </div>
 
-          {/* Feature badges */}
           <div className="mt-12 flex flex-wrap gap-8 text-base font-medium text-slate-600">
-            <span className="flex items-center gap-2">
-              <BookOpen className="h-[32px] w-[32px] text-amber-500" />
-              Evidence-Based Practice
-            </span>
-            <span className="flex items-center gap-2">
-              <Image src="/assets/Briefcase.png" className="h-[32px] w-[32px] object-contain" alt="Briefcase" width={32} height={32} />
-              Patient-Centered
-            </span>
-            <span className="flex items-center gap-2">
-             <Image src="/assets/idea.svg" className="h-[32px] w-[32px] object-contain" alt="Briefcase" width={32} height={32} />
-              Critical Thinking
-            </span>
+            {hero.badges.map((badge) => {
+              const Icon = badgeIcons[badge.icon];
+              return (
+                <span key={badge.label} className="flex items-center gap-2">
+                  {badge.imageSrc ? (
+                    <Image
+                      src={badge.imageSrc}
+                      className="h-[32px] w-[32px] object-contain"
+                      alt=""
+                      width={32}
+                      height={32}
+                    />
+                  ) : (
+                    <Icon
+                      className={[
+                        "h-[32px] w-[32px]",
+                        badge.icon === "BookOpen" && audience === "student"
+                          ? "text-amber-500"
+                          : "text-[var(--emerald)]",
+                      ].join(" ")}
+                    />
+                  )}
+                  {badge.label}
+                </span>
+              );
+            })}
           </div>
         </div>
 
-        {/* Right: circular image + stats */}
-        <div className="relative mx-auto flex w-full max-w-sm items-center justify-center lg:max-w-none ">
-          <Image src="/assets/twirl-right.png" className="absolute -right-40 -bottom-40 opacity-80" alt="Hero Section Left" width={420} height={420} />
-          {/* Decorative outline circles */}
+        <div className="relative mx-auto flex w-full max-w-sm items-center justify-center lg:max-w-none">
+          <Image
+            src="/assets/twirl-right.png"
+            className="absolute -right-40 -bottom-40 opacity-80"
+            alt=""
+            width={420}
+            height={420}
+          />
           <div
             className="pointer-events-none absolute inset-0 flex items-center justify-center"
             aria-hidden
@@ -79,20 +132,18 @@ export function HeroSection() {
             <div className="absolute h-[520px] w-[520px] rounded-full border border-slate-300 sm:h-[580px] sm:w-[580px]" />
           </div>
 
-          {/* Main circle with photo */}
-          <div className="relative h-[550px] w-[550px] translate-y-4 translate-x-4 overflow-hidden rounded-full bg-[var(--emerald)] shadow-2xl sm:h-[550px] sm:w-[550px]">
-            <img
-              src="https://images.pexels.com/photos/8199174/pexels-photo-8199174.jpeg?auto=compress&cs=tinysrgb&w=600"
-              alt="Pharmacy student holding books, smiling — photo by Yan Krukau on Pexels"
+          <div className="relative h-[550px] w-[550px] translate-x-4 translate-y-4 overflow-hidden rounded-full bg-[var(--emerald)] shadow-2xl sm:h-[550px] sm:w-[550px]">
+            <Image
+              src={`${hero.image}`}
+              alt="Pharmacy professional — Yan Krukau on Pexels"
               className="h-full w-full object-cover object-top"
+              fill 
             />
           </div>
 
-          {/* Stat: Video Courses */}
-          <div className="absolute min-w-fit backdrop-blur-sm left-0 top-40 flex -translate-y-0 items-center gap-[23px] rounded-[18px] bg-[#F5F5F4] p-[18px] shadow-[var(--shadow-3)] -translate-x-5 lg:-left-4 border border-[var(--emerald)]">
-            
-            <div className="relative h-[50px] w-[50px] shadow-lg shadow-gray-400/60 overflow-hidden rounded-[11px]">
-              <Image src="/assets/monitor.png" className=" object-contain" alt="Video Courses" fill />
+          <div className="absolute left-0 top-40 flex min-w-fit -translate-x-5 -translate-y-0 items-center gap-[23px] rounded-[18px] border border-[var(--emerald)] bg-[#F5F5F4] p-[18px] shadow-[var(--shadow-3)] backdrop-blur-sm lg:-left-4">
+            <div className="relative h-[50px] w-[50px] overflow-hidden rounded-[11px] shadow-lg shadow-gray-400/60">
+              <Image src="/assets/monitor.png" className="object-contain" alt="" fill />
             </div>
             <div className="flex flex-col gap-[2px]">
               <p className="text-[25px] font-bold leading-tight text-[var(--ink-deep)]">2K+</p>
@@ -100,39 +151,25 @@ export function HeroSection() {
             </div>
           </div>
 
-          {/* Stat: Online Courses */}
-        
-
-          <div className="absolute lg:right-2 max-w-fit backdrop-blur-sm -top-4 right-0 flex flex-col items-center justify-center  -translate-y-0 gap-[5px] rounded-[18px] bg-[#F5F5F4] p-[18px] shadow-[var(--shadow-3)]  border border-[var(--emerald)]">
-            
+          <div className="absolute -top-4 right-0 flex max-w-fit -translate-y-0 flex-col items-center justify-center gap-[5px] rounded-[18px] border border-[var(--emerald)] bg-[#F5F5F4] p-[18px] shadow-[var(--shadow-3)] backdrop-blur-sm lg:right-2">
             <div className="relative h-[80px] w-[80px] overflow-hidden rounded-full">
-              <Image src="/assets/Ring.png" className=" object-contain" alt="Video Courses" fill />
+              <Image src="/assets/Ring.png" className="object-contain" alt="" fill />
             </div>
-            <div className="flex flex-col items-center justify-center text-center gap-[8px]">
-
+            <div className="flex flex-col items-center justify-center gap-[8px] text-center">
               <p className="text-[25px] font-bold leading-tight text-[var(--ink-deep)]">5K+</p>
               <p className="text-[15px] text-gray-500">Online Courses</p>
-              
-              
             </div>
           </div>
 
-          
-
-          {/* Stat: Tutors */}
-          <div className="absolute lg:right-10 max-w-fit backdrop-blur-sm right-0 bottom-4 flex -translate-y-0 items-center gap-[18px] rounded-[18px] bg-[#F5F5F4] p-[18px] shadow-[var(--shadow-3)]  border border-[var(--emerald)]">
-            
-            <div className="relative h-[50px] w-[50px] shadow-lg shadow-gray-400/60 overflow-hidden rounded-[11px]">
-              <Image src="/assets/tutor.png" className=" object-contain" alt="Video Courses" fill />
+          <div className="absolute bottom-4 right-0 flex max-w-fit -translate-y-0 items-center gap-[18px] rounded-[18px] border border-[var(--emerald)] bg-[#F5F5F4] p-[18px] shadow-[var(--shadow-3)] backdrop-blur-sm lg:right-10">
+            <div className="relative h-[50px] w-[50px] overflow-hidden rounded-[11px] shadow-lg shadow-gray-400/60">
+              <Image src="/assets/tutor.png" className="object-contain" alt="" fill />
             </div>
             <div className="flex flex-col gap-[2px]">
               <p className="text-[15px] text-gray-500">Tutors</p>
               <p className="text-[25px] font-bold leading-tight text-[var(--ink-deep)]">250+</p>
-              
             </div>
           </div>
-          
-          
         </div>
       </div>
 

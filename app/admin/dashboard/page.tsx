@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   TrendingUp,
   Users,
-} from "lucide-react";
+} from "@/lib/icons/server";
 import Link from "next/link";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { AdminPanel } from "@/components/admin/admin-panel";

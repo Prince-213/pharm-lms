@@ -4,7 +4,7 @@ import {
   Award,
   BookOpen,
   ChevronRight,
-  ClipboardList,
+  ClipboardText as ClipboardList,
   CreditCard,
   GraduationCap,
   LayoutDashboard,
@@ -12,7 +12,7 @@ import {
   MessageSquare,
   Users,
   X,
-} from "lucide-react";
+} from "@/lib/icons/client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";

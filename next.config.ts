@@ -3,6 +3,15 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
+  images: {
+     remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.pexels.com',
+        
+      },
+    ],
+  },
   /* allowedDevOrigins: ['127.0.0.1'], */
   /** Legacy course-studio fetches; handlers live under /api/tutor/courses */
   async rewrites() {
