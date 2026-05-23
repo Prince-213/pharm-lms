@@ -1,14 +1,11 @@
-import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { SessionProviderWrapper } from "@/components/session-provider-wrapper";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { fontVariables } from "@/lib/fonts";
+import { rootMetadata } from "@/lib/site-metadata";
 
-export const metadata: Metadata = {
-  title: "Pharm LMS",
-  description: "Pharmacy LMS for mentors, students, and admins",
-};
+export const metadata = rootMetadata;
 
 export default function RootLayout({
   children,

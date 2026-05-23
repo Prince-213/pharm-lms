@@ -7,6 +7,11 @@ import {
 } from "@/lib/course-catalog-detail";
 import { catalogTotalSeconds } from "@/lib/course-duration";
 import { parseSectionDescription } from "@/lib/curriculum";
+import {
+  getStudentPricingContext,
+  mapCoursesWithDisplayPrices,
+  toDisplayCoursePrice,
+} from "@/lib/currency/student-pricing-context";
 import type { DisplayCurrency } from "@/lib/currency/types";
 import { db } from "@/lib/db";
 import { resolveMediaUrl } from "@/lib/media-url";
@@ -29,6 +34,8 @@ export type SearchPublishedCoursesParams = {
   level?: string;
   sort?: CatalogSort;
   take?: number;
+  /** When set, profile country can override geo for display currency. */
+  viewerUserId?: string;
 };
 
 const listInclude = {
@@ -143,13 +150,18 @@ export async function searchPublishedCourses(
     courses.map((c) => resolveMediaUrl(c.thumbnailUrl)),
   );
 
-  return courses.map((c, i) => toListItem(c, thumbs[i] ?? null));
+  const items = courses.map((c, i) => toListItem(c, thumbs[i] ?? null));
+  const { displayCurrency } = await getStudentPricingContext(
+    params.viewerUserId,
+  );
+  return mapCoursesWithDisplayPrices(items, displayCurrency);
 }
 
 export async function getLatestPublishedCourses(
   take = 4,
+  viewerUserId?: string,
 ): Promise<PublishedCourseListItem[]> {
-  return searchPublishedCourses({ sort: "new", take });
+  return searchPublishedCourses({ sort: "new", take, viewerUserId });
 }
 
 export async function getCatalogFacets(): Promise<{
@@ -177,6 +189,7 @@ export async function getCatalogFacets(): Promise<{
 
 export async function loadPublicCourseCatalogDetail(
   courseId: string,
+  viewerUserId?: string,
 ): Promise<CatalogCoursePayload | null> {
   const course = await db.course.findFirst({
     where: { id: courseId, status: CourseStatus.PUBLISHED },
@@ -240,13 +253,16 @@ export async function loadPublicCourseCatalogDetail(
     })),
   );
 
-  const displayPriceCurrency: DisplayCurrency =
-    (course.priceCurrency?.toUpperCase() === "USD" ? "USD" : "NGN") as DisplayCurrency;
+  const { displayCurrency } = await getStudentPricingContext(viewerUserId);
+  const display = await toDisplayCoursePrice(
+    course.priceMinorUnits,
+    displayCurrency,
+  );
 
   return {
     course,
-    displayPriceMinorUnits: course.priceMinorUnits,
-    displayPriceCurrency,
+    displayPriceMinorUnits: display.priceMinorUnits,
+    displayPriceCurrency: display.priceCurrency as DisplayCurrency,
     courseId,
     thumb,
     promoVideoHref,

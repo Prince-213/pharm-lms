@@ -36,7 +36,10 @@ export default async function PublicCourseDetailPage({
     );
   }
 
-  const data = await loadPublicCourseCatalogDetail(courseId);
+  const data = await loadPublicCourseCatalogDetail(
+    courseId,
+    session?.user?.id,
+  );
   if (!data) notFound();
 
   const callbackUrl = `/courses/${courseId}`;

@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { auth } from "@/auth";
+import { siteConfig } from "@/lib/site-metadata";
 import {
   Beaker,
   BookOpen,
@@ -46,6 +49,18 @@ function parseSort(raw: string | undefined): CatalogSort {
   return "new";
 }
 
+export const metadata: Metadata = {
+  title: "Course catalogue",
+  description:
+    "Browse published clinical pharmacy courses on PharmLMS. Open any course to view the full curriculum before you enroll.",
+  openGraph: {
+    title: `Course catalogue · ${siteConfig.name}`,
+    description:
+      "Browse published clinical pharmacy courses on PharmLMS. Open any course to view the full curriculum before you enroll.",
+    url: `${siteConfig.url}/courses`,
+  },
+};
+
 export default async function PublicCoursesPage({
   searchParams,
 }: {
@@ -57,13 +72,17 @@ export default async function PublicCoursesPage({
   const level = (params.level ?? "").trim().slice(0, 80);
   const sort = parseSort(params.sort);
 
+  const session = await auth();
+  const viewerUserId = session?.user?.id;
+
   const [latest, courses, facets] = await Promise.all([
-    getLatestPublishedCourses(4),
+    getLatestPublishedCourses(4, viewerUserId),
     searchPublishedCourses({
       q: q || undefined,
       category: category || undefined,
       level: level || undefined,
       sort,
+      viewerUserId,
     }),
     getCatalogFacets(),
   ]);

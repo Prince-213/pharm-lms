@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { formatMinorUnitsToCurrency } from "@/lib/format-currency";
 import { resolveCourseDisplayPrice } from "./resolve-course-display-price";
 import { resolveDisplayCurrency } from "./resolve-display-currency";
 import type { DisplayCurrency } from "./types";
@@ -23,6 +24,9 @@ export async function getStudentPricingContext(
   return { displayCurrency };
 }
 
+/** Geo/profile currency for any visitor (logged in or anonymous). */
+export const getViewerPricingContext = getStudentPricingContext;
+
 export async function toDisplayCoursePrice(
   priceMinorUnitsNgn: number | null | undefined,
   displayCurrency: DisplayCurrency,
@@ -35,6 +39,24 @@ export async function toDisplayCoursePrice(
     priceMinorUnits: resolved.displayMinorUnits,
     priceCurrency: resolved.displayCurrency,
   };
+}
+
+/** Formatted list/catalog price for the current visitor (NGN or USD). */
+export async function formatCoursePriceForViewer(
+  priceMinorUnitsNgn: number | null | undefined,
+  viewerUserId?: string,
+  options?: { zeroAsFree?: boolean },
+): Promise<string> {
+  const { displayCurrency } = await getStudentPricingContext(viewerUserId);
+  const display = await toDisplayCoursePrice(
+    priceMinorUnitsNgn,
+    displayCurrency,
+  );
+  return formatMinorUnitsToCurrency(
+    display.priceMinorUnits,
+    display.priceCurrency,
+    options,
+  );
 }
 
 export async function mapCoursesWithDisplayPrices<

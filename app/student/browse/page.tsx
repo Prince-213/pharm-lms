@@ -5,10 +5,6 @@ import { BrowseSearchForm } from "@/components/student/browse-search-form";
 import { CatalogCourseCard } from "@/components/student/catalog-course-card";
 import { UserRole } from "@/generated/prisma/enums";
 import {
-  getStudentPricingContext,
-  mapCoursesWithDisplayPrices,
-} from "@/lib/currency/student-pricing-context";
-import {
   POPULAR_CATEGORIES,
   searchPublishedCourses,
 } from "@/lib/courses/public-catalog";
@@ -39,6 +35,7 @@ export default async function BrowseCoursesPage({
     q: query || undefined,
     topic: topic || undefined,
     sort: "new",
+    viewerUserId: session.user.id,
   });
 
   const courses = listItems.map((item) => ({
@@ -65,15 +62,7 @@ export default async function BrowseCoursesPage({
     wishlistRows.map((w: { courseId: string }) => w.courseId),
   );
 
-  const { displayCurrency } = await getStudentPricingContext(session.user.id);
-  const coursesWithDisplayPrices = await mapCoursesWithDisplayPrices(
-    courses,
-    displayCurrency,
-  );
-
-  const resolvedThumbnails = coursesWithDisplayPrices.map(
-    (c) => c.thumbnailUrl,
-  );
+  const resolvedThumbnails = courses.map((c) => c.thumbnailUrl);
 
   const firstName =
     session.user.name?.split(" ")[0] ??
@@ -163,7 +152,7 @@ export default async function BrowseCoursesPage({
           </p>
         ) : (
           <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {coursesWithDisplayPrices.map((course, i) => (
+            {courses.map((course, i) => (
               <li key={course.id}>
                 <CatalogCourseCard
                   href={`/student/browse/${course.id}`}

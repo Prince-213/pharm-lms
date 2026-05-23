@@ -7,6 +7,10 @@ import { CourseStatus, UserRole } from "@/generated/prisma/enums";
 import { roleHomePath } from "@/lib/rbac";
 import { resolveMediaUrl } from "@/lib/media-url";
 import { getEnrollmentProgressForStudent } from "@/lib/student-course-progress";
+import {
+  getStudentPricingContext,
+  toDisplayCoursePrice,
+} from "@/lib/currency/student-pricing-context";
 import { db } from "@/lib/db";
 
 export default async function StudentCoursesPage() {
@@ -37,6 +41,18 @@ export default async function StudentCoursesPage() {
 
   const courseIds = enrollments.map((e) => e.course.id);
   const progressByCourse = await getEnrollmentProgressForStudent(session.user.id, courseIds);
+  const { displayCurrency } = await getStudentPricingContext(session.user.id);
+  const displayPricesByCourseId = new Map(
+    await Promise.all(
+      enrollments.map(async (e) => {
+        const display = await toDisplayCoursePrice(
+          e.course.priceMinorUnits,
+          displayCurrency,
+        );
+        return [e.course.id, display] as const;
+      }),
+    ),
+  );
   const resolvedThumbnails = await Promise.all(enrollments.map((e) => resolveMediaUrl(e.course.thumbnailUrl)));
 
   return (
@@ -75,6 +91,7 @@ export default async function StudentCoursesPage() {
             const live = c.status === CourseStatus.PUBLISHED;
             const p = progressByCourse.get(c.id) ?? { pct: 0, completed: 0, total: 0 };
             const hasStarted = p.completed > 0 || p.pct > 0;
+            const display = displayPricesByCourseId.get(c.id);
             return (
               <li key={e.id} className={!live ? "opacity-80" : undefined}>
                 <EnrolledCourseCard
@@ -82,8 +99,8 @@ export default async function StudentCoursesPage() {
                   title={c.title}
                   mentorName={c.mentor.fullName}
                   thumbnailUrl={resolvedThumbnails[idx] ?? null}
-                  priceMinorUnits={c.priceMinorUnits}
-                  priceCurrency={c.priceCurrency}
+                  priceMinorUnits={display?.priceMinorUnits ?? c.priceMinorUnits}
+                  priceCurrency={display?.priceCurrency ?? c.priceCurrency}
                   progressPct={p.pct}
                   hasStarted={hasStarted}
                 />

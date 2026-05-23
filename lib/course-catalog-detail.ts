@@ -6,7 +6,6 @@ import {
   getStudentPricingContext,
   toDisplayCoursePrice,
 } from "@/lib/currency/student-pricing-context";
-import type { DisplayCurrency } from "@/lib/currency/types";
 import { db } from "@/lib/db";
 import { resolveMediaUrl } from "@/lib/media-url";
 
@@ -165,19 +164,13 @@ export async function loadCourseCatalogDetail(
     })),
   );
 
-  let displayPriceMinorUnits: number | null = course.priceMinorUnits;
-  let displayPriceCurrency: DisplayCurrency =
-    (course.priceCurrency?.toUpperCase() === "USD" ? "USD" : "NGN") as DisplayCurrency;
-
-  if (isStudent) {
-    const { displayCurrency } = await getStudentPricingContext(viewer.id);
-    const display = await toDisplayCoursePrice(
-      course.priceMinorUnits,
-      displayCurrency,
-    );
-    displayPriceMinorUnits = display.priceMinorUnits;
-    displayPriceCurrency = display.priceCurrency;
-  }
+  const { displayCurrency } = await getStudentPricingContext(viewer.id);
+  const display = await toDisplayCoursePrice(
+    course.priceMinorUnits,
+    displayCurrency,
+  );
+  const displayPriceMinorUnits = display.priceMinorUnits;
+  const displayPriceCurrency = display.priceCurrency;
 
   return {
     course,
