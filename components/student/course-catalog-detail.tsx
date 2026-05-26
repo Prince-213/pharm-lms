@@ -21,7 +21,7 @@ import { CatalogCourseContent } from "@/components/student/catalog-course-conten
 import { CatalogPreviewMedia } from "@/components/student/catalog-preview-media";
 import { CatalogPurchaseRail } from "@/components/student/catalog-purchase-rail";
 import { EnrollCourseButton } from "@/components/student/enroll-course-button";
-import { PurchaseCourseButton } from "@/components/student/purchase-course-button";
+import { PaidPurchaseSection } from "@/components/student/paid-purchase-section";
 import { WishlistHeartButton } from "@/components/student/wishlist-heart-button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -153,8 +153,10 @@ export function CourseCatalogDetail({
   const canAct = interaction === "student" && variant === "catalog";
   const isGuest = interaction === "guest" && variant === "catalog";
   const showResourceLinks = canAct && Boolean(enrollment);
-  const catalogHref = catalogNavOverride?.href ?? (isGuest ? "/courses" : "/student/browse");
-  const catalogLabel = catalogNavOverride?.label ?? (isGuest ? "Catalog" : "Catalog");
+  const catalogHref =
+    catalogNavOverride?.href ?? (isGuest ? "/courses" : "/student/browse");
+  const catalogLabel =
+    catalogNavOverride?.label ?? (isGuest ? "Catalog" : "Catalog");
 
   const sectionCount = course.sections.length;
   const contentSummary = [
@@ -667,30 +669,39 @@ export function CourseCatalogDetail({
                           Continue learning (preview)
                         </div>
                       ) : canAct && isStudent ? (
-                        <div className="flex gap-2">
-                          <div className="w-[80%] min-w-0 shrink-0">
-                            {(course.priceMinorUnits ?? 0) > 0 ? (
-                              <PurchaseCourseButton
+                        (course.priceMinorUnits ?? 0) > 0 ? (
+                          <PaidPurchaseSection
+                            courseId={courseId}
+                            basePriceMinorUnits={course.priceMinorUnits ?? 0}
+                            priceCurrency={course.priceCurrency}
+                            displayCurrency={displayPriceCurrency}
+                            wishlist={
+                              <WishlistHeartButton
                                 courseId={courseId}
-                                displayCurrency={displayPriceCurrency}
-                                className="min-h-12 w-full rounded-sm py-3 text-base font-bold"
+                                initialSaved={Boolean(wishlistRow)}
+                                variant="toolbar"
+                                className="h-12 max-w-[18%] min-w-0 shrink-0"
                               />
-                            ) : (
+                            }
+                          />
+                        ) : (
+                          <div className="flex gap-2">
+                            <div className="w-[80%] min-w-0 shrink-0">
                               <EnrollCourseButton
                                 courseId={courseId}
                                 label="Enroll now"
                                 variant="catalog"
                                 className="min-h-12 w-full rounded-sm px-6 py-3 text-base font-bold"
                               />
-                            )}
+                            </div>
+                            <WishlistHeartButton
+                              courseId={courseId}
+                              initialSaved={Boolean(wishlistRow)}
+                              variant="toolbar"
+                              className="h-12 max-w-[18%] min-w-0 shrink-0"
+                            />
                           </div>
-                          <WishlistHeartButton
-                            courseId={courseId}
-                            initialSaved={Boolean(wishlistRow)}
-                            variant="toolbar"
-                            className="h-12 max-w-[18%] min-w-0 shrink-0"
-                          />
-                        </div>
+                        )
                       ) : isGuest && guestAuth ? (
                         <div className="space-y-3">
                           <Link

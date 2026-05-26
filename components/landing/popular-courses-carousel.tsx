@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Clock, Star } from "@/lib/icons/server";
 export type PopularCourseCardView = {
+  id: string;
+  href: string;
   image: string;
   imageAlt: string;
   category: string;
@@ -68,8 +70,9 @@ export function PopularCoursesCarousel({
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {courses.map((course) => (
-            <div
-              key={course.title}
+            <Link
+              key={course.id}
+              href={course.href}
               className="group flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-[var(--shadow-1)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-3)]"
             >
               <div className="relative overflow-hidden">
@@ -124,7 +127,7 @@ export function PopularCoursesCarousel({
                   </p>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 

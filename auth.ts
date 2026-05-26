@@ -14,6 +14,16 @@ import { getAuthSecret } from "@/lib/auth/secret";
 import { SESSION_MAX_AGE_SECONDS } from "@/lib/auth/session-policy";
 import { prisma } from "@/lib/prisma";
 
+/**
+ * Logs an auth-time DB failure without tearing down `/api/auth/session`.
+ * When Neon is asleep / unreachable we'd rather keep existing sessions
+ * alive on cached JWT claims than 500 every authenticated request.
+ */
+function warnAuthDbFailure(scope: string, error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  console.warn(`[auth] ${scope} failed; preserving existing token:`, message);
+}
+
 class WrongPortalCredentials extends CredentialsSignin {
   code = "WRONG_PORTAL";
 }
@@ -135,10 +145,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return true;
       }
       const email = rawEmail.toLowerCase();
-      const row = await prisma.user.findUnique({
-        where: { email },
-        select: { role: true, isActive: true },
-      });
+      let row: { role: UserRole; isActive: boolean } | null = null;
+      try {
+        row = await prisma.user.findUnique({
+          where: { email },
+          select: { role: true, isActive: true },
+        });
+      } catch (error) {
+        warnAuthDbFailure("signIn lookup", error);
+        // Permit through; the JWT step will reconcile on the next request
+        // when the database is reachable again.
+        return true;
+      }
       if (!row) {
         return true;
       }
@@ -159,32 +177,49 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async jwt({ token, user }) {
       if (user?.id) {
-        const row = await prisma.user.findUnique({
-          where: { id: user.id },
-          select: {
-            id: true,
-            role: true,
-            mentorProfileStatus: true,
-            isActive: true,
-          },
-        });
-        if (row?.isActive) {
-          token.sub = row.id;
-          token.role = row.role;
-          token.mentorProfileStatus = row.mentorProfileStatus;
-        } else {
-          token.sub = undefined;
+        try {
+          const row = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: {
+              id: true,
+              role: true,
+              mentorProfileStatus: true,
+              isActive: true,
+            },
+          });
+          if (row?.isActive) {
+            token.sub = row.id;
+            token.role = row.role;
+            token.mentorProfileStatus = row.mentorProfileStatus;
+          } else {
+            token.sub = undefined;
+          }
+        } catch (error) {
+          warnAuthDbFailure("jwt fresh-login lookup", error);
+          // Credentials provider already verified the user; trust the
+          // object it just returned so the user isn't locked out by a
+          // transient DB outage at sign-in time.
+          token.sub = user.id;
+          const userWithRole = user as { role?: UserRole };
+          if (userWithRole.role) token.role = userWithRole.role;
         }
       } else if (token.sub) {
-        const row = await prisma.user.findUnique({
-          where: { id: token.sub as string },
-          select: { role: true, mentorProfileStatus: true, isActive: true },
-        });
-        if (row?.isActive) {
-          token.role = row.role;
-          token.mentorProfileStatus = row.mentorProfileStatus;
-        } else {
-          token.sub = undefined;
+        try {
+          const row = await prisma.user.findUnique({
+            where: { id: token.sub as string },
+            select: { role: true, mentorProfileStatus: true, isActive: true },
+          });
+          if (row?.isActive) {
+            token.role = row.role;
+            token.mentorProfileStatus = row.mentorProfileStatus;
+          } else {
+            token.sub = undefined;
+          }
+        } catch (error) {
+          warnAuthDbFailure("jwt session-refresh lookup", error);
+          // Keep the existing role/mentorProfileStatus claims on the token
+          // so the session stays valid while the DB recovers. The next
+          // refresh after recovery will re-sync.
         }
       }
       if (token.sub) {

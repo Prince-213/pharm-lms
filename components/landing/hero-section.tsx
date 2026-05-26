@@ -1,5 +1,6 @@
-import type { ComponentType } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import type { ComponentType } from "react";
 import {
   BarChart3,
   BookOpen,
@@ -10,15 +11,18 @@ import {
   Video,
   Wallet,
 } from "@/lib/icons/server";
-import Image from "next/image";
-import { PartnersSection } from "./partners-section";
 import {
   getLandingContent,
   type HeroBadgeIcon,
   type LandingAudience,
 } from "@/lib/landing-content";
+import { PartnersSection } from "./partners-section";
+import { WatchDemoButton } from "./watch-demo-button";
 
-const badgeIcons: Record<HeroBadgeIcon, ComponentType<{ className?: string }>> = {
+const badgeIcons: Record<
+  HeroBadgeIcon,
+  ComponentType<{ className?: string }>
+> = {
   BookOpen,
   Briefcase,
   Lightbulb,
@@ -79,12 +83,19 @@ export function HeroSection({ audience = "student" }: HeroSectionProps) {
             >
               {hero.primaryCta.label}
             </Link>
-            <Link
-              href={hero.secondaryCta.href}
-              className="inline-flex z-20 relative  items-center lg:rounded-lg rounded-[8px] bg-emerald-50 lg:px-[28px] px-[20px] lg:py-4.5 py-4 text-[18px] lg:text-sm text-xs font-semibold text-[var(--emerald)] shadow-xl shadow-gray-300/40 transition active:scale-95"
-            >
-              {hero.secondaryCta.label}
-            </Link>
+            {hero.demoVideoUrl ? (
+              <WatchDemoButton
+                label={hero.secondaryCta.label}
+                videoUrl={hero.demoVideoUrl}
+              />
+            ) : (
+              <Link
+                href={hero.secondaryCta.href}
+                className="inline-flex z-20 relative  items-center lg:rounded-lg rounded-[8px] bg-emerald-50 lg:px-[28px] px-[20px] lg:py-4.5 py-4 text-[18px] lg:text-sm text-xs font-semibold text-[var(--emerald)] shadow-xl shadow-gray-300/40 transition active:scale-95"
+              >
+                {hero.secondaryCta.label}
+              </Link>
+            )}
           </div>
 
           <div className="mt-12 flex flex-wrap gap-8 text-base font-medium text-slate-600">
@@ -137,37 +148,62 @@ export function HeroSection({ audience = "student" }: HeroSectionProps) {
               src={`${hero.image}`}
               alt="Pharmacy professional — Yan Krukau on Pexels"
               className="h-full w-full object-cover object-top"
-              fill 
+              fill
             />
           </div>
 
           <div className="absolute left-0 top-40 flex min-w-fit -translate-x-5 -translate-y-0 items-center lg:gap-[23px] gap-[15px] lg:rounded-[18px] rounded-[10px] border border-[var(--emerald)] bg-[#F5F5F4] lg:p-[18px] p-[10px] shadow-[var(--shadow-3)] backdrop-blur-sm lg:-left-4">
             <div className="relative lg:h-[50px] lg:w-[50px] h-[40px] w-[40px] overflow-hidden rounded-[11px] shadow-lg shadow-gray-400/60">
-              <Image src="/assets/monitor.png" className="object-contain" alt="" fill />
+              <Image
+                src="/assets/monitor.png"
+                className="object-contain"
+                alt=""
+                fill
+              />
             </div>
             <div className="flex flex-col gap-[2px]">
-              <p className="lg:text-[25px] text-[20px] font-bold leading-tight text-[var(--ink-deep)]">2K+</p>
-              <p className="lg:text-[15px] text-[12px] text-gray-500">Video Courses</p>
+              <p className="lg:text-[25px] text-[20px] font-bold leading-tight text-[var(--ink-deep)]">
+                2K+
+              </p>
+              <p className="lg:text-[15px] text-[12px] text-gray-500">
+                Video Courses
+              </p>
             </div>
           </div>
 
           <div className="absolute -top-4 right-0 flex max-w-fit -translate-y-0 flex-col items-center justify-center gap-[5px] lg:rounded-[18px] rounded-[10px] border border-[var(--emerald)] bg-[#F5F5F4] lg:p-[18px] p-[10px] shadow-[var(--shadow-3)] backdrop-blur-sm lg:right-2">
             <div className="relative lg:h-[80px] lg:w-[80px] h-[60px] w-[60px] overflow-hidden rounded-full">
-              <Image src="/assets/Ring.png" className="object-contain" alt="" fill />
+              <Image
+                src="/assets/Ring.png"
+                className="object-contain"
+                alt=""
+                fill
+              />
             </div>
             <div className="flex flex-col items-center justify-center lg:gap-[8px] gap-[5px] text-center">
-              <p className="lg:text-[25px] text-[20px] font-bold leading-tight text-[var(--ink-deep)]">5K+</p>
-              <p className="lg:text-[15px] text-[12px] text-gray-500">Online Courses</p>
+              <p className="lg:text-[25px] text-[20px] font-bold leading-tight text-[var(--ink-deep)]">
+                5K+
+              </p>
+              <p className="lg:text-[15px] text-[12px] text-gray-500">
+                Online Courses
+              </p>
             </div>
           </div>
 
           <div className="absolute bottom-4 right-0 flex max-w-fit -translate-y-0 items-center lg:gap-[18px] gap-[10px] lg:rounded-[18px] rounded-[10px] border border-[var(--emerald)] bg-[#F5F5F4] lg:p-[18px] p-[10px] shadow-[var(--shadow-3)] backdrop-blur-sm lg:right-10">
             <div className="relative lg:h-[50px] lg:w-[50px] h-[40px] w-[40px] overflow-hidden lg:rounded-[11px] rounded-[8px] shadow-lg shadow-gray-400/60">
-              <Image src="/assets/tutor.png" className="object-contain" alt="" fill />
+              <Image
+                src="/assets/tutor.png"
+                className="object-contain"
+                alt=""
+                fill
+              />
             </div>
             <div className="flex flex-col gap-[2px]">
               <p className="lg:text-[15px] text-[12px] text-gray-500">Tutors</p>
-              <p className="lg:text-[25px] text-[20px] font-bold leading-tight text-[var(--ink-deep)]">250+</p>
+              <p className="lg:text-[25px] text-[20px] font-bold leading-tight text-[var(--ink-deep)]">
+                250+
+              </p>
             </div>
           </div>
         </div>

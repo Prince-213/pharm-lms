@@ -2,6 +2,7 @@ import { hash } from "bcryptjs";
 import { MentorProfileStatus, UserRole } from "../generated/prisma/enums";
 import { getOrCreatePlatformSettings } from "../lib/payments/platform-settings";
 import { prisma } from "../lib/prisma";
+import { seedBlogPosts } from "./seed-blog-posts";
 
 async function main() {
   const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "admin@pharmlms.com";
@@ -257,6 +258,9 @@ async function main() {
   await getOrCreatePlatformSettings();
 
   console.log("Platform payment settings row ensured.");
+
+  await seedBlogPosts();
+  console.log("Blog posts seeded (4 published articles).");
 }
 
 main()

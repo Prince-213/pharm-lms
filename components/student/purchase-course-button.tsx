@@ -13,11 +13,14 @@ export function PurchaseCourseButton({
   courseId,
   className,
   displayCurrency,
+  coupon,
 }: {
   courseId: string;
   className?: string;
   /** Resolved display currency from server (USD users see NGN charge note). */
   displayCurrency?: DisplayCurrency;
+  /** Coupon code applied via the catalog "Have a coupon?" field. */
+  coupon?: { code: string } | null;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -46,7 +49,10 @@ export function PurchaseCourseButton({
         const res = await fetch("/api/payments/paystack/initialize", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ courseId }),
+          body: JSON.stringify({
+            courseId,
+            couponCode: coupon?.code ?? undefined,
+          }),
         });
         const data = (await res.json().catch(() => ({}))) as {
           error?: string;
@@ -125,7 +131,7 @@ export function PurchaseCourseButton({
         },
       });
     });
-  }, [courseId, initializePayment, publicKey, router]);
+  }, [courseId, coupon, initializePayment, publicKey, router]);
 
   const showNgnChargeNote = displayCurrency === "USD";
 

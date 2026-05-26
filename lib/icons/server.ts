@@ -2,7 +2,6 @@
  * Lucide icons for Server Components. Phosphor uses client context and cannot
  * be imported in RSC — use `@/lib/icons/client` in Client Components instead.
  */
-export type { AppIcon } from "@/lib/icons/types";
 
 export {
   Activity,
@@ -36,6 +35,7 @@ export {
   Sparkles,
   Star,
   Stethoscope,
+  Ticket,
   TrendingUp,
   Trophy,
   User,
@@ -46,3 +46,4 @@ export {
   Wrench,
   X,
 } from "lucide-react";
+export type { AppIcon } from "@/lib/icons/types";

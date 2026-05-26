@@ -156,6 +156,23 @@ export async function completeCoursePurchaseFromReference(
         data: { enrollmentId: enrollment.id },
       });
 
+      // Record the coupon redemption only after the purchase is SUCCESS so
+      // pending/failed payments don't burn the student's per-student quota or
+      // the coupon's total cap. Unique on coursePurchaseId makes this safe to
+      // re-run from the webhook.
+      if (updated.couponId && updated.discountMinorUnits > 0) {
+        await tx.couponRedemption.upsert({
+          where: { coursePurchaseId: updated.id },
+          create: {
+            couponId: updated.couponId,
+            studentId: updated.studentId,
+            coursePurchaseId: updated.id,
+            discountMinorUnits: updated.discountMinorUnits,
+          },
+          update: {},
+        });
+      }
+
       return { courseId: updated.courseId, enrollmentId: enrollment.id };
     });
 

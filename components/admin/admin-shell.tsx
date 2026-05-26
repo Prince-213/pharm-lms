@@ -1,5 +1,12 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { UserMenu } from "@/components/auth/user-menu";
+import { HeaderNotificationBell } from "@/components/notifications/header-notification-bell";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Award,
   BookOpen,
@@ -10,16 +17,10 @@ import {
   LayoutDashboard,
   Menu,
   MessageSquare,
+  Ticket,
   Users,
   X,
 } from "@/lib/icons/client";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { UserMenu } from "@/components/auth/user-menu";
-import { HeaderNotificationBell } from "@/components/notifications/header-notification-bell";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { shellHeaderTitleFromNav } from "@/lib/shell-header-title";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +39,7 @@ const nav = [
     label: "Payments",
     icon: CreditCard,
   },
+  { href: "/admin/coupons", label: "Coupons", icon: Ticket },
   { href: "/admin/badges", label: "Badges", icon: Award },
   { href: "/admin/messages", label: "Messages", icon: MessageSquare },
 ] as const;

@@ -29,8 +29,14 @@ function getOrCreatePool(): Pool {
   return globalForPrisma.pgPool;
 }
 
+/** Recreate client after `prisma generate` when Next dev still holds an old global instance. */
+function isPrismaClientStale(client: PrismaClient): boolean {
+  return typeof (client as { blogPost?: { findMany?: unknown } }).blogPost
+    ?.findMany !== "function";
+}
+
 function getOrCreatePrisma(): PrismaClient {
-  if (!globalForPrisma.prisma) {
+  if (!globalForPrisma.prisma || isPrismaClientStale(globalForPrisma.prisma)) {
     const pool = getOrCreatePool();
     globalForPrisma.prisma = new PrismaClient({
       adapter: new PrismaPg(pool),
@@ -40,5 +46,9 @@ function getOrCreatePrisma(): PrismaClient {
 }
 
 const prisma = getOrCreatePrisma();
+
+export function getPrismaClient(): PrismaClient {
+  return getOrCreatePrisma();
+}
 
 export { prisma };

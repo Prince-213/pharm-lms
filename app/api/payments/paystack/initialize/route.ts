@@ -1,12 +1,17 @@
 import { randomBytes } from "node:crypto";
-import { CoursePurchaseStatus, CourseStatus, UserRole } from "@/generated/prisma/enums";
+import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import {
+  CoursePurchaseStatus,
+  CourseStatus,
+  UserRole,
+} from "@/generated/prisma/enums";
+import { validateCouponForCheckout } from "@/lib/coupons/validate-coupon";
 import { buildPurchasePricing } from "@/lib/currency/build-purchase-pricing";
 import { resolveDisplayCurrency } from "@/lib/currency/resolve-display-currency";
 import { db } from "@/lib/db";
 import { reEnrollFromSuccessfulPurchase } from "@/lib/payments/re-enroll-purchased-course";
 import { getPaystackPublicKey } from "@/lib/paystack/client";
-import { NextResponse } from "next/server";
 
 function generateReference(): string {
   return `pharm_${Date.now().toString(36)}_${randomBytes(6).toString("hex")}`;
@@ -19,11 +24,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = (await req.json().catch(() => null)) as { courseId?: string };
+    const body = (await req.json().catch(() => null)) as {
+      courseId?: string;
+      couponCode?: string;
+    };
     const courseId = body?.courseId;
     if (!courseId || typeof courseId !== "string") {
       return NextResponse.json({ error: "courseId required" }, { status: 400 });
     }
+    const rawCouponCode =
+      typeof body?.couponCode === "string" ? body.couponCode.trim() : "";
 
     const [course, student] = await Promise.all([
       db.course.findUnique({
@@ -42,7 +52,10 @@ export async function POST(req: Request) {
     ]);
 
     if (!course || course.status !== CourseStatus.PUBLISHED) {
-      return NextResponse.json({ error: "Course not available" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Course not available" },
+        { status: 404 },
+      );
     }
 
     const price = course.priceMinorUnits;
@@ -67,7 +80,10 @@ export async function POST(req: Request) {
         courseId,
       );
       if (!reEnrolled.ok) {
-        return NextResponse.json({ error: reEnrolled.message }, { status: 400 });
+        return NextResponse.json(
+          { error: reEnrolled.message },
+          { status: 400 },
+        );
       }
       return NextResponse.json({
         reEnrolled: true,
@@ -76,10 +92,34 @@ export async function POST(req: Request) {
       });
     }
 
+    let effectivePriceMinorUnits = price;
+    let appliedCouponId: string | null = null;
+    let appliedDiscountMinorUnits = 0;
+
+    if (rawCouponCode) {
+      const couponResult = await validateCouponForCheckout({
+        code: rawCouponCode,
+        courseId,
+        studentId: session.user.id,
+      });
+      if (!couponResult.ok) {
+        return NextResponse.json(
+          { error: couponResult.message },
+          { status: 400 },
+        );
+      }
+      effectivePriceMinorUnits = couponResult.finalAmountMinorUnits;
+      appliedCouponId = couponResult.coupon.id;
+      appliedDiscountMinorUnits = couponResult.discountMinorUnits;
+    }
+
     const displayCurrency = await resolveDisplayCurrency({
       profileCountry: student?.country,
     });
-    const pricing = await buildPurchasePricing(price, displayCurrency);
+    const pricing = await buildPurchasePricing(
+      effectivePriceMinorUnits,
+      displayCurrency,
+    );
 
     const reference = generateReference();
 
@@ -95,6 +135,8 @@ export async function POST(req: Request) {
         fxRateNgnPerUsd: pricing.fxRateNgnPerUsd,
         paystackReference: reference,
         status: CoursePurchaseStatus.PENDING,
+        couponId: appliedCouponId,
+        discountMinorUnits: appliedDiscountMinorUnits,
       },
     });
 

@@ -1,9 +1,6 @@
 "use client";
 
-export type { AppIcon } from "@/lib/icons/types";
-
 export {
-  Pulse as Activity,
   ArrowRight,
   ArrowUpRight,
   BookOpen,
@@ -40,6 +37,7 @@ export {
   Medal,
   Medal as Award,
   Presentation,
+  Pulse as Activity,
   ShieldCheck,
   SignOut,
   SignOut as LogOut,
@@ -49,6 +47,7 @@ export {
   Stethoscope,
   Student,
   Student as School,
+  Ticket,
   Tray,
   Tray as Inbox,
   TrendUp,
@@ -62,3 +61,4 @@ export {
   Wrench,
   X,
 } from "@phosphor-icons/react";
+export type { AppIcon } from "@/lib/icons/types";

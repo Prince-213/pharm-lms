@@ -1,5 +1,14 @@
 export type LandingAudience = "student" | "mentor" | "instructor";
 
+/**
+ * Default demo video shown when a hero "Watch Demo" CTA is clicked.
+ * Override per-audience in the `landingContent` map below if needed.
+ * The `WatchDemoButton` auto-converts youtu.be / youtube.com URLs into
+ * embeddable form with autoplay.
+ */
+const DEFAULT_HERO_DEMO_VIDEO_URL =
+  "https://youtu.be/aVVsHGtkO7I?si=SlX8YcnpH13QBbv4";
+
 export type ServiceIconKey =
   | "FlaskConical"
   | "Stethoscope"
@@ -12,7 +21,15 @@ export type ServiceIconKey =
   | "BookOpen"
   | "MessageCircle";
 
-export type HeroBadgeIcon = "BookOpen" | "Briefcase" | "Lightbulb" | "Users" | "Calendar" | "Video" | "BarChart3" | "Wallet";
+export type HeroBadgeIcon =
+  | "BookOpen"
+  | "Briefcase"
+  | "Lightbulb"
+  | "Users"
+  | "Calendar"
+  | "Video"
+  | "BarChart3"
+  | "Wallet";
 
 export type HeroHeadlineLine = {
   before?: string;
@@ -26,6 +43,12 @@ export type LandingHeroContent = {
   image: string;
   primaryCta: { label: string; href: string };
   secondaryCta: { label: string; href: string };
+  /**
+   * Optional demo video shown when the secondary CTA is clicked. Accepts a
+   * direct video URL (mp4/webm) or a YouTube/Vimeo embed URL. When set, the
+   * secondary CTA opens a full-screen player instead of navigating.
+   */
+  demoVideoUrl?: string;
   badges: { icon: HeroBadgeIcon; label: string; imageSrc?: string }[];
 };
 
@@ -279,7 +302,8 @@ const instructorServices: LandingServiceCard[][] = [
 const studentPrograms: LandingProgramCard[][] = [
   [
     {
-      image: "https://images.pexels.com/photos/8199252/pexels-photo-8199252.jpeg?auto=compress&cs=tinysrgb&w=600",
+      image:
+        "https://images.pexels.com/photos/8199252/pexels-photo-8199252.jpeg?auto=compress&cs=tinysrgb&w=600",
       imageAlt: "Student studying pharmacy at library — Yan Krukau on Pexels",
       category: "Pharmacy",
       title: "Pharmaceutical Chemistry Fundamentals",
@@ -287,12 +311,17 @@ const studentPrograms: LandingProgramCard[][] = [
         "Master the chemistry behind drugs to excel in pharmacokinetics and drug formulation.",
       rating: 4.3,
       reviewCount: 16325,
-      instructor: { name: "Jane Cooper", avatar: "https://i.pravatar.cc/40?u=janecooper", enrolled: 2001 },
+      instructor: {
+        name: "Jane Cooper",
+        avatar: "https://i.pravatar.cc/40?u=janecooper",
+        enrolled: 2001,
+      },
       price: 17.84,
       duration: "08 hr 12 mins",
     },
     {
-      image: "https://images.pexels.com/photos/4307849/pexels-photo-4307849.jpeg?auto=compress&cs=tinysrgb&w=600",
+      image:
+        "https://images.pexels.com/photos/4307849/pexels-photo-4307849.jpeg?auto=compress&cs=tinysrgb&w=600",
       imageAlt: "Person studying online course — Ketut Subiyanto on Pexels",
       category: "Clinical",
       title: "Clinical Pharmacy Practice",
@@ -300,12 +329,17 @@ const studentPrograms: LandingProgramCard[][] = [
         "Design evidence-based care plans for patients across various clinical pharmacy settings.",
       rating: 3.9,
       reviewCount: 832,
-      instructor: { name: "Jenny Wilson", avatar: "https://i.pravatar.cc/40?u=jennywilson", enrolled: 2001 },
+      instructor: {
+        name: "Jenny Wilson",
+        avatar: "https://i.pravatar.cc/40?u=jennywilson",
+        enrolled: 2001,
+      },
       price: 8.99,
       duration: "06 hr 3 mins",
     },
     {
-      image: "https://images.pexels.com/photos/8312669/pexels-photo-8312669.jpeg?auto=compress&cs=tinysrgb&w=600",
+      image:
+        "https://images.pexels.com/photos/8312669/pexels-photo-8312669.jpeg?auto=compress&cs=tinysrgb&w=600",
       imageAlt: "Professional pharmacist working — Dayana Joseph on Pexels",
       category: "Safety",
       title: "Drug Interaction Management",
@@ -313,14 +347,19 @@ const studentPrograms: LandingProgramCard[][] = [
         "Learn to identify and manage clinically significant drug interactions in modern practice.",
       rating: 4.2,
       reviewCount: 125,
-      instructor: { name: "Esther Howard", avatar: "https://i.pravatar.cc/40?u=estherhoward", enrolled: 2001 },
+      instructor: {
+        name: "Esther Howard",
+        avatar: "https://i.pravatar.cc/40?u=estherhoward",
+        enrolled: 2001,
+      },
       price: 11.7,
       duration: "01 hr 2 mins",
     },
   ],
   [
     {
-      image: "https://images.pexels.com/photos/7693189/pexels-photo-7693189.jpeg?auto=compress&cs=tinysrgb&w=600",
+      image:
+        "https://images.pexels.com/photos/7693189/pexels-photo-7693189.jpeg?auto=compress&cs=tinysrgb&w=600",
       imageAlt: "Healthcare professionals collaborating — Yan Krukau on Pexels",
       category: "Pharmacology",
       title: "Advanced Pharmacokinetics",
@@ -328,12 +367,17 @@ const studentPrograms: LandingProgramCard[][] = [
         "Deep-dive into drug absorption, distribution, metabolism and excretion for clinical application.",
       rating: 4.5,
       reviewCount: 980,
-      instructor: { name: "Albert Flores", avatar: "https://i.pravatar.cc/40?u=albertflores", enrolled: 1500 },
+      instructor: {
+        name: "Albert Flores",
+        avatar: "https://i.pravatar.cc/40?u=albertflores",
+        enrolled: 1500,
+      },
       price: 19.99,
       duration: "10 hr 30 mins",
     },
     {
-      image: "https://images.pexels.com/photos/8199174/pexels-photo-8199174.jpeg?auto=compress&cs=tinysrgb&w=600",
+      image:
+        "https://images.pexels.com/photos/8199174/pexels-photo-8199174.jpeg?auto=compress&cs=tinysrgb&w=600",
       imageAlt: "Student holding books — Yan Krukau on Pexels",
       category: "Therapeutics",
       title: "Medication Therapy Management",
@@ -341,12 +385,17 @@ const studentPrograms: LandingProgramCard[][] = [
         "Optimise patient outcomes through comprehensive medication reviews and patient counseling.",
       rating: 4.7,
       reviewCount: 2100,
-      instructor: { name: "Theresa Webb", avatar: "https://i.pravatar.cc/40?u=theresawebb", enrolled: 3200 },
+      instructor: {
+        name: "Theresa Webb",
+        avatar: "https://i.pravatar.cc/40?u=theresawebb",
+        enrolled: 3200,
+      },
       price: 14.5,
       duration: "07 hr 45 mins",
     },
     {
-      image: "https://images.pexels.com/photos/7640741/pexels-photo-7640741.jpeg?auto=compress&cs=tinysrgb&w=600",
+      image:
+        "https://images.pexels.com/photos/7640741/pexels-photo-7640741.jpeg?auto=compress&cs=tinysrgb&w=600",
       imageAlt: "Team collaborating in office — Yan Krukau on Pexels",
       category: "Regulatory",
       title: "Pharmacy Law & Compliance",
@@ -354,7 +403,11 @@ const studentPrograms: LandingProgramCard[][] = [
         "Navigate federal and state pharmacy laws, ethics and professional responsibilities with confidence.",
       rating: 4.1,
       reviewCount: 540,
-      instructor: { name: "Courtney Henry", avatar: "https://i.pravatar.cc/40?u=courtneyhenry", enrolled: 1200 },
+      instructor: {
+        name: "Courtney Henry",
+        avatar: "https://i.pravatar.cc/40?u=courtneyhenry",
+        enrolled: 1200,
+      },
       price: 12.0,
       duration: "05 hr 15 mins",
     },
@@ -364,7 +417,8 @@ const studentPrograms: LandingProgramCard[][] = [
 const mentorPrograms: LandingProgramCard[][] = [
   [
     {
-      image: "https://images.pexels.com/photos/7640741/pexels-photo-7640741.jpeg?auto=compress&cs=tinysrgb&w=600",
+      image:
+        "https://images.pexels.com/photos/7640741/pexels-photo-7640741.jpeg?auto=compress&cs=tinysrgb&w=600",
       imageAlt: "Mentor meeting with student — Yan Krukau on Pexels",
       category: "Career",
       title: "Residency Application Coaching",
@@ -372,12 +426,17 @@ const mentorPrograms: LandingProgramCard[][] = [
         "Structured mentorship for program research, personal statements, and interview prep.",
       rating: 4.9,
       reviewCount: 412,
-      instructor: { name: "Dr. Sarah Chen", avatar: "https://i.pravatar.cc/40?u=sarahchen", enrolled: 890 },
+      instructor: {
+        name: "Dr. Sarah Chen",
+        avatar: "https://i.pravatar.cc/40?u=sarahchen",
+        enrolled: 890,
+      },
       price: 49.0,
       duration: "6 sessions",
     },
     {
-      image: "https://images.pexels.com/photos/7693189/pexels-photo-7693189.jpeg?auto=compress&cs=tinysrgb&w=600",
+      image:
+        "https://images.pexels.com/photos/7693189/pexels-photo-7693189.jpeg?auto=compress&cs=tinysrgb&w=600",
       imageAlt: "Healthcare mentorship — Yan Krukau on Pexels",
       category: "Clinical",
       title: "Clinical Rotation Mentorship",
@@ -385,12 +444,17 @@ const mentorPrograms: LandingProgramCard[][] = [
         "Weekly guidance for students navigating hospital rotations and patient care workflows.",
       rating: 4.8,
       reviewCount: 256,
-      instructor: { name: "James Okonkwo", avatar: "https://i.pravatar.cc/40?u=jamesokonkwo", enrolled: 540 },
+      instructor: {
+        name: "James Okonkwo",
+        avatar: "https://i.pravatar.cc/40?u=jamesokonkwo",
+        enrolled: 540,
+      },
       price: 39.0,
       duration: "8 sessions",
     },
     {
-      image: "https://images.pexels.com/photos/8199174/pexels-photo-8199174.jpeg?auto=compress&cs=tinysrgb&w=600",
+      image:
+        "https://images.pexels.com/photos/8199174/pexels-photo-8199174.jpeg?auto=compress&cs=tinysrgb&w=600",
       imageAlt: "Pharmacy student — Yan Krukau on Pexels",
       category: "Licensure",
       title: "NAPLEX & MPJE Prep Mentoring",
@@ -398,7 +462,11 @@ const mentorPrograms: LandingProgramCard[][] = [
         "Exam strategy, study plans, and accountability from licensed pharmacist mentors.",
       rating: 4.7,
       reviewCount: 318,
-      instructor: { name: "Maria Lopez", avatar: "https://i.pravatar.cc/40?u=marialopez", enrolled: 720 },
+      instructor: {
+        name: "Maria Lopez",
+        avatar: "https://i.pravatar.cc/40?u=marialopez",
+        enrolled: 720,
+      },
       price: 35.0,
       duration: "5 sessions",
     },
@@ -408,7 +476,8 @@ const mentorPrograms: LandingProgramCard[][] = [
 const instructorPrograms: LandingProgramCard[][] = [
   [
     {
-      image: "https://images.pexels.com/photos/4307849/pexels-photo-4307849.jpeg?auto=compress&cs=tinysrgb&w=600",
+      image:
+        "https://images.pexels.com/photos/4307849/pexels-photo-4307849.jpeg?auto=compress&cs=tinysrgb&w=600",
       imageAlt: "Instructor teaching online — Ketut Subiyanto on Pexels",
       category: "Creator",
       title: "Launch Your First Pharmacy Course",
@@ -416,12 +485,17 @@ const instructorPrograms: LandingProgramCard[][] = [
         "Step-by-step playbook for outlining modules, recording lessons, and publishing on PharmLMS.",
       rating: 4.9,
       reviewCount: 184,
-      instructor: { name: "PharmLMS Team", avatar: "https://i.pravatar.cc/40?u=pharmlms", enrolled: 1200 },
+      instructor: {
+        name: "PharmLMS Team",
+        avatar: "https://i.pravatar.cc/40?u=pharmlms",
+        enrolled: 1200,
+      },
       price: 0,
       duration: "Free guide",
     },
     {
-      image: "https://images.pexels.com/photos/8312669/pexels-photo-8312669.jpeg?auto=compress&cs=tinysrgb&w=600",
+      image:
+        "https://images.pexels.com/photos/8312669/pexels-photo-8312669.jpeg?auto=compress&cs=tinysrgb&w=600",
       imageAlt: "Pharmacist educator — Dayana Joseph on Pexels",
       category: "Growth",
       title: "Grow Your Student Audience",
@@ -429,12 +503,17 @@ const instructorPrograms: LandingProgramCard[][] = [
         "Marketing tips, pricing models, and retention tactics for clinical educators.",
       rating: 4.6,
       reviewCount: 97,
-      instructor: { name: "Albert Flores", avatar: "https://i.pravatar.cc/40?u=albertflores", enrolled: 430 },
+      instructor: {
+        name: "Albert Flores",
+        avatar: "https://i.pravatar.cc/40?u=albertflores",
+        enrolled: 430,
+      },
       price: 0,
       duration: "Toolkit",
     },
     {
-      image: "https://images.pexels.com/photos/8199252/pexels-photo-8199252.jpeg?auto=compress&cs=tinysrgb&w=600",
+      image:
+        "https://images.pexels.com/photos/8199252/pexels-photo-8199252.jpeg?auto=compress&cs=tinysrgb&w=600",
       imageAlt: "Course creation — Yan Krukau on Pexels",
       category: "Platform",
       title: "Course Quality Checklist",
@@ -442,7 +521,11 @@ const instructorPrograms: LandingProgramCard[][] = [
         "Standards for evidence-based content, assessments, and learner outcomes on PharmLMS.",
       rating: 4.8,
       reviewCount: 203,
-      instructor: { name: "Theresa Webb", avatar: "https://i.pravatar.cc/40?u=theresawebb", enrolled: 650 },
+      instructor: {
+        name: "Theresa Webb",
+        avatar: "https://i.pravatar.cc/40?u=theresawebb",
+        enrolled: 650,
+      },
       price: 0,
       duration: "Resource",
     },
@@ -464,16 +547,26 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
         { highlight: "Career", after: " Path" },
       ],
 
-      image: "https://images.pexels.com/photos/8199174/pexels-photo-8199174.jpeg?auto=compress&cs=tinysrgb&w=600",
-      
+      image:
+        "https://images.pexels.com/photos/8199174/pexels-photo-8199174.jpeg?auto=compress&cs=tinysrgb&w=600",
+
       subcopy:
         "Learn clinical pharmacy skills with PharmLMS. The latest online learning system and material that help your knowledge growing.",
       primaryCta: { label: "Get Started", href: "/student/signup" },
       secondaryCta: { label: "Watch Demo", href: "/student/browse" },
+      demoVideoUrl: DEFAULT_HERO_DEMO_VIDEO_URL,
       badges: [
         { icon: "BookOpen", label: "Evidence-Based Practice" },
-        { icon: "Briefcase", label: "Patient-Centered", imageSrc: "/assets/Briefcase.png" },
-        { icon: "Lightbulb", label: "Critical Thinking", imageSrc: "/assets/idea.svg" },
+        {
+          icon: "Briefcase",
+          label: "Patient-Centered",
+          imageSrc: "/assets/Briefcase.png",
+        },
+        {
+          icon: "Lightbulb",
+          label: "Critical Thinking",
+          imageSrc: "/assets/idea.svg",
+        },
       ],
     },
     services: {
@@ -550,14 +643,21 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
         {
           image:
             "https://images.pexels.com/photos/7693189/pexels-photo-7693189.jpeg?auto=compress&cs=tinysrgb&w=600",
-          imageAlt: "Team collaborating in modern office — Yan Krukau on Pexels",
+          imageAlt:
+            "Team collaborating in modern office — Yan Krukau on Pexels",
           date: "November 16, 2024",
           title: "Three Pillars of Patient Delight",
           excerpt:
             "Patient satisfaction can be experienced viscerally, behaviourally, and reflectively. A great clinical interaction is ...",
           tags: [
-            { label: "Research", color: "bg-pink-50 text-pink-600 border-pink-100" },
-            { label: "Clinical UX", color: "bg-blue-50 text-blue-600 border-blue-100" },
+            {
+              label: "Research",
+              color: "bg-pink-50 text-pink-600 border-pink-100",
+            },
+            {
+              label: "Clinical UX",
+              color: "bg-blue-50 text-blue-600 border-blue-100",
+            },
           ],
         },
         {
@@ -569,22 +669,38 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
           excerpt:
             "Evidence-based principles can be applied consistently throughout the process of creating a polished therapeutic map...",
           tags: [
-            { label: "Research", color: "bg-pink-50 text-pink-600 border-pink-100" },
-            { label: "Pharmacology", color: "bg-indigo-50 text-indigo-600 border-indigo-100" },
+            {
+              label: "Research",
+              color: "bg-pink-50 text-pink-600 border-pink-100",
+            },
+            {
+              label: "Pharmacology",
+              color: "bg-indigo-50 text-indigo-600 border-indigo-100",
+            },
           ],
         },
         {
           image:
             "https://images.pexels.com/photos/7640741/pexels-photo-7640741.jpeg?auto=compress&cs=tinysrgb&w=600",
-          imageAlt: "Colleagues in collaborative meeting — Yan Krukau on Pexels",
+          imageAlt:
+            "Colleagues in collaborative meeting — Yan Krukau on Pexels",
           date: "March 13, 2024",
           title: "Agile Development in Clinical Education and Usability",
           excerpt:
             "Agile methods aim to overcome usability barriers in traditional education, but post new threats to learning quality.",
           tags: [
-            { label: "Programming", color: "bg-amber-50 text-amber-600 border-amber-100" },
-            { label: "Research", color: "bg-violet-50 text-violet-600 border-violet-100" },
-            { label: "Developments", color: "bg-rose-50 text-rose-600 border-rose-100" },
+            {
+              label: "Programming",
+              color: "bg-amber-50 text-amber-600 border-amber-100",
+            },
+            {
+              label: "Research",
+              color: "bg-violet-50 text-violet-600 border-violet-100",
+            },
+            {
+              label: "Developments",
+              color: "bg-rose-50 text-rose-600 border-rose-100",
+            },
           ],
           featured: true,
         },
@@ -618,7 +734,8 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
       subcopy:
         "Mentor pharmacy students and early-career pharmacists on PharmLMS. Offer 1:1 guidance, residency prep, and career coaching on your schedule.",
       primaryCta: { label: "Become a Mentor", href: "/mentor/signup" },
-      secondaryCta: { label: "How Mentoring Works", href: "#services" },
+      secondaryCta: { label: "Watch Demo", href: "#services" },
+      demoVideoUrl: DEFAULT_HERO_DEMO_VIDEO_URL,
       badges: [
         { icon: "Users", label: "1:1 Guidance" },
         { icon: "Calendar", label: "Career Roadmaps" },
@@ -705,8 +822,14 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
           excerpt:
             "A simple agenda that keeps conversations focused on goals, feedback, and next steps for pharmacy students...",
           tags: [
-            { label: "Mentorship", color: "bg-emerald-50 text-emerald-700 border-emerald-100" },
-            { label: "Career", color: "bg-blue-50 text-blue-600 border-blue-100" },
+            {
+              label: "Mentorship",
+              color: "bg-emerald-50 text-emerald-700 border-emerald-100",
+            },
+            {
+              label: "Career",
+              color: "bg-blue-50 text-blue-600 border-blue-100",
+            },
           ],
         },
         {
@@ -718,8 +841,14 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
           excerpt:
             "Top questions from PharmD students—and how experienced mentors answer them with confidence...",
           tags: [
-            { label: "Residency", color: "bg-indigo-50 text-indigo-600 border-indigo-100" },
-            { label: "Coaching", color: "bg-pink-50 text-pink-600 border-pink-100" },
+            {
+              label: "Residency",
+              color: "bg-indigo-50 text-indigo-600 border-indigo-100",
+            },
+            {
+              label: "Coaching",
+              color: "bg-pink-50 text-pink-600 border-pink-100",
+            },
           ],
         },
         {
@@ -731,8 +860,14 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
           excerpt:
             "Credentials, specialties, and availability tips that help the right mentees find you on PharmLMS.",
           tags: [
-            { label: "Growth", color: "bg-amber-50 text-amber-600 border-amber-100" },
-            { label: "Platform", color: "bg-violet-50 text-violet-600 border-violet-100" },
+            {
+              label: "Growth",
+              color: "bg-amber-50 text-amber-600 border-amber-100",
+            },
+            {
+              label: "Platform",
+              color: "bg-violet-50 text-violet-600 border-violet-100",
+            },
           ],
           featured: true,
         },
@@ -766,7 +901,8 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
       subcopy:
         "Publish pharmacy courses on PharmLMS, reach students worldwide, and grow your teaching brand with built-in analytics and payments.",
       primaryCta: { label: "Start Teaching", href: "/tutor/signup" },
-      secondaryCta: { label: "View Creator Tools", href: "/tutor/login" },
+      secondaryCta: { label: "Watch Demo", href: "/tutor/login" },
+      demoVideoUrl: DEFAULT_HERO_DEMO_VIDEO_URL,
       badges: [
         { icon: "Video", label: "Course Builder" },
         { icon: "BarChart3", label: "Learner Analytics" },
@@ -853,8 +989,14 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
           excerpt:
             "Lighting, pacing, and slide design habits that keep clinical content engaging from module one...",
           tags: [
-            { label: "Teaching", color: "bg-emerald-50 text-emerald-700 border-emerald-100" },
-            { label: "Video", color: "bg-blue-50 text-blue-600 border-blue-100" },
+            {
+              label: "Teaching",
+              color: "bg-emerald-50 text-emerald-700 border-emerald-100",
+            },
+            {
+              label: "Video",
+              color: "bg-blue-50 text-blue-600 border-blue-100",
+            },
           ],
         },
         {
@@ -866,8 +1008,14 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
           excerpt:
             "How instructors balance accessibility, value, and sustainable revenue on PharmLMS...",
           tags: [
-            { label: "Monetization", color: "bg-amber-50 text-amber-600 border-amber-100" },
-            { label: "Strategy", color: "bg-indigo-50 text-indigo-600 border-indigo-100" },
+            {
+              label: "Monetization",
+              color: "bg-amber-50 text-amber-600 border-amber-100",
+            },
+            {
+              label: "Strategy",
+              color: "bg-indigo-50 text-indigo-600 border-indigo-100",
+            },
           ],
         },
         {
@@ -879,8 +1027,14 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
           excerpt:
             "Case-based quizzes and rubrics that align with pharmacy education outcomes and board-style thinking.",
           tags: [
-            { label: "Assessment", color: "bg-pink-50 text-pink-600 border-pink-100" },
-            { label: "Quality", color: "bg-violet-50 text-violet-600 border-violet-100" },
+            {
+              label: "Assessment",
+              color: "bg-pink-50 text-pink-600 border-pink-100",
+            },
+            {
+              label: "Quality",
+              color: "bg-violet-50 text-violet-600 border-violet-100",
+            },
           ],
           featured: true,
         },
@@ -899,6 +1053,8 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
   },
 };
 
-export function getLandingContent(audience: LandingAudience): LandingPageContent {
+export function getLandingContent(
+  audience: LandingAudience,
+): LandingPageContent {
   return landingContent[audience];
 }
