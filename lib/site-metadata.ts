@@ -27,8 +27,8 @@ export const siteUrl = resolveSiteUrl();
  * - `home.png` (optional) — homepage / marketing
  */
 export const ogImagePaths = {
-  default: "/og/default.png",
-  home: "/og/home.png",
+  default: "/og/default.jpg",
+  home: "/og/home.jpg",
 } as const;
 
 export const siteConfig = {
