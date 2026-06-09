@@ -1,0 +1,110 @@
+"use client";
+
+import { useState } from "react";
+import { ArrowRightIcon, List, X } from "@phosphor-icons/react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+
+const navLinks = [
+  { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
+  { label: "Courses", href: "/courses" },
+  { label: "Verify Certification", href: "/validate" },
+];
+
+const LandingHeader = () => {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <header className="sticky top-0 z-50 w-full border-b border-[var(--border)] bg-white/90 backdrop-blur-md">
+      <div className="mx-auto flex h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-10 xl:w-[90%]">
+        {/* Logo */}
+          <Link href="/" className="flex shrink-0 items-center text-xl font-bold sm:text-2xl">
+            <span className="text-[var(--ink-deep)]">Pharm</span>
+            <span className="text-[var(--accent)]">LMS</span>
+          </Link>
+
+        {/* Desktop Nav */}
+        <nav className="hidden items-center gap-6 font-semibold text-[var(--ink-deep)] lg:flex xl:gap-10">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-sm transition-colors duration-300 hover:text-[var(--accent)] xl:text-[15px]"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+
+        {/* Desktop Buttons */}
+        <span className="hidden items-center gap-2 lg:flex">
+          <Link href="/student/login">
+            <Button
+              variant="outline"
+              className="px-4 text-sm bg-white text-[var(--accent)] border-[var(--accent)] hover:bg-[var(--accent)] hover:text-white cursor-pointer transition-colors duration-300 xl:px-5 xl:text-[15px]"
+            >
+              <span>Login</span>
+              <ArrowRightIcon className="ml-1" />
+            </Button>
+          </Link>
+          <Link href="/contact">
+            <Button
+              variant="outline"
+              className="px-4 text-sm bg-[var(--accent)] text-white border-[var(--accent)] hover:bg-[var(--accent-deep)] cursor-pointer transition-colors duration-300 xl:px-5 xl:text-[15px]"
+            >
+              <span>Contact Us</span>
+              <ArrowRightIcon className="ml-1" />
+            </Button>
+          </Link>
+        </span>
+
+        {/* Mobile Menu Toggle */}
+        <button
+          type="button"
+          onClick={() => setMobileOpen((v) => !v)}
+          className="flex items-center justify-center rounded-lg p-2 text-[var(--ink-deep)] hover:bg-slate-100 lg:hidden"
+          aria-label="Toggle navigation"
+        >
+          {mobileOpen ? <X className="h-5 w-5" /> : <List className="h-5 w-5" />}
+        </button>
+      </div>
+
+      {/* Mobile Slide-out Menu */}
+      {mobileOpen && (
+        <div className="border-t border-[var(--border)] bg-white px-4 pb-6 pt-3 lg:hidden">
+          <nav className="flex flex-col gap-1">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileOpen(false)}
+                className="rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--ink-deep)] transition-colors hover:bg-accent-soft hover:text-[var(--accent)]"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="mt-4 flex gap-3">
+            <Link
+              href="/student/login"
+              onClick={() => setMobileOpen(false)}
+              className="flex-1 rounded-lg border border-[var(--accent)] py-3 text-center text-sm font-semibold text-[var(--accent)] transition-colors hover:bg-[var(--accent)] hover:text-white"
+            >
+              Login
+            </Link>
+            <Link
+              href="/contact"
+              onClick={() => setMobileOpen(false)}
+              className="flex-1 rounded-lg bg-[var(--accent)] py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-[var(--accent-deep)]"
+            >
+              Contact Us
+            </Link>
+          </div>
+        </div>
+      )}
+    </header>
+  );
+};
+
+export default LandingHeader;

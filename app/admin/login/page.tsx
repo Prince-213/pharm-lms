@@ -1,11 +1,11 @@
-import { AuthPageShell } from "@/components/auth/auth-page-shell";
-import { CrossSectorSessionGate } from "@/components/auth/cross-sector-session-gate";
-import { LoginForm } from "@/components/auth/login-form";
+import { AuthPageShell } from "@/auth/auth-page-shell";
+import { CrossSectorSessionGate } from "@/auth/cross-sector-session-gate";
+import { LoginForm } from "@/auth/login-form";
 import { UserRole } from "@/generated/prisma/enums";
 
 export default function AdminLoginPage() {
   return (
-    <AuthPageShell>
+    <AuthPageShell actorType="student" mode="login">
       <CrossSectorSessionGate expectedRole={UserRole.ADMIN}>
         <LoginForm
           actorType="admin"

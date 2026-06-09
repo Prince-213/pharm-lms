@@ -11,7 +11,7 @@ import {
   type AppIcon,
 } from "@/lib/icons/client";
 import { useState, useEffect } from "react";
-import { LogoutButton } from "@/components/auth/logout-button";
+import { LogoutButton } from "@/auth/logout-button";
 
 export type NavItem = {
   href: string;
@@ -25,7 +25,11 @@ type DashboardShellProps = {
   title: string;
 };
 
-export function DashboardShell({ children, navItems, title }: DashboardShellProps) {
+export function DashboardShell({
+  children,
+  navItems,
+  title,
+}: DashboardShellProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const pathname = usePathname();
 
@@ -48,13 +52,16 @@ export function DashboardShell({ children, navItems, title }: DashboardShellProp
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-50 w-72 transform bg-[var(--header)] text-[var(--header-fg)] transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 sm:w-64",
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="flex h-16 items-center border-b border-white/10 px-6">
-            <Link href="/" className="font-display text-lg font-bold uppercase tracking-wider">
+            <Link
+              href="/"
+              className="font-display text-lg font-bold uppercase tracking-wider"
+            >
               PharmLMS
             </Link>
           </div>
@@ -63,7 +70,9 @@ export function DashboardShell({ children, navItems, title }: DashboardShellProp
           <nav className="flex-1 overflow-y-auto py-6 px-4">
             <ul className="space-y-1">
               {navItems.map((item) => {
-                const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                const active =
+                  pathname === item.href ||
+                  pathname.startsWith(`${item.href}/`);
                 return (
                   <li key={item.href}>
                     <Link
@@ -72,10 +81,17 @@ export function DashboardShell({ children, navItems, title }: DashboardShellProp
                         "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                         active
                           ? "bg-[var(--primary)] text-white shadow-sm"
-                          : "text-[var(--header-fg-muted)] hover:bg-white/5 hover:text-[var(--header-fg)]"
+                          : "text-[var(--header-fg-muted)] hover:bg-white/5 hover:text-[var(--header-fg)]",
                       )}
                     >
-                      <item.icon className={cn("h-5 w-5", active ? "text-white" : "text-[var(--header-fg-muted)]")} />
+                      <item.icon
+                        className={cn(
+                          "h-5 w-5",
+                          active
+                            ? "text-white"
+                            : "text-[var(--header-fg-muted)]",
+                        )}
+                      />
                       {item.label}
                       {active && <ChevronRight className="ml-auto h-4 w-4" />}
                     </Link>
@@ -87,7 +103,10 @@ export function DashboardShell({ children, navItems, title }: DashboardShellProp
 
           {/* User / Logout */}
           <div className="border-t border-white/10 p-4">
-             <LogoutButton variant="onDark" className="w-full justify-start gap-3 px-3 py-2.5 text-sm font-medium text-[var(--header-fg-muted)] hover:bg-white/5 hover:text-[var(--header-fg)]" />
+            <LogoutButton
+              variant="onDark"
+              className="w-full justify-start gap-3 px-3 py-2.5 text-sm font-medium text-[var(--header-fg-muted)] hover:bg-white/5 hover:text-[var(--header-fg)]"
+            />
           </div>
         </div>
       </aside>
@@ -107,20 +126,18 @@ export function DashboardShell({ children, navItems, title }: DashboardShellProp
               {title}
             </h1>
           </div>
-          
+
           <div className="flex items-center gap-4">
             {/* Can add notifications/profile here like the template */}
             <div className="h-8 w-8 rounded-full bg-[var(--primary-soft)] flex items-center justify-center text-[var(--primary)] font-bold text-xs">
-               AD
+              AD
             </div>
           </div>
         </header>
 
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto bg-[var(--background)] p-4 md:p-6 lg:p-8">
-          <div className="mx-auto max-w-7xl">
-            {children}
-          </div>
+          <div className="mx-auto max-w-7xl">{children}</div>
         </main>
       </div>
     </div>

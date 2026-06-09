@@ -14,17 +14,23 @@ import {
   GraduationCap,
   ListOrdered,
 } from "lucide-react";
-import { LogoutButton } from "@/components/auth/logout-button";
+import { LogoutButton } from "@/auth/logout-button";
 import { cn } from "@/lib/utils";
 import { useProgress } from "@/lib/student/progress-context";
-import { 
-  Tooltip, 
-  TooltipProvider, 
-  TooltipContent, 
-  TooltipTrigger 
+import {
+  Tooltip,
+  TooltipProvider,
+  TooltipContent,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -164,7 +170,7 @@ export function CourseSessionShell({
     const main = document.querySelector("main");
     if (!main) return;
     const handleScroll = () => {
-       setScrolled(main.scrollTop > 100);
+      setScrolled(main.scrollTop > 100);
     };
     main.addEventListener("scroll", handleScroll);
     return () => main.removeEventListener("scroll", handleScroll);
@@ -175,14 +181,19 @@ export function CourseSessionShell({
       <div className="flex h-screen flex-col bg-[var(--background)] text-[var(--foreground)] overflow-hidden">
         {/* ─── Sleek Top Progress Bar ─── */}
         <div className="fixed top-0 left-0 right-0 z-[75] h-1 w-full bg-slate-100 md:pl-[60px]">
-          <Progress value={displayPct} className="h-1 rounded-none bg-transparent" />
+          <Progress
+            value={displayPct}
+            className="h-1 rounded-none bg-transparent"
+          />
         </div>
 
         {/* ─── Fixed Top Header ─── */}
-        <header className={cn(
-          "fixed inset-x-0 top-0 z-[60] flex items-center justify-between gap-3 border-b border-white/8 bg-[var(--header)]/90 px-3 text-[var(--header-fg)] backdrop-blur-lg transition-all duration-300 sm:px-6 md:pl-20",
-          scrolled ? "h-12 opacity-90 mt-0" : "h-16 mt-1"
-        )}>
+        <header
+          className={cn(
+            "fixed inset-x-0 top-0 z-[60] flex items-center justify-between gap-3 border-b border-white/8 bg-[var(--header)]/90 px-3 text-[var(--header-fg)] backdrop-blur-lg transition-all duration-300 sm:px-6 md:pl-20",
+            scrolled ? "h-12 opacity-90 mt-0" : "h-16 mt-1",
+          )}
+        >
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
             <Link
               href="/student/dashboard"
@@ -215,14 +226,25 @@ export function CourseSessionShell({
             {/* Mobile Contents Trigger */}
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" size="sm" className="h-9 gap-2 border-white/20 bg-white/10 text-white hover:bg-white/20 lg:hidden">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 gap-2 border-white/20 bg-white/10 text-white hover:bg-white/20 lg:hidden"
+                >
                   <ListOrdered className="h-4 w-4" />
-                  <span className="text-xs font-bold uppercase tracking-wide">Contents</span>
+                  <span className="text-xs font-bold uppercase tracking-wide">
+                    Contents
+                  </span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[340px] p-0 border-l border-slate-200/50 bg-white/95 backdrop-blur-md">
+              <SheetContent
+                side="right"
+                className="w-[340px] p-0 border-l border-slate-200/50 bg-white/95 backdrop-blur-md"
+              >
                 <SheetHeader className="px-5 pt-6 pb-4 border-b border-slate-100">
-                  <SheetTitle className="font-display text-base font-bold text-slate-800">Course Curriculum</SheetTitle>
+                  <SheetTitle className="font-display text-base font-bold text-slate-800">
+                    Course Curriculum
+                  </SheetTitle>
                 </SheetHeader>
                 <ScrollArea className="h-full">
                   <div className="pb-20">{childrenSidebar}</div>
@@ -257,7 +279,10 @@ export function CourseSessionShell({
             <RailLink key={item.href} {...item} />
           ))}
 
-          <span className="my-2.5 h-px w-8 rounded-full bg-white/10" aria-hidden />
+          <span
+            className="my-2.5 h-px w-8 rounded-full bg-white/10"
+            aria-hidden
+          />
 
           {courseRailItems.map((item) => (
             <RailLink key={item.href} {...item} />
@@ -278,9 +303,7 @@ export function CourseSessionShell({
             </div>
 
             {/* ─── Desktop Curriculum Sidebar ─── */}
-            <aside
-              className="hidden lg:flex h-full w-full max-w-[340px] flex-col border-l border-slate-200/50 bg-white/80 backdrop-blur-md"
-            >
+            <aside className="hidden lg:flex h-full w-full max-w-[340px] flex-col border-l border-slate-200/50 bg-white/80 backdrop-blur-md">
               <ScrollArea className="flex-1">
                 <div className="min-h-0">{childrenSidebar}</div>
               </ScrollArea>
@@ -324,9 +347,14 @@ export function CourseSessionShell({
                 </span>
               </button>
             </SheetTrigger>
-            <SheetContent side="bottom" className="h-[80vh] rounded-t-3xl border-t border-slate-200/50 bg-white/95 backdrop-blur-lg p-0">
+            <SheetContent
+              side="bottom"
+              className="h-[80vh] rounded-t-3xl border-t border-slate-200/50 bg-white/95 backdrop-blur-lg p-0"
+            >
               <SheetHeader className="px-6 pt-6 pb-2">
-                <SheetTitle className="font-display text-lg font-bold">Curriculum</SheetTitle>
+                <SheetTitle className="font-display text-lg font-bold">
+                  Curriculum
+                </SheetTitle>
               </SheetHeader>
               <ScrollArea className="h-full px-2">
                 <div className="pb-32">{childrenSidebar}</div>

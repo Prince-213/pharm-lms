@@ -4,11 +4,22 @@ const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
   images: {
-     remotePatterns: [
+    remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'images.pexels.com',
-        
+        protocol: "https",
+        hostname: "images.pexels.com",
+      },
+      {
+        protocol: "https",
+        hostname: "i.pravatar.cc",
+      },
+      {
+        protocol: "https",
+        hostname: "pharm-lms-assets.e873083c40e80f37213e308a37eda200.r2.cloudflarestorage.com",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
       },
     ],
   },

@@ -1,7 +1,7 @@
 "use client";
 
 import { SessionProvider } from "next-auth/react";
-import { SessionIdleExpiry } from "@/components/auth/session-idle-expiry";
+import { SessionIdleExpiry } from "@/auth/session-idle-expiry";
 
 export function SessionProviderWrapper({
   children,

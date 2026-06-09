@@ -98,7 +98,7 @@ export function HeroSection({ audience = "student" }: HeroSectionProps) {
             )}
           </div>
 
-          <div className="mt-12 flex flex-wrap gap-8 text-base font-medium text-slate-600">
+          <div className="mt-12 flex flex-wrap gap-4 text-base font-medium text-slate-600 lg:gap-8">
             {hero.badges.map((badge) => {
               const Icon = badgeIcons[badge.icon];
               return (

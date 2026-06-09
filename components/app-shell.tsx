@@ -10,7 +10,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { UserMenu } from "@/components/auth/user-menu";
+import { UserMenu } from "@/auth/user-menu";
 import { HeaderNotificationBell } from "@/components/notifications/header-notification-bell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
