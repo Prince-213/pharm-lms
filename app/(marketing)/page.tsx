@@ -4,12 +4,10 @@ import { EmpowerSection } from "@/components/landing/empower-section";
 import { FAQSection } from "@/components/landing/faq-section";
 import { FeaturedCoursesSection } from "@/components/landing/featured-courses-section";
 import { JourneySection } from "@/components/landing/journey-section";
-import { LandingFooter } from "@/components/landing/landing-footer";
-import LandingHeader from "@/components/landing/header";
 import { NewsletterSection } from "@/components/landing/newsletter-section";
 import { LeadingProfessionalsSection } from "@/components/landing/leading-professionals-section";
-import { ScrollToTopButton } from "@/components/landing/scroll-to-top-button";
 import { WhatLearnersSaySection } from "@/components/landing/what-learners-say-section";
+import { AnimatedSection } from "@/components/landing/animated-section";
 import HomeHeroSection from "@/components/landing/home-hero-section";
 import { auth } from "@/auth";
 import { loadLandingPopularCoursePages } from "@/lib/landing/load-landing-data";
@@ -33,22 +31,46 @@ export default async function Home() {
     : undefined;
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-      <main className="flex w-full min-h-screen flex-col">
-      
+    <main className="flex w-full min-h-screen flex-col">
+      <AnimatedSection delay={0}>
         <HomeHeroSection />
+      </AnimatedSection>
+
+      <AnimatedSection delay={0.1}>
         <CategoryCarousel />
+      </AnimatedSection>
+
+      <AnimatedSection delay={0.1}>
         <EmpowerSection />
-       {/*  <CourseCategorySection /> */}
+      </AnimatedSection>
+
+      <AnimatedSection delay={0.1}>
+        <CourseCategorySection />
+      </AnimatedSection>
+
+      <AnimatedSection delay={0.1}>
         <FeaturedCoursesSection courses={dbCourses} />
+      </AnimatedSection>
+
+      <AnimatedSection delay={0.1}>
         <JourneySection />
+      </AnimatedSection>
+
+      <AnimatedSection delay={0.1}>
         <WhatLearnersSaySection />
+      </AnimatedSection>
+
+      <AnimatedSection delay={0.1}>
         <LeadingProfessionalsSection />
+      </AnimatedSection>
+
+      <AnimatedSection delay={0.1}>
         <FAQSection />
+      </AnimatedSection>
+
+      <AnimatedSection delay={0.1}>
         <NewsletterSection />
-      </main>
-      
-      <ScrollToTopButton />
-    </div>
+      </AnimatedSection>
+    </main>
   );
 }

@@ -1,8 +1,5 @@
 import { Suspense } from "react";
 import { CoursesCatalogSection } from "@/components/courses/courses-catalog-section";
-import { LandingFooter } from "@/components/landing/landing-footer";
-import LandingHeader from "@/components/landing/header";
-import { ScrollToTopButton } from "@/components/landing/scroll-to-top-button";
 import {
   getCatalogFacets,
   searchPublishedCourses,
@@ -53,7 +50,6 @@ export default async function CoursesPage({
 
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-    
       <main>
         <Suspense fallback={null}>
           <CoursesCatalogSection
@@ -69,8 +65,6 @@ export default async function CoursesPage({
           />
         </Suspense>
       </main>
-    
-      <ScrollToTopButton />
     </div>
   );
 }

@@ -19,7 +19,7 @@ const LandingHeader = () => {
     <header className="sticky top-0 z-50 w-full border-b border-[var(--border)] bg-white/90 backdrop-blur-md">
       <div className="mx-auto flex h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-10 xl:w-[90%]">
         {/* Logo */}
-          <Link href="/" className="flex shrink-0 items-center text-xl font-bold sm:text-2xl">
+          <Link href="/"             className="flex shrink-0 items-center text-xl font-bold sm:text-2xl hover:scale-[1.02] transition-transform">
             <span className="text-[var(--ink-deep)]">Pharm</span>
             <span className="text-[var(--accent)]">LMS</span>
           </Link>
@@ -30,7 +30,7 @@ const LandingHeader = () => {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm transition-colors duration-300 hover:text-[var(--accent)] xl:text-[15px]"
+              className="relative text-sm transition-colors duration-300 hover:text-[var(--accent)] xl:text-[15px] after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-[var(--accent)] after:transition-all after:duration-300 hover:after:w-full"
             >
               {link.label}
             </Link>
@@ -42,7 +42,7 @@ const LandingHeader = () => {
           <Link href="/student/login">
             <Button
               variant="outline"
-              className="px-4 text-sm bg-white text-[var(--accent)] border-[var(--accent)] hover:bg-[var(--accent)] hover:text-white cursor-pointer transition-colors duration-300 xl:px-5 xl:text-[15px]"
+              className="px-4 text-sm bg-white text-[var(--accent)] border-[var(--accent)] hover:bg-[var(--accent)] hover:text-white cursor-pointer transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] xl:px-5 xl:text-[15px]"
             >
               <span>Login</span>
               <ArrowRightIcon className="ml-1" />
@@ -51,7 +51,7 @@ const LandingHeader = () => {
           <Link href="/contact">
             <Button
               variant="outline"
-              className="px-4 text-sm bg-[var(--accent)] text-white border-[var(--accent)] hover:bg-[var(--accent-deep)] cursor-pointer transition-colors duration-300 xl:px-5 xl:text-[15px]"
+              className="px-4 text-sm bg-[var(--accent)] text-white border-[var(--accent)] hover:bg-[var(--accent-deep)] cursor-pointer transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] xl:px-5 xl:text-[15px]"
             >
               <span>Contact Us</span>
               <ArrowRightIcon className="ml-1" />

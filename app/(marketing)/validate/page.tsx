@@ -1,9 +1,7 @@
 import { FAQSection } from "@/components/landing/faq-section";
 import { FeaturedCoursesSection } from "@/components/landing/featured-courses-section";
-import { LandingFooter } from "@/components/landing/landing-footer";
 import { LeadingProfessionalsSection } from "@/components/landing/leading-professionals-section";
 import { NewsletterSection } from "@/components/landing/newsletter-section";
-import { ScrollToTopButton } from "@/components/landing/scroll-to-top-button";
 import { ValidateHeroSection } from "@/components/landing/validate-hero-section";
 import { WhatLearnersSaySection } from "@/components/landing/what-learners-say-section";
 import { auth } from "@/auth";
@@ -37,8 +35,6 @@ export default async function ValidatePage() {
         <FAQSection />
         <NewsletterSection />
       </main>
-     
-      <ScrollToTopButton />
     </div>
   );
 }
