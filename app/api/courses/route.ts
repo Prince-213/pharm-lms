@@ -1,8 +1,29 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { CourseStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { createCourseSchema } from "@/lib/validation/lms";
+import { searchPublishedCourses } from "@/lib/courses/public-catalog";
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = request.nextUrl;
+  const q = (searchParams.get("q") ?? "").trim().slice(0, 80);
+  const category = (searchParams.get("category") ?? "").trim().slice(0, 80);
+  const take = Math.min(parseInt(searchParams.get("take") ?? "6", 10) || 6, 20);
+
+  try {
+    const courses = await searchPublishedCourses({
+      q: q || undefined,
+      category: category || undefined,
+      take,
+    });
+
+    return NextResponse.json({ courses });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Failed to search courses.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
 
 export async function POST(request: Request) {
   const session = await auth();

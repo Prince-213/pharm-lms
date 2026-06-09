@@ -39,7 +39,7 @@ export default async function Home() {
         <HomeHeroSection />
         <CategoryCarousel />
         <EmpowerSection />
-        <CourseCategorySection />
+       {/*  <CourseCategorySection /> */}
         <FeaturedCoursesSection courses={dbCourses} />
         <JourneySection />
         <WhatLearnersSaySection />

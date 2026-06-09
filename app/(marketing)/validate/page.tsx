@@ -37,7 +37,7 @@ export default async function ValidatePage() {
         <FAQSection />
         <NewsletterSection />
       </main>
-      <LandingFooter />
+     
       <ScrollToTopButton />
     </div>
   );

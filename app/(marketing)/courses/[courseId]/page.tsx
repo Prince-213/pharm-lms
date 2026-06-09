@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { CourseCatalogDetail } from "@/components/student/course-catalog-detail";
 import { LandingFooter } from "@/components/landing/landing-footer";
-import { LandingNavbar } from "@/components/landing/landing-navbar";
+import LandingHeader from "@/components/landing/header";
 import { UserRole } from "@/generated/prisma/enums";
 import { loadCourseCatalogDetail } from "@/lib/course-catalog-detail";
 import { loadPublicCourseCatalogDetail } from "@/lib/courses/public-catalog";
@@ -24,14 +24,12 @@ export default async function PublicCourseDetailPage({
 
     return (
       <div className="min-h-screen bg-[var(--background)]">
-        <LandingNavbar audience="student" />
         <CourseCatalogDetail
           variant="catalog"
           interaction="student"
           data={data}
           catalogNavOverride={{ href: "/courses", label: "Catalog" }}
         />
-        <LandingFooter />
       </div>
     );
   }
@@ -46,15 +44,18 @@ export default async function PublicCourseDetailPage({
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
-      <LandingNavbar audience="student" />
-      <CourseCatalogDetail
-        variant="catalog"
-        interaction="guest"
-        data={data}
-        catalogNavOverride={{ href: "/courses", label: "Catalog" }}
-        guestAuth={{ callbackUrl }}
-      />
-      <LandingFooter />
+      <main>
+        <CourseCatalogDetail
+          variant="catalog"
+          interaction="guest"
+          data={data}
+          catalogNavOverride={{ href: "/courses", label: "Catalog" }}
+          guestAuth={{ callbackUrl }}
+        />
+      </main>
+
+      <br />
+     
     </div>
   );
 }
