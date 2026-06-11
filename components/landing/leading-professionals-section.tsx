@@ -44,7 +44,7 @@ export function LeadingProfessionalsSection() {
 
           <Link
             href="/courses"
-            className="inline-flex items-center justify-center rounded-[10px] bg-[var(--emerald)] px-7 py-4.5 text-sm font-semibold text-white  transition-all hover:bg-[#6B4CE6] hover:shadow-[0_12px_32px_rgba(123,92,255,0.45)] shrink-0"
+            className="inline-flex items-center justify-center rounded-[10px] bg-[var(--emerald)] px-7 py-4.5 text-sm font-semibold text-white  transition-all hover:bg-[var(--primary-strong)] hover:shadow-[0_12px_32px_rgba(30,64,175,0.45)] shrink-0"
           >
             View All Courses
           </Link>

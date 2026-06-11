@@ -161,14 +161,20 @@ const HomeHeroSection = () => {
                   type="text"
                   value={query}
                   onChange={(e) => handleInputChange(e.target.value)}
-                  onFocus={() => { if (results.length > 0) setShowResults(true); }}
+                  onFocus={() => {
+                    if (results.length > 0) setShowResults(true);
+                  }}
                   className="outline-none border-none flex-1 pl-9 pr-3 text-sm placeholder:text-[var(--muted-soft)]"
                   placeholder="Find Courses..."
                 />
                 {query && (
                   <button
                     type="button"
-                    onClick={() => { setQuery(""); setResults([]); setShowResults(false); }}
+                    onClick={() => {
+                      setQuery("");
+                      setResults([]);
+                      setShowResults(false);
+                    }}
                     className="mr-2 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--muted-soft)]/20 text-[var(--muted-soft)] hover:bg-[var(--muted-soft)]/30"
                   >
                     <X className="h-3 w-3" />
@@ -180,7 +186,7 @@ const HomeHeroSection = () => {
             {/* Search Button */}
             <button
               type="submit"
-              className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-[var(--emerald)] flex items-center justify-center shrink-0 hover:bg-[#6B4CE6] transition-colors"
+              className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-[var(--emerald)] flex items-center justify-center shrink-0 hover:bg-[var(--primary-strong)] transition-colors"
             >
               <MagnifyingGlassIcon className="text-white w-5 h-5 sm:w-7 sm:h-7" />
             </button>
@@ -228,7 +234,8 @@ const HomeHeroSection = () => {
                       </p>
                     </div>
                     <div className="text-xs font-semibold text-[var(--accent)] shrink-0">
-                      {course.priceMinorUnits != null && course.priceMinorUnits > 0
+                      {course.priceMinorUnits != null &&
+                      course.priceMinorUnits > 0
                         ? `$${(course.priceMinorUnits / 100).toFixed(2)}`
                         : "Free"}
                     </div>

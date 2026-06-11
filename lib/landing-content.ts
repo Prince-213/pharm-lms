@@ -551,7 +551,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
         "https://images.pexels.com/photos/8199174/pexels-photo-8199174.jpeg?auto=compress&cs=tinysrgb&w=600",
 
       subcopy:
-        "Learn clinical pharmacy skills with PharmLMS. The latest online learning system and material that help your knowledge growing.",
+        "Learn clinical and digital health skills with PharmLMS. Africa's first pharmacy-specific education platform designed to equip you for the roles defining healthcare.",
       primaryCta: { label: "Get Started", href: "/student/signup" },
       secondaryCta: { label: "Watch Demo", href: "/student/browse" },
       demoVideoUrl: DEFAULT_HERO_DEMO_VIDEO_URL,
@@ -578,7 +578,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
       eyebrow: "Explore Programs",
       title: "Our Most Popular Class",
       description:
-        "Let's join our famous class, the knowledge provided will definitely be useful for you.",
+        "Join our expert-led programs, built around African clinical contexts and real-world case studies to advance your pharmacy career.",
       pages: studentPrograms,
       cta: { label: "Explore All Programs", href: "/student/browse" },
     },
@@ -586,7 +586,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
       eyebrow: "Tutors",
       title: "Meet the Heroes",
       description:
-        "On PharmLMS, instructors from all over the world instruct millions of students. We offer the knowledge and abilities.",
+        "On PharmLMS, leading African and global experts equip pharmacists to move beyond dispensing and into digital health roles.",
       members: [
         {
           name: "Theresa Webb",
@@ -732,7 +732,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
       ],
       image: "/assets/mentor.jpg",
       subcopy:
-        "Mentor pharmacy students and early-career pharmacists on PharmLMS. Offer 1:1 guidance, residency prep, and career coaching on your schedule.",
+        "Mentor Africa's next generation of pharmacists on PharmLMS. Offer 1:1 guidance, digital health coaching, and career roadmaps on your schedule.",
       primaryCta: { label: "Become a Mentor", href: "/mentor/signup" },
       secondaryCta: { label: "Watch Demo", href: "#services" },
       demoVideoUrl: DEFAULT_HERO_DEMO_VIDEO_URL,
@@ -751,7 +751,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
       eyebrow: "Popular Mentorship",
       title: "Mentorship Students Love",
       description:
-        "Offer structured packages like these—or build your own—and connect with learners who need your expertise.",
+        "Offer structured mentorship packages built around clinical realities, and connect with pharmacists eager to enter the digital health economy.",
       pages: mentorPrograms,
       cta: { label: "Start Mentoring Today", href: "/mentor/signup" },
     },
@@ -759,7 +759,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
       eyebrow: "Mentors",
       title: "Meet Our Mentors",
       description:
-        "Experienced pharmacists on PharmLMS help students navigate rotations, licensure, and career decisions.",
+        "Experienced practitioners on PharmLMS help students navigate clinical rotations, digital health pathways, and major career transitions.",
       members: [
         {
           name: "Dr. Sarah Chen",
@@ -899,7 +899,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
       ],
       image: "/assets/tutor.jpg",
       subcopy:
-        "Publish pharmacy courses on PharmLMS, reach students worldwide, and grow your teaching brand with built-in analytics and payments.",
+        "Publish pharmacy courses on PharmLMS, reach practitioners across Africa, and grow your teaching brand on the continent's first pharmacy-specific platform.",
       primaryCta: { label: "Start Teaching", href: "/tutor/signup" },
       secondaryCta: { label: "Watch Demo", href: "/tutor/login" },
       demoVideoUrl: DEFAULT_HERO_DEMO_VIDEO_URL,
@@ -918,7 +918,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
       eyebrow: "Creator Resources",
       title: "Tools & Guides for Instructors",
       description:
-        "Free resources to help you launch quality courses and attract engaged pharmacy students.",
+        "Free resources to help you launch quality courses, built for African clinical contexts, and attract engaged pharmacy professionals.",
       pages: instructorPrograms,
       cta: { label: "Create Your First Course", href: "/tutor/signup" },
     },
@@ -926,7 +926,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
       eyebrow: "Instructors",
       title: "Top Educators on PharmLMS",
       description:
-        "Pharmacists and educators publish clinical content that thousands of students rely on every day.",
+        "Pharmacists and digital health leaders publish clinical content that thousands of practitioners across Africa rely on every day.",
       members: [
         {
           name: "Theresa Webb",

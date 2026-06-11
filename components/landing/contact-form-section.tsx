@@ -13,7 +13,9 @@ export function ContactFormSection() {
     message: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -111,7 +113,7 @@ export function ContactFormSection() {
 
               <button
                 type="submit"
-                className="w-full rounded-full bg-[var(--emerald)] py-6 text-sm font-semibold text-white transition hover:bg-[#6B4CE6]"
+                className="w-full rounded-full bg-[var(--emerald)] py-6 text-sm font-semibold text-white transition hover:bg-[var(--primary-strong)]"
               >
                 Submit Now
               </button>
@@ -164,12 +166,7 @@ export function ContactFormSection() {
             {/* Contact Card */}
             <div className="flex items-center gap-5 rounded-[20px] bg-white p-6 lg:p-8">
               <div className="flex h-14 w-14 shrink-0 items-center justify-center text-[var(--emerald)]">
-                <Image
-                  src="/assets/call.png"
-                  width={120}
-                  height={120}
-                  alt=""
-                />
+                <Image src="/assets/call.png" width={120} height={120} alt="" />
               </div>
               <div>
                 <h3 className="font-display text-xl font-bold text-[var(--ink-deep)]">

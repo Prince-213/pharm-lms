@@ -80,7 +80,7 @@ export function CourseCategorySection() {
                   className="pointer-events-none absolute bottom-0 left-1/2 h-auto w-[112px] max-w-none -translate-x-1/2 object-contain opacity-90"
                   aria-hidden
                 />
-                <div className="relative z-10 flex h-[60px] w-[60px] items-center justify-center rounded-full bg-[#7B5CFF]">
+                <div className="relative z-10 flex h-[60px] w-[60px] items-center justify-center rounded-full bg-[var(--emerald)]">
                   <Image
                     src={category.icon}
                     alt=""
@@ -95,7 +95,7 @@ export function CourseCategorySection() {
                 {category.title}
               </h3>
 
-              <p className="mt-3 flex items-center justify-center gap-1 text-sm font-medium text-[#555555] transition-colors group-hover:text-[#7B5CFF] sm:text-[15px]">
+              <p className="mt-3 flex items-center justify-center gap-1 text-sm font-medium text-[#555555] transition-colors group-hover:text-[var(--emerald)] sm:text-[15px]">
                 {category.count} Courses
                 <span aria-hidden>→</span>
               </p>
@@ -106,7 +106,7 @@ export function CourseCategorySection() {
         <div className="mt-14 flex justify-center lg:mt-16">
           <Link
             href="/courses"
-            className="inline-flex items-center gap-2 rounded-[10px] bg-[#7B5CFF] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#6B4CE6] sm:px-8 sm:py-4 sm:text-[15px]"
+            className="inline-flex items-center gap-2 rounded-[10px] bg-[var(--emerald)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-strong)] sm:px-8 sm:py-4 sm:text-[15px]"
           >
             Explore All Categories
             <Image

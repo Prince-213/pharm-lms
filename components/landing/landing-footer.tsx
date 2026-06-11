@@ -63,8 +63,7 @@ export function LandingFooter() {
               <span className="text-[var(--accent)]">LMS</span>
             </Link>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-white">
-              At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis
-              praesentium voluptatum deleniti.
+              Africa's first pharmacy-specific digital health education platform - equipping pharmacists to move beyond dispensing and into the roles defining African healthcare.
             </p>
             <div className="mt-5 flex items-center gap-2.5">
               {[
@@ -131,15 +130,15 @@ export function LandingFooter() {
             <ul className="flex flex-col gap-3">
               <li className="flex items-center gap-2 text-sm text-white">
                 <Phone className="h-4 w-4 text-[var(--accent)] shrink-0" />
-                <span>(568) 367-987-237</span>
+                <span>+234 803 968 0912</span>
               </li>
               <li className="flex items-center gap-2 text-sm text-white">
                 <Mail className="h-4 w-4 text-[var(--accent)] shrink-0" />
-                <span>info@pharmlms.com</span>
+                <span>pharmanalyticsteam@gmail.com</span>
               </li>
               <li className="flex items-center gap-2 text-sm text-white">
                 <MapPin className="h-4 w-4 text-[var(--accent)] shrink-0" />
-                <span>463 7th Ave, NY 10018, USA</span>
+                <span>Across Africa</span>
               </li>
             </ul>
           </div>

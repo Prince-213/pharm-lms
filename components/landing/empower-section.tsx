@@ -42,7 +42,7 @@ export function EmpowerSection() {
           </div>
         </div>
 
-        <div className="relative flex items-center bg-[#7B5CFF] px-8 py-16 sm:px-12 lg:px-[72px] lg:py-[88px]">
+        <div className="relative flex items-center bg-[var(--emerald)] px-8 py-16 sm:px-12 lg:px-[72px] lg:py-[88px]">
           <div className="relative z-10 w-[80%]">
             <h2 className="text-4xl font-bold leading-[1.15] tracking-[-0.02em] text-white sm:text-[48px] lg:text-5xl">
               <span className="relative inline-block">
@@ -63,14 +63,14 @@ export function EmpowerSection() {
 
             <div className="mt-8 space-y-5 text-sm leading-[1.75] text-white/95 font-medium">
               <p>
-                PharmLMS is dedicated to helping learners around the world gain
-                valuable skills through engaging online courses, expert
-                guidance, and real-world projects.
+                PharmLMS is dedicated to equipping African pharmacists with the data,
+                technology, and health innovation skills needed to compete for
+                digital health roles.
               </p>
               <p>
-                With over 45,000 students from more than 100 countries, we
-                create an inclusive, interactive, and innovative learning
-                environment that encourages growth and success.
+                As Africa's first pharmacy-specific platform, we create an inclusive 
+                learning environment built around clinical contexts and real-world 
+                case studies that encourage growth and success.
               </p>
             </div>
 

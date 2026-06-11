@@ -92,7 +92,7 @@ export function VerifyCertificateModal({
             <button
               type="button"
               onClick={onClose}
-              className="mt-6 w-full rounded-full bg-[var(--emerald)] py-3 text-sm font-semibold text-white transition hover:bg-[#6B4CE6]"
+              className="mt-6 w-full rounded-full bg-[var(--emerald)] py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-strong)]"
             >
               Done
             </button>
@@ -109,7 +109,8 @@ export function VerifyCertificateModal({
               ID: {certificateId}
             </p>
             <p className="mt-4 text-center text-sm text-[var(--muted-soft)]">
-              {result.message || "The certificate ID you entered could not be found in our system. Please check and try again."}
+              {result.message ||
+                "The certificate ID you entered could not be found in our system. Please check and try again."}
             </p>
             <button
               type="button"

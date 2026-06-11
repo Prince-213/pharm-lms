@@ -43,9 +43,9 @@ export function AboutFreshSection() {
             {/* Description with purple left border */}
             <div className="border-l-2 border-[var(--emerald)] pl-5 mb-8">
               <p className="text-[var(--muted)] text-sm leading-relaxed lg:text-sm font-semibold">
-                Possessing a strong education is among the most important
-                advantages a person can hold. It profoundly impacts personal and
-                professional development.
+                Africa's digital health economy is growing rapidly, yet few platforms 
+                offer pharmacists a structured entry point. PharmLMS equips you to move 
+                beyond dispensing and into the roles defining African healthcare.
               </p>
             </div>
 
@@ -66,8 +66,8 @@ export function AboutFreshSection() {
                     Flexible Study Hours
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed text-[var(--muted-soft)]">
-                    Flexible scheduling empowers students to learn at their own
-                    pace and convenience.
+                    Flexible scheduling empowers you to master digital health and clinical 
+                    skills at your own pace and convenience.
                   </p>
                 </div>
               </div>
@@ -87,7 +87,7 @@ export function AboutFreshSection() {
                     Qualified Instructors
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed text-[var(--muted-soft)]">
-                    Every Instructor is certified and holds advanced degrees,
+                    Learn from leading practitioners shaping Africa&apos;s healthcare landscape,
                     ensuring you&apos;re guided by true professionals.
                   </p>
                 </div>
@@ -108,8 +108,8 @@ export function AboutFreshSection() {
                     Advance Your Career
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed text-[var(--muted-soft)]">
-                    Build confidence for job interviews through realistic
-                    practice sessions, detailed feedback, and presentation tips.
+                    Build the technical and clinical skills required to compete for 
+                    high-paying digital health roles through real-world case studies.
                   </p>
                 </div>
               </div>
@@ -119,7 +119,7 @@ export function AboutFreshSection() {
             <div className="mt-8">
               <Link
                 href="/courses"
-                className="inline-flex items-center justify-center rounded-full bg-[var(--emerald)] px-8 py-4.5 text-sm font-semibold text-white  transition-all hover:bg-[#6B4CE6] hover:shadow-[0_12px_32px_rgba(123,92,255,0.45)]"
+                className="inline-flex items-center justify-center rounded-full bg-[var(--emerald)] px-8 py-4.5 text-sm font-semibold text-white  transition-all hover:bg-[var(--primary-strong)] hover:shadow-[0_12px_32px_rgba(30,64,175,0.45)]"
               >
                 Know More
               </Link>

@@ -51,13 +51,12 @@ export function JourneySection() {
             <div className="mt-8 space-y-5 text-sm font-medium leading-[1.75] text-[#666666] sm:text-[15px]">
               <p>
                 Embark on a personalized learning path designed to help you
-                achieve your career goals, gain new skills, and explore
-                innovative knowledge areas.
+                transition from dispensing to decision-making in the growing digital health economy.
               </p>
               <p>
                 Our platform offers curated courses, expert guidance, and
-                interactive resources to make learning both engaging and
-                effective. Take the first step towards mastery today.
+                open-source tools built for pharmacists, by pharmacists. 
+                Take the first step towards your digital health career today.
               </p>
             </div>
 
