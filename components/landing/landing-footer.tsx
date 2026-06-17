@@ -58,9 +58,12 @@ export function LandingFooter() {
         <div className="grid gap-6 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4 lg:gap-10">
           {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <Link href="/" className="inline-block font-display text-2xl font-bold text-white">
-              <span>Pharm</span>
-              <span className="text-[var(--accent)]">LMS</span>
+            <Link href="/" className="inline-block">
+              <img
+                src="/assets/pharmlms-logo.png"
+                alt="PharmLMS"
+                className="h-8 w-auto sm:h-9 brightness-0 invert"
+              />
             </Link>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-white">
               Africa's first pharmacy-specific digital health education platform - equipping pharmacists to move beyond dispensing and into the roles defining African healthcare.
@@ -148,9 +151,12 @@ export function LandingFooter() {
       {/* Bottom bar */}
       <div className="border-t border-white/10">
         <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-10">
-          <p className="text-center text-sm text-white">
+          <p className="text-center text-sm text-white/60">
             {new Date().getFullYear()}{" "}
-            <span className="text-[var(--accent)]">PharmLMS</span> || All Rights Reserved
+            <span className="text-[var(--accent)]">PharmAnalytics EdTech</span>. All rights reserved.
+          </p>
+          <p className="text-center text-xs text-white/40 mt-1 font-mono tracking-wider uppercase">
+            EST · {new Date().getFullYear()} · FROM DISPENSING TO DECISION-MAKING
           </p>
         </div>
       </div>

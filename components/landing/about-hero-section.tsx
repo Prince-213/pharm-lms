@@ -51,7 +51,7 @@ export function AboutHeroSection() {
       {/* Full-width image section with floating card */}
       <div className="relative w-full">
         <img
-          src="/assets/mentor.jpg"
+          src="/assets/conny-schneider-xuTJZ7uD7PI-unsplash.jpg"
           alt="Online learning experience"
           className="h-72 w-full object-cover sm:h-80 lg:h-[60vh]"
         />
@@ -61,20 +61,20 @@ export function AboutHeroSection() {
           <div className="rounded-[20px] bg-white p-6 lg:px-8 lg:py-12 w-64 sm:w-72 lg:w-80">
             <div className="flex items-start justify-between mb-4">
               <span className="font-display text-4xl font-bold text-[var(--ink-deep)] lg:text-6xl">
-                25+
+                7+
               </span>
               {/* Award badge icon */}
               <div className="">
-                <CertificateIcon className=" w-12 h-12" />
+                <CertificateIcon className="w-12 h-12" />
               </div>
             </div>
             <h3 className="mb-2 font-display text-base font-bold text-[var(--ink-deep)] lg:text-lg">
-              Years of Experience
+              African Countries
             </h3>
             <p className="text-xs font-semibold leading-relaxed text-[var(--muted-soft)] lg:text-xs">
-              Built on 25+ years of educational expertise, our online programs
-              are designed to deliver engaging, results-driven learning
-              experiences.
+              Africa&apos;s first pharmacy-specific digital health education
+              platform — built by pharmacists for pharmacists, with reach
+              spanning 7+ countries across the continent.
             </p>
           </div>
         </div>

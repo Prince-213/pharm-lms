@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { ArrowRightIcon, List, X } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -19,9 +20,15 @@ const LandingHeader = () => {
     <header className="sticky top-0 z-50 w-full border-b border-[var(--border)] bg-white/90 backdrop-blur-md">
       <div className="mx-auto flex h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-10 xl:w-[90%]">
         {/* Logo */}
-          <Link href="/"             className="flex shrink-0 items-center text-xl font-bold sm:text-2xl hover:scale-[1.02] transition-transform">
-            <span className="text-[var(--ink-deep)]">Pharm</span>
-            <span className="text-[var(--accent)]">LMS</span>
+          <Link href="/" className="flex shrink-0 items-center hover:scale-[1.02] transition-transform">
+            <Image
+              src="/assets/pharmlms-logo.png"
+              alt="PharmLMS"
+              width={160}
+              height={40}
+              className="h-8 w-auto sm:h-10"
+              priority
+            />
           </Link>
 
         {/* Desktop Nav */}
@@ -51,7 +58,7 @@ const LandingHeader = () => {
           <Link href="/contact">
             <Button
               variant="outline"
-              className="px-4 text-sm bg-[var(--accent)] text-white border-[var(--accent)] hover:bg-[var(--accent-deep)] cursor-pointer transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] xl:px-5 xl:text-[15px]"
+              className="px-4 text-sm bg-[var(--primary)] text-white border-[var(--primary)] hover:bg-[var(--primary-strong)] cursor-pointer transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] xl:px-5 xl:text-[15px]"
             >
               <span>Contact Us</span>
               <ArrowRightIcon className="ml-1" />
@@ -96,7 +103,7 @@ const LandingHeader = () => {
             <Link
               href="/contact"
               onClick={() => setMobileOpen(false)}
-              className="flex-1 rounded-lg bg-[var(--accent)] py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-[var(--accent-deep)]"
+              className="flex-1 rounded-lg bg-[var(--primary)] py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-[var(--primary-strong)]"
             >
               Contact Us
             </Link>

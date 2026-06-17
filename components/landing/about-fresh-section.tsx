@@ -108,8 +108,8 @@ export function AboutFreshSection() {
                     Advance Your Career
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed text-[var(--muted-soft)]">
-                    Build the technical and clinical skills required to compete for 
-                    high-paying digital health roles through real-world case studies.
+                    Build the data, technology, and clinical skills required to move from 
+                    dispensing into the digital health roles defining African healthcare.
                   </p>
                 </div>
               </div>

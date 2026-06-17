@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import { ContactFormSection } from "@/components/landing/contact-form-section";
 import { ContactHeroSection } from "@/components/landing/contact-hero-section";
 import { NewsletterSection } from "@/components/landing/newsletter-section";
+
+export const metadata: Metadata = {
+  title: "Contact Us",
+  description:
+    "Get in touch with PharmLMS. Send us a message, visit our office, or call us. We're here to help with your pharmacy education journey.",
+  alternates: { canonical: "/contact" },
+};
 
 export default function ContactPage() {
   return (

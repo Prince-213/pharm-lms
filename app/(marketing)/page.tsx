@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { CategoryCarousel } from "@/components/landing/category-carousel";
 import { CourseCategorySection } from "@/components/landing/course-category-section";
 import { EmpowerSection } from "@/components/landing/empower-section";
@@ -11,6 +12,13 @@ import { AnimatedSection } from "@/components/landing/animated-section";
 import HomeHeroSection from "@/components/landing/home-hero-section";
 import { auth } from "@/auth";
 import { loadLandingPopularCoursePages } from "@/lib/landing/load-landing-data";
+
+export const metadata: Metadata = {
+  title: "Clinical Pharmacy Courses & Online Learning",
+  description:
+    "Discover top online pharmacy courses on PharmLMS. Learn clinical skills, patient safety, drug interactions, and more with expert instructors. Start learning today.",
+  alternates: { canonical: "/" },
+};
 
 export default async function Home() {
   const session = await auth();

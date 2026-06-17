@@ -1,0 +1,20 @@
+{
+  "name": "PharmLMS — Clinical Pharmacy Learning",
+  "short_name": "PharmLMS",
+  "icons": [
+    {
+      "src": "/seo/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/seo/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#00005C",
+  "background_color": "#F5F7FA",
+  "display": "standalone",
+  "start_url": "/"
+}

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { GraduationCap } from "@/lib/icons/server";
 import { getLandingContent, type LandingAudience } from "@/lib/landing-content";
 
 type TestimonialSectionProps = {
@@ -17,10 +16,11 @@ export function TestimonialSection({ audience = "student" }: TestimonialSectionP
     <section className="bg-emerald-50/50 py-16 lg:py-24">
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-10">
         <div className="mb-8 flex justify-center">
-          <div className="flex items-center gap-2 font-display text-xl font-bold text-[var(--primary)]">
-            <GraduationCap className="h-8 w-8 text-[var(--emerald)]" strokeWidth={1.75} />
-            PharmLMS
-          </div>
+          <img
+            src="/assets/pharmlms-logo.png"
+            alt="PharmLMS"
+            className="h-8 w-auto sm:h-9"
+          />
         </div>
 
         <blockquote className="text-center font-display text-2xl font-bold leading-snug text-[var(--ink-deep)] transition-all duration-500 sm:text-3xl lg:text-4xl">

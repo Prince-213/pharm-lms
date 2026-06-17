@@ -7,17 +7,17 @@ const faqs = [
   {
     question: "What is PharmLMS and how does it work?",
     answer:
-      "PharmLMS is an online learning platform offering interactive clinical pharmacy courses, expert-led tutorials, and personalized learning paths to help you achieve your educational goals efficiently. You can browse courses, enroll, and learn at your own pace.",
+      "PharmLMS is Africa's first pharmacy-specific digital health education platform by PharmAnalytics. It offers structured courses, expert-led tutorials, and personalized learning paths built around real African clinical contexts — helping pharmacists move from dispensing to decision-making.",
   },
   {
     question: "How can I communicate with my instructor?",
     answer:
-      "You can communicate with instructors through our built-in messaging system, course discussion forums, and live Q&A sessions. Premium courses also offer direct video consultation sessions.",
+      "You can communicate with instructors through our built-in messaging system, course discussion forums, and live Q&A sessions. Premium courses also offer direct mentorship and video consultation with practicing pharmacists and health informaticists.",
   },
   {
     question: "Are there interactive features for students?",
     answer:
-      "Yes! PharmLMS includes interactive quizzes, hands-on assignments, AI-powered quiz assistance, discussion forums, and live mentorship sessions to ensure an engaging learning experience.",
+      "Yes! PharmLMS includes interactive quizzes, hands-on assignments, AI-powered quiz assistance, discussion forums, and live mentorship sessions to ensure an engaging, clinically grounded learning experience.",
   },
   {
     question: "How can I pay for courses?",

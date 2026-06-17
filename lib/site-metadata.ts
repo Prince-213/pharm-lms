@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 const SITE_NAME = "PharmLMS";
-const SITE_TAGLINE = "Clinical pharmacy learning for students and tutors";
+const SITE_TAGLINE = "From dispensing to decision-making";
 const SITE_DESCRIPTION =
-  "PharmLMS is a clinical pharmacy learning platform with video courses, structured curricula, certificates, and live instructor sessions — built for pharmacy students and professional tutors.";
+  "PharmLMS is Africa's first pharmacy-specific digital health education platform — equipping pharmacists with the clinical, data, and technology skills to thrive in the digital health economy.";
 
 function resolveSiteUrl(): string {
   const fromAuth =
@@ -47,12 +47,14 @@ export const rootMetadata: Metadata = {
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
   keywords: [
-    "pharmacy LMS",
-    "clinical pharmacy",
-    "pharmacy courses",
-    "CPD",
     "pharmacy education",
-    "Nigeria",
+    "digital health",
+    "clinical pharmacy",
+    "CPD",
+    "pharmacy courses",
+    "Africa",
+    "health technology",
+    "pharmacy LMS",
   ],
   authors: [{ name: SITE_NAME }],
   creator: SITE_NAME,
@@ -65,10 +67,16 @@ export const rootMetadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: [
       {
-        url: ogImagePaths.default,
+        url: ogImagePaths.home,
         width: 1200,
         height: 630,
         alt: `${SITE_NAME} — clinical pharmacy courses online`,
+      },
+      {
+        url: ogImagePaths.default,
+        width: 1200,
+        height: 630,
+        alt: `${SITE_NAME}`,
       },
     ],
   },
@@ -76,13 +84,21 @@ export const rootMetadata: Metadata = {
     card: "summary_large_image",
     title: `${SITE_NAME} — ${SITE_TAGLINE}`,
     description: SITE_DESCRIPTION,
-    images: [ogImagePaths.default],
+    images: [ogImagePaths.home, ogImagePaths.default],
   },
   robots: {
     index: true,
     follow: true,
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/seo/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/seo/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/seo/favicon.ico" },
+    ],
+    apple: [{ url: "/seo/apple-touch-icon.png" }],
+    other: [
+      { rel: "manifest", url: "/seo/site.webmanifest" },
+    ],
   },
 };

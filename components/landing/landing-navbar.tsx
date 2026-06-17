@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { GraduationCap, Menu, Search, X } from "@/lib/icons/client";
+import { Menu, Search, X } from "@/lib/icons/client";
 import { VerifyCertificateDialog } from "@/components/courses/verify-certificate-dialog";
 import { LandingSearchForm } from "@/components/landing/landing-search-form";
 import { getLandingContent, type LandingAudience } from "@/lib/landing-content";
@@ -27,13 +27,13 @@ export function LandingNavbar({ audience = "student" }: LandingNavbarProps) {
           <div className="flex items-center gap-4">
             <Link
               href="/"
-              className="flex shrink-0 items-center gap-2 font-display text-xl font-bold tracking-tight text-[var(--primary)]"
+              className="flex shrink-0 items-center"
             >
-              <GraduationCap
-                className="h-7 w-7 text-[var(--emerald)]"
-                strokeWidth={1.75}
+              <img
+                src="/assets/pharmlms-logo.png"
+                alt="PharmLMS"
+                className="h-7 w-auto"
               />
-              <span className="hidden sm:inline">PharmLMS</span>
             </Link>
 
             <div className="flex items-center gap-4 px-4">

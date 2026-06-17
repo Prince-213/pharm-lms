@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { FAQSection } from "@/components/landing/faq-section";
 import { FeaturedCoursesSection } from "@/components/landing/featured-courses-section";
 import { LeadingProfessionalsSection } from "@/components/landing/leading-professionals-section";
@@ -6,6 +7,13 @@ import { ValidateHeroSection } from "@/components/landing/validate-hero-section"
 import { WhatLearnersSaySection } from "@/components/landing/what-learners-say-section";
 import { auth } from "@/auth";
 import { loadLandingPopularCoursePages } from "@/lib/landing/load-landing-data";
+
+export const metadata: Metadata = {
+  title: "Validate Certificate",
+  description:
+    "Verify the authenticity of your PharmLMS certificate. Enter your certificate ID to confirm your course completion credentials.",
+  alternates: { canonical: "/validate" },
+};
 
 export default async function ValidatePage() {
   const session = await auth();

@@ -14,7 +14,7 @@ export function EmpowerSection() {
       <div className="grid min-h-0 sm:min-h-[480px] lg:min-h-[640px] lg:grid-cols-2">
         <div className="relative min-h-[360px] lg:min-h-full">
           <Image
-            src="/assets/licensing-prep.jpg"
+            src="/assets/kevin-ku-w7ZyuGYNpRQ-unsplash.jpg"
             alt="Student learning with a tablet at home"
             fill
             priority
@@ -63,14 +63,14 @@ export function EmpowerSection() {
 
             <div className="mt-8 space-y-5 text-sm leading-[1.75] text-white/95 font-medium">
               <p>
-                PharmLMS is dedicated to equipping African pharmacists with the data,
-                technology, and health innovation skills needed to compete for
-                digital health roles.
+                PharmLMS is dedicated to equipping African pharmacists with the
+                data, technology, and health innovation skills needed to compete
+                for digital health roles.
               </p>
               <p>
-                As Africa's first pharmacy-specific platform, we create an inclusive 
-                learning environment built around clinical contexts and real-world 
-                case studies that encourage growth and success.
+                As Africa's first pharmacy-specific platform, we create an
+                inclusive learning environment built around clinical contexts
+                and real-world case studies that encourage growth and success.
               </p>
             </div>
 

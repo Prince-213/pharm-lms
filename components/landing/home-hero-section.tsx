@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { CheckIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
 import { ChevronDown, Search, X } from "lucide-react";
@@ -105,25 +106,31 @@ const HomeHeroSection = () => {
         <span className="inline-flex items-center gap-3 flex-wrap justify-center">
           Discover Top
           <span className="relative">
-            <img
+            <Image
               src="/assets/online.png"
               alt=""
+              width={80}
+              height={80}
               className="inline-block h-10 w-auto sm:h-14 lg:h-20 absolute left-0 -z-0"
               aria-hidden="true"
             />
             <p className="z-50 relative text-white">online</p>
           </span>
-          <img
+          <Image
             src="/assets/book.png"
             alt=""
+            width={48}
+            height={48}
             className="inline-block h-10 w-auto sm:h-14 lg:h-20"
             aria-hidden="true"
           />
           <span className="relative inline-block">
             Courses
-            <img
+            <Image
               src="/assets/underline.png"
               alt=""
+              width={120}
+              height={10}
               className="absolute -bottom-5 left-0 w-full h-10 object-contain"
               aria-hidden="true"
             />

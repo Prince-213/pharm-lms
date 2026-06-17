@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 type AuthPageShellProps = {
   children: React.ReactNode;
@@ -26,8 +27,8 @@ export function AuthPageShell({ children, actorType, mode }: AuthPageShellProps)
   const title = isLogin ? "Log In to" : "Register";
   const subtitle = "Welcome back! Select method to log in";
   const description = isLogin
-    ? "Securely access your courses, progress, and community features. Choose your preferred login method below to continue your learning journey."
-    : "Sign up to unlock full access to all courses, track your progress, and connect with instructors and fellow learners. Begin your educational journey with us.";
+    ? "Securely access your courses, track your progress, and connect with a community of pharmacists moving from dispensing to decision-making."
+    : "Join Africa's first pharmacy-specific digital health platform. Build clinical, data, and technology skills with courses built around real African clinical contexts.";
   const otherSectors = otherPortals[actorType] ?? [];
 
   return (
@@ -35,8 +36,15 @@ export function AuthPageShell({ children, actorType, mode }: AuthPageShellProps)
       {/* Left purple side */}
       <div className="relative flex flex-col bg-[var(--primary)] px-6 py-8 text-white lg:w-1/2 lg:px-12 lg:py-10 overflow-hidden">
         {/* Logo */}
-        <Link href="/" className="font-display text-2xl font-bold tracking-tight text-white">
-          PharmLMS
+        <Link href="/" className="inline-block">
+          <Image
+            src="/assets/pharmlms-logo.png"
+            alt="PharmLMS"
+            width={160}
+            height={40}
+            className="h-8 w-auto sm:h-9 brightness-0 invert"
+            priority
+          />
         </Link>
 
         {/* Content */}
@@ -54,9 +62,11 @@ export function AuthPageShell({ children, actorType, mode }: AuthPageShellProps)
 
         {/* Decorative image */}
         <div className="mt-2 flex justify-end lg:mt-3 absolute -right-10">
-          <img
+          <Image
             src="/assets/shape23.png"
             alt=""
+            width={400}
+            height={400}
             className="h-72 w-auto object-contain lg:h-[30rem]"
             aria-hidden="true"
           />
@@ -73,11 +83,13 @@ export function AuthPageShell({ children, actorType, mode }: AuthPageShellProps)
                 className="group flex flex-col items-center gap-2"
               >
                 <div className="relative">
-                  <div className="h-20 w-20 overflow-hidden rounded-full lg:h-24 lg:w-24">
-                    <img
+                  <div className="h-20 w-20 overflow-hidden rounded-full lg:h-24 lg:w-24 relative">
+                    <Image
                       src={sector.avatar}
                       alt={sector.label}
-                      className="h-full w-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="96px"
                     />
                   </div>
                 </div>
@@ -91,9 +103,11 @@ export function AuthPageShell({ children, actorType, mode }: AuthPageShellProps)
 
         {/* Bottom decorative line */}
         <div className="mt-auto pt-6">
-          <img
+          <Image
             src="/assets/shape24.png"
             alt=""
+            width={200}
+            height={40}
             className="h-10 w-auto object-contain"
             aria-hidden="true"
           />
