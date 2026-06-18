@@ -44,8 +44,38 @@ export default async function CourseCertificatePage({
 
   return (
     <main className="certificate-page mx-auto max-w-[1100px] overflow-x-hidden px-3 py-6 sm:px-6 sm:py-10">
-      <CourseCertificatePrintToolbar courseId={courseId} />
-      <CourseCertificateDocument data={data} />
+      <CourseCertificatePrintToolbar
+        courseId={courseId}
+        studentName={data.studentName}
+      />
+
+      {/*
+        Desktop: show preview + download button.
+        Mobile: render the certificate off-screen so html2canvas can capture it,
+        but hide it visually — the toolbar auto-triggers the download on mount.
+      */}
+      <div className="sm:block max-sm:sr-only" aria-hidden="true">
+        <CourseCertificateDocument data={data} />
+      </div>
+
+      {/* Mobile-only confirmation card shown after auto-download */}
+      <div className="sm:hidden mt-4 rounded-xl border border-[#00005C]/30 bg-[#00005C]/5 px-5 py-6 text-center">
+        <p className="text-2xl mb-2">🎓</p>
+        <p className="font-semibold text-[#00005C] text-base">
+          Your certificate is ready!
+        </p>
+        <p className="mt-1 text-sm text-[#6b7280]">
+          Check your downloads folder for{" "}
+          <span className="font-medium text-[#1A1A2E]">
+            {data.courseTitle}
+          </span>
+          .
+        </p>
+        <p className="mt-2 text-xs text-[#9ca3af]">
+          Use the button above if you need to download again.
+        </p>
+      </div>
+
       <style>{`
         @media print {
           @page {
