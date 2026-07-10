@@ -73,6 +73,8 @@ See **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)** for a full guide:
 
 Build config lives in [`amplify.yml`](amplify.yml).
 
+**Full developer handover** (all roles, smoke tests, secrets transfer, known stubs): **[docs/HANDOVER.md](docs/HANDOVER.md)**.
+
 ## Paystack webhooks
 
 Point Paystack to:
