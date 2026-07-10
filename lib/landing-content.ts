@@ -7,7 +7,7 @@ export type LandingAudience = "student" | "mentor" | "instructor";
  * embeddable form with autoplay.
  */
 const DEFAULT_HERO_DEMO_VIDEO_URL =
-  "https://youtu.be/aVVsHGtkO7I?si=SlX8YcnpH13QBbv4";
+  "https://youtu.be/aVVsHGtkO7I?si=H9Ya9uS6UI3sukr_";
 
 export type ServiceIconKey =
   | "FlaskConical"
