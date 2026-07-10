@@ -37,7 +37,7 @@ export default async function AdminMentorApplicationsPage() {
 
       <AdminPanel
         title="Pending review"
-        description="Approve to list mentors in the student directory, or reject with a note."
+        description="Approve to activate the account and list the mentor in the student directory, or reject with a note."
       >
         {pending.length ? (
           <div className="overflow-x-auto">

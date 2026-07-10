@@ -85,7 +85,7 @@ export default async function AdminMentorsPage() {
     <>
       <AdminPageHeader
         title="Mentors CRM"
-        description="Community mentors: submitted profiles, meetings, and availability. Activate mentors to make them visible to students."
+        description="Community mentors: submitted profiles, meetings, and availability. Approve applications or activate accounts — both mark mentors approved and active so students can see and book them."
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">

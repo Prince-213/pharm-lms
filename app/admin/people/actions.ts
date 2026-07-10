@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
-import { UserRole } from "@/generated/prisma/enums";
+import { MentorProfileStatus, UserRole } from "@/generated/prisma/enums";
 import { deleteCourseGraph } from "@/lib/courses/delete-course-graph";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
@@ -32,12 +32,39 @@ export async function setUserActiveAction(
   if (user.role !== expectedRole) {
     return { error: `This action only applies to ${expectedRole.toLowerCase()} accounts.` as const };
   }
-  if (user.isActive === isActive) return { success: true as const };
+  if (user.isActive === isActive) {
+    // Already active, but may still lack APPROVED (needed for student directory).
+    if (expectedRole === "MENTOR" && isActive) {
+      await db.user.update({
+        where: { id: userId },
+        data: {
+          mentorProfileStatus: MentorProfileStatus.APPROVED,
+          mentorReviewedAt: new Date(),
+        },
+      });
+      revalidatePath("/admin/mentors");
+      revalidatePath("/admin/mentor-applications");
+      revalidatePath("/student/mentors");
+    }
+    return { success: true as const };
+  }
+
+  // Mentors: activating also marks the profile approved so they appear in the
+  // student directory (students require isActive + APPROVED). Deactivate keeps
+  // APPROVED so a later re-activate does not need a second application review.
+  const mentorActivationData =
+    expectedRole === "MENTOR" && isActive
+      ? {
+          isActive: true,
+          mentorProfileStatus: MentorProfileStatus.APPROVED,
+          mentorReviewedAt: new Date(),
+        }
+      : { isActive };
 
   await db.$transaction([
     db.user.update({
       where: { id: userId },
-      data: { isActive },
+      data: mentorActivationData,
     }),
     db.auditLog.create({
       data: {
@@ -59,6 +86,7 @@ export async function setUserActiveAction(
   revalidatePath("/admin/mentors");
   revalidatePath("/admin/mentor-applications");
   revalidatePath("/admin/dashboard");
+  revalidatePath("/student/mentors");
 
   return { success: true as const };
 }
