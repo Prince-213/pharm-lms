@@ -58,8 +58,20 @@ Pharmacy learning platform built with Next.js (App Router), Prisma, PostgreSQL, 
 | `pnpm lint` | Biome check |
 | `pnpm test` | Unit tests (Node test runner) |
 | `pnpm db:migrate` | Prisma migrate dev |
+| `pnpm db:migrate:deploy` | Apply migrations in production (`prisma migrate deploy`) |
 | `pnpm db:seed` | Seed demo data |
 | `pnpm db:generate` | Regenerate Prisma client |
+
+## Deployment (AWS Amplify)
+
+See **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)** for a full guide:
+
+1. Create a free AWS account  
+2. Create a Neon PostgreSQL database  
+3. Connect the GitHub repo to Amplify Hosting  
+4. Set environment variables, run migrations, configure Paystack  
+
+Build config lives in [`amplify.yml`](amplify.yml).
 
 ## Paystack webhooks
 

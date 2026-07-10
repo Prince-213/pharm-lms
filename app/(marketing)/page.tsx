@@ -40,9 +40,7 @@ export default async function Home() {
 
   return (
     <main className="flex w-full min-h-screen flex-col">
-      <AnimatedSection delay={0}>
-        <HomeHeroSection />
-      </AnimatedSection>
+      <HomeHeroSection />
 
       <AnimatedSection delay={0.1}>
         <CategoryCarousel />

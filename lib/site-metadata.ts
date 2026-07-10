@@ -6,11 +6,12 @@ const SITE_DESCRIPTION =
   "PharmLMS is Africa's first pharmacy-specific digital health education platform — equipping pharmacists with the clinical, data, and technology skills to thrive in the digital health economy.";
 
 function resolveSiteUrl(): string {
-  const fromAuth =
+  const fromEnv =
     process.env.AUTH_URL?.trim() ||
     process.env.NEXTAUTH_URL?.trim() ||
-    process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (fromAuth) return fromAuth.replace(/\/$/, "");
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+    process.env.AWS_APP_URL?.trim();
+  if (fromEnv) return fromEnv.replace(/\/$/, "");
 
   const vercel = process.env.VERCEL_URL?.trim();
   if (vercel) return `https://${vercel.replace(/\/$/, "")}`;

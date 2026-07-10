@@ -1,6 +1,13 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import {
+  AnimatedCounter,
+  AnimatedStagger,
+  AnimatedStaggerItem,
+} from "@/components/landing/motion-primitives";
 
 const stats = [
   {
@@ -62,7 +69,7 @@ export function JourneySection() {
 
             <Link
               href="/courses"
-              className="mt-10 inline-flex items-center gap-2 rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#111111] sm:px-8 sm:py-4 sm:text-[15px]"
+              className="mt-10 inline-flex items-center gap-2 rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:bg-[#111111] hover:-translate-y-0.5 active:scale-[0.98] sm:px-8 sm:py-4 sm:text-[15px]"
             >
               Browse All Courses
               <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
@@ -74,7 +81,7 @@ export function JourneySection() {
             alt=""
             width={72}
             height={69}
-            className="pointer-events-none absolute left-[42%] top-[58%] z-20 hidden h-[69px] w-[72px] object-contain lg:block xl:left-[44%] xl:top-[56%]"
+            className="animate-float pointer-events-none absolute left-[42%] top-[58%] z-20 hidden h-[69px] w-[72px] object-contain lg:block xl:left-[44%] xl:top-[56%]"
             aria-hidden
           />
 
@@ -89,31 +96,31 @@ export function JourneySection() {
           </div>
         </div>
 
-        <div className="mt-16 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:mt-20 xl:grid-cols-4">
+        <AnimatedStagger className="mt-16 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:mt-20 xl:grid-cols-4">
           {stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="flex items-center gap-4 rounded-[14px] bg-white px-6 py-6 shadow-[0_4px_24px_rgba(15,23,42,0.06)]"
-            >
-              <Image
-                src={stat.icon}
-                alt=""
-                width={68}
-                height={68}
-                className="h-[68px] w-[68px] shrink-0"
-                aria-hidden
-              />
-              <div>
-                <p className="text-xl font-bold leading-none text-black sm:text-2xl lg:text-[28px]">
-                  {stat.value}
-                </p>
-                <p className="mt-2 text-sm font-bold text-black">
-                  {stat.label}
-                </p>
+            <AnimatedStaggerItem key={stat.label}>
+              <div className="flex items-center gap-4 rounded-[14px] bg-white px-6 py-6 shadow-[0_4px_24px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(15,23,42,0.1)]">
+                <Image
+                  src={stat.icon}
+                  alt=""
+                  width={68}
+                  height={68}
+                  className="h-[68px] w-[68px] shrink-0"
+                  aria-hidden
+                />
+                <div>
+                  <AnimatedCounter
+                    value={stat.value}
+                    className="text-xl font-bold leading-none text-black sm:text-2xl lg:text-[28px]"
+                  />
+                  <p className="mt-2 text-sm font-bold text-black">
+                    {stat.label}
+                  </p>
+                </div>
               </div>
-            </div>
+            </AnimatedStaggerItem>
           ))}
-        </div>
+        </AnimatedStagger>
       </div>
     </section>
   );

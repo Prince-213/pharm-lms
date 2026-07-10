@@ -4,6 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { Clock3 } from "lucide-react";
 import { BookIcon } from "@phosphor-icons/react";
+import {
+  AnimatedStagger,
+  AnimatedStaggerItem,
+} from "@/components/landing/motion-primitives";
 
 type CourseCard = {
   id: string;
@@ -79,11 +83,11 @@ export function FeaturedCoursesSection({ courses }: FeaturedCoursesSectionProps)
           Featured Top-Rated Courses
         </h2>
 
-        <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-7 lg:mt-16 xl:grid-cols-3">
+        <AnimatedStagger className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-7 lg:mt-16 xl:grid-cols-3">
           {displayCourses.map((course) => (
+            <AnimatedStaggerItem key={course.id}>
             <article
-              key={course.id}
-              className="flex h-full flex-col rounded-[14px] bg-white p-5 sm:p-6"
+              className="group flex h-full flex-col rounded-[14px] bg-white p-5 shadow-sm transition-all duration-300 sm:p-6 sm:hover:-translate-y-1 sm:hover:shadow-md"
             >
               <div className="relative aspect-[412/248] w-full overflow-hidden rounded-[10px]">
                 <Image
@@ -91,7 +95,7 @@ export function FeaturedCoursesSection({ courses }: FeaturedCoursesSectionProps)
                   alt={course.title}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                  className="object-cover"
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
                 />
               </div>
 
@@ -144,14 +148,15 @@ export function FeaturedCoursesSection({ courses }: FeaturedCoursesSectionProps)
 
               <Link
                 href={course.href}
-                className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-[10px] border border-[#E5E7EB] bg-white px-5 py-3.5 text-[14px] font-semibold text-black transition hover:border-[var(--accent)] hover:text-[var(--accent)] sm:text-[15px]"
+                className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-[10px] border border-[#E5E7EB] bg-white px-5 py-3.5 text-[14px] font-semibold text-black transition-all duration-300 hover:border-[var(--accent)] hover:text-[var(--accent)] hover:-translate-y-0.5 active:scale-[0.98] sm:text-[15px]"
               >
                 View Courses
                 <span aria-hidden>→</span>
               </Link>
             </article>
+            </AnimatedStaggerItem>
           ))}
-        </div>
+        </AnimatedStagger>
       </div>
     </section>
   );

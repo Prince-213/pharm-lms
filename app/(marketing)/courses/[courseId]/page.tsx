@@ -1,12 +1,10 @@
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
+import { AnimatedSection } from "@/components/landing/animated-section";
 import { CourseCatalogDetail } from "@/components/student/course-catalog-detail";
-import { LandingFooter } from "@/components/landing/landing-footer";
-import LandingHeader from "@/components/landing/header";
 import { UserRole } from "@/generated/prisma/enums";
 import { loadCourseCatalogDetail } from "@/lib/course-catalog-detail";
 import { loadPublicCourseCatalogDetail } from "@/lib/courses/public-catalog";
-
 export default async function PublicCourseDetailPage({
   params,
 }: {
@@ -24,15 +22,16 @@ export default async function PublicCourseDetailPage({
 
     return (
       <div className="min-h-screen bg-[var(--background)]">
-        <CourseCatalogDetail
-          variant="catalog"
-          interaction="student"
-          data={data}
-          catalogNavOverride={{ href: "/courses", label: "Catalog" }}
-        />
+        <AnimatedSection>
+          <CourseCatalogDetail
+            variant="catalog"
+            interaction="student"
+            data={data}
+            catalogNavOverride={{ href: "/courses", label: "Catalog" }}
+          />
+        </AnimatedSection>
       </div>
-    );
-  }
+    );  }
 
   const data = await loadPublicCourseCatalogDetail(
     courseId,
@@ -45,17 +44,16 @@ export default async function PublicCourseDetailPage({
   return (
     <div className="min-h-screen bg-[var(--background)]">
       <main>
-        <CourseCatalogDetail
-          variant="catalog"
-          interaction="guest"
-          data={data}
-          catalogNavOverride={{ href: "/courses", label: "Catalog" }}
-          guestAuth={{ callbackUrl }}
-        />
+        <AnimatedSection>
+          <CourseCatalogDetail
+            variant="catalog"
+            interaction="guest"
+            data={data}
+            catalogNavOverride={{ href: "/courses", label: "Catalog" }}
+            guestAuth={{ callbackUrl }}
+          />
+        </AnimatedSection>
       </main>
-
-      <br />
-     
     </div>
   );
 }

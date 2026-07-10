@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { AnimatedSection } from "@/components/landing/animated-section";
 import { CoursesCatalogSection } from "@/components/courses/courses-catalog-section";
 import {
   getCatalogFacets,
@@ -52,17 +53,19 @@ export default async function CoursesPage({
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       <main>
         <Suspense fallback={null}>
-          <CoursesCatalogSection
-            courses={pagedCourses}
-            facets={facets}
-            activeQ={q}
-            activeCategory={category}
-            activeLevel={level}
-            activeSort={sort}
-            currentPage={page}
-            totalPages={totalPages}
-            totalResults={totalResults}
-          />
+          <AnimatedSection>
+            <CoursesCatalogSection
+              courses={pagedCourses}
+              facets={facets}
+              activeQ={q}
+              activeCategory={category}
+              activeLevel={level}
+              activeSort={sort}
+              currentPage={page}
+              totalPages={totalPages}
+              totalResults={totalResults}
+            />
+          </AnimatedSection>
         </Suspense>
       </main>
     </div>

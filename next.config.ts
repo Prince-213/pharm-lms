@@ -21,6 +21,8 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
       },
+      // If you switch media to AWS S3, add your bucket public hostname, e.g.:
+      // { protocol: "https", hostname: "pharm-lms-assets.s3.<region>.amazonaws.com" },
     ],
   },
   /* allowedDevOrigins: ['127.0.0.1'], */

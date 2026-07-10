@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { MOTION_EASE } from "@/components/landing/motion-primitives";
 
 const faqs = [
   {
@@ -66,7 +68,7 @@ export function FAQSection() {
                 return (
                   <div
                     key={index}
-                    className={`overflow-hidden rounded-[16px] transition-all duration-300 ${
+                    className={`overflow-hidden rounded-[16px] transition-colors duration-300 ${
                       isOpen
                         ? "bg-[var(--emerald)] text-white"
                         : "bg-[#f5f5f5] text-[var(--ink-deep)]"
@@ -78,19 +80,29 @@ export function FAQSection() {
                       className="flex w-full items-center justify-between px-6 py-5 text-left font-semibold text-lg lg:text-xl"
                     >
                       <span>{faq.question}</span>
-                      <span className="ml-4 flex h-8 w-8 items-center justify-center rounded-full text-xl font-bold transition-all">
-                        {isOpen ? "×" : "+"}
-                      </span>
+                      <motion.span
+                        animate={{ rotate: isOpen ? 45 : 0 }}
+                        transition={{ duration: 0.25, ease: MOTION_EASE }}
+                        className="ml-4 flex h-8 w-8 items-center justify-center rounded-full text-xl font-bold"
+                      >
+                        +
+                      </motion.span>
                     </button>
-                    <div
-                      className={`overflow-hidden transition-all font-semibold duration-300 ${
-                        isOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
-                      }`}
-                    >
-                      <div className="px-6 pb-6 text-[14px] leading-relaxed text-white/90">
-                        {faq.answer}
-                      </div>
-                    </div>
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3, ease: MOTION_EASE }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-6 pb-6 text-[14px] font-semibold leading-relaxed text-white/90">
+                            {faq.answer}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 );
               })}

@@ -7,6 +7,10 @@ import { Search, ChevronDown, Grid3X3, List, ChevronLeft, ChevronRight, BookOpen
 import type { PublishedCourseListItem } from "@/lib/courses/public-catalog";
 import type { CatalogSort } from "@/lib/courses/public-catalog";
 import { useState } from "react";
+import {
+  AnimatedStagger,
+  AnimatedStaggerItem,
+} from "@/components/landing/motion-primitives";
 
 type Props = {
   courses: PublishedCourseListItem[];
@@ -112,7 +116,7 @@ function formatPrice(minorUnits: number | null, currency: string): string {
 
 function CatalogCourseCard({ course }: { course: PublishedCourseListItem }) {
   return (
-    <article className="flex flex-col rounded-[14px] bg-white p-4">
+    <article className="group flex flex-col rounded-[14px] bg-white p-4 shadow-sm transition-all duration-300 sm:hover:-translate-y-1 sm:hover:shadow-md">
       <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[10px]">
         {course.thumbnailUrl ? (
           <Image
@@ -120,7 +124,7 @@ function CatalogCourseCard({ course }: { course: PublishedCourseListItem }) {
             alt={course.title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-            className="object-cover"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
           <div className="h-full w-full bg-[var(--accent-soft)] flex items-center justify-center">
@@ -336,11 +340,16 @@ export function CoursesCatalogSection({
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              <AnimatedStagger
+                key={`${activeQ}-${activeCategory}-${activeLevel}-${activeSort}-${currentPage}`}
+                className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3"
+              >
                 {courses.map((course) => (
-                  <CatalogCourseCard key={course.id} course={course} />
+                  <AnimatedStaggerItem key={course.id}>
+                    <CatalogCourseCard course={course} />
+                  </AnimatedStaggerItem>
                 ))}
-              </div>
+              </AnimatedStagger>
             )}
 
             {/* Pagination */}

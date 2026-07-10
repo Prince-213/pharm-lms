@@ -1,12 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-
-const studentAvatars = [
-  { src: "/assets/mentor.jpg", alt: "PharmLMS student" },
-  { src: "/assets/tutor.jpg", alt: "PharmLMS student" },
-  { src: "/assets/categories/private-monitoring.jpg", alt: "PharmLMS student" },
-] as const;
+import { AnimatedCounter } from "@/components/landing/motion-primitives";
 
 export function EmpowerSection() {
   return (
@@ -22,7 +19,7 @@ export function EmpowerSection() {
             className="object-cover object-center"
           />
 
-          <div className="absolute bottom-8 left-38 z-10 flex items-center gap-4 rounded-[16px] bg-white p-8 shadow-[0_12px_40px_rgba(15,23,42,0.12)]">
+          <div className="animate-float absolute bottom-8 left-38 z-10 flex items-center gap-4 rounded-[16px] bg-white p-8 shadow-[0_12px_40px_rgba(15,23,42,0.12)]">
             <div className="min-w-0">
               <div className=" flex items-center gap-3">
                 <Image
@@ -31,9 +28,10 @@ export function EmpowerSection() {
                   width={70}
                   height={70}
                 />
-                <p className="text-5xl font-bold leading-none text-black">
-                  45K+
-                </p>
+                <AnimatedCounter
+                  value="45K+"
+                  className="text-5xl font-bold leading-none text-black"
+                />
               </div>
               <p className="mt-3 text-sm leading-[1.2] font-medium text-[#5A536C]">
                 Happy Students Worldwide
@@ -76,7 +74,7 @@ export function EmpowerSection() {
 
             <Link
               href="/about"
-              className="mt-10 inline-flex items-center gap-2 rounded-xl bg-black px-8 py-4 text-[15px] font-semibold text-white transition hover:bg-[#111111]"
+              className="mt-10 inline-flex items-center gap-2 rounded-xl bg-black px-8 py-4 text-[15px] font-semibold text-white transition-all duration-300 hover:bg-[#111111] hover:-translate-y-0.5 active:scale-[0.98]"
             >
               Learn More About Us
               <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
@@ -88,7 +86,7 @@ export function EmpowerSection() {
             alt=""
             width={76}
             height={76}
-            className="pointer-events-none absolute md:bottom-8 md:right-38 z-0 h-[76px] w-[76px] object-contain bottom-10 right-10 sm:h-[76px] sm:w-[76px]"
+            className="animate-float pointer-events-none absolute md:bottom-8 md:right-38 z-0 h-[76px] w-[76px] object-contain bottom-10 right-10 sm:h-[76px] sm:w-[76px]"
             aria-hidden
           />
         </div>

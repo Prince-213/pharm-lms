@@ -1,0 +1,24 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - nvm install 22
+        - nvm use 22
+        - corepack enable
+        - corepack prepare pnpm@9 --activate
+        - pnpm install --frozen-lockfile
+        - pnpm exec prisma generate
+    build:
+      commands:
+        - pnpm build
+        # Next.js 16 Turbopack can create hashed symlinks Amplify's bundler cannot handle
+        - node scripts/resolve-next-symlinks.js
+  artifacts:
+    baseDirectory: .next
+    files:
+      - "**/*"
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AnimatedSection } from "@/components/landing/animated-section";
 import { FAQSection } from "@/components/landing/faq-section";
 import { FeaturedCoursesSection } from "@/components/landing/featured-courses-section";
 import { LeadingProfessionalsSection } from "@/components/landing/leading-professionals-section";
@@ -36,12 +37,24 @@ export default async function ValidatePage() {
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       <main>
-        <ValidateHeroSection />
-        <FeaturedCoursesSection courses={dbCourses} />
-        <WhatLearnersSaySection />
-        <LeadingProfessionalsSection />
-        <FAQSection />
-        <NewsletterSection />
+        <AnimatedSection>
+          <ValidateHeroSection />
+        </AnimatedSection>
+        <AnimatedSection delay={0.1}>
+          <FeaturedCoursesSection courses={dbCourses} />
+        </AnimatedSection>
+        <AnimatedSection delay={0.1}>
+          <WhatLearnersSaySection />
+        </AnimatedSection>
+        <AnimatedSection delay={0.1}>
+          <LeadingProfessionalsSection />
+        </AnimatedSection>
+        <AnimatedSection delay={0.1}>
+          <FAQSection />
+        </AnimatedSection>
+        <AnimatedSection delay={0.1}>
+          <NewsletterSection />
+        </AnimatedSection>
       </main>
     </div>
   );

@@ -16,6 +16,7 @@
     "format": "biome format --write",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
     "db:sync": "prisma format && prisma db push && prisma generate",
     "db:sync:force": "prisma format && prisma db push --accept-data-loss && prisma generate",

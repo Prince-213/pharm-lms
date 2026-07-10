@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ArrowRightIcon, List, X } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { AnimatePresence, motion } from "motion/react";
+import { MOTION_EASE } from "@/components/landing/motion-primitives";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -15,9 +17,21 @@ const navLinks = [
 
 const LandingHeader = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-[var(--border)] bg-white/90 backdrop-blur-md">
+    <header
+      className={`sticky top-0 z-50 w-full border-b border-[var(--border)] bg-white/90 backdrop-blur-md transition-shadow duration-300 ${
+        scrolled ? "shadow-md" : ""
+      }`}
+    >
       <div className="mx-auto flex h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-10 xl:w-[90%]">
         {/* Logo */}
           <Link href="/" className="flex shrink-0 items-center hover:scale-[1.02] transition-transform">
@@ -72,44 +86,55 @@ const LandingHeader = () => {
           onClick={() => setMobileOpen((v) => !v)}
           className="flex items-center justify-center rounded-lg p-2 text-[var(--ink-deep)] hover:bg-slate-100 lg:hidden"
           aria-label="Toggle navigation"
+          aria-expanded={mobileOpen}
         >
           {mobileOpen ? <X className="h-5 w-5" /> : <List className="h-5 w-5" />}
         </button>
       </div>
 
       {/* Mobile Slide-out Menu */}
-      {mobileOpen && (
-        <div className="border-t border-[var(--border)] bg-white px-4 pb-6 pt-3 lg:hidden">
-          <nav className="flex flex-col gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--ink-deep)] transition-colors hover:bg-accent-soft hover:text-[var(--accent)]"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-          <div className="mt-4 flex gap-3">
-            <Link
-              href="/student/login"
-              onClick={() => setMobileOpen(false)}
-              className="flex-1 rounded-lg border border-[var(--accent)] py-3 text-center text-sm font-semibold text-[var(--accent)] transition-colors hover:bg-[var(--accent)] hover:text-white"
-            >
-              Login
-            </Link>
-            <Link
-              href="/contact"
-              onClick={() => setMobileOpen(false)}
-              className="flex-1 rounded-lg bg-[var(--primary)] py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-[var(--primary-strong)]"
-            >
-              Contact Us
-            </Link>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease: MOTION_EASE }}
+            className="overflow-hidden border-t border-[var(--border)] bg-white lg:hidden"
+          >
+            <div className="px-4 pb-6 pt-3">
+              <nav className="flex flex-col gap-1">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--ink-deep)] transition-colors hover:bg-accent-soft hover:text-[var(--accent)]"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
+              <div className="mt-4 flex gap-3">
+                <Link
+                  href="/student/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex-1 rounded-lg border border-[var(--accent)] py-3 text-center text-sm font-semibold text-[var(--accent)] transition-colors hover:bg-[var(--accent)] hover:text-white"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/contact"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex-1 rounded-lg bg-[var(--primary)] py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-[var(--primary-strong)]"
+                >
+                  Contact Us
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 };

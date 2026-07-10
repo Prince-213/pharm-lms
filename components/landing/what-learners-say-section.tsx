@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Star } from "lucide-react";
 import { getLandingContent } from "@/lib/landing-content";
 import Image from "next/image";
+import { AnimatePresence, motion } from "motion/react";
+import { MOTION_EASE } from "@/components/landing/motion-primitives";
 
 export function WhatLearnersSaySection() {
   const { testimonials } = getLandingContent("student");
@@ -61,36 +63,46 @@ export function WhatLearnersSaySection() {
             </div>
 
             {/* Right: testimonial content */}
-            <div className="flex-1 max-w-xl">
-              {/* Stars */}
-              <div className="flex gap-1 mb-5">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className="h-5 w-5 fill-[#FBBF24] text-[#FBBF24]"
-                  />
-                ))}
-              </div>
+            <div className="flex-1 max-w-xl overflow-hidden">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={active}
+                  initial={{ opacity: 0, x: 16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -16 }}
+                  transition={{ duration: 0.35, ease: MOTION_EASE }}
+                >
+                  {/* Stars */}
+                  <div className="flex gap-1 mb-5">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className="h-5 w-5 fill-[#FBBF24] text-[#FBBF24]"
+                      />
+                    ))}
+                  </div>
 
-              {/* Quote */}
-              <blockquote className="mb-6 text-lg font-medium leading-relaxed text-[var(--ink-deep)] lg:text-xl">
-                &ldquo;{t.quote}&rdquo;
-              </blockquote>
+                  {/* Quote */}
+                  <blockquote className="mb-6 text-lg font-medium leading-relaxed text-[var(--ink-deep)] lg:text-xl">
+                    &ldquo;{t.quote}&rdquo;
+                  </blockquote>
 
-              {/* Author */}
-              <div className="flex items-center gap-3 mb-8">
-                <img
-                  src={t.avatar}
-                  alt={t.name}
-                  className="h-11 w-11 rounded-full object-cover ring-2 ring-white shadow-sm"
-                />
-                <div>
-                  <p className="font-semibold text-[var(--ink-deep)]">
-                    {t.name}
-                  </p>
-                  <p className="text-sm text-[var(--muted-soft)]">{t.role}</p>
-                </div>
-              </div>
+                  {/* Author */}
+                  <div className="flex items-center gap-3 mb-8">
+                    <img
+                      src={t.avatar}
+                      alt={t.name}
+                      className="h-11 w-11 rounded-full object-cover ring-2 ring-white shadow-sm"
+                    />
+                    <div>
+                      <p className="font-semibold text-[var(--ink-deep)]">
+                        {t.name}
+                      </p>
+                      <p className="text-sm text-[var(--muted-soft)]">{t.role}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
 
               {/* Dot indicators */}
               <div className="flex gap-2">

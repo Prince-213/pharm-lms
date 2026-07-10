@@ -126,14 +126,18 @@ export function CategoryCarousel() {
                   : undefined,
               }}
             >
-              {categories.map((category) => (
+              {categories.map((category, index) => (
                 <Link
                   key={category.label}
                   href={category.href}
                   data-category-card
                   className="group min-w-0 shrink-0 basis-[calc(100%+26px)] sm:basis-[calc((100%-26px)/2)] lg:basis-[calc((100%-78px)/4)]"
                 >
-                  <div className="relative aspect-[282/215] overflow-hidden rounded-[14px]">
+                  <div
+                    className={`relative aspect-[282/215] overflow-hidden rounded-[14px] transition-transform duration-500 ${
+                      index === activeIndex ? "scale-[1.02]" : "scale-100"
+                    }`}
+                  >
                     <Image
                       src={category.image}
                       alt={category.imageAlt}

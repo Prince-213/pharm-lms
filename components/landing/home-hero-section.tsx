@@ -6,6 +6,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { CheckIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
 import { ChevronDown, Search, X } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import {
+  MOTION_EASE,
+  usePrefersReducedMotion,
+} from "@/components/landing/motion-primitives";
 
 type SearchResult = {
   id: string;
@@ -28,8 +33,18 @@ const categories = [
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
+const heroItem = {
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: MOTION_EASE },
+  },
+};
+
 const HomeHeroSection = () => {
   const router = useRouter();
+  const reducedMotion = usePrefersReducedMotion();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All Categories");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -98,11 +113,29 @@ const HomeHeroSection = () => {
   }, []);
 
   return (
-    <div className="gap-y-8 lg:w-[79%] xl:w-[60%] w-[90%] mx-auto py-12 lg:py-[6rem] flex flex-col items-center justify-center px-4">
-      <div className="text-base font-medium text-[#5A536C] py-[2px] px-[11px] rounded-lg border border-[var(--border)]">
+    <motion.div
+      className="gap-y-8 lg:w-[79%] xl:w-[60%] w-[90%] mx-auto py-12 lg:py-[6rem] flex flex-col items-center justify-center px-4"
+      initial={reducedMotion ? "visible" : "hidden"}
+      animate="visible"
+      variants={{
+        hidden: {},
+        visible: {
+          transition: reducedMotion
+            ? { staggerChildren: 0 }
+            : { staggerChildren: 0.12 },
+        },
+      }}
+    >
+      <motion.div
+        variants={heroItem}
+        className="text-base font-medium text-[#5A536C] py-[2px] px-[11px] rounded-lg border border-[var(--border)]"
+      >
         <p>100% Quality Courses</p>
-      </div>
-      <h1 className="text-center font-display text-[30px] font-bold leading-[1.15] text-[var(--ink-deep)] sm:text-[48px] lg:text-[64px]">
+      </motion.div>
+      <motion.h1
+        variants={heroItem}
+        className="text-center font-display text-[30px] font-bold leading-[1.15] text-[var(--ink-deep)] sm:text-[48px] lg:text-[64px]"
+      >
         <span className="inline-flex items-center gap-3 flex-wrap justify-center">
           Discover Top
           <span className="relative">
@@ -138,10 +171,14 @@ const HomeHeroSection = () => {
         </span>
         <br />
         <span className="mt-2 block">& Start Learning Today</span>
-      </h1>
+      </motion.h1>
 
       {/* Search Form */}
-      <div ref={searchRef} className="relative w-full lg:w-[90%] mx-auto">
+      <motion.div
+        variants={heroItem}
+        ref={searchRef}
+        className="relative w-full lg:w-[90%] mx-auto"
+      >
         <form onSubmit={handleSubmit}>
           <div className="w-full h-fit flex items-center gap-3 sm:gap-5 justify-between">
             <div className="w-full flex items-center overflow-hidden rounded-[18px] border border-[var(--border)] h-14 sm:h-20 bg-white">
@@ -193,7 +230,7 @@ const HomeHeroSection = () => {
             {/* Search Button */}
             <button
               type="submit"
-              className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-[var(--emerald)] flex items-center justify-center shrink-0 hover:bg-[var(--primary-strong)] transition-colors"
+              className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-[var(--emerald)] flex items-center justify-center shrink-0 hover:bg-[var(--primary-strong)] transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98]"
             >
               <MagnifyingGlassIcon className="text-white w-5 h-5 sm:w-7 sm:h-7" />
             </button>
@@ -201,8 +238,15 @@ const HomeHeroSection = () => {
         </form>
 
         {/* Results Popover */}
-        {showResults && (
-          <div className="absolute left-0 right-0 sm:right-20 top-full mt-2 z-50 max-h-[360px] overflow-hidden rounded-2xl border border-[var(--border)] bg-white shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
+        <AnimatePresence>
+          {showResults && (
+            <motion.div
+              initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={reducedMotion ? undefined : { opacity: 0, y: 8 }}
+              transition={{ duration: 0.2, ease: MOTION_EASE }}
+              className="absolute left-0 right-0 sm:right-20 top-full mt-2 z-50 max-h-[360px] overflow-hidden rounded-2xl border border-[var(--border)] bg-white shadow-[0_8px_32px_rgba(0,0,0,0.12)]"
+            >
             {isLoading ? (
               <div className="flex items-center justify-center py-8 text-sm text-[var(--muted-soft)]">
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent mr-2" />
@@ -258,19 +302,20 @@ const HomeHeroSection = () => {
                 </Link>
               </div>
             )}
-          </div>
-        )}
-      </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
-      <div className="flex items-center gap-2 mt-4">
+      <motion.div variants={heroItem} className="flex items-center gap-2 mt-4">
         <div className="w-5 h-5 bg-[var(--emerald)] rounded-full flex items-center justify-center shrink-0">
           <CheckIcon className="text-white w-3 h-3" />
         </div>
         <p className="text-xs sm:text-sm font-semibold">
           Industry Leaders Use These Courses to Keep Skills Sharp
         </p>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
