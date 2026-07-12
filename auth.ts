@@ -31,7 +31,7 @@ class WrongPortalCredentials extends CredentialsSignin {
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
-  portalRole: z.enum(["STUDENT", "TUTOR", "MENTOR"]).optional(),
+  portalRole: z.enum(["STUDENT", "TUTOR", "MENTOR", "ADMIN"]).optional(),
 });
 
 const providers: NextAuthConfig["providers"] = [

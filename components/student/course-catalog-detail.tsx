@@ -13,7 +13,6 @@ import {
   Play,
   ShieldCheck,
   Star,
-  Users,
 } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -301,61 +300,6 @@ export function CourseCatalogDetail({
       <div className="relative z-10 mx-auto max-w-[1184px] px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-10">
           <div className="order-2 min-w-0 space-y-8 lg:order-1 lg:col-span-8 lg:-mt-24 lg:space-y-10">
-            {/* Stats strip — Udemy “Premium” bar adapted to Pharm */}
-            <div
-              className={cn(
-                "flex flex-col overflow-hidden rounded-sm border bg-white sm:flex-row sm:items-stretch",
-                udemyBorder,
-                "shadow-[0_2px_4px_rgba(0,0,0,0.08)]",
-              )}
-            >
-              <div className="flex shrink-0 items-center gap-2 bg-[var(--primary)] px-4 py-3.5 text-[var(--primary-foreground)] sm:py-4">
-                <Check className="h-5 w-5 shrink-0" strokeWidth={2.5} />
-                <span className="text-sm font-bold uppercase tracking-wide">
-                  Featured
-                </span>
-              </div>
-              <div className="flex min-w-0 flex-1 items-center border-t px-4 py-3.5 text-sm leading-snug text-[var(--muted)] sm:border-t-0 sm:border-l sm:py-4 sm:pl-5 sm:pr-4">
-                Mentor-led curriculum with video lessons, quizzes, and
-                downloadable resources.
-              </div>
-              <div className="flex flex-col justify-center gap-1 border-t px-4 py-3.5 sm:border-t-0 sm:border-l sm:px-5 sm:py-4">
-                {ratingAverage != null && reviewCount > 0 ? (
-                  <>
-                    <div className="flex items-center gap-2 text-sm font-bold text-[var(--foreground)]">
-                      <Star
-                        className="h-5 w-5 shrink-0 fill-amber-400 text-amber-400"
-                        aria-hidden
-                      />
-                      {ratingAverage.toFixed(1)}
-                    </div>
-                    <span className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-soft)]">
-                      {reviewCount.toLocaleString()}{" "}
-                      {reviewCount === 1 ? "rating" : "ratings"}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-sm font-semibold text-[var(--muted)]">
-                      —
-                    </div>
-                    <span className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-soft)]">
-                      Ratings
-                    </span>
-                  </>
-                )}
-              </div>
-              <div className="flex items-center justify-between gap-4 border-t px-4 py-3.5 sm:border-t-0 sm:border-l sm:px-5 sm:py-4">
-                <div className="flex items-center gap-2 text-sm font-bold text-[var(--foreground)]">
-                  <Users className="h-5 w-5 text-[var(--muted-soft)]" />
-                  {enrollCount.toLocaleString()}
-                </div>
-                <span className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-soft)]">
-                  Learners
-                </span>
-              </div>
-            </div>
-
             {/* What you'll learn */}
             <section className="space-y-3">
               <SectionHeading title="What you'll learn" />

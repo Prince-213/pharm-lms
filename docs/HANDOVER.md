@@ -87,11 +87,15 @@ git clone https://github.com/PharmAnalytics/PharmAnalytics-LMS-.git
 cd PharmAnalytics-LMS-
 pnpm install
 cp .env.example .env
-# Fill DATABASE_URL + AUTH_SECRET at minimum
-pnpm db:migrate          # or: pnpm db:migrate:deploy against a shared DB
-pnpm db:seed             # optional demo admin + badges
+# Fill DATABASE_URL (Neon: append ?sslmode=require) + AUTH_SECRET at minimum
+pnpm db:migrate:deploy   # applies prisma/migrations baseline on empty DB
+pnpm db:seed             # demo admin, badges, blog posts
 pnpm dev                 # http://localhost:3000
 ```
+
+**First-time / empty database:** if `db:migrate:deploy` fails because the DB already has tables from an old partial setup, run `pnpm db:sync` once to align schema, then `pnpm dlx prisma migrate resolve --applied 20260425110000_baseline`, then `pnpm db:seed`.
+
+**Reset test data (dev only):** `pnpm db:reset` wipes the database and re-applies migrations + seed. Do not run against production.
 
 Useful scripts:
 
@@ -99,10 +103,14 @@ Useful scripts:
 |---------|---------|
 | `pnpm build` / `pnpm start` | Production build & serve |
 | `pnpm test` | Unit tests |
-| `pnpm db:migrate:deploy` | Apply migrations in production |
+| `pnpm db:migrate:deploy` | Apply migrations in production / fresh DB |
+| `pnpm db:sync` | Push schema from `schema.prisma` (recovery / first-time without migrate) |
+| `pnpm db:reset` | Dev only: drop all data, re-apply migrations + seed |
 | `pnpm db:generate` | Regenerate Prisma client |
 
 If you see `JWTSessionError` / `no matching decryption secret` locally: clear cookies for `localhost` (session was encrypted with a different `AUTH_SECRET`).
+
+When switching portals (e.g. student → admin), the app signs you out automatically so you are not redirected away from the login page. On Vercel or Amplify, keep `AUTH_URL` and `NEXT_PUBLIC_SITE_URL` aligned with the live domain to avoid session drops.
 
 ---
 
@@ -164,7 +172,7 @@ Run these on staging/production after env + migrations. Use separate browser pro
 - [ ] `/courses` search/filter works
 - [ ] `/courses/[id]` course detail loads
 - [ ] `/validate` certificate verify UI loads
-- [ ] `/contact`, `/about`, `/for-instructors`, `/for-mentors` load
+- [ ] `/contact`, `/about`, `/teach`, `/become-a-mentor` load
 - [ ] “Watch demo” / tutorial opens YouTube embed (not a local mp4)
 
 ### 7.2 Student

@@ -67,7 +67,15 @@ export async function proxy(req: NextRequest) {
   }
 
   if (userRole && isAuthPage) {
-    return NextResponse.redirect(new URL(roleHomePath(userRole), req.url));
+    const loginPath = normalizePathname(pathname);
+    const userHome = roleHomePath(userRole);
+    const userLoginPath = loginPathForPathname(userHome);
+    if (normalizePathname(userLoginPath) === loginPath) {
+      return NextResponse.redirect(new URL(userHome, req.url));
+    }
+    const signOutUrl = new URL("/api/auth/signout", req.url);
+    signOutUrl.searchParams.set("callbackUrl", loginPath);
+    return NextResponse.redirect(signOutUrl);
   }
 
   return NextResponse.next();

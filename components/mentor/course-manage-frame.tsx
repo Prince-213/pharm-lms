@@ -43,7 +43,7 @@ export function CourseManageFrame({
       />
 
       <div className="mx-auto flex min-h-[calc(100vh-48px)] w-full max-w-[1280px] bg-[var(--surface)] lg:min-h-[calc(100vh-3rem)]">
-        <aside className="sticky top-12 hidden h-[calc(100vh-3rem)] w-[230px] shrink-0 flex-col overflow-hidden border-r border-[var(--border)] bg-[var(--surface)] lg:flex">
+        <aside className="sticky top-12 hidden h-[calc(100vh-3rem)] w-[230px] shrink-0 flex-col overflow-hidden border-r border-[#d1d7dc] bg-[#f7f9fa] lg:flex">
           <CourseManageSidebar
             courseId={courseId}
             courseStatus={courseStatus}

@@ -32,6 +32,10 @@ const resourceMimes = [
   "image/webp",
 ];
 
+function isProductionRuntime() {
+  return process.env.NODE_ENV === "production";
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ courseId: string }> },
@@ -69,28 +73,56 @@ export async function POST(
   }
 
   if (!allowed.includes(file.type)) {
-    return NextResponse.json({ error: "Unsupported file type for this upload." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Unsupported file type for this upload." },
+      { status: 400 },
+    );
   }
-
 
   const buffer = Buffer.from(await file.arrayBuffer());
   const ext = file.name.includes(".") ? file.name.split(".").pop() : "bin";
   const key = `courses/${courseId}/${folder}/${crypto.randomUUID()}.${ext}`;
 
   if (isR2Configured()) {
-    await uploadToR2({
-      Key: key,
-      Body: buffer,
-      ContentType: file.type,
-    });
-    return NextResponse.json({ key, url: `r2://${key}` }, { status: 201 });
+    try {
+      await uploadToR2({
+        Key: key,
+        Body: buffer,
+        ContentType: file.type,
+      });
+      return NextResponse.json({ key, url: `r2://${key}` }, { status: 201 });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown storage error";
+      console.error("[upload] R2 upload failed:", message);
+      return NextResponse.json(
+        { error: `Upload failed: ${message}` },
+        { status: 502 },
+      );
+    }
   }
 
-  /** Dev / local fallback: files under `public/` are served statically at `/…`. */
-  const publicRoot = path.join(process.cwd(), "public");
-  const diskPath = path.join(publicRoot, ...key.split("/"));
-  await mkdir(path.dirname(diskPath), { recursive: true });
-  await writeFile(diskPath, buffer);
+  if (isProductionRuntime()) {
+    return NextResponse.json(
+      {
+        error:
+          "File storage is not configured. Set R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, and R2_BUCKET_NAME.",
+      },
+      { status: 503 },
+    );
+  }
 
-  return NextResponse.json({ key, url: `/${key}` }, { status: 201 });
+  try {
+    const publicRoot = path.join(process.cwd(), "public");
+    const diskPath = path.join(publicRoot, ...key.split("/"));
+    await mkdir(path.dirname(diskPath), { recursive: true });
+    await writeFile(diskPath, buffer);
+    return NextResponse.json({ key, url: `/${key}` }, { status: 201 });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown write error";
+    console.error("[upload] local fallback failed:", message);
+    return NextResponse.json(
+      { error: `Upload failed: ${message}` },
+      { status: 502 },
+    );
+  }
 }

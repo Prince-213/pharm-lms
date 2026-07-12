@@ -733,8 +733,8 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
       image: "/assets/mentor.jpg",
       subcopy:
         "Mentor Africa's next generation of pharmacists on PharmLMS. Offer 1:1 guidance, digital health coaching, and career roadmaps on your schedule.",
-      primaryCta: { label: "Become a Mentor", href: "/mentor/signup" },
-      secondaryCta: { label: "Watch Demo", href: "#services" },
+      primaryCta: { label: "Become a mentor", href: "/mentor/signup" },
+      secondaryCta: { label: "Mentor login", href: "/mentor/login" },
       demoVideoUrl: DEFAULT_HERO_DEMO_VIDEO_URL,
       badges: [
         { icon: "Users", label: "1:1 Guidance" },
@@ -900,8 +900,8 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
       image: "/assets/tutor.jpg",
       subcopy:
         "Publish pharmacy courses on PharmLMS, reach practitioners across Africa, and grow your teaching brand on the continent's first pharmacy-specific platform.",
-      primaryCta: { label: "Start Teaching", href: "/tutor/signup" },
-      secondaryCta: { label: "Watch Demo", href: "/tutor/login" },
+      primaryCta: { label: "Start teaching", href: "/tutor/signup" },
+      secondaryCta: { label: "Browse courses", href: "/courses" },
       demoVideoUrl: DEFAULT_HERO_DEMO_VIDEO_URL,
       badges: [
         { icon: "Video", label: "Course Builder" },

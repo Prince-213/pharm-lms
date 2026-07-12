@@ -186,8 +186,30 @@ export function FileUploader({
         });
 
         if (!response.ok) {
-          const body = (await response.json().catch(() => null)) as { error?: string } | null;
-          throw new Error(body?.error ?? "Upload failed");
+          const body = (await response.json().catch(() => null)) as {
+            error?: string;
+          } | null;
+          const status = response.status;
+          const serverError = body?.error;
+          if (status === 413) {
+            throw new Error("File is too large for the server. Try a smaller file.");
+          }
+          if (status === 503) {
+            throw new Error(
+              serverError ??
+                "File storage is not configured on the server. Contact support.",
+            );
+          }
+          if (status === 502) {
+            throw new Error(serverError ?? "Storage upload failed. Try again.");
+          }
+          if (status === 403 || status === 409) {
+            throw new Error(
+              serverError ??
+                "This course cannot be edited right now. Save as draft first.",
+            );
+          }
+          throw new Error(serverError ?? "Upload failed");
         }
 
         const data = (await response.json()) as { url: string };

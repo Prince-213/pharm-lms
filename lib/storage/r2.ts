@@ -88,6 +88,11 @@ export async function listR2ObjectKeys(prefix: string): Promise<string[]> {
   return keys;
 }
 
+/** List every object key in the bucket (paginated). */
+export async function listAllR2ObjectKeys(): Promise<string[]> {
+  return listR2ObjectKeys("");
+}
+
 /** Delete up to 1000 keys per request (S3 limit). */
 export async function deleteR2ObjectKeys(keys: string[]): Promise<void> {
   if (!isR2Configured() || !r2Bucket || keys.length === 0) return;

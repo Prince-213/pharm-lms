@@ -46,6 +46,48 @@ function generateSixDigitCode(): string {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
 
+const initiateSchema = z.object({
+  fullName: z.string().min(2, "Enter your full name (at least 2 characters).").max(80),
+  email: z.string().email("Enter a valid email address.").toLowerCase(),
+  password: z.string().min(8, "Password must be at least 8 characters.").max(72),
+  confirmPassword: z.string(),
+  role: z.enum([UserRole.STUDENT, UserRole.TUTOR, UserRole.MENTOR]),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match.",
+  path: ["confirmPassword"],
+});
+
+export type InitiateSignupResult =
+  | { ok: true; devEmailMocked?: boolean }
+  | { ok: false; error: string; fieldErrors?: Record<string, string>; cooldownSeconds?: number };
+
+export async function initiateSignupAction(
+  input: unknown,
+): Promise<InitiateSignupResult> {
+  const parsed = initiateSchema.safeParse(input);
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {};
+    for (const issue of parsed.error.issues) {
+      const key = issue.path[0];
+      if (typeof key === "string" && !fieldErrors[key]) {
+        fieldErrors[key] = issue.message;
+      }
+    }
+    return {
+      ok: false,
+      error: "Please fix the highlighted fields.",
+      fieldErrors,
+    };
+  }
+
+  const { email, fullName, password, role } = parsed.data;
+  void fullName;
+  void password;
+  void role;
+
+  return sendSignupOtpAction(email);
+}
+
 export async function sendSignupOtpAction(
   rawEmail: unknown,
 ): Promise<OtpSendResult> {

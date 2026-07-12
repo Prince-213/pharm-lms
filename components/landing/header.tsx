@@ -5,8 +5,15 @@ import Image from "next/image";
 import { ArrowRightIcon, List, X } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { MOTION_EASE } from "@/components/landing/motion-primitives";
+import { getHeaderLoginHref } from "@/lib/audience-landing-content";
+
+const audienceCtaLinks = [
+  { label: "Teach on PharmLMS", href: "/teach" },
+  { label: "Mentor on PharmLMS", href: "/become-a-mentor" },
+];
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -16,6 +23,8 @@ const navLinks = [
 ];
 
 const LandingHeader = () => {
+  const pathname = usePathname();
+  const loginHref = getHeaderLoginHref(pathname);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -46,7 +55,7 @@ const LandingHeader = () => {
           </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden items-center gap-6 font-semibold text-[var(--ink-deep)] lg:flex xl:gap-10">
+        <nav className="hidden items-center gap-5 font-semibold text-[var(--ink-deep)] lg:flex xl:gap-8">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -56,11 +65,20 @@ const LandingHeader = () => {
               {link.label}
             </Link>
           ))}
+          {audienceCtaLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-sm font-bold text-[var(--accent)] transition-colors hover:text-[var(--accent-deep)] xl:text-[15px]"
+            >
+              {link.label}
+            </Link>
+          ))}
         </nav>
 
         {/* Desktop Buttons */}
         <span className="hidden items-center gap-2 lg:flex">
-          <Link href="/student/login">
+          <Link href={loginHref}>
             <Button
               variant="outline"
               className="px-4 text-sm bg-white text-[var(--accent)] border-[var(--accent)] hover:bg-[var(--accent)] hover:text-white cursor-pointer transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] xl:px-5 xl:text-[15px]"
@@ -114,10 +132,20 @@ const LandingHeader = () => {
                     {link.label}
                   </Link>
                 ))}
+                {audienceCtaLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="rounded-lg px-3 py-2.5 text-sm font-bold text-[var(--accent)] transition-colors hover:bg-accent-soft"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
               </nav>
               <div className="mt-4 flex gap-3">
                 <Link
-                  href="/student/login"
+                  href={loginHref}
                   onClick={() => setMobileOpen(false)}
                   className="flex-1 rounded-lg border border-[var(--accent)] py-3 text-center text-sm font-semibold text-[var(--accent)] transition-colors hover:bg-[var(--accent)] hover:text-white"
                 >

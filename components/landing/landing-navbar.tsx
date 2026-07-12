@@ -8,8 +8,8 @@ import { LandingSearchForm } from "@/components/landing/landing-search-form";
 import { getLandingContent, type LandingAudience } from "@/lib/landing-content";
 
 const navLinks = [
-  { label: "Become a Tutor", href: "/for-instructors" },
-  { label: "Mentor on PharmLms", href: "/for-mentors" },
+  { label: "Teach on PharmLMS", href: "/teach" },
+  { label: "Mentor on PharmLMS", href: "/become-a-mentor" },
 ];
 
 type LandingNavbarProps = {

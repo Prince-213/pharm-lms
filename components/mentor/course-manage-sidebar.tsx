@@ -148,29 +148,28 @@ export function CourseManageSidebar({
 
   return (
     <nav
-      className={cn("flex min-h-0 flex-1 flex-col", className)}
+      className={cn("flex min-h-0 flex-1 flex-col bg-[#f7f9fa]", className)}
       aria-label="Course planner"
     >
-      <div className="min-h-0 flex-1 space-y-6 overflow-y-auto">
+      <div className="min-h-0 flex-1 space-y-5 overflow-y-auto">
         {sections.map((section) => (
           <div key={section.title}>
-            <h3 className="mb-2 text-base font-bold text-[var(--foreground)]">
+            <h3 className="mb-2 px-1 text-[11px] font-bold uppercase tracking-wide text-[var(--muted-soft)]">
               {section.title}
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-0.5">
               {section.items.map((item) => (
                 <li key={item.label}>
                   <Link
                     href={item.href(courseId)}
                     onClick={onNavigate}
                     className={cn(
-                      "block border-l-2 pl-2 text-sm transition-colors",
+                      "block rounded-r-md border-l-[3px] py-2 pl-3 pr-2 text-[13px] transition-colors",
                       activeLabel === item.label
-                        ? "border-[var(--primary)] font-semibold text-[var(--foreground)]"
-                        : "border-transparent text-[var(--muted)] hover:text-[var(--foreground)]",
+                        ? "border-[var(--primary)] bg-white font-semibold text-[var(--foreground)] shadow-sm"
+                        : "border-transparent text-[var(--muted)] hover:border-[var(--border)] hover:bg-white/80 hover:text-[var(--foreground)]",
                     )}
                   >
-                    <span className="mr-1.5 text-[var(--muted-soft)]">○</span>
                     {item.label}
                   </Link>
                 </li>

@@ -33,6 +33,15 @@ export default function MentorCourseFilmEditPage({
           </ul>
         </div>
 
+        <div className="rounded border border-[var(--border)] bg-amber-50 p-4 text-sm text-amber-900">
+          <p className="font-semibold">Upload lesson videos in Curriculum</p>
+          <p className="mt-1 text-amber-800/90">
+            Practice uploads here are not saved to your course. Go to{" "}
+            <strong>Curriculum</strong> → add a lecture → upload your video there
+            so it appears in the published course.
+          </p>
+        </div>
+
         <div className="rounded border border-[var(--border)] p-4">
           <FileUploader
             purpose="lesson-video"

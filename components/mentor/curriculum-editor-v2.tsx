@@ -42,6 +42,7 @@ import {
 import { useCourseStudio } from "@/components/mentor/course-studio-context";
 import { RichTextArea } from "@/components/rich-text-area";
 import { CurriculumFormPanel } from "@/components/mentor/curriculum-form-panel";
+import { CurriculumSectionNav } from "@/components/mentor/curriculum-section-nav";
 import { FileUploader } from "@/components/upload/file-uploader";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -214,6 +215,11 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
   } | null>(null);
   const [resourceUploading, setResourceUploading] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [sectionErrors, setSectionErrors] = useState<
+    Record<string, { title?: string; content?: string }>
+  >({});
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -300,6 +306,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     // Expand the first section by default if any
     if (data.sections.length > 0) {
       setExpandedSections(new Set([data.sections[0].id]));
+      setCurrentStepIndex(0);
     }
   }, [courseId]);
 
@@ -573,7 +580,70 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     }
   }
 
+  function focusSection(index: number) {
+    const section = sections[index];
+    if (!section) return;
+    setCurrentStepIndex(index);
+    setExpandedSections((prev) => new Set([...prev, section.id]));
+    requestAnimationFrame(() => {
+      sectionRefs.current[section.id]?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  }
+
+  function validateSectionAt(index: number): boolean {
+    const section = sections[index];
+    if (!section) return true;
+    const errors: { title?: string; content?: string } = {};
+    if (!section.title.trim()) {
+      errors.title = "Section title is required.";
+    }
+    const itemCount =
+      section.lessons.length +
+      section.quizzes.length +
+      section.assignmentItems.length +
+      section.resources.length;
+    if (itemCount === 0) {
+      errors.content =
+        "Add at least one lesson, quiz, assignment, or resource.";
+    }
+    if (activePanel?.sectionId === section.id) {
+      errors.content = "Finish or cancel the open form before continuing.";
+    }
+    if (Object.keys(errors).length > 0) {
+      setSectionErrors((prev) => ({ ...prev, [section.id]: errors }));
+      return false;
+    }
+    setSectionErrors((prev) => {
+      const next = { ...prev };
+      delete next[section.id];
+      return next;
+    });
+    return true;
+  }
+
+  function handleNextSection() {
+    if (!validateSectionAt(currentStepIndex)) {
+      toast.error("Complete this section before moving on.");
+      focusSection(currentStepIndex);
+      return;
+    }
+    if (currentStepIndex < sections.length - 1) {
+      focusSection(currentStepIndex + 1);
+    }
+  }
+
+  function handlePrevSection() {
+    if (currentStepIndex > 0) {
+      focusSection(currentStepIndex - 1);
+    }
+  }
+
   function toggleSection(id: string) {
+    const index = sections.findIndex((s) => s.id === id);
+    if (index >= 0) setCurrentStepIndex(index);
     setExpandedSections((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -838,8 +908,8 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
         </p>
       ) : null}
       <p className="text-sm text-[var(--muted)]">
-        Expand a section to edit lessons, quizzes, and resources. Add buttons open a
-        panel that stays visible on mobile.
+        Build your course section by section. Use Next at the bottom to validate
+        each section, or jump freely via the section list.
       </p>
       {saving ? (
         <p className="flex items-center gap-1.5 text-xs text-slate-400">
@@ -861,6 +931,9 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
             <SortableSection
               key={section.id}
               id={section.id}
+              sectionRef={(el) => {
+                sectionRefs.current[section.id] = el;
+              }}
               disabled={interactionLocked}
               isExpanded={expandedSections.has(section.id)}
               onToggle={() => toggleSection(section.id)}
@@ -949,6 +1022,16 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                 </div>
               }
             >
+              {sectionErrors[section.id]?.content ? (
+                <p className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                  {sectionErrors[section.id]?.content}
+                </p>
+              ) : null}
+              {sectionErrors[section.id]?.title ? (
+                <p className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                  {sectionErrors[section.id]?.title}
+                </p>
+              ) : null}
               {/* ── Lessons ─────────────────────────────────────────────── */}
               <div className="space-y-3">
                 {section.lessons.length === 0 ? (
@@ -1633,6 +1716,15 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
         </SortableContext>
       </DndContext>
 
+      <CurriculumSectionNav
+        currentIndex={currentStepIndex}
+        totalSections={sections.length}
+        onBack={handlePrevSection}
+        onNext={handleNextSection}
+        backDisabled={interactionLocked}
+        nextDisabled={interactionLocked}
+      />
+
       {/* ── New section form ─────────────────────────────────────────────── */}
       <Separator className="my-2" />
       <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface-muted)]/40 p-4 sm:p-5">
@@ -1682,8 +1774,9 @@ function SortableSection(props: {
   onToggle: () => void;
   titleRow: ReactNode;
   children: ReactNode;
+  sectionRef?: (el: HTMLDivElement | null) => void;
 }) {
-  const { id, disabled, isExpanded, onToggle, titleRow, children } = props;
+  const { id, disabled, isExpanded, onToggle, titleRow, children, sectionRef } = props;
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition } = useSortable({
     id,
     disabled: Boolean(disabled),
@@ -1696,7 +1789,10 @@ function SortableSection(props: {
 
   return (
     <div
-      ref={setNodeRef}
+      ref={(el) => {
+        setNodeRef(el);
+        sectionRef?.(el);
+      }}
       style={style}
       // Clinical card: flat rounded border, no shadow on collapsed, subtle on expanded
       className={cn(
