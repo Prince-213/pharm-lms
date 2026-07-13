@@ -1,0 +1,32 @@
+---
+description: PharmLMS brand colors and design token mapping
+globs: "**/*.{tsx,css}"
+alwaysApply: false
+---
+
+# PharmLMS Design Tokens
+
+Brand colors (preserve in UI work):
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--primary` | `#1e40af` | Navy — buttons, links, sidebar |
+| `--accent` | `#7a4dfc` | Purple — auth CTAs, illustrations |
+| `--background` | `#f5f7fa` | Page background |
+| `--foreground` | `#1a1a2e` | Body text |
+| `--destructive` / `--live` | `#ef4444` | Errors, destructive actions |
+
+## Token bridge
+
+- Brand overrides live in `app/pharm-brand.css` (imported after shadcn preset in `globals.css`).
+- Legacy aliases remain during migration: `--emerald` → `--primary`, `--ink-deep` → `--foreground`, `--header` → `--sidebar`.
+
+## Fonts
+
+- Body: Montserrat (`--font-montserrat`)
+- Headings: Outfit (`--font-outfit`, `font-display`)
+
+## Migration rule
+
+- **New/edited code**: use shadcn semantic classes (`bg-primary`, `text-accent`).
+- **Existing code**: legacy `var(--emerald)` etc. still valid until cleaned up.

@@ -53,7 +53,7 @@ export function customPrismaAdapter(): Adapter {
           : intent === "mentor"
             ? UserRole.MENTOR
             : UserRole.STUDENT;
-      const isActive = role === UserRole.MENTOR ? false : true;
+      const isActive = true;
       const localPart = email.includes("@")
         ? (email.split("@")[0] ?? "")
         : email;

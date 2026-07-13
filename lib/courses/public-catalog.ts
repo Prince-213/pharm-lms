@@ -15,6 +15,19 @@ import {
 import type { DisplayCurrency } from "@/lib/currency/types";
 import { db } from "@/lib/db";
 import { resolveMediaUrl } from "@/lib/media-url";
+import { formatMinorUnitsToCurrency } from "@/lib/format-currency";
+import { formatTotalDuration } from "@/lib/lesson-duration";
+import type { PopularCourseCardView } from "@/components/landing/popular-course-card";
+
+const DEFAULT_COURSE_IMAGE =
+  "https://images.pexels.com/photos/8460157/pexels-photo-8460157.jpeg?auto=compress&cs=tinysrgb&w=800";
+const DEFAULT_AVATAR = "/assets/tutor.png";
+
+function stripHtml(html: string, maxLen = 140): string {
+  const plain = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  if (plain.length <= maxLen) return plain;
+  return `${plain.slice(0, maxLen - 1)}…`;
+}
 
 export const POPULAR_CATEGORIES = [
   "Clinical skills",
@@ -32,16 +45,23 @@ export type SearchPublishedCoursesParams = {
   category?: string;
   topic?: string;
   level?: string;
+  price?: "free" | "paid";
   sort?: CatalogSort;
   take?: number;
+  skip?: number;
   /** When set, profile country can override geo for display currency. */
   viewerUserId?: string;
 };
 
 const listInclude = {
-  mentor: { select: { fullName: true } },
+  mentor: { select: { fullName: true, avatarUrl: true } },
   _count: { select: { enrollments: true, reviews: true } },
   reviews: { select: { rating: true } },
+  sections: {
+    select: {
+      lessons: { select: { durationSec: true, content: true, videoUrl: true } },
+    },
+  },
 } as const;
 
 export type PublishedCourseListItem = {
@@ -67,6 +87,14 @@ function buildSearchWhere(params: SearchPublishedCoursesParams): Prisma.CourseWh
 
   if (params.sort === "free") {
     and.push({ OR: [{ priceMinorUnits: null }, { priceMinorUnits: 0 }] });
+  }
+
+  if (params.price === "free") {
+    and.push({ OR: [{ priceMinorUnits: null }, { priceMinorUnits: 0 }] });
+  }
+
+  if (params.price === "paid") {
+    and.push({ priceMinorUnits: { gt: 0 } });
   }
 
   if (category) {
@@ -143,6 +171,7 @@ export async function searchPublishedCourses(
     where: buildSearchWhere(params),
     orderBy: orderByForSort(params.sort),
     take: params.take,
+    skip: params.skip,
     include: listInclude,
   });
 
@@ -155,6 +184,99 @@ export async function searchPublishedCourses(
     params.viewerUserId,
   );
   return mapCoursesWithDisplayPrices(items, displayCurrency);
+}
+
+export async function countPublishedCourses(
+  params: SearchPublishedCoursesParams = {},
+): Promise<number> {
+  return db.course.count({ where: buildSearchWhere(params) });
+}
+
+type CourseListRow = Awaited<
+  ReturnType<typeof db.course.findMany<{ include: typeof listInclude }>>
+>[number];
+
+export async function mapCoursesToPopularCardViews(
+  courses: CourseListRow[],
+  pricedItems: PublishedCourseListItem[],
+): Promise<PopularCourseCardView[]> {
+  const priceById = new Map(pricedItems.map((p) => [p.id, p]));
+
+  return Promise.all(
+    courses.map(async (course) => {
+      const priced = priceById.get(course.id);
+      let totalSeconds = catalogTotalSeconds(course, course.sections);
+      const lessonCount = course.sections.reduce(
+        (n, s) => n + s.lessons.length,
+        0,
+      );
+      if (totalSeconds <= 0 && lessonCount > 0) totalSeconds = 30 * 60;
+
+      const [thumb, mentorAvatar] = await Promise.all([
+        resolveMediaUrl(course.thumbnailUrl),
+        resolveMediaUrl(course.mentor.avatarUrl),
+      ]);
+
+      const reviewCount = course.reviews.length;
+      const rating =
+        reviewCount > 0
+          ? course.reviews.reduce((s, r) => s + r.rating, 0) / reviewCount
+          : 0;
+
+      return {
+        id: course.id,
+        href: `/courses/${course.id}`,
+        image: thumb ?? DEFAULT_COURSE_IMAGE,
+        imageAlt: course.title,
+        category:
+          course.category?.trim() ||
+          course.primaryTopic?.trim() ||
+          "Pharmacy",
+        title: course.title,
+        description:
+          course.subtitle?.trim() ||
+          stripHtml(course.description) ||
+          "Explore this published course on PharmLMS.",
+        rating,
+        reviewCount,
+        instructor: {
+          name: course.mentor.fullName,
+          avatar: mentorAvatar ?? DEFAULT_AVATAR,
+          enrolled: course._count.enrollments,
+        },
+        duration: formatTotalDuration(totalSeconds).replace(" total", ""),
+        lessonCount,
+        priceLabel: formatMinorUnitsToCurrency(
+          priced?.priceMinorUnits ?? course.priceMinorUnits,
+          priced?.priceCurrency ?? course.priceCurrency,
+          { zeroAsFree: true },
+        ),
+      } satisfies PopularCourseCardView;
+    }),
+  );
+}
+
+export async function searchPublishedCourseCards(
+  params: SearchPublishedCoursesParams = {},
+): Promise<PopularCourseCardView[]> {
+  const courses = await db.course.findMany({
+    where: buildSearchWhere(params),
+    orderBy: orderByForSort(params.sort),
+    take: params.take,
+    skip: params.skip,
+    include: listInclude,
+  });
+
+  const thumbs = await Promise.all(
+    courses.map((c) => resolveMediaUrl(c.thumbnailUrl)),
+  );
+  const items = courses.map((c, i) => toListItem(c, thumbs[i] ?? null));
+  const { displayCurrency } = await getStudentPricingContext(
+    params.viewerUserId,
+  );
+  const priced = await mapCoursesWithDisplayPrices(items, displayCurrency);
+
+  return mapCoursesToPopularCardViews(courses, priced);
 }
 
 export async function getLatestPublishedCourses(
@@ -173,7 +295,7 @@ export async function getCatalogFacets(): Promise<{
     select: { category: true, level: true },
   });
 
-  const categories = new Set<string>(POPULAR_CATEGORIES);
+  const categories = new Set<string>();
   const levels = new Set<string>();
 
   for (const row of rows) {

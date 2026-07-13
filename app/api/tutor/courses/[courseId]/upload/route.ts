@@ -1,11 +1,14 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
-import { isR2Configured, uploadToR2 } from "@/lib/storage/r2";
+import { jsonError } from "@/lib/api/json-error";
 import {
   requireMentorCourse,
   requireMentorCourseEditable,
 } from "@/lib/mentor-course-auth";
+import { DOCUMENT_FILE_MIMES, isDocumentFile } from "@/lib/upload/document-file-types";
+import { isR2Configured, uploadToR2 } from "@/lib/storage/r2";
+import { revalidateCourseSurfaces } from "@/lib/cache/revalidate-portals";
 
 const videoMimes = [
   "video/mp4",
@@ -70,9 +73,17 @@ export async function POST(
     allowed = resourceMimes;
     folder =
       purpose === "assignment-handout" ? "assignment-handouts" : "resources";
+  } else if (purpose === "curriculum-resource") {
+    allowed = [...DOCUMENT_FILE_MIMES];
+    folder = "resources";
   }
 
-  if (!allowed.includes(file.type)) {
+  const typeAllowed =
+    purpose === "curriculum-resource"
+      ? isDocumentFile(file)
+      : allowed.includes(file.type);
+
+  if (!typeAllowed) {
     return NextResponse.json(
       { error: "Unsupported file type for this upload." },
       { status: 400 },
@@ -90,24 +101,19 @@ export async function POST(
         Body: buffer,
         ContentType: file.type,
       });
+      revalidateCourseSurfaces(courseId);
       return NextResponse.json({ key, url: `r2://${key}` }, { status: 201 });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown storage error";
-      console.error("[upload] R2 upload failed:", message);
-      return NextResponse.json(
-        { error: `Upload failed: ${message}` },
-        { status: 502 },
-      );
+      console.error("[upload] R2 upload failed:", err);
+      return jsonError(err, 502, "Upload failed. Please try again.");
     }
   }
 
   if (isProductionRuntime()) {
-    return NextResponse.json(
-      {
-        error:
-          "File storage is not configured. Set R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, and R2_BUCKET_NAME.",
-      },
-      { status: 503 },
+    return jsonError(
+      null,
+      503,
+      "File uploads are temporarily unavailable. Please try again later.",
     );
   }
 
@@ -116,13 +122,10 @@ export async function POST(
     const diskPath = path.join(publicRoot, ...key.split("/"));
     await mkdir(path.dirname(diskPath), { recursive: true });
     await writeFile(diskPath, buffer);
+    revalidateCourseSurfaces(courseId);
     return NextResponse.json({ key, url: `/${key}` }, { status: 201 });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown write error";
-    console.error("[upload] local fallback failed:", message);
-    return NextResponse.json(
-      { error: `Upload failed: ${message}` },
-      { status: 502 },
-    );
+    console.error("[upload] local fallback failed:", err);
+    return jsonError(err, 502, "Upload failed. Please try again.");
   }
 }

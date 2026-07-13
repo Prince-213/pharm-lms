@@ -61,7 +61,7 @@ export default async function StudentCoursesPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">My courses</h1>
-          <p className="mt-1 text-sm text-[var(--muted)]">
+          <p className="mt-1 text-sm text-muted-foreground">
             Same list as{" "}
             <Link href="/student/dashboard" className="font-semibold text-[var(--primary)] hover:underline">
               My learning
@@ -76,7 +76,7 @@ export default async function StudentCoursesPage() {
 
       {enrollments.length === 0 ? (
         <div className="rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-12 text-center shadow-[var(--shadow-sm)]">
-          <p className="text-sm text-[var(--muted)]">You have not enrolled in any courses yet.</p>
+          <p className="text-sm text-muted-foreground">You have not enrolled in any courses yet.</p>
           <Link
             href="/student/browse"
             className="mt-4 inline-block text-sm font-bold text-[var(--primary)] hover:underline"

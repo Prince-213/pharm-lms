@@ -4,6 +4,7 @@ import { Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { submitAssignmentAction } from "@/app/student/actions/assignments";
+import { refreshPortalAfterMutation } from "@/lib/client/refresh-portal-data";
 
 export function AssignmentSubmitForm({
   assignmentId,
@@ -29,7 +30,7 @@ export function AssignmentSubmitForm({
 
   if (closed) {
     return (
-      <p className="rounded border border-dashed border-[var(--border)] bg-[var(--surface-muted)] px-3 py-3 text-xs text-[var(--muted)]">
+      <p className="rounded border border-dashed border-[var(--border)] bg-[var(--surface-muted)] px-3 py-3 text-xs text-muted-foreground">
         This assignment is closed for new submissions.
       </p>
     );
@@ -92,7 +93,7 @@ export function AssignmentSubmitForm({
         return;
       }
       setFeedback("Submission saved.");
-      router.refresh();
+      refreshPortalAfterMutation(router);
     });
   }
 
@@ -106,7 +107,7 @@ export function AssignmentSubmitForm({
         placeholder="Write or paste your submission…"
         className="w-full resize-y rounded border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm leading-relaxed outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-soft)]"
       />
-      <label className="block text-xs font-semibold text-[var(--muted)]">
+      <label className="block text-xs font-semibold text-muted-foreground">
         Attach file (optional)
         <input
           type="file"
@@ -116,13 +117,13 @@ export function AssignmentSubmitForm({
         />
       </label>
       {attachmentUrl ? (
-        <p className="text-xs text-[var(--muted)]">
+        <p className="text-xs text-muted-foreground">
           Current file attached for grading (submit again to replace after
           uploading a new file).
         </p>
       ) : null}
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="text-xs text-[var(--muted)]">
+        <div className="text-xs text-muted-foreground">
           {error ? <span className="text-rose-600">{error}</span> : null}
           {feedback ? (
             <span className="text-[var(--primary)]">{feedback}</span>

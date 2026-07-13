@@ -40,7 +40,7 @@ export default async function MentorCourseBasicsPage({
         <h1 className="text-2xl font-bold text-[var(--foreground)]">
           Course landing page
         </h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">
+        <p className="mt-1 text-sm text-muted-foreground">
           Title, description, basics, and media students see before enrolling.
         </p>
       </div>

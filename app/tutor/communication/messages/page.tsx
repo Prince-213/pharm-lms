@@ -34,7 +34,7 @@ export default async function MentorCommunicationMessagesPage({
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-[var(--foreground)]">Messages</h2>
-          <p className="mt-1 text-sm text-[var(--muted)]">
+          <p className="mt-1 text-sm text-muted-foreground">
             Reply to students or start a 1:1 thread. Use the announcements page
             to broadcast to a full course.
           </p>
@@ -50,7 +50,7 @@ export default async function MentorCommunicationMessagesPage({
 
       <div className="flex min-h-[480px] flex-1 flex-col gap-0 overflow-hidden rounded border border-[var(--border)] md:flex-row">
         <aside className="flex w-full flex-col border-b border-[var(--border)] bg-[var(--surface-muted)] md:w-[300px] md:border-b-0 md:border-r">
-          <div className="flex items-center gap-2 border-b border-[var(--border)] px-3 py-2 text-xs font-semibold text-[var(--muted)]">
+          <div className="flex items-center gap-2 border-b border-[var(--border)] px-3 py-2 text-xs font-semibold text-muted-foreground">
             <Inbox className="h-3.5 w-3.5" />
             Conversations · {threads.length}
           </div>
@@ -62,7 +62,7 @@ export default async function MentorCommunicationMessagesPage({
               <p className="text-sm font-semibold text-[var(--foreground)]">
                 No conversations yet
               </p>
-              <p className="mt-2 max-w-[240px] text-xs leading-relaxed text-[var(--muted)]">
+              <p className="mt-2 max-w-[240px] text-xs leading-relaxed text-muted-foreground">
                 When students message you or you start a thread from the
                 students roster, it will appear here.
               </p>
@@ -81,8 +81,11 @@ export default async function MentorCommunicationMessagesPage({
                   >
                     <p className="truncate text-sm font-semibold text-[var(--foreground)]">
                       {t.other.fullName}
+                      {t.unread ? (
+                        <span className="ml-2 inline-flex h-2 w-2 rounded-full bg-[var(--primary)] align-middle" />
+                      ) : null}
                     </p>
-                    <p className="mt-0.5 truncate text-xs text-[var(--muted)]">
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
                       {t.preview ?? "No messages yet."}
                     </p>
                     {t.lastMessageAt ? (
@@ -104,13 +107,13 @@ export default async function MentorCommunicationMessagesPage({
                 <p className="text-sm font-bold text-[var(--foreground)]">
                   {active.other.fullName}
                 </p>
-                <p className="text-xs text-[var(--muted)]">
+                <p className="text-xs text-muted-foreground">
                   {active.other.role.toLowerCase()} · {active.other.email}
                 </p>
               </header>
               <ol className="flex-1 space-y-3 overflow-y-auto px-5 py-4">
                 {active.thread.messages.length === 0 ? (
-                  <li className="py-12 text-center text-sm text-[var(--muted)]">
+                  <li className="py-12 text-center text-sm text-muted-foreground">
                     No messages yet — say hello.
                   </li>
                 ) : (
@@ -154,7 +157,7 @@ export default async function MentorCommunicationMessagesPage({
               />
             </>
           ) : (
-            <div className="flex flex-1 items-center justify-center px-8 py-16 text-center text-sm text-[var(--muted)]">
+            <div className="flex flex-1 items-center justify-center px-8 py-16 text-center text-sm text-muted-foreground">
               Select a conversation on the left, or use Announcements to
               broadcast to all enrolled students of a course.
             </div>

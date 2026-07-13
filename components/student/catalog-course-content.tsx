@@ -78,7 +78,7 @@ export function CatalogCourseContent({
         <h2 className="text-[1.375rem] font-bold tracking-tight text-[var(--foreground)]">
           Course content
         </h2>
-        <p className="text-sm text-[var(--muted-soft)]">No sections yet.</p>
+        <p className="text-sm text-muted-foreground">No sections yet.</p>
       </section>
     );
   }
@@ -90,7 +90,7 @@ export function CatalogCourseContent({
           <h2 className="text-[1.375rem] font-bold leading-snug tracking-tight text-[var(--foreground)]">
             Course content
           </h2>
-          <p className="mt-1 text-sm text-[var(--muted-soft)]">
+          <p className="mt-1 text-sm text-muted-foreground">
             {contentSummary}
           </p>
         </div>
@@ -134,7 +134,7 @@ export function CatalogCourseContent({
                 <span className="min-w-0 flex-1 font-bold text-[var(--foreground)]">
                   {section.title}
                 </span>
-                <span className="shrink-0 text-right text-xs font-normal text-[var(--muted-soft)] sm:text-sm">
+                <span className="shrink-0 text-right text-xs font-normal text-muted-foreground sm:text-sm">
                   {subLine}
                 </span>
               </button>
@@ -157,7 +157,7 @@ export function CatalogCourseContent({
                           {lesson.title}
                         </span>
                       </span>
-                      <span className="shrink-0 tabular-nums text-xs text-[var(--muted-soft)]">
+                      <span className="shrink-0 tabular-nums text-xs text-muted-foreground">
                         {formatLessonDuration(lesson.durationSec ?? 0)}
                       </span>
                     </li>
@@ -169,12 +169,12 @@ export function CatalogCourseContent({
                     >
                       <span className="flex min-w-0 items-center gap-3 text-[var(--foreground)]">
                         <HelpCircle
-                          className="h-4 w-4 shrink-0 text-[var(--muted-soft)]"
+                          className="h-4 w-4 shrink-0 text-muted-foreground"
                           aria-hidden
                         />
                         <span className="truncate">{quiz.title}</span>
                       </span>
-                      <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-[var(--muted-soft)]">
+                      <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                         Quiz
                       </span>
                     </li>
@@ -186,12 +186,12 @@ export function CatalogCourseContent({
                     >
                       <span className="flex min-w-0 items-center gap-3 text-[var(--foreground)]">
                         <ClipboardList
-                          className="h-4 w-4 shrink-0 text-[var(--muted-soft)]"
+                          className="h-4 w-4 shrink-0 text-muted-foreground"
                           aria-hidden
                         />
                         <span className="truncate">{assignment.title}</span>
                       </span>
-                      <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-[var(--muted-soft)]">
+                      <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                         Task
                       </span>
                     </li>
@@ -203,7 +203,7 @@ export function CatalogCourseContent({
         })}
       </div>
 
-      <p className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-[var(--muted-soft)]">
+      <p className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1">
           <Play className="h-3.5 w-3.5" fill="currentColor" aria-hidden />
           {totalLectures} lectures

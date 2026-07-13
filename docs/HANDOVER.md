@@ -78,6 +78,14 @@ flowchart TB
 - **Media:** S3-compatible API via `R2_*` env vars ([`lib/storage/r2.ts`](../lib/storage/r2.ts)).
 - **Meetings:** Jitsi (`JITSI_DOMAIN`, default `meet.jit.si`).
 
+### UI system (shadcn)
+
+- **Preset:** `b69Dpf8PnE` (`radix-vega` style) via `pnpm dlx shadcn@latest apply --preset b69Dpf8PnE --yes`
+- **Brand tokens:** [`app/pharm-brand.css`](../app/pharm-brand.css) maps navy primary (`#1e40af`) and purple accent (`#7a4dfc`) onto shadcn CSS variables
+- **Dashboard shells:** [`components/layout/dashboard-app-shell.tsx`](../components/layout/dashboard-app-shell.tsx) + portal nav in [`components/layout/nav/portal-nav-config.ts`](../components/layout/nav/portal-nav-config.ts)
+- **Cursor rules:** `.cursor/rules/nextjs-16.mdc`, `shadcn-ui.mdc`, `pharm-design-tokens.mdc`
+- **Add components:** `pnpm dlx shadcn@latest add <name> --yes` (decline overwrite on customized files like `button.tsx`)
+
 ---
 
 ## 4. Local setup (engineers)

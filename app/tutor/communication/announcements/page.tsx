@@ -28,7 +28,7 @@ export default async function MentorCommunicationAnnouncementsPage() {
       <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-[var(--foreground)]">Announcements</h2>
-          <p className="mt-1 max-w-xl text-sm text-[var(--muted)]">
+          <p className="mt-1 max-w-xl text-sm text-muted-foreground">
             Send the same message to every student enrolled in one of your
             courses. The message arrives in each student&apos;s inbox as a 1:1
             thread you can follow up on.
@@ -47,7 +47,7 @@ export default async function MentorCommunicationAnnouncementsPage() {
           </h3>
         </div>
         {courses.length === 0 ? (
-          <p className="rounded border border-dashed border-[var(--border)] bg-white p-6 text-center text-sm text-[var(--muted)]">
+          <p className="rounded border border-dashed border-[var(--border)] bg-white p-6 text-center text-sm text-muted-foreground">
             Publish a course first — announcements need at least one course to
             target.
           </p>

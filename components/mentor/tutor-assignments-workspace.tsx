@@ -14,7 +14,6 @@ export type TutorAssignmentRow = {
   courseId: string;
   courseTitle: string;
   status: AssignmentStatus;
-  dueAtIso: string | null;
   createdAtIso: string;
   submissionCount: number;
 };
@@ -39,7 +38,7 @@ function rowMatchesFilter(row: TutorAssignmentRow, f: FilterId): boolean {
 function StatTile({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-center shadow-[var(--shadow-sm)]">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
         {label}
       </p>
       <p className="mt-0.5 text-lg font-semibold tabular-nums text-[var(--foreground)]">
@@ -89,7 +88,7 @@ export function TutorAssignmentsWorkspace({
         <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
           Assignments
         </h1>
-        <p className="mt-1 max-w-2xl text-sm text-[var(--muted)]">
+        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
           Create assignments for your courses, manage drafts, and review
           submissions in one place.
         </p>
@@ -112,7 +111,7 @@ export function TutorAssignmentsWorkspace({
             strokeWidth={1.25}
           />
           <p className="mt-4 text-sm font-semibold">No assignments yet</p>
-          <p className="mt-2 max-w-sm text-xs text-[var(--muted)]">
+          <p className="mt-2 max-w-sm text-xs text-muted-foreground">
             Use the composer above to create your first assignment.
           </p>
         </div>
@@ -127,7 +126,7 @@ export function TutorAssignmentsWorkspace({
 
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <label className="relative min-w-[200px] flex-1 sm:max-w-md">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -145,7 +144,7 @@ export function TutorAssignmentsWorkspace({
                     "rounded-full px-3 py-1.5 text-xs font-semibold transition",
                     filter === f.id
                       ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
-                      : "bg-[var(--surface-muted)] text-[var(--muted)] hover:text-[var(--foreground)]",
+                      : "bg-[var(--surface-muted)] text-muted-foreground hover:text-[var(--foreground)]",
                   )}
                 >
                   {f.label}
@@ -155,18 +154,17 @@ export function TutorAssignmentsWorkspace({
           </div>
 
           <div>
-            <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+            <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
               Your assignments ({rows.length})
             </h2>
 
             <div className="hidden overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-sm)] md:block">
               <table className="w-full min-w-[720px] text-left text-sm">
-                <thead className="sticky top-0 z-10 border-b border-[var(--border)] bg-[var(--background)] text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+                <thead className="sticky top-0 z-10 border-b border-[var(--border)] bg-[var(--background)] text-xs font-bold uppercase tracking-wide text-muted-foreground">
                   <tr>
                     <th className="px-3 py-3">Assignment</th>
                     <th className="px-3 py-3">Course</th>
                     <th className="px-3 py-3">Status</th>
-                    <th className="px-3 py-3">Due</th>
                     <th className="px-3 py-3 text-right tabular-nums">
                       Submissions
                     </th>
@@ -177,8 +175,8 @@ export function TutorAssignmentsWorkspace({
                   {filtered.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={6}
-                        className="px-4 py-12 text-center text-sm text-[var(--muted)]"
+                        colSpan={5}
+                        className="px-4 py-12 text-center text-sm text-muted-foreground"
                       >
                         No assignments match your filters.
                       </td>
@@ -208,15 +206,10 @@ export function TutorAssignmentsWorkspace({
                         <td className="px-3 py-3">
                           <AssignmentStatusPill status={r.status} />
                         </td>
-                        <td className="px-3 py-3 text-xs text-[var(--muted)] tabular-nums">
-                          {r.dueAtIso
-                            ? new Date(r.dueAtIso).toLocaleString()
-                            : "—"}
-                        </td>
                         <td className="px-3 py-3 text-right text-sm font-semibold tabular-nums text-[var(--foreground)]">
                           {r.submissionCount}
                         </td>
-                        <td className="px-3 py-3 text-xs text-[var(--muted)] tabular-nums">
+                        <td className="px-3 py-3 text-xs text-muted-foreground tabular-nums">
                           {new Date(r.createdAtIso).toLocaleDateString()}
                         </td>
                       </tr>
@@ -228,7 +221,7 @@ export function TutorAssignmentsWorkspace({
 
             <ul className="space-y-3 md:hidden">
               {filtered.length === 0 ? (
-                <li className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-8 text-center text-sm text-[var(--muted)]">
+                <li className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-8 text-center text-sm text-muted-foreground">
                   No assignments match your filters.
                 </li>
               ) : (
@@ -245,22 +238,18 @@ export function TutorAssignmentsWorkspace({
                         >
                           {r.title}
                         </Link>
-                        <p className="mt-1 text-xs text-[var(--muted)]">
+                        <p className="mt-1 text-xs text-muted-foreground">
                           <Link
                             href={`/tutor/courses/${r.courseId}/manage/curriculum`}
                             className="font-semibold text-[var(--primary)] hover:underline"
                           >
                             {r.courseTitle}
                           </Link>
-                          {" · "}
-                          {r.dueAtIso
-                            ? `Due ${new Date(r.dueAtIso).toLocaleDateString()}`
-                            : "No due date"}
                         </p>
                       </div>
                       <AssignmentStatusPill status={r.status} />
                     </div>
-                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border)] pt-3 text-xs text-[var(--muted)]">
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border)] pt-3 text-xs text-muted-foreground">
                       <span>
                         Created {new Date(r.createdAtIso).toLocaleDateString()}
                       </span>

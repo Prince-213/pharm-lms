@@ -81,7 +81,7 @@ export function CourseAnnouncementForm({
       </div>
 
       <div className="md:col-span-2 flex flex-wrap items-center justify-between gap-3 border-t border-[#ececec] pt-4">
-        <div className="text-xs text-[var(--muted)]">
+        <div className="text-xs text-muted-foreground">
           {selectedCourse
             ? `Will create or update threads with ${selectedCourse.learners} student${
                 selectedCourse.learners === 1 ? "" : "s"
@@ -90,7 +90,7 @@ export function CourseAnnouncementForm({
         </div>
         <div className="flex items-center gap-3">
           {feedback ? (
-            <span className="text-xs font-semibold text-emerald-700">
+            <span className="text-xs font-semibold text-primary">
               {feedback}
             </span>
           ) : null}

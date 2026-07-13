@@ -60,7 +60,7 @@ export function TutorPayoutsClient({
         <h1 className="font-display text-2xl font-bold tracking-tight">
           Payouts
         </h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">
+        <p className="mt-1 text-sm text-muted-foreground">
           Your course earnings and bank payouts (processed by admin after you
           request).
         </p>
@@ -72,12 +72,12 @@ export function TutorPayoutsClient({
       </header>
 
       <section className="rounded-xl border border-[var(--border)] bg-white p-6 shadow-sm">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-[var(--muted)]">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
           Wallet
         </h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div className="rounded-lg bg-[var(--surface-muted)] p-4">
-            <p className="text-xs font-semibold text-[var(--muted)]">
+            <p className="text-xs font-semibold text-muted-foreground">
               Available
             </p>
             <p className="mt-1 text-2xl font-bold tabular-nums">
@@ -85,7 +85,7 @@ export function TutorPayoutsClient({
             </p>
           </div>
           <div className="rounded-lg bg-[var(--surface-muted)] p-4">
-            <p className="text-xs font-semibold text-[var(--muted)]">
+            <p className="text-xs font-semibold text-muted-foreground">
               Lifetime earned (net)
             </p>
             <p className="mt-1 text-lg font-bold tabular-nums">
@@ -93,13 +93,13 @@ export function TutorPayoutsClient({
             </p>
           </div>
           <div className="rounded-lg border border-[var(--border)] p-4">
-            <p className="text-xs text-[var(--muted)]">Pending / reserved</p>
+            <p className="text-xs text-muted-foreground">Pending / reserved</p>
             <p className="mt-1 font-semibold tabular-nums">
               {formatMinorUnitsToCurrency(wallet.reservedMinor, "NGN")}
             </p>
           </div>
           <div className="rounded-lg border border-[var(--border)] p-4">
-            <p className="text-xs text-[var(--muted)]">Paid out</p>
+            <p className="text-xs text-muted-foreground">Paid out</p>
             <p className="mt-1 font-semibold tabular-nums">
               {formatMinorUnitsToCurrency(wallet.lifetimeWithdrawnMinor, "NGN")}
             </p>
@@ -108,25 +108,25 @@ export function TutorPayoutsClient({
       </section>
 
       <section className="rounded-xl border border-[var(--border)] bg-white p-6 shadow-sm">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-[var(--muted)]">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
           Payout account
         </h2>
-        <p className="mt-2 text-xs text-[var(--muted)]">
+        <p className="mt-2 text-xs text-muted-foreground">
           Withdrawals are sent to the bank account saved in your profile.
         </p>
         {account?.verifiedAt ? (
           <div className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--surface-muted)]/40 p-4">
             <p className="font-semibold">{account.accountName}</p>
-            <p className="text-sm text-[var(--muted)]">
+            <p className="text-sm text-muted-foreground">
               {account.bankName ?? account.bankCode} · {account.accountNumber}
             </p>
-            <span className="mt-2 inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-900">
+            <span className="mt-2 inline-block rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold uppercase text-primary">
               Verified
             </span>
           </div>
         ) : (
           <div className="mt-4 rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface-muted)]/30 p-4">
-            <p className="text-sm text-[var(--muted)]">
+            <p className="text-sm text-muted-foreground">
               {account
                 ? "Your payout account is not verified yet."
                 : "No payout account on file yet."}
@@ -153,10 +153,10 @@ export function TutorPayoutsClient({
         id="request"
         className="rounded-xl border border-[var(--border)] bg-white p-6 shadow-sm"
       >
-        <h2 className="text-sm font-bold uppercase tracking-wide text-[var(--muted)]">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
           Request withdrawal
         </h2>
-        <p className="mt-1 text-xs text-[var(--muted)]">
+        <p className="mt-1 text-xs text-muted-foreground">
           Minimum withdrawal:{" "}
           {formatMinorUnitsToCurrency(minWithdrawalMinorUnits, "NGN")}
         </p>
@@ -216,7 +216,7 @@ export function TutorPayoutsClient({
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[480px] text-left text-sm">
-            <thead className="border-b border-[var(--border)] text-xs font-semibold uppercase text-[var(--muted)]">
+            <thead className="border-b border-[var(--border)] text-xs font-semibold uppercase text-muted-foreground">
               <tr>
                 <th className="px-6 py-3">Date</th>
                 <th className="px-6 py-3">Amount</th>
@@ -228,7 +228,7 @@ export function TutorPayoutsClient({
                 <tr>
                   <td
                     colSpan={3}
-                    className="px-6 py-10 text-center text-[var(--muted)]"
+                    className="px-6 py-10 text-center text-muted-foreground"
                   >
                     No withdrawals yet.
                   </td>

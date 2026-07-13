@@ -6,7 +6,8 @@ import {
   Video,
 } from "@/lib/icons/server";
 import Link from "next/link";
-import { MeetingRequestStatus, MeetingStatus } from "@/generated/prisma/enums";
+import { MeetingRequestStatus, MeetingStatus, MentorProfileStatus } from "@/generated/prisma/enums";
+import { mentorVisibleToStudents } from "@/lib/auth/mentor-profile-visibility";
 import {
   formatMeetingCrmDate,
   formatMeetingRelativeSchedule,
@@ -35,13 +36,13 @@ function upcomingSessionLabel(status: MeetingStatus, startsAt: Date): string {
 
 type MentorDashboardOverviewProps = {
   mentorFirstName: string;
-  isActive: boolean;
+  mentorProfileStatus: MentorProfileStatus;
   snapshot: MentorOverviewSnapshot;
 };
 
 export function MentorDashboardOverview({
   mentorFirstName,
-  isActive,
+  mentorProfileStatus,
   snapshot,
 }: MentorDashboardOverviewProps) {
   const {
@@ -54,13 +55,15 @@ export function MentorDashboardOverview({
     activity,
   } = snapshot;
 
+  const visibleToStudents = mentorVisibleToStudents(mentorProfileStatus);
+
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 text-[var(--foreground)] sm:px-6 sm:py-10">
       <header className="space-y-1">
         <h1 className="font-display text-2xl font-extrabold tracking-tight sm:text-3xl">
           Welcome{mentorFirstName ? `, ${mentorFirstName}` : ""}.
         </h1>
-        <p className="max-w-2xl text-sm leading-relaxed text-[var(--muted)]">
+        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
           Your scheduling snapshot, upcoming sessions, and recent coaching
           activity—manage details anytime on{" "}
           <Link
@@ -73,15 +76,24 @@ export function MentorDashboardOverview({
         </p>
       </header>
 
-      {!isActive ? (
+      {!visibleToStudents ? (
         <section className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
           <p className="text-xs font-semibold uppercase tracking-wider text-amber-800">
-            Account status
+            Profile verification
           </p>
-          <p className="mt-1 font-semibold">Pending activation</p>
+          <p className="mt-1 font-semibold">
+            {mentorProfileStatus === MentorProfileStatus.PENDING_REVIEW
+              ? "Pending admin review"
+              : mentorProfileStatus === MentorProfileStatus.REJECTED
+                ? "Profile needs updates"
+                : "Not visible to students yet"}
+          </p>
           <p className="mt-1 text-xs leading-relaxed text-amber-900/90">
-            Students cannot book you yet. Complete and submit your profile so an
-            admin can activate your account.
+            {mentorProfileStatus === MentorProfileStatus.PENDING_REVIEW
+              ? "Your profile is under review. You can use your dashboard while an admin verifies your listing."
+              : mentorProfileStatus === MentorProfileStatus.REJECTED
+                ? "An admin asked for changes. Update your profile and submit again for student listing."
+                : "Complete and submit your mentor profile so students can find you in the directory."}
           </p>
           <p className="mt-3 text-xs">
             <Link href="/mentor/profile" className="font-semibold underline">
@@ -91,11 +103,11 @@ export function MentorDashboardOverview({
         </section>
       ) : (
         <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--shadow-sm)] sm:p-5">
-          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
-            Account status
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Profile verification
           </p>
           <p className="mt-1 text-sm font-semibold text-[var(--foreground)]">
-            Active — visible to students
+            Approved — visible to students
           </p>
         </section>
       )}
@@ -135,7 +147,7 @@ export function MentorDashboardOverview({
           >
             <div className="border-b border-[var(--border)] bg-[var(--surface-muted)]/40 px-4 py-3 sm:px-5">
               <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-[var(--muted)]" />
+                <Calendar className="h-4 w-4 text-muted-foreground" />
                 <h2
                   id="upcoming-sessions-heading"
                   className="text-sm font-bold text-[var(--foreground)]"
@@ -143,7 +155,7 @@ export function MentorDashboardOverview({
                   Upcoming sessions
                 </h2>
               </div>
-              <p className="mt-0.5 text-xs text-[var(--muted)]">
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 Next scheduled calls (soonest first).
               </p>
             </div>
@@ -164,12 +176,12 @@ export function MentorDashboardOverview({
                         <p className="mt-0.5 text-xs font-medium text-[var(--primary)]">
                           {formatMeetingRelativeSchedule(m.startsAt)}
                         </p>
-                        <p className="mt-0.5 text-[11px] text-[var(--muted)]">
+                        <p className="mt-0.5 text-[11px] text-muted-foreground">
                           {formatMeetingCrmDate(m.startsAt)}
                         </p>
                       </div>
                       <div className="flex shrink-0 items-center gap-2">
-                        <span className="rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-[11px] font-semibold text-[var(--muted)]">
+                        <span className="rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
                           {statusChip}
                         </span>
                         {joinable ? (
@@ -190,7 +202,7 @@ export function MentorDashboardOverview({
                   <p className="text-sm font-semibold text-[var(--foreground)]">
                     No upcoming sessions
                   </p>
-                  <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-[var(--muted)]">
+                  <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-muted-foreground">
                     When you accept a booking, the scheduled call appears here.
                   </p>
                   <Link
@@ -210,7 +222,7 @@ export function MentorDashboardOverview({
           >
             <div className="border-b border-[var(--border)] bg-[var(--surface-muted)]/40 px-4 py-3 sm:px-5">
               <div className="flex items-center gap-2">
-                <CalendarClock className="h-4 w-4 text-[var(--muted)]" />
+                <CalendarClock className="h-4 w-4 text-muted-foreground" />
                 <h2
                   id="availability-heading"
                   className="text-sm font-bold text-[var(--foreground)]"
@@ -218,7 +230,7 @@ export function MentorDashboardOverview({
                   Weekly availability
                 </h2>
               </div>
-              <p className="mt-0.5 text-xs text-[var(--muted)]">
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 Summary of saved blocks students see when booking.
               </p>
             </div>
@@ -229,13 +241,13 @@ export function MentorDashboardOverview({
                     {availabilitySummaryLine}
                   </p>
                   {availabilityTimezone ? (
-                    <p className="text-xs text-[var(--muted)]">
+                    <p className="text-xs text-muted-foreground">
                       Timezone: {availabilityTimezone}
                     </p>
                   ) : null}
                 </>
               ) : (
-                <p className="text-sm text-[var(--muted)]">
+                <p className="text-sm text-muted-foreground">
                   You have not set weekly hours yet. Students need your
                   availability before they can pick a slot that fits you.
                 </p>
@@ -257,7 +269,7 @@ export function MentorDashboardOverview({
           >
             <div className="border-b border-[var(--border)] bg-[var(--surface-muted)]/40 px-4 py-3 sm:px-5">
               <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-[var(--muted)]" />
+                <User className="h-4 w-4 text-muted-foreground" />
                 <h2
                   id="activity-heading"
                   className="text-sm font-bold text-[var(--foreground)]"
@@ -265,7 +277,7 @@ export function MentorDashboardOverview({
                   Recent activity
                 </h2>
               </div>
-              <p className="mt-0.5 text-xs text-[var(--muted)]">
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 Latest requests and sessions (newest first).
               </p>
             </div>
@@ -282,7 +294,7 @@ export function MentorDashboardOverview({
                           <p className="text-sm font-semibold text-[var(--foreground)]">
                             {row.title}
                           </p>
-                          <p className="mt-0.5 text-[11px] text-[var(--muted)]">
+                          <p className="mt-0.5 text-[11px] text-muted-foreground">
                             {row.detail}
                           </p>
                         </div>
@@ -292,7 +304,7 @@ export function MentorDashboardOverview({
                             row.kind === "request" &&
                               row.statusLabel === MeetingRequestStatus.PENDING
                               ? "bg-amber-100 text-amber-900"
-                              : "bg-[var(--surface-muted)] text-[var(--muted)]",
+                              : "bg-[var(--surface-muted)] text-muted-foreground",
                           )}
                         >
                           {prettifyStatus(row.statusLabel)}
@@ -307,7 +319,7 @@ export function MentorDashboardOverview({
                 <p className="text-sm font-semibold text-[var(--foreground)]">
                   No activity yet
                 </p>
-                <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-[var(--muted)]">
+                <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-muted-foreground">
                   When a student books you from the coach directory, requests
                   and sessions will show up here.
                 </p>
@@ -318,7 +330,7 @@ export function MentorDashboardOverview({
       </div>
 
       <section aria-label="Quick links">
-        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Quick links
         </p>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -329,7 +341,7 @@ export function MentorDashboardOverview({
             <p className="text-sm font-semibold text-[var(--foreground)]">
               Profile
             </p>
-            <p className="mt-1 text-xs text-[var(--muted)]">
+            <p className="mt-1 text-xs text-muted-foreground">
               Bio, contact, and expertise for your public mentor page.
             </p>
           </Link>
@@ -340,7 +352,7 @@ export function MentorDashboardOverview({
             <p className="text-sm font-semibold text-[var(--foreground)]">
               Meetings
             </p>
-            <p className="mt-1 text-xs text-[var(--muted)]">
+            <p className="mt-1 text-xs text-muted-foreground">
               Availability, booking requests, and join links.
             </p>
           </Link>
@@ -365,15 +377,15 @@ function KpiTile({
     <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--shadow-sm)] sm:p-5">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {label}
           </p>
           <p className="mt-2 font-display text-2xl font-bold tabular-nums text-[var(--foreground)] sm:text-3xl">
             {value}
           </p>
-          <p className="mt-1 text-[11px] text-[var(--muted)]">{hint}</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>
         </div>
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)]/50 p-2 text-[var(--muted)]">
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)]/50 p-2 text-muted-foreground">
           <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden />
         </div>
       </div>

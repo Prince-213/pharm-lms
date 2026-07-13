@@ -31,7 +31,7 @@ function uploadedUrlWhere<TField extends string>(field: TField) {
       { [field]: { startsWith: "/courses/" } },
       { [field]: { contains: "r2.cloudflarestorage.com" } },
     ],
-  } as const;
+  };
 }
 
 async function clearDatabaseMediaRefs(): Promise<void> {

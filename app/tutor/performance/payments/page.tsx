@@ -45,7 +45,7 @@ export default async function TutorPerformancePaymentsPage() {
       <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-left text-sm">
-            <thead className="border-b border-[var(--border)] bg-[var(--surface-muted)]/50 text-xs font-semibold uppercase text-[var(--muted)]">
+            <thead className="border-b border-[var(--border)] bg-[var(--surface-muted)]/50 text-xs font-semibold uppercase text-muted-foreground">
               <tr>
                 <th className="px-4 py-3">Paid</th>
                 <th className="px-4 py-3">Course</th>
@@ -61,7 +61,7 @@ export default async function TutorPerformancePaymentsPage() {
                 <tr>
                   <td
                     colSpan={7}
-                    className="px-4 py-12 text-center text-[var(--muted)]"
+                    className="px-4 py-12 text-center text-muted-foreground"
                   >
                     No payments yet.
                   </td>
@@ -82,7 +82,7 @@ export default async function TutorPerformancePaymentsPage() {
                     <td className="px-4 py-3 text-right tabular-nums">
                       {formatMinorUnitsToCurrency(r.amountMinorUnits, "NGN")}
                     </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-[var(--muted)]">
+                    <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">
                       {formatMinorUnitsToCurrency(
                         r.platformFeeMinorUnits,
                         "NGN",
@@ -94,7 +94,7 @@ export default async function TutorPerformancePaymentsPage() {
                         "NGN",
                       )}
                     </td>
-                    <td className="px-4 py-3 font-mono text-[11px] text-[var(--muted)]">
+                    <td className="px-4 py-3 font-mono text-[11px] text-muted-foreground">
                       {r.paystackReference}
                     </td>
                   </tr>

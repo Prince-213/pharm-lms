@@ -58,7 +58,7 @@ export function PaidPurchaseSection({
       />
 
       {applied ? (
-        <p className="text-xs leading-snug text-[var(--muted)]">
+        <p className="text-xs leading-snug text-muted-foreground">
           <span className="line-through">
             {formatMinorUnitsToCurrency(basePriceMinorUnits, priceCurrency)}
           </span>{" "}
@@ -68,7 +68,7 @@ export function PaidPurchaseSection({
               priceCurrency,
             )}
           </strong>{" "}
-          <span className="font-semibold text-emerald-700">
+          <span className="font-semibold text-primary">
             ({applied.percentOff}% off with {applied.code})
           </span>
         </p>

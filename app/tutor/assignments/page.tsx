@@ -40,7 +40,6 @@ export default async function MentorAssignmentsPage() {
     courseId: a.course.id,
     courseTitle: a.course.title,
     status: a.status,
-    dueAtIso: a.dueDate ? a.dueDate.toISOString() : null,
     createdAtIso: a.createdAt.toISOString(),
     submissionCount: a._count.submissions,
   }));

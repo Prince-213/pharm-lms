@@ -206,6 +206,10 @@ export function VerifyCertificateDialog({
                         Valid certificate
                       </p>
                       <p className="text-sm text-slate-600">
+                        <span className="text-slate-500">Course </span>
+                        {result.certificate.courseTitle}
+                      </p>
+                      <p className="text-sm text-slate-600">
                         <span className="text-slate-500">Issued to </span>
                         {result.certificate.holderName}
                       </p>

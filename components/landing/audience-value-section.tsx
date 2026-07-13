@@ -39,7 +39,7 @@ export function AudienceValueSection({
             </h2>
 
             <div className="mb-8 border-l-2 border-[var(--emerald)] pl-5">
-              <p className="text-sm font-semibold leading-relaxed text-[var(--muted)] lg:text-sm">
+              <p className="text-sm font-semibold leading-relaxed text-muted-foreground lg:text-sm">
                 {content.valueIntro}
               </p>
             </div>

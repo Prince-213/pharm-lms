@@ -315,7 +315,7 @@ export function MeetingBookingModal({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-full p-1 text-[var(--muted-soft)] transition hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
+                className="rounded-full p-1 text-muted-foreground transition hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
                 aria-label="Close"
               >
                 <X className="h-5 w-5" />
@@ -323,7 +323,7 @@ export function MeetingBookingModal({
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-              <p className="text-xs text-[var(--muted)]">
+              <p className="text-xs text-muted-foreground">
                 Choose a day your mentor is available, then pick a start time
                 (local time).
               </p>
@@ -347,7 +347,7 @@ export function MeetingBookingModal({
                             ? "cursor-not-allowed opacity-35"
                             : active
                               ? "border-2 border-[var(--primary)] bg-[var(--primary-soft)] text-[var(--primary-soft-text)]"
-                              : "border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--muted)] hover:border-[var(--primary)]/40"
+                              : "border border-[var(--border)] bg-[var(--surface-muted)] text-muted-foreground hover:border-[var(--primary)]/40"
                         }`}
                       >
                         <span className="uppercase tracking-wide">
@@ -382,7 +382,7 @@ export function MeetingBookingModal({
                     );
                   })
                 ) : (
-                  <p className="col-span-full py-6 text-center text-sm text-[var(--muted)]">
+                  <p className="col-span-full py-6 text-center text-sm text-muted-foreground">
                     No open times on this day. Pick another date.
                   </p>
                 )}

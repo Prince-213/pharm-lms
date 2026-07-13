@@ -21,17 +21,9 @@ export function BadgeEarnedToast({ toastId, badge }: BadgeEarnedToastProps) {
     <button
       type="button"
       onClick={handleClick}
-      className="group flex w-[340px] cursor-pointer items-start gap-3 rounded-[var(--radius-lg)] border p-3.5 text-left shadow-[var(--shadow-lg)] transition-opacity hover:opacity-90 active:scale-[0.99]"
-      style={{
-        backgroundColor: "var(--header)",
-        borderColor: "rgba(16,185,129,0.25)",
-      }}
+      className="group flex w-[340px] cursor-pointer items-start gap-3 rounded-lg border border-primary/25 bg-sidebar p-3.5 text-left shadow-lg transition-opacity hover:opacity-90 active:scale-[0.99]"
     >
-      {/* Icon */}
-      <span
-        className="mt-0.5 shrink-0 rounded-md p-1.5"
-        style={{ backgroundColor: "rgba(16,185,129,0.15)" }}
-      >
+      <span className="mt-0.5 shrink-0 rounded-md bg-primary/15 p-1.5">
         {badge.iconUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -40,32 +32,18 @@ export function BadgeEarnedToast({ toastId, badge }: BadgeEarnedToastProps) {
             className="h-5 w-5 object-contain"
           />
         ) : (
-          <Award
-            className="h-5 w-5"
-            style={{ color: "var(--emerald)" }}
-            strokeWidth={2}
-          />
+          <Award className="h-5 w-5 text-primary" strokeWidth={2} />
         )}
       </span>
 
-      {/* Body */}
       <div className="min-w-0 flex-1">
-        <p
-          className="text-xs font-semibold uppercase tracking-wide"
-          style={{ color: "var(--emerald)" }}
-        >
+        <p className="text-xs font-semibold uppercase tracking-wide text-primary">
           Badge Earned!
         </p>
-        <p
-          className="mt-0.5 truncate text-sm font-bold"
-          style={{ color: "var(--header-fg)" }}
-        >
+        <p className="mt-0.5 truncate text-sm font-bold text-sidebar-foreground">
           {badge.name}
         </p>
-        <p
-          className="mt-1 text-xs"
-          style={{ color: "var(--header-fg-muted)" }}
-        >
+        <p className="mt-1 text-xs text-sidebar-foreground/70">
           Tap to view all your achievements →
         </p>
       </div>

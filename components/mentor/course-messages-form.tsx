@@ -1,10 +1,32 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { refreshPortalAfterMutation } from "@/lib/client/refresh-portal-data";
 import { useCourseStudio } from "@/components/mentor/course-studio-context";
 import { RichTextArea } from "@/components/rich-text-area";
+import { FileUploader } from "@/components/upload/file-uploader";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { LoadingButton } from "@/components/ui/loading-button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cnUdemyCard, cnUdemyInput, udemyBorderClass } from "@/lib/ui/udemy-surface";
+import { cn } from "@/lib/utils";
 
 export type CourseMessagesInitial = {
   welcomeMessage: string | null;
@@ -14,6 +36,10 @@ export type CourseMessagesInitial = {
   congratulatoryVideoUrl: string | null;
 };
 
+function plainTextLength(html: string) {
+  return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().length;
+}
+
 export function CourseMessagesForm({
   courseId,
   initial,
@@ -21,7 +47,7 @@ export function CourseMessagesForm({
   courseId: string;
   initial: CourseMessagesInitial;
 }) {
-  const { readOnly } = useCourseStudio();
+  const { readOnly, registerStepHandlers } = useCourseStudio();
   const router = useRouter();
   const [welcomeMessage, setWelcomeMessage] = useState(
     initial.welcomeMessage ?? "",
@@ -39,26 +65,53 @@ export function CourseMessagesForm({
     initial.congratulatoryVideoUrl ?? "",
   );
   const [saving, setSaving] = useState(false);
+  const [mediaUploading, setMediaUploading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const uploadVideo = useCallback(
-    async (file: File) => {
-      const formData = new FormData();
-      formData.set("file", file);
-      formData.set("purpose", "congrats-video");
-      const response = await fetch(`/api/tutor/courses/${courseId}/upload`, {
-        method: "POST",
-        body: formData,
-      });
-      if (!response.ok) {
-        const body = (await response.json().catch(() => null)) as {
-          error?: string;
-        } | null;
-        throw new Error(body?.error ?? "Upload failed.");
+  function validateForNext(): boolean {
+    const errors: Record<string, string> = {};
+    if (!congratulatoryTitle.trim()) {
+      errors.congratulatoryTitle = "Congratulations title is required.";
+    }
+    if (contentType === "ARTICLE") {
+      if (plainTextLength(articleHtml) < 20) {
+        errors.article = "Write at least 20 characters of congratulations text.";
       }
-      return (await response.json()) as { url: string };
-    },
-    [courseId],
-  );
+    } else if (!videoUrl.trim()) {
+      errors.video = "Upload a congratulatory video.";
+    }
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      const firstKey = Object.keys(errors)[0];
+      const idMap: Record<string, string> = {
+        congratulatoryTitle: "congrats-title",
+        article: "congrats-article",
+        video: "congrats-video",
+      };
+      const el = document.getElementById(idMap[firstKey] ?? firstKey);
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      el?.focus();
+      toast.error("Complete the required message fields before continuing.");
+      return false;
+    }
+    return true;
+  }
+
+  useEffect(() => {
+    registerStepHandlers({
+      navigationLocked: saving || mediaUploading,
+      onNext: () => validateForNext(),
+    });
+    return () => registerStepHandlers(null);
+  }, [
+    registerStepHandlers,
+    congratulatoryTitle,
+    contentType,
+    articleHtml,
+    videoUrl,
+    saving,
+    mediaUploading,
+  ]);
 
   async function save() {
     setSaving(true);
@@ -80,133 +133,164 @@ export function CourseMessagesForm({
         return;
       }
       toast.success("Messages saved.");
-      router.refresh();
+      refreshPortalAfterMutation(router);
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <div className="space-y-6 px-6 py-5">
+    <div className="space-y-6 px-4 py-5 sm:px-6">
       {readOnly ? (
-        <p className="rounded border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-sm text-[var(--muted)]">
-          This course is pending review. Course messages are read-only.
-        </p>
+        <Alert className={cn(udemyBorderClass, "bg-[#f7f9fa]")}>
+          <AlertDescription>
+            This course is pending review. Course messages are read-only.
+          </AlertDescription>
+        </Alert>
       ) : null}
 
-      <div>
-        <span className="mb-2 block text-sm font-semibold">
-          Welcome message
-        </span>
-        <p className="mb-2 text-xs text-[var(--muted)]">
-          Sent when a student enrolls. Optional; supports basic formatting.
-        </p>
-        <RichTextArea
-          value={welcomeMessage}
-          onChange={setWelcomeMessage}
-          disabled={readOnly}
-          placeholder="Welcome students to your course."
-        />
-      </div>
-
-      <div className="border-t border-[var(--border)] pt-6">
-        <span className="mb-2 block text-sm font-semibold">
-          Congratulations message
-        </span>
-        <p className="mb-3 text-xs text-[var(--muted)]">
-          Shown when a student completes the course. Provide a title, then
-          choose article (rich text) or video content.
-        </p>
-
-        <label
-          htmlFor="congrats-title"
-          className="mb-1 block text-xs font-semibold"
-        >
-          Title
-        </label>
-        <input
-          id="congrats-title"
-          value={congratulatoryTitle}
-          onChange={(e) => setCongratulatoryTitle(e.target.value)}
-          maxLength={200}
-          disabled={readOnly}
-          placeholder="e.g. You did it!"
-          className="mb-4 h-10 w-full max-w-lg border border-[var(--border)] px-3 text-sm disabled:bg-[var(--surface-muted)]"
-        />
-
-        <label
-          htmlFor="congrats-type"
-          className="mb-1 block text-xs font-semibold"
-        >
-          Content type
-        </label>
-        <select
-          id="congrats-type"
-          value={contentType}
-          onChange={(e) =>
-            setContentType(e.target.value as "ARTICLE" | "VIDEO")
-          }
-          disabled={readOnly}
-          className="mb-4 h-10 max-w-xs border border-[var(--border)] bg-white px-2 text-sm disabled:bg-[var(--surface-muted)]"
-        >
-          <option value="ARTICLE">Article (rich text)</option>
-          <option value="VIDEO">Video</option>
-        </select>
-
-        {contentType === "ARTICLE" ? (
+      <Card className={cnUdemyCard()}>
+        <CardHeader className={cn("border-b", udemyBorderClass)}>
+          <CardTitle className="text-base">Welcome message</CardTitle>
+          <CardDescription>
+            Sent when a student enrolls. Optional; supports basic formatting.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-4">
           <RichTextArea
-            value={articleHtml}
-            onChange={setArticleHtml}
+            value={welcomeMessage}
+            onChange={setWelcomeMessage}
             disabled={readOnly}
-            placeholder="Write your congratulations message."
-            minHeightClass="min-h-[160px]"
+            placeholder="Welcome students to your course."
           />
-        ) : (
-          <div className="rounded border border-[var(--border)] p-4">
-            <p className="mb-2 text-xs text-[var(--muted)]">
-              Upload a short congratulatory video.
-            </p>
-            {videoUrl ? (
-              <p className="mb-2 break-all text-xs text-[var(--foreground)]">
-                {videoUrl}
+        </CardContent>
+      </Card>
+
+      <Card className={cnUdemyCard()}>
+        <CardHeader className={cn("border-b", udemyBorderClass)}>
+          <CardTitle className="text-base">Congratulations message</CardTitle>
+          <CardDescription>
+            Shown when a student completes the course. Provide a title, then
+            choose article (rich text) or video content.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4 pt-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="congrats-title">Title</Label>
+            <Input
+              id="congrats-title"
+              value={congratulatoryTitle}
+              onChange={(e) => {
+                setCongratulatoryTitle(e.target.value);
+                if (fieldErrors.congratulatoryTitle) {
+                  setFieldErrors((prev) => {
+                    const next = { ...prev };
+                    delete next.congratulatoryTitle;
+                    return next;
+                  });
+                }
+              }}
+              maxLength={200}
+              disabled={readOnly}
+              placeholder="e.g. You did it!"
+              className={cn(
+                "max-w-lg",
+                cnUdemyInput(),
+                fieldErrors.congratulatoryTitle && "border-destructive",
+              )}
+            />
+            {fieldErrors.congratulatoryTitle ? (
+              <p className="text-xs text-destructive">
+                {fieldErrors.congratulatoryTitle}
               </p>
             ) : null}
-            <input
-              type="file"
-              accept="video/*"
-              disabled={readOnly}
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                void (async () => {
-                  try {
-                    const { url } = await uploadVideo(file);
-                    setVideoUrl(url);
-                    toast.success("Congratulatory video uploaded.");
-                  } catch (err) {
-                    toast.error(
-                      err instanceof Error
-                        ? err.message
-                        : "Video upload failed.",
-                    );
-                  }
-                })();
-              }}
-              className="text-sm"
-            />
           </div>
-        )}
+
+          <div className="space-y-1.5">
+            <Label htmlFor="congrats-type">Content type</Label>
+            <Select
+              value={contentType}
+              onValueChange={(value) => {
+                setContentType(value as "ARTICLE" | "VIDEO");
+                setFieldErrors({});
+              }}
+              disabled={readOnly}
+            >
+              <SelectTrigger
+                id="congrats-type"
+                className={cn("max-w-xs w-full", cnUdemyInput())}
+              >
+                <SelectValue placeholder="Choose content type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ARTICLE">Article (rich text)</SelectItem>
+                <SelectItem value="VIDEO">Video</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {contentType === "ARTICLE" ? (
+            <div id="congrats-article" className="space-y-1.5">
+              <Label>Article body</Label>
+              <RichTextArea
+                value={articleHtml}
+                onChange={(value) => {
+                  setArticleHtml(value);
+                  if (fieldErrors.article) {
+                    setFieldErrors((prev) => {
+                      const next = { ...prev };
+                      delete next.article;
+                      return next;
+                    });
+                  }
+                }}
+                disabled={readOnly}
+                placeholder="Write your congratulations message."
+                minHeightClass="min-h-[160px]"
+              />
+              {fieldErrors.article ? (
+                <p className="text-xs text-destructive">{fieldErrors.article}</p>
+              ) : null}
+            </div>
+          ) : (
+            <div id="congrats-video" className="space-y-1.5">
+              <Label>Congratulatory video</Label>
+              <FileUploader
+                purpose="congrats-video"
+                courseId={courseId}
+                currentUrl={videoUrl || null}
+                onUploadComplete={(url) => {
+                  setVideoUrl(url);
+                  if (fieldErrors.video) {
+                    setFieldErrors((prev) => {
+                      const next = { ...prev };
+                      delete next.video;
+                      return next;
+                    });
+                  }
+                }}
+                onUploadingChange={setMediaUploading}
+                disabled={readOnly}
+              />
+              {fieldErrors.video ? (
+                <p className="text-xs text-destructive">{fieldErrors.video}</p>
+              ) : null}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-end border-t border-[#d1d7dc] pt-4">
+        <LoadingButton
+          type="button"
+          disabled={readOnly}
+          loading={saving}
+          loadingLabel="Saving…"
+          onClick={() => void save()}
+        >
+          Save messages
+        </LoadingButton>
       </div>
-
-
-      <button
-        type="button"
-        disabled={readOnly || saving}
-        onClick={() => void save()}
-        className="rounded-sm bg-[var(--primary)] px-5 py-2 text-sm font-semibold text-white disabled:opacity-50"
-      >
-        {saving ? "Saving…" : "Save"}
-      </button>
     </div>
   );
 }

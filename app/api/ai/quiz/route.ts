@@ -2,15 +2,21 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
+import { buildEnrolledCourseContext } from "@/lib/ai/course-context";
+import {
+  AiConfigurationError,
+  AiProviderError,
+} from "@/lib/ai/huggingface-errors";
 import { generateSectionQuiz } from "@/lib/ai/huggingface";
 import { db } from "@/lib/db";
 import { studentMayAccessCourseContent } from "@/lib/payments/student-course-access";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { toUserFacingError } from "@/lib/user-facing-error";
 
 const schema = z.object({
   courseId: z.string().cuid(),
   sectionId: z.string().cuid().optional(),
-  source: z.enum(["section", "completed"]).default("completed"),
+  source: z.enum(["section", "course", "completed"]).default("course"),
   questionCount: z.number().int().min(3).max(12).default(4),
 });
 
@@ -63,7 +69,7 @@ export async function POST(request: Request) {
     );
   }
 
-  let sectionIds: string[] = [];
+  let sectionIds: string[] | undefined;
   if (parsed.data.source === "section") {
     if (!parsed.data.sectionId) {
       return NextResponse.json(
@@ -72,7 +78,7 @@ export async function POST(request: Request) {
       );
     }
     sectionIds = [parsed.data.sectionId];
-  } else {
+  } else if (parsed.data.source === "completed") {
     const completed = await db.lessonProgress.findMany({
       where: {
         studentId: session.user.id,
@@ -95,12 +101,15 @@ export async function POST(request: Request) {
 
   const lessons = await db.lesson.findMany({
     where: {
-      section: { courseId: parsed.data.courseId, id: { in: sectionIds } },
+      section: {
+        courseId: parsed.data.courseId,
+        ...(sectionIds ? { id: { in: sectionIds } } : {}),
+      },
     },
     select: {
       title: true,
       content: true,
-      section: { select: { title: true } },
+      section: { select: { title: true, description: true } },
     },
     orderBy: [{ section: { position: "asc" } }, { position: "asc" }],
   });
@@ -111,58 +120,61 @@ export async function POST(request: Request) {
     );
   }
 
-  const sectionContext = lessons
-    .map(
-      (lesson) =>
-        `Section: ${lesson.section.title}\nLesson: ${lesson.title}\n${lesson.content ?? ""}`,
-    )
-    .join("\n\n");
+  const sectionContext = buildEnrolledCourseContext(lessons);
 
-  let questions;
   try {
-    questions = await generateSectionQuiz(
+    const questions = await generateSectionQuiz(
       sectionContext,
       parsed.data.questionCount,
     );
-  } catch {
+    if (!questions.length) {
+      return NextResponse.json(
+        { error: "Could not generate quiz questions from this content yet." },
+        { status: 503 },
+      );
+    }
+
+    const attempt = await db.aIQuizAttempt.create({
+      data: {
+        studentId: session.user.id,
+        courseId: parsed.data.courseId,
+        sectionId:
+          parsed.data.source === "section"
+            ? (parsed.data.sectionId ?? null)
+            : null,
+        promptSource: {
+          source: parsed.data.source,
+          sectionIds: sectionIds ?? "all",
+          contextCharCount: sectionContext.length,
+        },
+        questions: {
+          create: questions.map((question) => ({
+            question: question.question,
+            options: question.options,
+            correctAnswer: question.answer,
+            explanation: question.explanation,
+          })),
+        },
+      },
+      include: { questions: true },
+    });
+
+    return NextResponse.json(attempt, { status: 201 });
+  } catch (err) {
+    const status =
+      err instanceof AiConfigurationError
+        ? 503
+        : err instanceof AiProviderError
+          ? 502
+          : 503;
     return NextResponse.json(
       {
-        error: "Quiz generation is temporarily unavailable. Please try again.",
+        error: toUserFacingError(
+          err,
+          "Quiz generation is temporarily unavailable. Please try again.",
+        ),
       },
-      { status: 503 },
+      { status },
     );
   }
-  if (!questions.length) {
-    return NextResponse.json(
-      { error: "Could not generate quiz questions from this content yet." },
-      { status: 503 },
-    );
-  }
-
-  const attempt = await db.aIQuizAttempt.create({
-    data: {
-      studentId: session.user.id,
-      courseId: parsed.data.courseId,
-      sectionId:
-        parsed.data.source === "section"
-          ? (parsed.data.sectionId ?? null)
-          : null,
-      promptSource: {
-        source: parsed.data.source,
-        sectionIds,
-        contextCharCount: sectionContext.length,
-      },
-      questions: {
-        create: questions.map((question) => ({
-          question: question.question,
-          options: question.options,
-          correctAnswer: question.answer,
-          explanation: question.explanation,
-        })),
-      },
-    },
-    include: { questions: true },
-  });
-
-  return NextResponse.json(attempt, { status: 201 });
 }

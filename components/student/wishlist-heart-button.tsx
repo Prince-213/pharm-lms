@@ -4,6 +4,7 @@ import { Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toggleWishlistAction } from "@/app/student/actions/wishlist";
+import { refreshPortalAfterMutation } from "@/lib/client/refresh-portal-data";
 
 type Variant = "icon" | "labeled" | "toolbar";
 
@@ -39,7 +40,7 @@ export function WishlistHeartButton({
         return;
       }
       setSaved(result.saved);
-      router.refresh();
+      refreshPortalAfterMutation(router);
     });
   }
 
@@ -100,7 +101,7 @@ export function WishlistHeartButton({
         className={
           saved
             ? "h-4 w-4 text-rose-500"
-            : "h-4 w-4 text-[var(--muted)] hover:text-rose-500"
+            : "h-4 w-4 text-muted-foreground hover:text-rose-500"
         }
         strokeWidth={2}
         fill={saved ? "currentColor" : "none"}

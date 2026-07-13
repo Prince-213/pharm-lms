@@ -8,7 +8,8 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
+import { SimpleTooltip } from "@/components/ui/simple-tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 import {
   arrayMove,
@@ -23,13 +24,13 @@ import {
   GripVertical,
   Link2,
   Pencil,
+  Play,
   Plus,
   Trash2,
   Upload,
   X,
   ChevronDown,
   ChevronUp,
-  FileVideo,
 } from "lucide-react";
 import {
   type ReactNode,
@@ -40,12 +41,32 @@ import {
   useState,
 } from "react";
 import { useCourseStudio } from "@/components/mentor/course-studio-context";
+import {
+  CurriculumEditorSkeleton,
+  CurriculumEmptyState,
+  CurriculumField,
+  CurriculumItemMeta,
+  CurriculumList,
+  CurriculumListItem,
+  CurriculumReadOnlyBanner,
+  CurriculumSavingIndicator,
+  CurriculumSectionHeading,
+  formatSectionSummary,
+  NewSectionCard,
+  PanelFormActions,
+  selectClassName,
+} from "@/components/mentor/curriculum-editor-ui";
 import { RichTextArea } from "@/components/rich-text-area";
 import { CurriculumFormPanel } from "@/components/mentor/curriculum-form-panel";
-import { CurriculumSectionNav } from "@/components/mentor/curriculum-section-nav";
 import { FileUploader } from "@/components/upload/file-uploader";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { formatApiErrorBody } from "@/lib/api-error-message";
 import { toast } from "sonner";
+import { notifyPortalMutation } from "@/lib/client/notify-portal-mutation";
 import { parseSectionDescription as parseDescription } from "@/lib/curriculum";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -63,7 +84,6 @@ type SectionAssignment = {
   title: string;
   status: string;
   description?: string | null;
-  dueDate?: string | null;
 };
 
 export type SectionResource = {
@@ -166,13 +186,10 @@ type CurriculumPanel =
   | { kind: "item"; sectionId: string }
   | { kind: "resource"; sectionId: string };
 
-const fieldClass =
-  "w-full rounded-lg border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--foreground)] placeholder:text-[var(--muted)] focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/15 disabled:bg-[var(--surface-muted)] disabled:opacity-70";
-
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export function CurriculumEditorV2({ courseId }: { courseId: string }) {
-  const { readOnly } = useCourseStudio();
+  const { readOnly, registerStepHandlers } = useCourseStudio();
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -201,7 +218,6 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     createEmptyMcqRow(),
   ]);
   const [assignmentDescription, setAssignmentDescription] = useState("");
-  const [assignmentDueDays, setAssignmentDueDays] = useState("7");
 
   // ── Resource form ─────────────────────────────────────────────────────────
   const [resourceType, setResourceType] = useState<"LINK" | "FILE">("LINK");
@@ -214,6 +230,14 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     mimeType?: string;
   } | null>(null);
   const [resourceUploading, setResourceUploading] = useState(false);
+  const [mediaUploadCount, setMediaUploadCount] = useState(0);
+  const fileUploading = mediaUploadCount > 0;
+  const panelLocked = interactionLocked || fileUploading;
+  const handleMediaUploadingChange = useCallback((uploading: boolean) => {
+    setMediaUploadCount((count) =>
+      uploading ? count + 1 : Math.max(0, count - 1),
+    );
+  }, []);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [sectionErrors, setSectionErrors] = useState<
@@ -260,7 +284,6 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     setItemType("QUIZ");
     setQuizMcqRows([createEmptyMcqRow()]);
     setAssignmentDescription("");
-    setAssignmentDueDays("7");
     setResourceType("LINK");
     setResourceTitle("");
     setResourceUrl("");
@@ -293,7 +316,9 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     const res = await fetch(`/api/tutor/courses/${courseId}/curriculum`, { method: "GET", cache: "no-store" });
     if (!res.ok) {
       const j = (await res.json().catch(() => null)) as { error?: string } | null;
-      setError(j?.error ?? "Unable to load curriculum.");
+      const message = formatApiErrorBody(j);
+      setError(message);
+      toast.error(message);
       return;
     }
     const data = (await res.json()) as { sections: (Omit<Section, "resources"> & { description: string | null })[] };
@@ -323,7 +348,13 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
   async function runPending<T>(action: () => Promise<T>) {
     setPendingOps((v) => v + 1);
     try {
-      return await action();
+      const result = await action();
+      if (result instanceof Response) {
+        if (result.ok) notifyPortalMutation();
+      } else {
+        notifyPortalMutation();
+      }
+      return result;
     } finally {
       setPendingOps((v) => v - 1);
     }
@@ -624,22 +655,50 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     return true;
   }
 
-  function handleNextSection() {
-    if (!validateSectionAt(currentStepIndex)) {
-      toast.error("Complete this section before moving on.");
-      focusSection(currentStepIndex);
-      return;
-    }
-    if (currentStepIndex < sections.length - 1) {
-      focusSection(currentStepIndex + 1);
-    }
-  }
-
   function handlePrevSection() {
     if (currentStepIndex > 0) {
       focusSection(currentStepIndex - 1);
     }
   }
+
+  useEffect(() => {
+    registerStepHandlers({
+      navigationLocked:
+        interactionLocked || resourceUploading || fileUploading,
+      onNext: () => {
+        if (sections.length === 0) {
+          toast.error("Add at least one section before continuing.");
+          return false;
+        }
+        if (!validateSectionAt(currentStepIndex)) {
+          toast.error("Complete this section before moving on.");
+          focusSection(currentStepIndex);
+          return false;
+        }
+        if (currentStepIndex < sections.length - 1) {
+          focusSection(currentStepIndex + 1);
+          return false;
+        }
+        return true;
+      },
+      onBack: () => {
+        if (currentStepIndex > 0) {
+          focusSection(currentStepIndex - 1);
+          return false;
+        }
+        return true;
+      },
+    });
+    return () => registerStepHandlers(null);
+  }, [
+    registerStepHandlers,
+    sections,
+    currentStepIndex,
+    interactionLocked,
+    resourceUploading,
+    fileUploading,
+    activePanel,
+  ]);
 
   function toggleSection(id: string) {
     const index = sections.findIndex((s) => s.id === id);
@@ -706,7 +765,6 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     setItemType("QUIZ");
     setQuizMcqRows([createEmptyMcqRow()]);
     setAssignmentDescription("");
-    setAssignmentDueDays("7");
     closePanel();
 
     const res = await runPending(() =>
@@ -718,7 +776,6 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
           title: tempItem.title,
           quizQuestions: submittedType === "QUIZ" ? quizQuestions : undefined,
           assignmentDescription: submittedType === "ASSIGNMENT" ? assignmentDescription : undefined,
-          dueDays: submittedType === "ASSIGNMENT" ? Number(assignmentDueDays || "7") : undefined,
         }),
       }),
     );
@@ -896,26 +953,35 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
 
   // ── Render ────────────────────────────────────────────────────────────────
 
-  if (loading) return <p className="p-6 text-sm text-[var(--muted)]">Loading curriculum...</p>;
-  if (error) return <p className="p-6 text-sm text-[#b32d0f]">{error}</p>;
+  if (loading) return <CurriculumEditorSkeleton />;
+  if (error) {
+    return (
+      <Alert variant="destructive" className="m-6">
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <TooltipProvider>
-    <div className="space-y-6 px-3 py-4 sm:px-6 sm:py-6">
-      {readOnly ? (
-        <p className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-sm text-[var(--muted)]">
-          This course is pending review. Curriculum is read-only.
+    <div className="space-y-6 px-4 py-5 sm:px-6 sm:py-6">
+      {readOnly ? <CurriculumReadOnlyBanner /> : null}
+      <div className="space-y-1">
+        <p className="text-sm text-muted-foreground">
+          Build your course outline section by section. Add lectures, assessments,
+          and resources, then use Next to validate each section before moving on.
+        </p>
+      </div>
+      {saving ? <CurriculumSavingIndicator /> : null}
+      {fileUploading ? (
+        <p className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Upload className="size-3.5 animate-pulse text-primary" aria-hidden />
+          Uploading file… Other actions are disabled until the upload finishes.
         </p>
       ) : null}
-      <p className="text-sm text-[var(--muted)]">
-        Build your course section by section. Use Next at the bottom to validate
-        each section, or jump freely via the section list.
-      </p>
-      {saving ? (
-        <p className="flex items-center gap-1.5 text-xs text-slate-400">
-          <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--primary)]" />
-          Saving changes…
-        </p>
+
+      {sections.length === 0 ? (
+        <CurriculumEmptyState message="Start by adding your first section below. Each section groups related lectures and assessments." />
       ) : null}
 
       <DndContext
@@ -938,132 +1004,154 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
               isExpanded={expandedSections.has(section.id)}
               onToggle={() => toggleSection(section.id)}
               titleRow={
-                <div className=" w-full flex items-center justify-between">
-                  <div className="flex items-center gap-2 overflow-hidden mr-4">
-                     <span className="shrink-0 text-sm font-bold text-[var(--foreground)]">{`Section ${sectionIndex + 1} : `}</span>
-                    {editingSectionId === section.id ? (
-                      <div className="flex items-center gap-1">
-                        <input
-                          value={editingSectionTitle}
-                          onChange={(e) => setEditingSectionTitle(e.target.value)}
-                          disabled={interactionLocked}
-                          autoFocus
-                          className="min-w-0 flex-1 max-w-[300px] border border-[var(--border)] px-2 py-1 text-sm rounded"
+                <div className="flex w-full min-w-0 items-center justify-between gap-3">
+                  <div className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-3">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <Badge variant="outline" className="shrink-0 font-semibold">
+                        Section {sectionIndex + 1}
+                      </Badge>
+                      {editingSectionId === section.id ? (
+                        <div
+                          className="flex min-w-0 flex-1 items-center gap-1.5"
                           onClick={(e) => e.stopPropagation()}
-                        />
-                        <button
-                          type="button"
-                          disabled={interactionLocked}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            void renameSection(section.id, editingSectionTitle);
-                          }}
-                          className="rounded-full bg-emerald-100 p-1.5 text-emerald-700 hover:bg-emerald-200"
                         >
-                          <Check className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          disabled={readOnly}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingSectionId(null);
-                            setEditingSectionTitle("");
-                          }}
-                          className="rounded-full bg-gray-100 p-1.5 text-gray-700 hover:bg-gray-200"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ) : (
-                       <p className="truncate text-sm font-semibold text-[var(--foreground)]">
-                        {section.title}
-                      </p>
-                    )}
+                          <Input
+                            value={editingSectionTitle}
+                            onChange={(e) => setEditingSectionTitle(e.target.value)}
+                            disabled={interactionLocked}
+                            autoFocus
+                            className="h-8 max-w-xs"
+                            aria-label="Section title"
+                          />
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="icon-sm"
+                            disabled={interactionLocked}
+                            onClick={() =>
+                              void renameSection(section.id, editingSectionTitle)
+                            }
+                            aria-label="Save section title"
+                          >
+                            <Check className="size-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            disabled={readOnly}
+                            onClick={() => {
+                              setEditingSectionId(null);
+                              setEditingSectionTitle("");
+                            }}
+                            aria-label="Cancel rename"
+                          >
+                            <X className="size-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <p className="truncate text-sm font-semibold text-foreground">
+                          {section.title}
+                        </p>
+                      )}
+                    </div>
+                    {!expandedSections.has(section.id) ? (
+                      <span className="truncate text-xs text-muted-foreground">
+                        {formatSectionSummary(section)}
+                      </span>
+                    ) : null}
                   </div>
-                  
-                  <div className="flex items-center gap-1 shrink-0">
-                    {!editingSectionId && (
-                      <Tooltip content="Rename section" side="top">
-                        <button
+
+                  <div className="flex shrink-0 items-center gap-0.5">
+                    {!editingSectionId ? (
+                      <SimpleTooltip content="Rename section" side="top">
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="icon-sm"
                           disabled={interactionLocked}
                           onClick={(e) => {
                             e.stopPropagation();
                             setEditingSectionId(section.id);
                             setEditingSectionTitle(section.title);
                           }}
-                          className="rounded-lg p-1.5 text-slate-400 transition-all hover:bg-slate-100 hover:text-slate-600 active:scale-95 disabled:pointer-events-none disabled:opacity-40"
+                          aria-label="Rename section"
                         >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </button>
-                      </Tooltip>
-                    )}
-                    <Tooltip content="Delete section" side="top">
-                      <button
+                          <Pencil className="size-3.5" />
+                        </Button>
+                      </SimpleTooltip>
+                    ) : null}
+                    <SimpleTooltip content="Delete section" side="top">
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="icon-sm"
                         disabled={interactionLocked}
+                        className="text-muted-foreground hover:text-destructive"
                         onClick={(e) => {
                           e.stopPropagation();
                           void deleteSection(section.id);
                         }}
-                        className="rounded-lg p-1.5 text-slate-400 transition-all hover:bg-red-50 hover:text-red-500 active:scale-95 disabled:pointer-events-none disabled:opacity-40"
+                        aria-label="Delete section"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </Tooltip>
-                    <div className="h-4 w-px bg-slate-200 mx-1" />
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </SimpleTooltip>
+                    <div className="mx-1 hidden h-4 w-px bg-border sm:block" />
                     {expandedSections.has(section.id) ? (
-                      <ChevronUp className="h-4 w-4 text-slate-400" />
+                      <ChevronUp className="size-4 text-muted-foreground" />
                     ) : (
-                      <ChevronDown className="h-4 w-4 text-slate-400" />
+                      <ChevronDown className="size-4 text-muted-foreground" />
                     )}
                   </div>
                 </div>
               }
             >
               {sectionErrors[section.id]?.content ? (
-                <p className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-                  {sectionErrors[section.id]?.content}
-                </p>
+                <Alert variant="destructive" className="mb-4">
+                  <AlertDescription>
+                    {sectionErrors[section.id]?.content}
+                  </AlertDescription>
+                </Alert>
               ) : null}
               {sectionErrors[section.id]?.title ? (
-                <p className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-                  {sectionErrors[section.id]?.title}
-                </p>
+                <Alert variant="destructive" className="mb-4">
+                  <AlertDescription>
+                    {sectionErrors[section.id]?.title}
+                  </AlertDescription>
+                </Alert>
               ) : null}
-              {/* ── Lessons ─────────────────────────────────────────────── */}
+              {/* ── Lectures ──────────────────────────────────────────────── */}
               <div className="space-y-3">
+                <CurriculumSectionHeading
+                  title="Curriculum content"
+                  description="Lectures students watch or read in this section."
+                />
                 {section.lessons.length === 0 ? (
-                  <p className="rounded-lg border border-dashed border-[var(--border)] px-3 py-4 text-center text-xs text-[var(--muted)]">
-                    No lessons yet. Use &quot;Add lesson&quot; below.
-                  </p>
-                ) : null}
-                {section.lessons.map((lesson) => {
+                  <CurriculumEmptyState message='No lectures yet. Click "Curriculum item" and choose Add lecture.' />
+                ) : (
+                  <CurriculumList>
+                {section.lessons.map((lesson, lessonIndex) => {
                   const lessonType: "VIDEO" | "ARTICLE" =
                     lesson.content === null ? "VIDEO" : "ARTICLE";
                   return (
-                    <div
-                      key={lesson.id}
-                      className="rounded-xl border border-[var(--border)] bg-white p-3 sm:p-4"
-                    >
-                      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex min-w-0 flex-1 items-center gap-2.5">
-                          <div
-                            className={cn(
-                              "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-                              lessonType === "VIDEO"
-                                ? "bg-violet-50 text-violet-700"
-                                : "bg-emerald-50 text-emerald-700",
-                            )}
-                          >
-                            {lessonType === "VIDEO" ? (
-                              <FileVideo className="h-4 w-4" aria-hidden />
-                            ) : (
-                              <FileText className="h-4 w-4" aria-hidden />
-                            )}
-                          </div>
-                          <input
+                    <CurriculumListItem key={lesson.id} className="space-y-4">
+                      <CurriculumItemMeta
+                        icon={
+                          lessonType === "VIDEO" ? (
+                            <Play
+                              className="size-2.5"
+                              fill="currentColor"
+                              aria-hidden
+                            />
+                          ) : (
+                            <FileText className="size-4" aria-hidden />
+                          )
+                        }
+                        badge={lessonType === "VIDEO" ? "Video" : "Article"}
+                        badgeVariant="outline"
+                        title={
+                          <Input
                             defaultValue={lesson.title}
                             disabled={interactionLocked}
                             onBlur={(e) =>
@@ -1071,63 +1159,66 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                                 title: e.target.value,
                               })
                             }
-                            className="min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-1 py-1 text-sm font-semibold text-[var(--foreground)] focus:border-[var(--border)] focus:bg-[var(--surface-muted)] focus:outline-none"
-                            aria-label="Lesson title"
+                            className="h-8 border-transparent bg-transparent px-0 font-medium shadow-none focus-visible:border-input focus-visible:bg-background"
+                            aria-label={`Lecture ${lessonIndex + 1} title`}
                           />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <select
-                            value={lessonType}
-                            disabled={interactionLocked}
-                            onChange={(e) => {
-                              const next = e.target.value as "VIDEO" | "ARTICLE";
-                              setSections((prev) =>
-                                prev.map((sec) => {
-                                  if (sec.id !== section.id) return sec;
-                                  return {
-                                    ...sec,
-                                    lessons: sec.lessons.map((l) => {
-                                      if (l.id !== lesson.id) return l;
-                                      return next === "ARTICLE"
-                                        ? {
-                                            ...l,
-                                            videoUrl: null,
-                                            content: l.content ?? "",
-                                          }
-                                        : {
-                                            ...l,
-                                            content: null,
-                                            videoUrl: l.videoUrl ?? null,
-                                          };
-                                    }),
-                                  };
-                                }),
-                              );
-                              queueLessonPatch(section.id, lesson.id, {
-                                contentType: next,
-                                value:
-                                  next === "ARTICLE"
-                                    ? (lesson.content ?? "")
-                                    : (lesson.videoUrl ?? ""),
-                              });
-                            }}
-                            className="h-9 rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] px-2.5 text-xs font-medium text-[var(--foreground)]"
-                            aria-label="Lesson type"
-                          >
-                            <option value="VIDEO">Video</option>
-                            <option value="ARTICLE">Article</option>
-                          </select>
-                          <button
-                            type="button"
-                            disabled={interactionLocked}
-                            onClick={() => void deleteLesson(section.id, lesson.id)}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 transition hover:bg-red-100 disabled:opacity-50"
-                            aria-label="Delete lesson"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
+                        }
+                        actions={
+                          <>
+                            <select
+                              value={lessonType}
+                              disabled={interactionLocked}
+                              onChange={(e) => {
+                                const next = e.target.value as "VIDEO" | "ARTICLE";
+                                setSections((prev) =>
+                                  prev.map((sec) => {
+                                    if (sec.id !== section.id) return sec;
+                                    return {
+                                      ...sec,
+                                      lessons: sec.lessons.map((l) => {
+                                        if (l.id !== lesson.id) return l;
+                                        return next === "ARTICLE"
+                                          ? {
+                                              ...l,
+                                              videoUrl: null,
+                                              content: l.content ?? "",
+                                            }
+                                          : {
+                                              ...l,
+                                              content: null,
+                                              videoUrl: l.videoUrl ?? null,
+                                            };
+                                      }),
+                                    };
+                                  }),
+                                );
+                                queueLessonPatch(section.id, lesson.id, {
+                                  contentType: next,
+                                  value:
+                                    next === "ARTICLE"
+                                      ? (lesson.content ?? "")
+                                      : (lesson.videoUrl ?? ""),
+                                });
+                              }}
+                              className={cn(selectClassName, "h-8 w-[110px]")}
+                              aria-label="Lecture type"
+                            >
+                              <option value="VIDEO">Video</option>
+                              <option value="ARTICLE">Article</option>
+                            </select>
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon-sm"
+                              disabled={interactionLocked}
+                              onClick={() => void deleteLesson(section.id, lesson.id)}
+                              aria-label="Delete lecture"
+                            >
+                              <Trash2 className="size-4" />
+                            </Button>
+                          </>
+                        }
+                      />
 
                       {lessonType === "ARTICLE" ? (
                         <RichTextArea
@@ -1156,13 +1247,14 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                             });
                           }}
                           disabled={interactionLocked}
-                          placeholder="Article content"
+                          placeholder="Write the article content for this lecture."
                           minHeightClass="min-h-[120px]"
                         />
                       ) : (
                         <FileUploader
                           purpose="lesson-video"
                           courseId={courseId}
+                          onUploadingChange={handleMediaUploadingChange}
                           compact
                           currentUrl={lesson.videoUrl}
                           onUploadComplete={(url) => {
@@ -1211,59 +1303,59 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                           showPreview={false}
                         />
                       )}
-                    </div>
+                    </CurriculumListItem>
                   );
                 })}
+                  </CurriculumList>
+                )}
               </div>
 
               {/* ── Resources ───────────────────────────────────────────── */}
               {section.resources.length > 0 ? (
-                <div className="mt-4 space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                    Resources
-                  </p>
-                  <ul className="space-y-2">
+                <div className="mt-6 space-y-3">
+                  <CurriculumSectionHeading title="Resources" />
+                  <CurriculumList>
                     {section.resources.map((resource) => (
-                      <li
-                        key={resource.id}
-                        className="rounded-xl border border-[var(--border)] bg-white p-3"
-                      >
-                        <div className="mb-2 flex items-start justify-between gap-2">
-                          <div className="flex min-w-0 items-center gap-2">
-                            {resource.type === "LINK" ? (
-                              <Link2
-                                className="h-4 w-4 shrink-0 text-[var(--primary)]"
-                                aria-hidden
-                              />
+                      <CurriculumListItem key={resource.id} className="space-y-3">
+                        <CurriculumItemMeta
+                          icon={
+                            resource.type === "LINK" ? (
+                              <Link2 className="size-4" aria-hidden />
                             ) : (
-                              <FileText
-                                className="h-4 w-4 shrink-0 text-[var(--primary)]"
-                                aria-hidden
-                              />
-                            )}
-                            <span className="truncate text-sm font-medium text-[var(--foreground)]">
+                              <FileText className="size-4" aria-hidden />
+                            )
+                          }
+                          badge={resource.type === "LINK" ? "Link" : "File"}
+                          badgeVariant="outline"
+                          title={
+                            <span className="truncate text-sm font-medium text-foreground">
                               {resource.title}
                             </span>
-                          </div>
-                          {resource.type === "LINK" ? (
-                            <a
-                              href={resource.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-[var(--primary)] hover:underline"
-                            >
-                              Open
-                              <ExternalLink className="h-3 w-3" aria-hidden />
-                            </a>
-                          ) : null}
-                        </div>
+                          }
+                          actions={
+                            resource.type === "LINK" ? (
+                              <a
+                                href={resource.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                              >
+                                Open
+                                <ExternalLink className="size-3" aria-hidden />
+                              </a>
+                            ) : null
+                          }
+                        />
                         {resource.type === "FILE" && !interactionLocked ? (
                           <FileUploader
-                            purpose="resource-file"
+                            purpose="curriculum-resource"
                             courseId={courseId}
+                            onUploadingChange={handleMediaUploadingChange}
                             compact
                             currentUrl={resource.url}
                             fileName={resource.originalFileName}
+                            fileSizeBytes={resource.sizeBytes}
+                            mimeType={resource.mimeType}
                             onUploadComplete={(url, meta) =>
                               void replaceResourceFile(
                                 section.id,
@@ -1279,84 +1371,102 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                             showPreview={false}
                           />
                         ) : !interactionLocked ? (
-                          <button
+                          <Button
                             type="button"
+                            variant="link"
+                            size="sm"
+                            className="h-auto px-0 text-destructive"
                             onClick={() =>
                               void removeResource(section.id, resource.id)
                             }
-                            className="text-xs font-medium text-red-600 hover:underline"
                           >
                             Remove link
-                          </button>
+                          </Button>
                         ) : null}
-                      </li>
+                      </CurriculumListItem>
                     ))}
-                  </ul>
+                  </CurriculumList>
                 </div>
               ) : null}
 
               {/* ── Quizzes & assignments ───────────────────────────────── */}
               {(section.quizzes.length > 0 ||
                 section.assignmentItems.length > 0) && (
-                <div className="mt-4 space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                    Quizzes & assignments
-                  </p>
-                  <ul className="space-y-1.5">
+                <div className="mt-6 space-y-3">
+                  <CurriculumSectionHeading title="Assessments" />
+                  <CurriculumList>
                     {section.quizzes.map((quiz) => (
-                      <li
-                        key={quiz.id}
-                        className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2 text-sm text-[var(--foreground)]"
-                      >
-                        Quiz · {quiz.title}
-                      </li>
+                      <CurriculumListItem key={quiz.id}>
+                        <CurriculumItemMeta
+                          icon={<FileText className="size-4" aria-hidden />}
+                          badge="Quiz"
+                          badgeVariant="secondary"
+                          title={
+                            <span className="text-sm font-medium text-foreground">
+                              {quiz.title}
+                            </span>
+                          }
+                        />
+                      </CurriculumListItem>
                     ))}
                     {section.assignmentItems.map((a) => (
-                      <li
-                        key={a.id}
-                        className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2 text-sm text-[var(--foreground)]"
-                      >
-                        Assignment · {a.title}
-                      </li>
+                      <CurriculumListItem key={a.id}>
+                        <CurriculumItemMeta
+                          icon={<FileText className="size-4" aria-hidden />}
+                          badge="Assignment"
+                          badgeVariant="secondary"
+                          title={
+                            <span className="text-sm font-medium text-foreground">
+                              {a.title}
+                            </span>
+                          }
+                        />
+                      </CurriculumListItem>
                     ))}
-                  </ul>
+                  </CurriculumList>
                 </div>
               )}
 
               {/* ── Add actions ─────────────────────────────────────────── */}
-              <div className="mt-4 flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
-                <button
+              <div className="mt-6 flex flex-wrap gap-2 border-t border-border pt-5">
+                <Button
                   type="button"
-                  disabled={interactionLocked}
+                  variant="default"
+                  size="sm"
+                  disabled={panelLocked}
                   onClick={() => {
+                    if (fileUploading) return;
                     openPanel({ kind: "lesson", sectionId: section.id });
                     setNewLessonType(suggestContentType(section.title));
                   }}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[var(--primary)] bg-white px-3 text-xs font-semibold text-[var(--primary)] transition hover:bg-[var(--primary)]/5 disabled:opacity-50"
                 >
-                  <Plus className="h-3.5 w-3.5" aria-hidden />
-                  Add lesson
-                </button>
-                <button
+                  <Plus className="size-3.5" aria-hidden />
+                  Add lecture
+                </Button>
+                <Button
                   type="button"
-                  disabled={interactionLocked}
+                  variant="outline"
+                  size="sm"
+                  disabled={panelLocked}
                   onClick={() => {
+                    if (fileUploading) return;
                     openPanel({ kind: "item", sectionId: section.id });
                     setItemTitle("");
                     setItemType("QUIZ");
                     setQuizMcqRows([createEmptyMcqRow()]);
                     setAssignmentDescription("");
-                    setAssignmentDueDays("7");
                   }}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[var(--border)] bg-white px-3 text-xs font-semibold text-[var(--foreground)] transition hover:bg-[var(--surface-muted)] disabled:opacity-50"
                 >
-                  <Plus className="h-3.5 w-3.5" aria-hidden />
+                  <Plus className="size-3.5" aria-hidden />
                   Quiz / assignment
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
-                  disabled={interactionLocked}
+                  variant="outline"
+                  size="sm"
+                  disabled={panelLocked}
                   onClick={() => {
+                    if (fileUploading) return;
                     openPanel({ kind: "resource", sectionId: section.id });
                     setResourceType("LINK");
                     setResourceTitle("");
@@ -1364,146 +1474,151 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                     setResourceFileUrl(null);
                     setResourceFileMeta(null);
                   }}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[var(--border)] bg-white px-3 text-xs font-semibold text-[var(--foreground)] transition hover:bg-[var(--surface-muted)] disabled:opacity-50"
                 >
-                  <Plus className="h-3.5 w-3.5" aria-hidden />
+                  <Plus className="size-3.5" aria-hidden />
                   Resource
-                </button>
+                </Button>
               </div>
 
               <CurriculumFormPanel
                 open={panelOpenFor(section.id, "lesson")}
                 onClose={closePanel}
-                title="Add lesson"
-                description="Video or article for this section."
+                closeDisabled={fileUploading}
+                title="Add lecture"
+                description="Choose video or article content for this section."
               >
                 <div className="space-y-4">
-                  <div className="grid gap-3 sm:grid-cols-[1fr_140px]">
-                    <input
-                      value={newLessonTitle}
-                      onChange={(e) => setNewLessonTitle(e.target.value)}
-                      disabled={interactionLocked}
-                      placeholder="Lesson title"
-                      className={fieldClass}
-                    />
-                    <select
-                      value={newLessonType}
-                      disabled={interactionLocked}
-                      onChange={(e) => {
-                        setNewLessonType(e.target.value as "VIDEO" | "ARTICLE");
-                        setNewLessonVideoUrl(null);
-                      }}
-                      className={fieldClass}
-                    >
-                      <option value="VIDEO">Video</option>
-                      <option value="ARTICLE">Article</option>
-                    </select>
+                  <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
+                    <CurriculumField label="Lecture title" htmlFor={`lesson-title-${section.id}`}>
+                      <Input
+                        id={`lesson-title-${section.id}`}
+                        value={newLessonTitle}
+                        onChange={(e) => setNewLessonTitle(e.target.value)}
+                        disabled={interactionLocked}
+                        placeholder="e.g. Introduction to the topic"
+                      />
+                    </CurriculumField>
+                    <CurriculumField label="Content type" htmlFor={`lesson-type-${section.id}`}>
+                      <select
+                        id={`lesson-type-${section.id}`}
+                        value={newLessonType}
+                        disabled={panelLocked}
+                        onChange={(e) => {
+                          if (fileUploading) return;
+                          setNewLessonType(e.target.value as "VIDEO" | "ARTICLE");
+                          setNewLessonVideoUrl(null);
+                        }}
+                        className={selectClassName}
+                      >
+                        <option value="VIDEO">Video</option>
+                        <option value="ARTICLE">Article</option>
+                      </select>
+                    </CurriculumField>
                   </div>
                   {newLessonType === "ARTICLE" ? (
-                    <RichTextArea
-                      value={newLessonArticleContent}
-                      onChange={setNewLessonArticleContent}
-                      disabled={interactionLocked}
-                      placeholder="Article content"
-                      minHeightClass="min-h-[140px]"
-                    />
+                    <CurriculumField label="Article body">
+                      <RichTextArea
+                        value={newLessonArticleContent}
+                        onChange={setNewLessonArticleContent}
+                        disabled={interactionLocked}
+                        placeholder="Write the lecture content students will read."
+                        minHeightClass="min-h-[140px]"
+                      />
+                    </CurriculumField>
                   ) : (
-                    <FileUploader
-                      purpose="lesson-video"
-                      courseId={courseId}
-                      compact
-                      disabled={interactionLocked}
-                      currentUrl={newLessonVideoUrl}
-                      onUploadComplete={(url) => setNewLessonVideoUrl(url)}
-                      onRemove={() => setNewLessonVideoUrl(null)}
-                      showPreview={false}
-                    />
+                    <CurriculumField label="Lecture video">
+                      <FileUploader
+                        purpose="lesson-video"
+                        courseId={courseId}
+                        onUploadingChange={handleMediaUploadingChange}
+                        compact
+                        disabled={interactionLocked}
+                        currentUrl={newLessonVideoUrl}
+                        onUploadComplete={(url) => setNewLessonVideoUrl(url)}
+                        onRemove={() => setNewLessonVideoUrl(null)}
+                        showPreview={false}
+                      />
+                    </CurriculumField>
                   )}
-                  <div className="flex flex-wrap justify-end gap-2 border-t border-[var(--border)] pt-4">
-                    <button
-                      type="button"
-                      disabled={interactionLocked}
-                      onClick={closePanel}
-                      className="h-10 rounded-lg border border-[var(--border)] px-4 text-sm font-medium text-[var(--muted)]"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      disabled={interactionLocked || !canAddNewLesson}
-                      onClick={() =>
-                        newLessonType === "ARTICLE"
-                          ? void addLessonWithContent(section.id)
-                          : void addLessonWithVideo(
-                              section.id,
-                              newLessonVideoUrl!,
-                            )
-                      }
-                      className="h-10 rounded-lg bg-[var(--primary)] px-5 text-sm font-semibold text-white disabled:opacity-50"
-                    >
-                      Add lesson
-                    </button>
-                  </div>
+                  <PanelFormActions
+                    onCancel={closePanel}
+                    cancelDisabled={panelLocked}
+                    submitDisabled={panelLocked || !canAddNewLesson}
+                    submitLabel={fileUploading ? "Uploading…" : "Add lecture"}
+                    onSubmit={() =>
+                      newLessonType === "ARTICLE"
+                        ? void addLessonWithContent(section.id)
+                        : void addLessonWithVideo(section.id, newLessonVideoUrl!)
+                    }
+                  />
                 </div>
               </CurriculumFormPanel>
 
               <CurriculumFormPanel
                 open={panelOpenFor(section.id, "item")}
                 onClose={closePanel}
+                closeDisabled={fileUploading}
                 title="Add quiz or assignment"
-                description="Quizzes use multiple-choice questions; assignments include instructions."
+                description="Quizzes use multiple-choice questions. Assignments include instructions and a due date."
               >
                 <div className="space-y-4">
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <select
-                      value={itemType}
-                      disabled={interactionLocked}
-                      onChange={(e) =>
-                        setItemType(e.target.value as "QUIZ" | "ASSIGNMENT")
-                      }
-                      className={fieldClass}
-                    >
-                      <option value="QUIZ">Quiz</option>
-                      <option value="ASSIGNMENT">Assignment</option>
-                    </select>
-                    <input
-                      value={itemTitle}
-                      onChange={(e) => setItemTitle(e.target.value)}
-                      disabled={interactionLocked}
-                      placeholder="Title"
-                      className={fieldClass}
-                    />
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <CurriculumField label="Type" htmlFor={`item-type-${section.id}`}>
+                      <select
+                        id={`item-type-${section.id}`}
+                        value={itemType}
+                        disabled={interactionLocked}
+                        onChange={(e) =>
+                          setItemType(e.target.value as "QUIZ" | "ASSIGNMENT")
+                        }
+                        className={selectClassName}
+                      >
+                        <option value="QUIZ">Quiz</option>
+                        <option value="ASSIGNMENT">Assignment</option>
+                      </select>
+                    </CurriculumField>
+                    <CurriculumField label="Title" htmlFor={`item-title-${section.id}`}>
+                      <Input
+                        id={`item-title-${section.id}`}
+                        value={itemTitle}
+                        onChange={(e) => setItemTitle(e.target.value)}
+                        disabled={interactionLocked}
+                        placeholder="Assessment title"
+                      />
+                    </CurriculumField>
                   </div>
                   {itemType === "QUIZ" ? (
                     <div className="space-y-3">
-                      <p className="text-xs text-[var(--muted)]">
-                        One correct answer and three distractors per question.
+                      <p className="text-xs text-muted-foreground">
+                        Add one correct answer and three distractors per question.
                       </p>
                       {quizMcqRows.map((row, rowIndex) => (
                         <div
                           key={row.id}
-                          className="space-y-2 rounded-xl border border-[var(--border)] bg-[var(--surface-muted)]/50 p-3"
+                          className="space-y-3 rounded-lg border border-border bg-muted/30 p-4"
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-xs font-semibold text-[var(--muted)]">
+                            <span className="text-xs font-semibold text-muted-foreground">
                               Question {rowIndex + 1}
                             </span>
                             {quizMcqRows.length > 1 ? (
-                              <button
+                              <Button
                                 type="button"
+                                variant="link"
+                                size="sm"
                                 disabled={interactionLocked}
+                                className="h-auto px-0 text-destructive"
                                 onClick={() =>
                                   setQuizMcqRows((prev) =>
                                     prev.filter((r) => r.id !== row.id),
                                   )
                                 }
-                                className="text-xs font-medium text-red-600 hover:underline"
                               >
                                 Remove
-                              </button>
+                              </Button>
                             ) : null}
                           </div>
-                          <input
+                          <Input
                             value={row.prompt}
                             onChange={(e) =>
                               setQuizMcqRows((prev) =>
@@ -1516,9 +1631,8 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                             }
                             disabled={interactionLocked}
                             placeholder="Question"
-                            className={fieldClass}
                           />
-                          <input
+                          <Input
                             value={row.correctAnswer}
                             onChange={(e) =>
                               setQuizMcqRows((prev) =>
@@ -1531,7 +1645,6 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                             }
                             disabled={interactionLocked}
                             placeholder="Correct answer"
-                            className={fieldClass}
                           />
                           <div className="grid gap-2 sm:grid-cols-3">
                             {(
@@ -1541,7 +1654,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                                 ["wrong3", "Distractor 3"],
                               ] as const
                             ).map(([key, label]) => (
-                              <input
+                              <Input
                                 key={key}
                                 value={row[key]}
                                 onChange={(e) =>
@@ -1555,160 +1668,152 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                                 }
                                 disabled={interactionLocked}
                                 placeholder={label}
-                                className={fieldClass}
                               />
                             ))}
                           </div>
                         </div>
                       ))}
-                      <button
+                      <Button
                         type="button"
+                        variant="link"
+                        size="sm"
                         disabled={interactionLocked}
+                        className="h-auto px-0"
                         onClick={() =>
                           setQuizMcqRows((prev) => [...prev, createEmptyMcqRow()])
                         }
-                        className="text-xs font-semibold text-[var(--primary)] hover:underline"
                       >
-                        + Another question
-                      </button>
+                        + Add another question
+                      </Button>
                     </div>
                   ) : (
-                    <div className="space-y-3">
-                      <RichTextArea
-                        value={assignmentDescription}
-                        onChange={setAssignmentDescription}
-                        disabled={interactionLocked}
-                        placeholder="Assignment instructions"
-                        minHeightClass="min-h-[120px]"
-                      />
-                      <input
-                        value={assignmentDueDays}
-                        onChange={(e) => setAssignmentDueDays(e.target.value)}
-                        disabled={interactionLocked}
-                        placeholder="Due in days (e.g. 7)"
-                        className={fieldClass}
-                      />
+                    <div className="space-y-4">
+                      <CurriculumField label="Instructions">
+                        <RichTextArea
+                          value={assignmentDescription}
+                          onChange={setAssignmentDescription}
+                          disabled={interactionLocked}
+                          placeholder="Describe what students should submit."
+                          minHeightClass="min-h-[120px]"
+                        />
+                      </CurriculumField>
                     </div>
                   )}
-                  <div className="flex flex-wrap justify-end gap-2 border-t border-[var(--border)] pt-4">
-                    <button
-                      type="button"
-                      disabled={interactionLocked}
-                      onClick={closePanel}
-                      className="h-10 rounded-lg border border-[var(--border)] px-4 text-sm font-medium text-[var(--muted)]"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      disabled={interactionLocked || !canAddItem}
-                      onClick={() => void addItem(section.id)}
-                      className="h-10 rounded-lg bg-[var(--primary)] px-5 text-sm font-semibold text-white disabled:opacity-50"
-                    >
-                      Add {itemType === "QUIZ" ? "quiz" : "assignment"}
-                    </button>
-                  </div>
+                  <PanelFormActions
+                    onCancel={closePanel}
+                    cancelDisabled={panelLocked}
+                    submitDisabled={panelLocked || !canAddItem}
+                    submitLabel={
+                      itemType === "QUIZ" ? "Add quiz" : "Add assignment"
+                    }
+                    onSubmit={() => void addItem(section.id)}
+                  />
                 </div>
               </CurriculumFormPanel>
 
               <CurriculumFormPanel
                 open={panelOpenFor(section.id, "resource")}
                 onClose={closePanel}
+                closeDisabled={fileUploading}
                 title="Add resource"
-                description="Link to an external page or upload a file for students."
+                description="Link to an external page or upload a document file (PDF, Word, Excel, PowerPoint, or TXT) for students."
               >
                 <div className="space-y-4">
-                  <div className="flex gap-2">
-                    <button
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
                       type="button"
+                      variant={resourceType === "LINK" ? "default" : "outline"}
+                      disabled={fileUploading}
                       onClick={() => {
+                        if (fileUploading) return;
                         setResourceType("LINK");
                         setResourceFileUrl(null);
                         setResourceFileMeta(null);
                       }}
-                      className={cn(
-                        "inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-xs font-semibold transition",
-                        resourceType === "LINK"
-                          ? "border-[var(--primary)] bg-[var(--primary)] text-white"
-                          : "border-[var(--border)] bg-white text-[var(--foreground)]",
-                      )}
                     >
-                      <Link2 className="h-3.5 w-3.5" aria-hidden />
-                      Link
-                    </button>
-                    <button
+                      <Link2 className="size-3.5" aria-hidden />
+                      External link
+                    </Button>
+                    <Button
                       type="button"
+                      variant={resourceType === "FILE" ? "default" : "outline"}
+                      disabled={fileUploading}
                       onClick={() => {
+                        if (fileUploading) return;
                         setResourceType("FILE");
                         setResourceUrl("");
                       }}
-                      className={cn(
-                        "inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-xs font-semibold transition",
-                        resourceType === "FILE"
-                          ? "border-[var(--primary)] bg-[var(--primary)] text-white"
-                          : "border-[var(--border)] bg-white text-[var(--foreground)]",
-                      )}
                     >
-                      <Upload className="h-3.5 w-3.5" aria-hidden />
-                      File
-                    </button>
+                      <Upload className="size-3.5" aria-hidden />
+                      Document file
+                    </Button>
                   </div>
-                  <input
-                    value={resourceTitle}
-                    onChange={(e) => setResourceTitle(e.target.value)}
-                    disabled={interactionLocked}
-                    placeholder="Resource title"
-                    className={fieldClass}
-                  />
+                  <CurriculumField
+                    label="Resource title"
+                    htmlFor={`resource-title-${section.id}`}
+                  >
+                    <Input
+                      id={`resource-title-${section.id}`}
+                      value={resourceTitle}
+                      onChange={(e) => setResourceTitle(e.target.value)}
+                      disabled={interactionLocked}
+                      placeholder="e.g. Study guide"
+                    />
+                  </CurriculumField>
                   {resourceType === "LINK" ? (
-                    <input
-                      value={resourceUrl}
-                      onChange={(e) => setResourceUrl(e.target.value)}
-                      disabled={interactionLocked}
-                      placeholder="https://..."
-                      className={fieldClass}
-                    />
+                    <CurriculumField
+                      label="URL"
+                      htmlFor={`resource-url-${section.id}`}
+                    >
+                      <Input
+                        id={`resource-url-${section.id}`}
+                        value={resourceUrl}
+                        onChange={(e) => setResourceUrl(e.target.value)}
+                        disabled={interactionLocked}
+                        placeholder="https://..."
+                      />
+                    </CurriculumField>
                   ) : (
-                    <FileUploader
-                      purpose="resource-file"
-                      courseId={courseId}
-                      compact
-                      disabled={interactionLocked}
-                      currentUrl={resourceFileUrl}
-                      fileName={resourceFileMeta?.name}
-                      onUploadComplete={(url, meta) => {
-                        setResourceFileUrl(url);
-                        if (meta) setResourceFileMeta(meta);
-                      }}
-                      onRemove={() => {
-                        setResourceFileUrl(null);
-                        setResourceFileMeta(null);
-                      }}
-                      showPreview={false}
-                    />
+                    <CurriculumField label="Document upload">
+                      <FileUploader
+                        purpose="curriculum-resource"
+                        courseId={courseId}
+                        onUploadingChange={handleMediaUploadingChange}
+                        compact
+                        disabled={interactionLocked}
+                        currentUrl={resourceFileUrl}
+                        fileName={resourceFileMeta?.name}
+                        fileSizeBytes={resourceFileMeta?.sizeBytes}
+                        mimeType={resourceFileMeta?.mimeType}
+                        onUploadComplete={(url, meta) => {
+                          setResourceFileUrl(url);
+                          if (meta) setResourceFileMeta(meta);
+                        }}
+                        onRemove={() => {
+                          setResourceFileUrl(null);
+                          setResourceFileMeta(null);
+                        }}
+                        showPreview={false}
+                      />
+                    </CurriculumField>
                   )}
-                  <div className="flex flex-wrap justify-end gap-2 border-t border-[var(--border)] pt-4">
-                    <button
-                      type="button"
-                      disabled={interactionLocked}
-                      onClick={closePanel}
-                      className="h-10 rounded-lg border border-[var(--border)] px-4 text-sm font-medium text-[var(--muted)]"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      disabled={
-                        !canAddResource ||
-                        resourceUploading ||
-                        interactionLocked
-                      }
-                      onClick={() => void addResource(section.id)}
-                      className="h-10 rounded-lg bg-[var(--primary)] px-5 text-sm font-semibold text-white disabled:opacity-50"
-                    >
-                      {resourceUploading ? "Saving…" : "Add resource"}
-                    </button>
-                  </div>
+                  <PanelFormActions
+                    onCancel={closePanel}
+                    cancelDisabled={panelLocked}
+                    submitDisabled={
+                      !canAddResource ||
+                      resourceUploading ||
+                      panelLocked
+                    }
+                    submitLabel={
+                      fileUploading
+                        ? "Uploading…"
+                        : resourceUploading
+                          ? "Saving…"
+                          : "Add resource"
+                    }
+                    onSubmit={() => void addResource(section.id)}
+                  />
                 </div>
               </CurriculumFormPanel>
             </SortableSection>
@@ -1716,50 +1821,45 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
         </SortableContext>
       </DndContext>
 
-      <CurriculumSectionNav
-        currentIndex={currentStepIndex}
-        totalSections={sections.length}
-        onBack={handlePrevSection}
-        onNext={handleNextSection}
-        backDisabled={interactionLocked}
-        nextDisabled={interactionLocked}
-      />
-
       {/* ── New section form ─────────────────────────────────────────────── */}
       <Separator className="my-2" />
-      <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface-muted)]/40 p-4 sm:p-5">
-        <h3 className="mb-3 text-sm font-bold text-[var(--foreground)]">
-          New section
-        </h3>
-        <div className="grid gap-3">
-          <input
+      <NewSectionCard>
+        <CurriculumField label="Section title" htmlFor="new-section-title">
+          <Input
+            id="new-section-title"
             value={newSectionTitle}
             onChange={(e) => setNewSectionTitle(e.target.value)}
             maxLength={120}
             disabled={interactionLocked}
-            placeholder="Section title"
-            className={fieldClass}
+            placeholder="e.g. Getting started"
           />
-          <input
+        </CurriculumField>
+        <CurriculumField
+          label="Learning objective"
+          htmlFor="new-section-objective"
+          hint="Optional. Helps students understand what they'll learn in this section."
+        >
+          <Input
+            id="new-section-objective"
             value={newSectionObjective}
             onChange={(e) => setNewSectionObjective(e.target.value)}
             maxLength={500}
             disabled={interactionLocked}
-            placeholder="Learning objective (optional)"
-            className={fieldClass}
+            placeholder="Students will be able to…"
           />
-          <div className="flex justify-end">
-            <button
-              type="button"
-              disabled={interactionLocked || !canAddSection}
-              onClick={() => void createSection()}
-              className="h-10 rounded-lg bg-[var(--primary)] px-5 text-sm font-semibold text-white disabled:opacity-50"
-            >
-              Add section
-            </button>
-          </div>
+        </CurriculumField>
+        <div className="flex justify-end pt-1">
+          <Button
+            type="button"
+            size="lg"
+            disabled={interactionLocked || !canAddSection}
+            onClick={() => void createSection()}
+          >
+            <Plus className="size-4" aria-hidden />
+            Add section
+          </Button>
         </div>
-      </div>
+      </NewSectionCard>
     </div>
     </TooltipProvider>
   );
@@ -1794,42 +1894,39 @@ function SortableSection(props: {
         sectionRef?.(el);
       }}
       style={style}
-      // Clinical card: flat rounded border, no shadow on collapsed, subtle on expanded
       className={cn(
-        "mb-3 rounded-xl border border-[var(--border)] bg-white transition-colors",
-        isExpanded && "shadow-sm",
+        "mb-4 overflow-hidden rounded-xl border border-[#d1d7dc] bg-white shadow-[0_2px_4px_rgba(0,0,0,0.08)] transition-shadow",
+        isExpanded && "shadow-[0_2px_4px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.12)]",
       )}
       {...attributes}
     >
       <div
         className={cn(
-          "flex cursor-pointer select-none items-center gap-2 rounded-t-xl px-4 py-3 transition-colors",
+          "flex cursor-pointer select-none items-center gap-2 px-4 py-3.5 transition-colors sm:px-5",
           isExpanded
-            ? "border-b border-[var(--border)] bg-[var(--surface-muted)]/50"
-            : "hover:bg-[var(--surface-muted)]/30",
+            ? "border-b border-[#d1d7dc] bg-[#f7f9fa]"
+            : "hover:bg-[#eceff1]/60",
         )}
         onClick={onToggle}
       >
-        <Tooltip content="Drag to reorder" side="right">
+        <SimpleTooltip content="Drag to reorder" side="right">
           <button
             type="button"
             ref={setActivatorNodeRef}
             {...listeners}
             disabled={disabled}
             aria-label="Drag to reorder section"
-            className="shrink-0 touch-none cursor-grab rounded-lg p-1.5 text-slate-300 transition-all hover:bg-slate-100 hover:text-slate-500 disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex size-8 shrink-0 touch-none cursor-grab items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
             onClick={(e) => e.stopPropagation()}
           >
-            <GripVertical className="h-4 w-4" />
+            <GripVertical className="size-4" />
           </button>
-        </Tooltip>
+        </SimpleTooltip>
         {titleRow}
       </div>
-      {isExpanded && (
-        <div className="rounded-b-xl p-4 sm:p-5">
-          {children}
-        </div>
-      )}
+      {isExpanded ? (
+        <div className="space-y-6 px-4 py-5 sm:px-6 sm:py-6">{children}</div>
+      ) : null}
     </div>
   );
 }

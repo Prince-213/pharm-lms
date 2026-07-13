@@ -1,7 +1,11 @@
 "use server";
 
 import { auth } from "@/auth";
-import { UserRole } from "@/generated/prisma/enums";
+import { MentorProfileStatus, UserRole } from "@/generated/prisma/enums";
+import {
+  revalidateAdminPortal,
+  revalidateMentorPortal,
+} from "@/lib/cache/revalidate-portals";
 import { db } from "@/lib/db";
 import { notifyAdminsMentorProfileSubmitted } from "@/lib/notifications/mentor-events";
 
@@ -66,6 +70,7 @@ export async function updateMentorProfileAction(input: FormData): Promise<Action
     select: { id: true },
   });
 
+  revalidateMentorPortal();
   return { ok: true };
 }
 
@@ -111,11 +116,15 @@ export async function submitMentorProfileAction(): Promise<ActionResult> {
     where: { id: session.user.id },
     data: {
       mentorProfileSubmittedAt: new Date(),
+      mentorProfileStatus: MentorProfileStatus.PENDING_REVIEW,
+      mentorReviewRequestedAt: new Date(),
     },
     select: { id: true },
   });
 
   void notifyAdminsMentorProfileSubmitted(session.user.id);
 
+  revalidateMentorPortal();
+  revalidateAdminPortal();
   return { ok: true };
 }

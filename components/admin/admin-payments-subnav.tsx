@@ -26,7 +26,7 @@ export function AdminPaymentsSubnav() {
               "rounded-lg px-4 py-2 text-sm font-semibold transition-colors",
               active
                 ? "bg-[var(--surface)] text-[var(--foreground)] shadow-[var(--shadow-sm)]"
-                : "text-[var(--muted)] hover:text-[var(--foreground)]",
+                : "text-muted-foreground hover:text-[var(--foreground)]",
             )}
           >
             {item.label}

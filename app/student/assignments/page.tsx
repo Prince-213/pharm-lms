@@ -6,6 +6,7 @@ import {
 } from "@/components/student/student-assignments-workspace";
 import { AssignmentStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
+import { parseAssignmentDescription } from "@/lib/assignments/parse-assignment-description";
 import { resolveMediaUrl } from "@/lib/media-url";
 import { roleHomePath } from "@/lib/rbac";
 
@@ -21,7 +22,7 @@ export default async function StudentAssignmentsPage() {
       status: { in: [AssignmentStatus.SENT, AssignmentStatus.CLOSED] },
       course: { enrollments: { some: { studentId: session.user.id } } },
     },
-    orderBy: [{ dueDate: "asc" }, { createdAt: "desc" }],
+    orderBy: { createdAt: "desc" },
     include: {
       course: {
         select: {
@@ -45,8 +46,29 @@ export default async function StudentAssignmentsPage() {
     },
   });
 
+  const sectionIds = [
+    ...new Set(
+      assignments
+        .map((a) => parseAssignmentDescription(a.description).sectionId)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  ];
+  const sections =
+    sectionIds.length > 0
+      ? await db.courseSection.findMany({
+          where: { id: { in: sectionIds } },
+          select: { id: true, title: true },
+        })
+      : [];
+  const sectionTitleById = Object.fromEntries(
+    sections.map((s) => [s.id, s.title]),
+  );
+
   const rows: StudentAssignmentRow[] = await Promise.all(
     assignments.map(async (a) => {
+      const { sectionId, instructions } = parseAssignmentDescription(
+        a.description,
+      );
       const submission = a.submissions[0] ?? null;
       const handoutHref = a.instructionsFileUrl
         ? await resolveMediaUrl(a.instructionsFileUrl)
@@ -60,10 +82,10 @@ export default async function StudentAssignmentsPage() {
         courseId: a.course.id,
         courseTitle: a.course.title,
         mentorName: a.course.mentor.fullName,
-        dueAtIso: a.dueDate ? a.dueDate.toISOString() : null,
         assignmentStatus: a.status,
         closed: a.status === AssignmentStatus.CLOSED,
-        description: a.description,
+        instructions,
+        sectionTitle: sectionId ? (sectionTitleById[sectionId] ?? null) : null,
         hasHandout: Boolean(a.instructionsFileUrl),
         handoutHref,
         instructionsLinkUrl: a.instructionsLinkUrl,

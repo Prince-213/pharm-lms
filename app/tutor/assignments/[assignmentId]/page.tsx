@@ -2,6 +2,7 @@ import { ArrowLeft, ExternalLink, FileText } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { AssignmentInstructionsBody } from "@/components/assignments/assignment-instructions-body";
 import { AssignmentStatusPill } from "@/components/assignments/assignment-status-badges";
 import { AssignmentStatusToggle } from "@/components/mentor/assignment-status-toggle";
 import {
@@ -10,6 +11,7 @@ import {
 } from "@/components/mentor/tutor-assignment-submissions-panel";
 import { UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
+import { parseAssignmentDescription } from "@/lib/assignments/parse-assignment-description";
 import { resolveMediaUrl } from "@/lib/media-url";
 import { roleHomePath } from "@/lib/rbac";
 
@@ -49,6 +51,16 @@ export default async function MentorAssignmentDetailPage({
   });
   if (!assignment) notFound();
 
+  const { sectionId, instructions } = parseAssignmentDescription(
+    assignment.description,
+  );
+  const section = sectionId
+    ? await db.courseSection.findUnique({
+        where: { id: sectionId },
+        select: { title: true },
+      })
+    : null;
+
   const handoutHref = assignment.instructionsFileUrl
     ? await resolveMediaUrl(assignment.instructionsFileUrl)
     : null;
@@ -72,7 +84,7 @@ export default async function MentorAssignmentDetailPage({
       <div>
         <Link
           href="/tutor/assignments"
-          className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--muted)] hover:text-[var(--foreground)]"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-[var(--foreground)]"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           All assignments
@@ -82,7 +94,7 @@ export default async function MentorAssignmentDetailPage({
             <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
               {assignment.title}
             </h1>
-            <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[var(--muted)]">
+            <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
               <Link
                 href={`/tutor/courses/${assignment.course.id}/manage/curriculum`}
                 className="font-semibold text-[var(--primary)] hover:underline"
@@ -91,12 +103,6 @@ export default async function MentorAssignmentDetailPage({
               </Link>
               <span aria-hidden>·</span>
               <AssignmentStatusPill status={assignment.status} />
-              <span aria-hidden>·</span>
-              <span>
-                {assignment.dueDate
-                  ? `Due ${assignment.dueDate.toLocaleString()}`
-                  : "No due date"}
-              </span>
               <span aria-hidden>·</span>
               <span className="tabular-nums">
                 {assignment.submissions.length} submission
@@ -112,7 +118,7 @@ export default async function MentorAssignmentDetailPage({
       </div>
 
       <section className="rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)]">
-        <h2 className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+        <h2 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
           Instructions
         </h2>
         {(handoutHref || assignment.instructionsLinkUrl) && (
@@ -141,13 +147,18 @@ export default async function MentorAssignmentDetailPage({
             ) : null}
           </div>
         )}
-        <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-[var(--foreground)]">
-          {assignment.description}
-        </p>
+        {section?.title ? (
+          <p className="mt-2 text-xs font-medium text-muted-foreground">
+            Section: {section.title}
+          </p>
+        ) : null}
+        <div className="mt-3">
+          <AssignmentInstructionsBody instructions={instructions} />
+        </div>
       </section>
 
       <section>
-        <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+        <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
           Submissions
         </h2>
         <TutorAssignmentSubmissionsPanel rows={submissionRows} />

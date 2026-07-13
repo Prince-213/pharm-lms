@@ -51,7 +51,7 @@ export function AdminForumJoinForm({
           <h2 className="text-base font-bold text-[var(--foreground)]">
             Join a course forum
           </h2>
-          <p className="mt-1 text-xs leading-relaxed text-[var(--muted)]">
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
             Post as yourself in the course’s <strong>General discussion</strong>{" "}
             thread (same as students and mentors). Use for clarifications,
             moderation, or official updates alongside the instructor.
@@ -60,7 +60,7 @@ export function AdminForumJoinForm({
       </div>
 
       {courses.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-[var(--border)] bg-[var(--background)] px-4 py-8 text-center text-sm text-[var(--muted)]">
+        <p className="rounded-lg border border-dashed border-[var(--border)] bg-[var(--background)] px-4 py-8 text-center text-sm text-muted-foreground">
           No published courses yet. Publish a course before posting here.
         </p>
       ) : (
@@ -68,7 +68,7 @@ export function AdminForumJoinForm({
           <div>
             <label
               htmlFor="forum-course"
-              className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]"
+              className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground"
             >
               Course
             </label>
@@ -89,7 +89,7 @@ export function AdminForumJoinForm({
           <div>
             <label
               htmlFor="forum-body"
-              className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]"
+              className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground"
             >
               Post
             </label>
@@ -100,7 +100,7 @@ export function AdminForumJoinForm({
               rows={6}
               maxLength={2000}
               placeholder="Write your forum message…"
-              className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm leading-relaxed text-[var(--foreground)] placeholder:text-[var(--muted)]"
+              className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm leading-relaxed text-[var(--foreground)] placeholder:text-muted-foreground"
             />
           </div>
           {error ? (
@@ -121,7 +121,7 @@ export function AdminForumJoinForm({
             >
               {pending ? "Posting…" : "Post to forum"}
             </button>
-            <p className="text-[11px] text-[var(--muted)]">
+            <p className="text-[11px] text-muted-foreground">
               Tip: open the student course Forum tab in another tab to confirm
               formatting after you post.
             </p>

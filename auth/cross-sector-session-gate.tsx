@@ -30,7 +30,7 @@ export function CrossSectorSessionGate({
 
   if (signingOut) {
     return (
-      <div className="flex min-h-[40vh] flex-col items-center justify-center gap-2 px-4 text-center text-sm text-[var(--muted)]">
+      <div className="flex min-h-[40vh] flex-col items-center justify-center gap-2 px-4 text-center text-sm text-muted-foreground">
         <p className="font-semibold text-[var(--foreground)]">Signing out…</p>
         <p className="max-w-sm text-xs">
           Switching to this portal. You will be asked to sign in again.

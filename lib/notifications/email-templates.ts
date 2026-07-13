@@ -30,16 +30,15 @@ export function getNewAssignmentEmailTemplate(opts: {
   studentName: string;
   courseTitle: string;
   assignmentTitle: string;
-  dueLine: string;
   assignmentsUrl: string;
 }) {
-  const { studentName, courseTitle, assignmentTitle, dueLine, assignmentsUrl } = opts;
+  const { studentName, courseTitle, assignmentTitle, assignmentsUrl } = opts;
   return `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1c1d1f;">
       <h2 style="color: #6366f1;">New assignment in ${courseTitle}</h2>
       <p>Hi ${studentName},</p>
       <p>Your mentor posted a new assignment: <strong>${assignmentTitle}</strong>.</p>
-      <p>${dueLine}</p>
+      <p>Complete it at your own pace from your assignments page.</p>
       <a href="${assignmentsUrl}" style="display: inline-block; background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">View assignments</a>
       <br /><br />
       <p>Best regards,<br />Pharm LMS</p>

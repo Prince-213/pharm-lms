@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { MeetingsCrmClient } from "@/components/meetings/meetings-crm-client";
 import { MentorMeetingsAvailabilityCallout } from "@/components/mentor/mentor-meetings-availability";
-import { UserRole } from "@/generated/prisma/enums";
+import { MentorProfileStatus, UserRole } from "@/generated/prisma/enums";
+import { mentorVisibleToStudents } from "@/lib/auth/mentor-profile-visibility";
 import { db } from "@/lib/db";
 import { withDbRetry } from "@/lib/db-retry";
 import {
@@ -21,7 +22,7 @@ export default async function MentorMeetingsPage() {
 
   const mentor = await db.user.findUnique({
     where: { id: session.user.id },
-    select: { isActive: true, fullName: true },
+    select: { mentorProfileStatus: true, fullName: true },
   });
   if (!mentor) redirect("/mentor/login");
 
@@ -76,17 +77,19 @@ export default async function MentorMeetingsPage() {
         <h1 className="font-display text-3xl font-extrabold tracking-tight">
           Meetings
         </h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">
+        <p className="mt-1 text-sm text-muted-foreground">
           Set your weekly schedule, respond to coaching requests, and join Jitsi
           sessions.
         </p>
       </div>
 
-      {!mentor.isActive ? (
+      {!mentorVisibleToStudents(mentor.mentorProfileStatus) ? (
         <section className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-          <p className="font-semibold">Pending activation</p>
+          <p className="font-semibold">Profile not listed for students yet</p>
           <p className="mt-1 text-xs">
-            Students can’t book you yet. Complete and submit your profile so an admin can activate your account.
+            {mentor.mentorProfileStatus === MentorProfileStatus.PENDING_REVIEW
+              ? "Your profile is under admin review. You can still manage meetings here."
+              : "Complete and submit your profile so students can find and book you."}
           </p>
           <p className="mt-2 text-xs">
             <Link href="/mentor/profile" className="font-semibold underline">
@@ -99,7 +102,7 @@ export default async function MentorMeetingsPage() {
       <MentorMeetingsAvailabilityCallout />
 
       <section>
-        <p className="mb-3 text-sm text-[var(--muted)]">
+        <p className="mb-3 text-sm text-muted-foreground">
           Click a day or event to review coaching requests, accept bookings, or
           join a session.
         </p>
@@ -110,7 +113,7 @@ export default async function MentorMeetingsPage() {
             availableWeekdays={availableWeekdays}
           />
         ) : (
-          <div className="rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] bg-[var(--surface)] px-6 py-12 text-center text-sm text-[var(--muted)]">
+          <div className="rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] bg-[var(--surface)] px-6 py-12 text-center text-sm text-muted-foreground">
             <p className="font-semibold text-[var(--foreground)]">
               No meeting activity yet
             </p>

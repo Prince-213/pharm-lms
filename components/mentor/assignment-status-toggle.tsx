@@ -40,7 +40,7 @@ export function AssignmentStatusToggle({
           className={
             opt.value === status
               ? "rounded bg-[var(--primary)] px-3 py-1.5 text-[var(--primary-foreground)] shadow-sm"
-              : "rounded px-3 py-1.5 text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
+              : "rounded px-3 py-1.5 text-muted-foreground hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
           }
         >
           {opt.label}

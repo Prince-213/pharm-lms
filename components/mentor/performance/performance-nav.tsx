@@ -45,7 +45,7 @@ export function PerformanceNav() {
         <h2 className="text-lg font-bold tracking-tight text-[var(--foreground)]">
           Performance
         </h2>
-        <p className="mt-1 text-xs leading-snug text-[var(--muted)]">
+        <p className="mt-1 text-xs leading-snug text-muted-foreground">
           Insights across revenue, learners, and content.
         </p>
       </div>
@@ -64,13 +64,13 @@ export function PerformanceNav() {
                 "flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors sm:gap-3 sm:py-2.5 lg:w-full",
                 active
                   ? "bg-[var(--surface)] text-[var(--foreground)] shadow-sm ring-1 ring-[var(--border)]"
-                  : "text-[var(--muted)] hover:bg-[var(--surface)]/80 hover:text-[var(--foreground)]",
+                  : "text-muted-foreground hover:bg-[var(--surface)]/80 hover:text-[var(--foreground)]",
               )}
             >
               <Icon
                 className={cn(
                   "h-4 w-4 shrink-0",
-                  active ? "text-[var(--primary)]" : "text-[var(--muted)]",
+                  active ? "text-[var(--primary)]" : "text-muted-foreground",
                 )}
                 strokeWidth={2}
               />

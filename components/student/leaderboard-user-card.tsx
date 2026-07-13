@@ -12,7 +12,7 @@ export function LeaderboardUserCard({ user }: LeaderboardUserCardProps) {
   if (!user) return null;
 
   return (
-    <div className="rounded-3xl bg-white p-6 shadow-sm border border-slate-100">
+    <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
       <div className="flex flex-col items-center text-center">
         <UserAvatar
           src={user.avatarUrl}
@@ -27,13 +27,13 @@ export function LeaderboardUserCard({ user }: LeaderboardUserCardProps) {
 
       <div className="mt-8 grid grid-cols-2 gap-4">
         {/* Ranking */}
-        <div className="rounded-2xl bg-indigo-50/50 p-4 ring-1 ring-indigo-50">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white shadow-sm">
-            <Trophy className="h-4 w-4 text-indigo-600" />
+        <div className="rounded-2xl bg-primary/5 p-4 ring-1 ring-primary/10">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-background shadow-sm">
+            <Trophy className="h-4 w-4 text-primary" />
           </div>
           <div className="mt-3">
-            <p className="text-2xl font-black text-indigo-900">{user.rank === 1 ? "1st" : user.rank === 2 ? "2nd" : user.rank === 3 ? "3rd" : `${user.rank}th`}</p>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">Ranking</p>
+            <p className="text-2xl font-black text-foreground">{user.rank === 1 ? "1st" : user.rank === 2 ? "2nd" : user.rank === 3 ? "3rd" : `${user.rank}th`}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Ranking</p>
           </div>
         </div>
 
@@ -60,13 +60,13 @@ export function LeaderboardUserCard({ user }: LeaderboardUserCardProps) {
         </div>
 
         {/* Quiz Points */}
-        <div className="rounded-2xl bg-emerald-50/50 p-4 ring-1 ring-emerald-50">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white shadow-sm">
-            <BrainCircuit className="h-4 w-4 text-emerald-600" />
+        <div className="rounded-2xl bg-primary/5 p-4 ring-1 ring-primary/10">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-background shadow-sm">
+            <BrainCircuit className="h-4 w-4 text-primary" />
           </div>
           <div className="mt-3">
-            <p className="text-2xl font-black text-emerald-900">{user.quizPoints}</p>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Quiz pts</p>
+            <p className="text-2xl font-black text-foreground">{user.quizPoints}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Quiz pts</p>
           </div>
         </div>
       </div>

@@ -1,17 +1,11 @@
-"use client";
+import { AdminPortalShell } from "@/app/admin/admin-portal-shell";
 
-import { usePathname } from "next/navigation";
-import { AdminShell } from "@/components/admin/admin-shell";
+export const dynamic = "force-dynamic";
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  const isAuthRoute = pathname === "/admin/login";
-
-  if (isAuthRoute) return children;
-
-  return <AdminShell>{children}</AdminShell>;
+  return <AdminPortalShell>{children}</AdminPortalShell>;
 }

@@ -61,7 +61,7 @@ export function CourseReviewPanel({
         <p className="text-sm font-semibold text-[var(--foreground)]">
           Course feedback
         </p>
-        <p className="mt-1 text-sm text-[var(--muted)]">
+        <p className="mt-1 text-sm text-muted-foreground">
           Complete every lesson in at least one section to leave a review for
           this course.
         </p>
@@ -74,7 +74,7 @@ export function CourseReviewPanel({
       <p className="text-sm font-semibold text-[var(--foreground)]">
         Rate this course
       </p>
-      <p className="mt-0.5 text-xs text-[var(--muted)]">
+      <p className="mt-0.5 text-xs text-muted-foreground">
         {hasExisting
           ? "Update your rating or comment anytime."
           : "Share how this course worked for you."}
@@ -94,7 +94,7 @@ export function CourseReviewPanel({
               className={`h-8 w-8 sm:h-9 sm:w-9 ${
                 n <= rating
                   ? "fill-amber-400 text-amber-400"
-                  : "text-[var(--muted)]/35"
+                  : "text-muted-foreground/35"
               }`}
               strokeWidth={n <= rating ? 0 : 1.25}
             />
@@ -102,7 +102,7 @@ export function CourseReviewPanel({
         ))}
       </fieldset>
       <label className="mt-4 block">
-        <span className="text-xs font-medium text-[var(--muted)]">
+        <span className="text-xs font-medium text-muted-foreground">
           Comment (optional)
         </span>
         <textarea
@@ -112,7 +112,7 @@ export function CourseReviewPanel({
           rows={3}
           maxLength={4000}
           placeholder="What helped most? What could improve?"
-          className="mt-1.5 w-full resize-y rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm text-[var(--foreground)] placeholder:text-[var(--muted)] focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+          className="mt-1.5 w-full resize-y rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm text-[var(--foreground)] placeholder:text-muted-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
         />
       </label>
       <button

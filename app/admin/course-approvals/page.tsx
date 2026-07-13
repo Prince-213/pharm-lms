@@ -48,7 +48,7 @@ export default async function AdminCourseApprovalsPage() {
         title="Course catalog & review queue"
         description="Filter by status. Approve sends the course live as Published. Reject unlocks the studio for the tutor to revise and resubmit."
       >
-        <div className="mb-4 flex flex-wrap gap-4 text-sm text-[var(--muted)]">
+        <div className="mb-4 flex flex-wrap gap-4 text-sm text-muted-foreground">
           <span>
             <strong className="text-[var(--foreground)]">
               {courses.length}

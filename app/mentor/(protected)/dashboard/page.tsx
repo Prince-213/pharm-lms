@@ -14,7 +14,7 @@ export default async function MentorDashboardPage() {
 
   const user = await db.user.findUnique({
     where: { id: session.user.id },
-    select: { isActive: true, fullName: true },
+    select: { fullName: true, mentorProfileStatus: true },
   });
   if (!user) redirect("/mentor/login");
 
@@ -24,7 +24,7 @@ export default async function MentorDashboardPage() {
   return (
     <MentorDashboardOverview
       mentorFirstName={mentorFirstName}
-      isActive={user.isActive}
+      mentorProfileStatus={user.mentorProfileStatus}
       snapshot={snapshot}
     />
   );

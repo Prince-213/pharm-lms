@@ -3,6 +3,7 @@
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Input } from "@/components/ui/input";
 
 export function DashboardSearchInput({
   initialQuery,
@@ -27,14 +28,14 @@ export function DashboardSearchInput({
       }}
     >
       <div className="relative">
-        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--muted)]" />
-        <input
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+        <Input
           type="search"
           name="q"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder="Search my courses"
-          className="h-9 w-48 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] pl-7 pr-2 text-xs text-[var(--foreground)] outline-none transition focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-soft)]"
+          className="h-9 w-48 pl-7 text-xs"
         />
       </div>
     </form>

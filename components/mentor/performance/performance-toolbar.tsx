@@ -34,7 +34,7 @@ export function PerformanceToolbar({
           ) : null}
         </div>
         {subtitle ? (
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
             {subtitle}
           </p>
         ) : null}

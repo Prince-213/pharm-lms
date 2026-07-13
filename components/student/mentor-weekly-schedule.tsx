@@ -50,18 +50,18 @@ export function MentorWeeklySchedule({
             <p
               className={cn(
                 "text-[10px] font-bold uppercase tracking-wider",
-                active ? "text-[var(--primary-strong)]" : "text-[var(--muted)]",
+                active ? "text-[var(--primary-strong)]" : "text-muted-foreground",
               )}
             >
               {label}
             </p>
             {slot ? (
               <p className="mt-2 flex items-center justify-center gap-1 text-[11px] font-medium leading-tight text-[var(--foreground)]">
-                <Clock className="h-3 w-3 shrink-0 text-[var(--muted)]" />
+                <Clock className="h-3 w-3 shrink-0 text-muted-foreground" />
                 <span>{formatTimeRange(slot.startTime, slot.endTime)}</span>
               </p>
             ) : (
-              <p className="mt-2 text-[11px] text-[var(--muted)]">Unavailable</p>
+              <p className="mt-2 text-[11px] text-muted-foreground">Unavailable</p>
             )}
           </div>
         );

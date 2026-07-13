@@ -80,7 +80,7 @@ export default async function BrowseCoursesPage({
           <h1 className="mt-2 text-2xl font-bold tracking-tight text-[var(--foreground)] sm:text-3xl">
             Pick up where you left off
           </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
             Browse the published catalog, open any course to read the full
             description, then enroll to add it to{" "}
             <Link
@@ -96,7 +96,7 @@ export default async function BrowseCoursesPage({
       </section>
 
       <section>
-        <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+        <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
           Explore topics
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
@@ -129,7 +129,7 @@ export default async function BrowseCoursesPage({
             <h2 className="text-xl font-bold text-[var(--foreground)]">
               {isFiltered ? "Search results" : "Recommended for you"}
             </h2>
-            <p className="mt-1 text-sm text-[var(--muted)]">
+            <p className="mt-1 text-sm text-muted-foreground">
               {isFiltered
                 ? `${courses.length} match${courses.length === 1 ? "" : "es"}${
                     query ? ` for "${query}"` : ""
@@ -145,7 +145,7 @@ export default async function BrowseCoursesPage({
           </Link>
         </div>
         {courses.length === 0 ? (
-          <p className="rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-10 text-center text-sm text-[var(--muted)] shadow-[var(--shadow-sm)]">
+          <p className="rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-10 text-center text-sm text-muted-foreground shadow-[var(--shadow-sm)]">
             {isFiltered
               ? "No courses match your search yet — try a different keyword or clear the filters."
               : "No published courses yet. When admins approve mentor submissions, they will appear here."}

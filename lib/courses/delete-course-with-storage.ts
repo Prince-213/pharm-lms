@@ -2,7 +2,7 @@ import { rm } from "node:fs/promises";
 import path from "node:path";
 
 import { prisma } from "@/lib/prisma";
-import { deleteCourseGraph } from "@/lib/courses/delete-course-graph";
+import { deleteCourseGraph, DELETE_COURSE_TRANSACTION_OPTIONS } from "@/lib/courses/delete-course-graph";
 import { r2KeyFromMediaUrl } from "@/lib/storage/r2-keys";
 import {
   deleteR2ObjectKeys,
@@ -106,5 +106,5 @@ export async function deleteCourseWithStorage(
     const result = await deleteCourseGraph(tx, courseId);
     if (!result.ok) return { ok: false as const, error: "NOT_FOUND" as const };
     return { ok: true as const, title: result.title };
-  });
+  }, DELETE_COURSE_TRANSACTION_OPTIONS);
 }

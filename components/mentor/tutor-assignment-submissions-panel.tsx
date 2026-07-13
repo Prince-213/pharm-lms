@@ -32,7 +32,7 @@ export function TutorAssignmentSubmissionsPanel({
 
   if (rows.length === 0) {
     return (
-      <div className="rounded-[var(--radius-xl)] border border-dashed border-[var(--border)] bg-[var(--surface)] px-6 py-12 text-center text-sm text-[var(--muted)]">
+      <div className="rounded-[var(--radius-xl)] border border-dashed border-[var(--border)] bg-[var(--surface)] px-6 py-12 text-center text-sm text-muted-foreground">
         No submissions yet.
       </div>
     );
@@ -42,7 +42,7 @@ export function TutorAssignmentSubmissionsPanel({
     <>
       <div className="hidden overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-sm)] md:block">
         <table className="w-full min-w-[640px] text-left text-sm">
-          <thead className="sticky top-0 z-10 border-b border-[var(--border)] bg-[var(--background)] text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+          <thead className="sticky top-0 z-10 border-b border-[var(--border)] bg-[var(--background)] text-xs font-bold uppercase tracking-wide text-muted-foreground">
             <tr>
               <th className="w-8 px-3 py-3" />
               <th className="px-3 py-3">Student</th>
@@ -70,7 +70,7 @@ export function TutorAssignmentSubmissionsPanel({
                           e.stopPropagation();
                           toggle(r.submissionId);
                         }}
-                        className="rounded p-1 text-[var(--muted)] hover:bg-[var(--surface-muted)]"
+                        className="rounded p-1 text-muted-foreground hover:bg-[var(--surface-muted)]"
                         aria-expanded={open}
                       >
                         {open ? (
@@ -83,10 +83,10 @@ export function TutorAssignmentSubmissionsPanel({
                     <td className="px-3 py-3 font-semibold text-[var(--foreground)]">
                       {r.studentName}
                     </td>
-                    <td className="px-3 py-3 text-xs text-[var(--muted)]">
+                    <td className="px-3 py-3 text-xs text-muted-foreground">
                       {r.email}
                     </td>
-                    <td className="px-3 py-3 text-xs text-[var(--muted)] tabular-nums">
+                    <td className="px-3 py-3 text-xs text-muted-foreground tabular-nums">
                       {r.submittedAtIso
                         ? new Date(r.submittedAtIso).toLocaleString()
                         : "—"}
@@ -133,15 +133,15 @@ export function TutorAssignmentSubmissionsPanel({
                 className="flex w-full items-start gap-2 px-4 py-3 text-left"
               >
                 {open ? (
-                  <ChevronDown className="mt-0.5 h-4 w-4 shrink-0 text-[var(--muted)]" />
+                  <ChevronDown className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 ) : (
-                  <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-[var(--muted)]" />
+                  <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-[var(--foreground)]">
                     {r.studentName}
                   </p>
-                  <p className="mt-0.5 text-xs text-[var(--muted)]">
+                  <p className="mt-0.5 text-xs text-muted-foreground">
                     {r.email}
                   </p>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -152,7 +152,7 @@ export function TutorAssignmentSubmissionsPanel({
                       </span>
                     ) : null}
                     {r.submittedAtIso ? (
-                      <span className="text-[11px] text-[var(--muted)]">
+                      <span className="text-[11px] text-muted-foreground">
                         {new Date(r.submittedAtIso).toLocaleString()}
                       </span>
                     ) : null}
@@ -189,7 +189,7 @@ function SubmissionDetailBody({ row }: { row: TutorSubmissionRow }) {
       ) : null}
       {row.content ? (
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
             Submission text
           </p>
           <div className="mt-1 max-h-64 overflow-y-auto whitespace-pre-wrap rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] p-3 text-sm leading-relaxed text-[var(--foreground)]">
@@ -197,10 +197,10 @@ function SubmissionDetailBody({ row }: { row: TutorSubmissionRow }) {
           </div>
         </div>
       ) : (
-        <p className="text-xs text-[var(--muted)]">No written response.</p>
+        <p className="text-xs text-muted-foreground">No written response.</p>
       )}
       <div className="border-t border-[var(--border)] pt-4">
-        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
           Grade & feedback
         </p>
         <GradeSubmissionForm

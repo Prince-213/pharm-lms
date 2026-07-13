@@ -51,14 +51,14 @@ export default async function StudentAchievementsPage() {
         <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
           Badges & achievements
         </h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">
+        <p className="mt-1 text-sm text-muted-foreground">
           Recognition for milestones like enrollments, lessons completed, and
           quiz attempts. Badges are awarded automatically as you study.
         </p>
       </div>
 
       <section>
-        <h2 className="text-sm font-bold uppercase tracking-wide text-[var(--muted)]">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
           Earned ({unlocked.length})
         </h2>
         {unlocked.length === 0 ? (
@@ -68,7 +68,7 @@ export default async function StudentAchievementsPage() {
               strokeWidth={1.25}
             />
             <p className="mt-3 text-sm font-semibold">No badges yet</p>
-            <p className="mt-2 max-w-md text-xs text-[var(--muted)]">
+            <p className="mt-2 max-w-md text-xs text-muted-foreground">
               Enroll in a course to earn your first trophy.
             </p>
             <Link
@@ -102,10 +102,10 @@ export default async function StudentAchievementsPage() {
                   )}
                   <div className="min-w-0">
                     <p className="font-bold">{b.name}</p>
-                    <p className="mt-1 text-xs text-[var(--muted)]">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       {b.description}
                     </p>
-                    <p className="mt-2 text-[10px] uppercase tracking-wide text-[var(--muted)]">
+                    <p className="mt-2 text-[10px] uppercase tracking-wide text-muted-foreground">
                       Awarded {awardedMap.get(b.id)?.toLocaleDateString()}
                     </p>
                   </div>
@@ -118,7 +118,7 @@ export default async function StudentAchievementsPage() {
 
       {locked.length > 0 ? (
         <section>
-          <h2 className="text-sm font-bold uppercase tracking-wide text-[var(--muted)]">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
             Still to earn ({locked.length})
           </h2>
           <ul className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -128,17 +128,17 @@ export default async function StudentAchievementsPage() {
                 className="rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] bg-[var(--surface)] p-4 opacity-80"
               >
                 <div className="flex items-start gap-3">
-                  <div className="rounded-lg bg-[var(--surface-muted)] p-2 text-[var(--muted)]">
+                  <div className="rounded-lg bg-[var(--surface-muted)] p-2 text-muted-foreground">
                     <Lock className="h-5 w-5" strokeWidth={2} />
                   </div>
                   <div className="min-w-0">
                     <p className="font-semibold text-[var(--foreground)]">
                       {b.name}
                     </p>
-                    <p className="mt-1 text-xs text-[var(--muted)]">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       {b.description}
                     </p>
-                    <p className="mt-2 text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+                    <p className="mt-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                       Goal: {describeRuleConfig(b.ruleType, b.ruleConfig)}
                     </p>
                   </div>

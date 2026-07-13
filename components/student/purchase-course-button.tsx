@@ -1,157 +1,39 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useCallback, useState, useTransition } from "react";
-import { usePaystackPayment } from "react-paystack";
-import { toast } from "sonner";
+import dynamic from "next/dynamic";
+import { LoadingButton } from "@/components/ui/loading-button";
 import type { DisplayCurrency } from "@/lib/currency/types";
 
-const btnCatalog =
-  "w-full rounded-[var(--radius-md)] bg-[var(--primary)] px-6 py-3 text-sm font-bold text-[var(--primary-foreground)] shadow-[var(--shadow-sm)] transition hover:bg-[var(--primary-strong)] disabled:opacity-50";
-
-export function PurchaseCourseButton({
-  courseId,
-  className,
-  displayCurrency,
-  coupon,
-}: {
+type PurchaseCourseButtonProps = {
   courseId: string;
   className?: string;
-  /** Resolved display currency from server (USD users see NGN charge note). */
   displayCurrency?: DisplayCurrency;
-  /** Coupon code applied via the catalog "Have a coupon?" field. */
   coupon?: { code: string } | null;
-}) {
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
-  const [msg, setMsg] = useState<string | null>(null);
-  const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY ?? "";
+};
 
-  const initializePayment = usePaystackPayment({
-    publicKey,
-  });
-
-  const onPay = useCallback(() => {
-    setMsg(null);
-    if (!publicKey.trim()) {
-      setMsg("Payments are not configured (missing public key).");
-      return;
-    }
-    startTransition(async () => {
-      let init: {
-        reference: string;
-        amount: number;
-        email: string | null;
-        publicKey: string;
-        currency?: string;
-      };
-      try {
-        const res = await fetch("/api/payments/paystack/initialize", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            courseId,
-            couponCode: coupon?.code ?? undefined,
-          }),
-        });
-        const data = (await res.json().catch(() => ({}))) as {
-          error?: string;
-          reEnrolled?: boolean;
-          courseId?: string;
-          reference?: string;
-          amount?: number;
-          email?: string | null;
-          publicKey?: string;
-          currency?: string;
-        };
-        if (!res.ok) {
-          setMsg(data.error ?? "Could not start checkout.");
-          return;
-        }
-        if (data.reEnrolled && data.courseId) {
-          toast.success("You're enrolled again — opening your course.");
-          router.push(`/student/course/${data.courseId}`);
-          router.refresh();
-          return;
-        }
-        if (
-          !data.reference ||
-          data.amount == null ||
-          !data.email ||
-          !data.publicKey
-        ) {
-          setMsg("Invalid checkout response.");
-          return;
-        }
-        init = {
-          reference: data.reference,
-          amount: data.amount,
-          email: data.email,
-          publicKey: data.publicKey,
-          currency: data.currency,
-        };
-      } catch {
-        setMsg("Network error. Try again.");
-        return;
-      }
-
-      initializePayment({
-        config: {
-          email: init.email!,
-          amount: init.amount,
-          reference: init.reference,
-          currency: "NGN",
-        },
-        onSuccess: () => {
-          void (async () => {
-            try {
-              const v = await fetch("/api/payments/paystack/verify", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ reference: init.reference }),
-              });
-              const vr = (await v.json().catch(() => ({}))) as {
-                error?: string;
-                courseId?: string;
-              };
-              if (!v.ok) {
-                toast.error(vr.error ?? "Could not verify payment.");
-                return;
-              }
-              toast.success("Payment successful — opening your course.");
-              router.push(`/student/course/${vr.courseId ?? courseId}`);
-              router.refresh();
-            } catch {
-              toast.error("Could not verify payment.");
-            }
-          })();
-        },
-        onClose: () => {
-          toast.message("Payment window closed.");
-        },
-      });
-    });
-  }, [courseId, coupon, initializePayment, publicKey, router]);
-
-  const showNgnChargeNote = displayCurrency === "USD";
-
-  return (
-    <div className="flex w-full min-w-0 flex-col items-stretch gap-1">
-      <button
+/** Paystack inline JS reads `window` at import time — never load during SSR. */
+const PurchaseCourseButtonClient = dynamic(
+  () =>
+    import("@/components/student/purchase-course-button-paystack").then(
+      (mod) => mod.PurchaseCourseButtonPaystack,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <LoadingButton
         type="button"
-        disabled={pending}
-        onClick={onPay}
-        className={`${btnCatalog}${className ? ` ${className}` : ""}`}
+        disabled
+        loading
+        loadingLabel="Loading checkout…"
+        className="w-full rounded-[var(--radius-md)] py-3 text-sm font-bold shadow-[var(--shadow-sm)]"
+        size="lg"
       >
-        {pending ? "Preparing checkout…" : "Buy now"}
-      </button>
-      {showNgnChargeNote ? (
-        <p className="text-[11px] leading-snug text-[var(--muted)]">
-          You will be charged in Nigerian Naira (NGN) at the current exchange
-          rate.
-        </p>
-      ) : null}
-      {msg ? <p className="text-xs text-rose-700">{msg}</p> : null}
-    </div>
-  );
+        Buy now
+      </LoadingButton>
+    ),
+  },
+);
+
+export function PurchaseCourseButton(props: PurchaseCourseButtonProps) {
+  return <PurchaseCourseButtonClient {...props} />;
 }

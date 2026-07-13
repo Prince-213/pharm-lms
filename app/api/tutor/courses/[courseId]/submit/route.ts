@@ -1,10 +1,14 @@
-import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { CourseStatus } from "@/generated/prisma/enums";
+import {
+  revalidateAdminPortal,
+  revalidateCourseSurfaces,
+} from "@/lib/cache/revalidate-portals";
 import { db } from "@/lib/db";
 import { requireMentorCourseEditable } from "@/lib/mentor-course-auth";
 import { sendEmail } from "@/lib/notifications/email-service";
 import { getSubmissionTemplate } from "@/lib/notifications/email-templates";
+import { notifyAdminsCourseSubmittedForReview } from "@/lib/notifications/course-events";
 
 export async function POST(
   _request: Request,
@@ -100,11 +104,8 @@ export async function POST(
     }),
   ]);
 
-  revalidatePath("/tutor/courses");
-  revalidatePath("/tutor/performance");
-  revalidatePath("/admin/course-approvals");
-  revalidatePath("/admin/dashboard");
-  revalidatePath("/student/browse");
+  revalidateCourseSurfaces(courseId);
+  revalidateAdminPortal(courseId);
 
   const userEmail = authz.session.user.email;
   const userName = authz.session.user.name;
@@ -115,6 +116,12 @@ export async function POST(
       html: getSubmissionTemplate(course.title, userName),
     });
   }
+
+  void notifyAdminsCourseSubmittedForReview(
+    courseId,
+    course.title,
+    userName ?? "A tutor",
+  );
 
   return NextResponse.json({ success: true, status: CourseStatus.SUBMITTED });
 }

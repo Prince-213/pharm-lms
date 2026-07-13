@@ -11,6 +11,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { DashboardSearchInput } from "@/components/student/dashboard-search-input";
 import { EnrolledCourseCard } from "@/components/student/enrolled-course-card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserRole } from "@/generated/prisma/enums";
 import {
   getStudentPricingContext,
@@ -21,7 +23,6 @@ import { resolveMediaUrl } from "@/lib/media-url";
 import { roleHomePath } from "@/lib/rbac";
 import { getEnrollmentProgressForStudent } from "@/lib/student-course-progress";
 import { AdminStatCard } from "@/components/admin/admin-stat-card";
-import { AdminPanel } from "@/components/admin/admin-panel";
 import { StreakMetric } from "@/components/student/streak-metric";
 import { getStudentStreak } from "@/lib/student/streak";
 
@@ -126,24 +127,20 @@ export default async function StudentDashboardPage({
           <h1 className="font-display text-2xl font-black tracking-tight text-[var(--foreground)] sm:text-3xl">
             Welcome back, {firstName} 👋
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             Resume your courses or explore new pharmacy certifications.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href="/student/assignments"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white px-4 py-2.5 text-sm font-semibold text-[var(--foreground)] transition-all hover:bg-slate-50 hover:shadow-sm active:scale-95"
-          >
-            <ClipboardList className="h-4 w-4 text-[var(--primary)]" />
-            Assignments
-          </Link>
-          <Link
-            href="/student/browse"
-            className="inline-flex items-center rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-[var(--primary-strong)] active:scale-95"
-          >
-            Explore Courses
-          </Link>
+          <Button variant="outline" asChild>
+            <Link href="/student/assignments">
+              <ClipboardList className="h-4 w-4 text-primary" />
+              Assignments
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href="/student/browse">Explore Courses</Link>
+          </Button>
         </div>
       </div>
 
@@ -180,24 +177,27 @@ export default async function StudentDashboardPage({
         <StreakMetric days={streakData.days} active={streakData.activeToday} />
       </div>
 
-      <AdminPanel
-        title="My Learning"
-        description="Continue where you left off"
-        headerAction={<DashboardSearchInput initialQuery={query} />}
-      >
+      <Card>
+        <CardHeader className="border-b">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <CardTitle className="font-display text-lg">My Learning</CardTitle>
+              <CardDescription>Continue where you left off</CardDescription>
+            </div>
+            <DashboardSearchInput initialQuery={query} />
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
         {enrollments.length === 0 ? (
           <div className="py-12 text-center">
-            <p className="text-sm text-[var(--muted)]">
+            <p className="text-sm text-muted-foreground">
               {query
                 ? `No enrolled courses match "${query}".`
                 : "You have not enrolled in any courses yet."}
             </p>
-            <Link
-              href="/student/browse"
-              className="mt-4 inline-block text-sm font-bold text-[var(--primary)] hover:underline"
-            >
-              Browse the catalog →
-            </Link>
+            <Button asChild variant="link" className="mt-4">
+              <Link href="/student/browse">Browse the catalog →</Link>
+            </Button>
           </div>
         ) : (
           <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -227,7 +227,8 @@ export default async function StudentDashboardPage({
             })}
           </ul>
         )}
-      </AdminPanel>
+        </CardContent>
+      </Card>
     </div>
   );
 }

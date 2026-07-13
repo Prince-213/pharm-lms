@@ -35,7 +35,7 @@ export default async function TutorCourseCatalogPreviewPage({
             <span className="rounded-full bg-[var(--primary-soft)] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[var(--primary-strong)]">
               Student preview
             </span>
-            <p className="truncate text-sm text-[var(--muted)]">
+            <p className="truncate text-sm text-muted-foreground">
               How learners see this course in the catalog before enrolling.
             </p>
           </div>

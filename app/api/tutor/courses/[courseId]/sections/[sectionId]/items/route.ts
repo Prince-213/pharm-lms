@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { AssignmentStatus } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
+import { revalidateCourseSurfaces } from "@/lib/cache/revalidate-portals";
 import { requireMentorCourseEditable } from "@/lib/mentor-course-auth";
 
 const mcqQuestionSchema = z
@@ -54,7 +55,6 @@ const createItemBodySchema = z.object({
   title: z.string().min(2).max(140),
   quizQuestions: z.array(mcqQuestionSchema).min(1).max(20).optional(),
   assignmentDescription: z.string().max(5000).optional(),
-  dueDays: z.number().int().min(1).max(365).optional(),
 });
 
 export async function POST(
@@ -95,6 +95,7 @@ export async function POST(
         questions,
       },
     });
+    revalidateCourseSurfaces(courseId);
     return NextResponse.json({ itemType: "QUIZ", item: quiz }, { status: 201 });
   }
 
@@ -106,12 +107,11 @@ export async function POST(
       title: parsed.data.title,
       description: `Section:${sectionId}\n${assignmentBody}`,
       status: AssignmentStatus.DRAFT,
-      dueDate: new Date(
-        Date.now() + (parsed.data.dueDays ?? 7) * 24 * 60 * 60 * 1000,
-      ),
+      dueDate: null,
     },
   });
 
+  revalidateCourseSurfaces(courseId);
   return NextResponse.json(
     { itemType: "ASSIGNMENT", item: assignment },
     { status: 201 },

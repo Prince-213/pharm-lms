@@ -3,10 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { CourseStatus, UserRole } from "@/generated/prisma/enums";
-import { deleteCourseGraph } from "@/lib/courses/delete-course-graph";
+import { deleteCourseGraph, DELETE_COURSE_TRANSACTION_OPTIONS } from "@/lib/courses/delete-course-graph";
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/notifications/email-service";
 import { getApprovalTemplate, getRejectionTemplate } from "@/lib/notifications/email-templates";
+import {
+  notifyTutorCourseApproved,
+  notifyTutorCourseRejected,
+} from "@/lib/notifications/course-events";
 
 async function assertAdmin() {
   const session = await auth();
@@ -22,7 +26,7 @@ export async function approveCourseAction(courseId: string) {
 
   const course = await db.course.findUnique({
     where: { id: courseId },
-    include: { mentor: { select: { fullName: true, email: true } } },
+    include: { mentor: { select: { id: true, fullName: true, email: true } } },
   });
   if (!course) return { error: "Course not found" as const };
   if (course.status !== CourseStatus.SUBMITTED) {
@@ -62,6 +66,8 @@ export async function approveCourseAction(courseId: string) {
     ),
   });
 
+  void notifyTutorCourseApproved(course.mentor.id, courseId, course.title);
+
   revalidatePath("/admin/course-approvals");
   revalidatePath("/admin/dashboard");
   return { success: true as const };
@@ -78,7 +84,7 @@ export async function rejectCourseAction(courseId: string, reason: string) {
 
   const course = await db.course.findUnique({
     where: { id: courseId },
-    include: { mentor: { select: { fullName: true, email: true } } },
+    include: { mentor: { select: { id: true, fullName: true, email: true } } },
   });
   if (!course) return { error: "Course not found" as const };
   if (course.status !== CourseStatus.SUBMITTED) {
@@ -119,6 +125,13 @@ export async function rejectCourseAction(courseId: string, reason: string) {
     ),
   });
 
+  void notifyTutorCourseRejected(
+    course.mentor.id,
+    courseId,
+    course.title,
+    trimmed,
+  );
+
   revalidatePath("/admin/course-approvals");
   revalidatePath("/admin/dashboard");
   return { success: true as const };
@@ -141,7 +154,7 @@ export async function deleteCourseAction(courseId: string) {
       },
     });
     return result;
-  });
+  }, DELETE_COURSE_TRANSACTION_OPTIONS);
   if (!deleted) return { error: "Course not found" as const };
 
   revalidatePath("/admin/course-approvals");

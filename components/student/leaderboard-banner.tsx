@@ -26,11 +26,11 @@ export function LeaderboardBanner() {
 
       {/* Aurora Background Effects */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-1/4 -left-1/4 h-[150%] w-[150%] bg-linear-to-br from-[var(--primary)]/10 via-emerald-100/5 to-teal-100/5 blur-[120px]" />
+        <div className="absolute -top-1/4 -left-1/4 h-[150%] w-[150%] bg-linear-to-br from-primary/10 via-primary/5 to-primary/10 blur-[120px]" />
 
         {/* Animated-like aurora blobs */}
         <div className="absolute top-0 right-0 h-96 w-96 rounded-full bg-[var(--primary)] opacity-[0.08] blur-[100px] animate-pulse" />
-        <div className="absolute bottom-0 left-0 h-96 w-96 rounded-full bg-emerald-500 opacity-[0.05] blur-[100px]" />
+        <div className="absolute bottom-0 left-0 h-96 w-96 rounded-full bg-primary opacity-[0.05] blur-[100px]" />
 
         {/* Subtle grid or grain if possible - skipped for simplicity, sticking to aurora */}
       </div>

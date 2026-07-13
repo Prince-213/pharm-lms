@@ -1,5 +1,11 @@
 import type { Prisma } from "@/generated/prisma/client";
 
+/** Large courses need more than the default 5s interactive transaction budget. */
+export const DELETE_COURSE_TRANSACTION_OPTIONS = {
+  maxWait: 10_000,
+  timeout: 30_000,
+} as const;
+
 export type DeleteCourseGraphResult =
   | { ok: false }
   | { ok: true; title: string };

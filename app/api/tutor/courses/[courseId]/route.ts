@@ -9,6 +9,7 @@ import {
   requireMentorCourse,
   requireMentorCourseEditable,
 } from "@/lib/mentor-course-auth";
+import { revalidateCourseSurfaces } from "@/lib/cache/revalidate-portals";
 
 const patchCourseSchema = z.object({
   title: z.string().min(3).max(120).optional(),
@@ -122,6 +123,7 @@ export async function PATCH(
     },
   });
 
+  revalidateCourseSurfaces(courseId);
   return NextResponse.json(updated);
 }
 

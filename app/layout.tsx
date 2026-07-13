@@ -4,6 +4,7 @@ import { SessionProviderWrapper } from "@/components/session-provider-wrapper";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { fontVariables } from "@/lib/fonts";
 import { rootMetadata } from "@/lib/site-metadata";
+import { cn } from "@/lib/utils";
 
 export const metadata = rootMetadata;
 
@@ -13,12 +14,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${fontVariables} h-full antialiased`}>
+    <html lang="en" className={cn("h-full antialiased", fontVariables)}>
       <body className="flex min-h-full flex-col font-sans">
         <TooltipProvider>
           <SessionProviderWrapper>{children}</SessionProviderWrapper>
         </TooltipProvider>
-        <Toaster position="top-center" />
+        <Toaster position="top-right" />
       </body>
     </html>
   );

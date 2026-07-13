@@ -57,7 +57,6 @@ export async function submitAssignmentAction(
       id: true,
       status: true,
       courseId: true,
-      dueDate: true,
       title: true,
       course: {
         select: {
@@ -97,10 +96,6 @@ export async function submitAssignmentAction(
     };
   }
 
-  const isLate = assignment.dueDate
-    ? assignment.dueDate.getTime() < Date.now()
-    : false;
-
   const contentTrimmed = parsed.data.content?.trim() ?? "";
   const attachmentTrimmed = parsed.data.attachmentUrl?.trim() ?? "";
 
@@ -115,7 +110,7 @@ export async function submitAssignmentAction(
       content: contentTrimmed || null,
       attachmentUrl: attachmentTrimmed || null,
       submittedAt: new Date(),
-      status: isLate ? SubmissionStatus.LATE : SubmissionStatus.SUBMITTED,
+      status: SubmissionStatus.SUBMITTED,
     },
     create: {
       assignmentId: assignment.id,
@@ -123,7 +118,7 @@ export async function submitAssignmentAction(
       content: contentTrimmed || null,
       attachmentUrl: attachmentTrimmed || null,
       submittedAt: new Date(),
-      status: isLate ? SubmissionStatus.LATE : SubmissionStatus.SUBMITTED,
+      status: SubmissionStatus.SUBMITTED,
     },
     select: { id: true },
   });

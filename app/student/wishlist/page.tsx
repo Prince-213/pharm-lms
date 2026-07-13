@@ -52,7 +52,7 @@ export default async function StudentWishlistPage() {
           <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
             Wishlist
           </h1>
-          <p className="mt-1 text-sm text-[var(--muted)]">
+          <p className="mt-1 text-sm text-muted-foreground">
             Courses you have saved for later. Tap the heart to remove or open
             one to enroll.
           </p>
@@ -72,7 +72,7 @@ export default async function StudentWishlistPage() {
             strokeWidth={1.25}
           />
           <p className="mt-4 text-sm font-semibold">Your wishlist is empty</p>
-          <p className="mt-2 max-w-sm text-xs text-[var(--muted)]">
+          <p className="mt-2 max-w-sm text-xs text-muted-foreground">
             Tap the heart on a course card or open a course detail page to save
             it for later.
           </p>

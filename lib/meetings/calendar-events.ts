@@ -41,6 +41,7 @@ export type CalendarEvent = {
   joinable: boolean;
   joinHref: string | null;
   canAcceptReject: boolean;
+  openedAt: string | null;
 };
 
 export function dateKeyFromDate(d: Date): string {
@@ -141,6 +142,7 @@ export function buildStudentCalendarEvents(
         ? `/student/meetings/join/${req.meeting.id}`
         : null,
       canAcceptReject: false,
+      openedAt: req.meeting?.openedAt?.toISOString() ?? null,
     };
   });
 }
@@ -247,6 +249,7 @@ export function buildHostCalendarEvents(
       joinable,
       joinHref: meeting ? `${joinPathPrefix}/${meeting.id}` : null,
       canAcceptReject: req.status === MeetingRequestStatus.PENDING && !meeting,
+      openedAt: meeting?.openedAt?.toISOString() ?? null,
     });
   }
 
@@ -278,6 +281,7 @@ export function buildHostCalendarEvents(
       joinable,
       joinHref: `${joinPathPrefix}/${meeting.id}`,
       canAcceptReject: false,
+      openedAt: meeting.openedAt?.toISOString() ?? null,
     });
   }
 

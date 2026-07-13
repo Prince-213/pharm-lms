@@ -42,7 +42,7 @@ export function AboutFreshSection() {
 
             {/* Description with purple left border */}
             <div className="border-l-2 border-[var(--emerald)] pl-5 mb-8">
-              <p className="text-[var(--muted)] text-sm leading-relaxed lg:text-sm font-semibold">
+              <p className="text-muted-foreground text-sm leading-relaxed lg:text-sm font-semibold">
                 Africa's digital health economy is growing rapidly, yet few platforms 
                 offer pharmacists a structured entry point. PharmLMS equips you to move 
                 beyond dispensing and into the roles defining African healthcare.

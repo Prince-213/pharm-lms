@@ -1,14 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
+import { toast } from "sonner";
 import { enrollInCourseAction } from "@/app/student/actions/enrollment";
-
-const btnCatalog =
-  "w-full rounded-[var(--radius-md)] bg-[var(--primary)] py-3 text-sm font-bold text-[var(--primary-foreground)] shadow-[var(--shadow-sm)] transition hover:bg-[var(--primary-strong)] disabled:opacity-50";
-
-const btnTheme =
-  "rounded-[var(--radius-md)] bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-[var(--primary-foreground)] transition hover:bg-[var(--primary-strong)] disabled:opacity-50";
+import { LoadingButton } from "@/components/ui/loading-button";
+import { refreshPortalAfterMutation } from "@/lib/client/refresh-portal-data";
+import { toUserFacingError } from "@/lib/user-facing-error";
 
 export function EnrollCourseButton({
   courseId,
@@ -20,36 +18,44 @@ export function EnrollCourseButton({
   courseId: string;
   disabled?: boolean;
   label?: string;
-  /** Both variants use Pharm brand primary — catalog uses full-width emphasis */
   variant?: "theme" | "catalog";
   className?: string;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [message, setMessage] = useState<string | null>(null);
 
   return (
     <div className="flex flex-col items-stretch gap-1">
-      <button
+      <LoadingButton
         type="button"
-        disabled={disabled || pending}
+        disabled={disabled}
+        loading={pending}
+        loadingLabel="Enrolling…"
         onClick={() => {
-          setMessage(null);
+          const toastId = toast.loading("Enrolling you in the course…");
           startTransition(async () => {
             const result = await enrollInCourseAction(courseId);
             if (!result.ok) {
-              setMessage(result.message);
+              toast.error(
+                toUserFacingError(result.message, "Could not enroll."),
+                { id: toastId },
+              );
               return;
             }
+            toast.success("Enrolled — opening your course.", { id: toastId });
             router.push(`/student/course/${result.courseId}`);
-            router.refresh();
+            refreshPortalAfterMutation(router);
           });
         }}
-        className={`${variant === "catalog" ? btnCatalog : btnTheme}${className ? ` ${className}` : ""}`}
+        className={`${
+          variant === "catalog"
+            ? "w-full rounded-[var(--radius-md)] py-3 text-sm font-bold shadow-[var(--shadow-sm)]"
+            : "rounded-[var(--radius-md)] px-4 py-2 text-sm font-semibold"
+        }${className ? ` ${className}` : ""}`}
+        size={variant === "catalog" ? "lg" : "default"}
       >
-        {pending ? "Enrolling…" : label}
-      </button>
-      {message ? <p className="text-xs text-rose-700">{message}</p> : null}
+        {label}
+      </LoadingButton>
     </div>
   );
 }

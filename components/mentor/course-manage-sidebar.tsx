@@ -4,78 +4,14 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { refreshPortalAfterMutation } from "@/lib/client/refresh-portal-data";
 import { Button } from "@/components/ui/button";
 import { CourseStatus } from "@/generated/prisma/enums";
+import {
+  COURSE_PLANNER_SECTIONS,
+  activePlannerSegment,
+} from "@/lib/course-planner-steps";
 import { cn } from "@/lib/utils";
-
-type Item = {
-  label: string;
-  href: (courseId: string) => string;
-  segment: string;
-};
-
-const sections: { title: string; items: Item[] }[] = [
-  {
-    title: "Plan your course",
-    items: [
-      {
-        label: "Course structure",
-        href: (courseId) => `/tutor/courses/${courseId}/manage/structure`,
-        segment: "structure",
-      },
-      {
-        label: "Setup & test video",
-        href: (courseId) => `/tutor/courses/${courseId}/manage/video`,
-        segment: "video",
-      },
-    ],
-  },
-  {
-    title: "Create your content",
-    items: [
-      {
-        label: "Film & edit",
-        href: (courseId) => `/tutor/courses/${courseId}/manage/film`,
-        segment: "film",
-      },
-      {
-        label: "Curriculum",
-        href: (courseId) => `/tutor/courses/${courseId}/manage/curriculum`,
-        segment: "curriculum",
-      },
-    ],
-  },
-  {
-    title: "Publish your course",
-    items: [
-      {
-        label: "Course landing page",
-        href: (courseId) => `/tutor/courses/${courseId}/manage/basics`,
-        segment: "basics",
-      },
-      {
-        label: "Pricing",
-        href: (courseId) => `/tutor/courses/${courseId}/manage/pricing`,
-        segment: "pricing",
-      },
-      {
-        label: "Promotions",
-        href: (courseId) => `/tutor/courses/${courseId}/manage/promotions`,
-        segment: "promotions",
-      },
-      {
-        label: "Course messages",
-        href: (courseId) => `/tutor/courses/${courseId}/manage/messages`,
-        segment: "messages",
-      },
-    ],
-  },
-];
-
-function activeSegment(pathname: string) {
-  const parts = pathname.split("/").filter(Boolean);
-  return parts[parts.length - 1] ?? "";
-}
 
 export function CourseManageSidebar({
   courseId,
@@ -91,7 +27,7 @@ export function CourseManageSidebar({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const segment = activeSegment(pathname);
+  const segment = activePlannerSegment(pathname);
   const [submitting, setSubmitting] = useState(false);
 
   const locked =
@@ -99,7 +35,7 @@ export function CourseManageSidebar({
     courseStatus !== CourseStatus.REJECTED;
 
   const activeLabel = useMemo(() => {
-    for (const section of sections) {
+    for (const section of COURSE_PLANNER_SECTIONS) {
       for (const item of section.items) {
         if (item.segment === segment) return item.label;
       }
@@ -139,7 +75,7 @@ export function CourseManageSidebar({
           "Your course is now pending review. You'll be notified once it's processed.",
       });
       onNavigate?.();
-      router.refresh();
+      refreshPortalAfterMutation(router);
     } catch (_error) {
       setSubmitting(false);
       toast.error("An unexpected error occurred", { id: toastId });
@@ -152,9 +88,9 @@ export function CourseManageSidebar({
       aria-label="Course planner"
     >
       <div className="min-h-0 flex-1 space-y-5 overflow-y-auto">
-        {sections.map((section) => (
+        {COURSE_PLANNER_SECTIONS.map((section) => (
           <div key={section.title}>
-            <h3 className="mb-2 px-1 text-[11px] font-bold uppercase tracking-wide text-[var(--muted-soft)]">
+            <h3 className="mb-2 px-1 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
               {section.title}
             </h3>
             <ul className="space-y-0.5">
@@ -167,7 +103,7 @@ export function CourseManageSidebar({
                       "block rounded-r-md border-l-[3px] py-2 pl-3 pr-2 text-[13px] transition-colors",
                       activeLabel === item.label
                         ? "border-[var(--primary)] bg-white font-semibold text-[var(--foreground)] shadow-sm"
-                        : "border-transparent text-[var(--muted)] hover:border-[var(--border)] hover:bg-white/80 hover:text-[var(--foreground)]",
+                        : "border-transparent text-muted-foreground hover:border-[var(--border)] hover:bg-white/80 hover:text-[var(--foreground)]",
                     )}
                   >
                     {item.label}

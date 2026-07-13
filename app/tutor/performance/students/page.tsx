@@ -92,7 +92,7 @@ export default async function PerformanceStudentsPage() {
     {
       label: "New this month",
       value: newThisMonth.toLocaleString(),
-      tone: "bg-emerald-50 text-emerald-900 ring-emerald-100",
+      tone: "bg-primary/10 text-primary ring-primary/15",
     },
     {
       label: "Active (last 14 days)",

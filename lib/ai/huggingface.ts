@@ -1,11 +1,14 @@
 import { InferenceClient } from "@huggingface/inference";
+import {
+  AiConfigurationError,
+  AiProviderError,
+} from "@/lib/ai/huggingface-errors";
 
 const token = process.env.HUGGINGFACE_API_KEY;
 const model =
-  process.env.HUGGINGFACE_QUIZ_MODEL ?? "mistralai/Mistral-7B-Instruct-v0.2"; // Better model for instruction following
+  process.env.HUGGINGFACE_QUIZ_MODEL ?? "mistralai/Mistral-7B-Instruct-v0.2";
 
-// Logging helper
-function aiLog(action: string, data: any) {
+function aiLog(action: string, data: unknown) {
   const timestamp = new Date().toISOString();
   console.log(`[AI-LOG][${timestamp}] ${action}:`, JSON.stringify(data, null, 2));
 }
@@ -63,93 +66,28 @@ function isQuizQuestion(value: unknown): value is QuizQuestion {
   );
 }
 
-function fallbackQuiz(
-  sectionContext: string,
-  questionCount: number,
-): QuizQuestion[] {
-  const sentences = truncateContext(sectionContext)
-    .split(/(?<=[.?!])\s+/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 50 && s.length < 300)
-    .slice(0, Math.max(questionCount * 2, 10));
-
-  const base = sentences.length
-    ? sentences
-    : [
-        "In pharmaceutical clinical trials, data integrity and validation are paramount for regulatory success.",
-        "Pharmacovigilance involves monitoring the effects of medicines after they have been licensed for use.",
-        "Drug stability testing ensures that the pharmaceutical product remains within specifications throughout its shelf life.",
-      ];
-
-  const shuffled = [...base].sort(() => Math.random() - 0.5);
-
-  return Array.from({ length: questionCount }).map((_, i) => {
-    const raw = shuffled[i % shuffled.length];
-    // Attempt a slightly dynamic question from the sentence
-    const question = raw.endsWith("?") 
-      ? `Considering the following: "${raw}", what is the primary takeaway?`
-      : `Based on the context: "${raw.slice(0, 80)}...", which interpretation is most accurate?`;
-
-    return {
-      question,
-      options: [
-        raw,
-        "It is secondary to speed of market entry.",
-        "Only applies during the initial chemical formulation phase.",
-        "Can be ignored if the sample size is sufficiently large.",
-      ].sort(() => Math.random() - 0.5),
-      answer: raw,
-      explanation:
-        "This option directly reflects the core factual content found in the course materials.",
-    };
-  });
-}
-
-function parseContextHighlights(rawContext: string) {
-  const source = rawContext.replace(/\r/g, " ");
-  const sectionMatches = [...source.matchAll(/Section:\s*(.+?)(?=\s+Lesson:|\s+Section:|$)/gi)];
-  const lessonMatches = [...source.matchAll(/Lesson:\s*(.+?)(?=\s+Section:|$)/gi)];
-
-  const sections = sectionMatches
-    .map((m) => m[1]?.trim())
-    .filter(Boolean)
-    .map((s) => s.slice(0, 80));
-  const lessons = lessonMatches
-    .map((m) => m[1]?.trim())
-    .filter(Boolean)
-    .map((l) => l.slice(0, 100));
-
-  return {
-    sections: [...new Set(sections)].slice(0, 4),
-    lessons: [...new Set(lessons)].slice(0, 6),
-  };
-}
-
-function fallbackChatReply(context: string, message: string) {
-  const safeMessage = message.trim();
-  const safeContext = truncateContext(context);
-  const { sections: uniqueSections, lessons: uniqueLessons } = parseContextHighlights(context);
-
-  const preview = safeContext.slice(0, 280);
-
-  const lowerQuestion = safeMessage.toLowerCase();
-  const asksCourseOverview =
-    /\b(what|about|summary|overview|course)\b/.test(lowerQuestion) &&
-    /\b(course|this|cover|about)\b/.test(lowerQuestion);
-
-  if (asksCourseOverview) {
-    const sectionLine = uniqueSections.length
-      ? `It mainly covers: ${uniqueSections.join(", ")}.`
-      : "It focuses on clinical data quality, validation, and compliance practices.";
-    const lessonLine = uniqueLessons.length
-      ? `You have already touched lessons like: ${uniqueLessons.slice(0, 3).join("; ")}.`
-      : "As you complete more lessons, I can give a deeper personalized summary.";
-    return `This course is about building reliable, audit-ready clinical data workflows in pharmaceutical settings.\n\n${sectionLine}\n${lessonLine}\n\nIf you want, I can also break it down into: (1) key concepts, (2) practical workflow, and (3) likely exam-style questions.`;
+function assertAiClient() {
+  if (!token || !client) {
+    aiLog("AI_DISABLED", { reason: "HUGGINGFACE_API_KEY is missing" });
+    throw new AiConfigurationError();
   }
+  return client;
+}
 
-  const firstSection = uniqueSections[0] ?? "your completed section";
-  const firstLesson = uniqueLessons[0] ?? "the latest lesson";
-  return `I am having trouble reaching the live AI provider right now, but I can still help from your completed course context.\n\nFrom ${firstSection} (${firstLesson}), the key idea is to apply structured validation checks, document decisions clearly, and maintain compliance-ready evidence.\n\nContext snapshot: ${preview}...\n\nAsk me something specific (for example: \"give me 3 key takeaways\" or \"test me with 2 questions\") and I will tailor it.`;
+function sanitizeProviderError(err: unknown): string {
+  if (err instanceof Error && err.message) {
+    const msg = err.message.slice(0, 200);
+    if (/unauthorized|invalid.*token|api key/i.test(msg)) {
+      return "AI service authentication failed. Check HUGGINGFACE_API_KEY.";
+    }
+    if (/rate limit|429/i.test(msg)) {
+      return "AI service is rate-limited. Please wait a moment and try again.";
+    }
+    if (/model.*not found|404/i.test(msg)) {
+      return "Configured AI model is unavailable. Contact support.";
+    }
+  }
+  return "AI service is temporarily unavailable. Please try again.";
 }
 
 export async function generateSectionQuiz(
@@ -158,36 +96,29 @@ export async function generateSectionQuiz(
 ) {
   const safeCount = Math.max(3, Math.min(12, questionCount));
   const safeContext = truncateContext(sectionContext);
+  if (!safeContext.trim()) {
+    throw new AiProviderError("No course content available for quiz generation.");
+  }
 
-  if (!token) {
-    aiLog("QUIZ_GEN_DISABLED", { reason: "HUGGINGFACE_API_KEY is missing" });
-    return fallbackQuiz(safeContext, safeCount);
-  }
-  if (!client) {
-    aiLog("QUIZ_GEN_DISABLED", { reason: "InferenceClient initialization failed" });
-    return fallbackQuiz(safeContext, safeCount);
-  }
+  const inference = assertAiClient();
 
   const prompt = `
 [SYSTEM]
-You are a Pharmacy School Professor. Your task is to generate challenging and diverse multiple-choice questions (MCQs) for your students based strictly on the provided lesson content.
+You are a Pharmacy School Professor. Generate challenging multiple-choice questions (MCQs) strictly from the lesson content.
 
 [INSTRUCTIONS]
-1. Generate ${safeCount} unique MCQs. 
-2. Each question must be specific to the concepts in the text.
-3. Avoid generic phrasing like "key concept 1". Use actual terms from the text.
-4. Provide 4 distinct options for each question.
-5. Identify the correct answer (full string matching one of the options).
-6. Provide a concise pedagogical explanation.
-7. Return ONLY a valid JSON array of objects. Do not include any conversational text.
+1. Generate ${safeCount} unique MCQs.
+2. Each question must reference specific concepts from the text.
+3. Provide 4 distinct options per question.
+4. Return ONLY a valid JSON array. No markdown fences or commentary.
 
 [FORMAT]
 [
-  { 
-    "question": "Specific question text using course terms?",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
-    "answer": "Option A",
-    "explanation": "Brief reasoning why A is correct."
+  {
+    "question": "Question text?",
+    "options": ["A", "B", "C", "D"],
+    "answer": "A",
+    "explanation": "Why A is correct."
   }
 ]
 
@@ -195,37 +126,45 @@ You are a Pharmacy School Professor. Your task is to generate challenging and di
 ${safeContext}
 `;
 
-  aiLog("QUIZ_GEN_START", { questionCount: safeCount, contextLength: safeContext.length });
+  aiLog("QUIZ_GEN_START", {
+    questionCount: safeCount,
+    contextLength: safeContext.length,
+  });
 
-  try {
-    const response = await client.chatCompletion({
-      model,
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      max_tokens: 1500,
-    });
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const response = await inference.chatCompletion({
+        model,
+        messages: [{ role: "user", content: prompt }],
+        temperature: attempt === 0 ? 0.7 : 0.4,
+        max_tokens: 1800,
+      });
 
-    const raw = response.choices?.[0]?.message?.content ?? "[]";
-    aiLog("QUIZ_GEN_RAW_RESPONSE", { rawLength: raw.length, preview: raw.slice(0, 100) });
+      const raw = response.choices?.[0]?.message?.content ?? "[]";
+      const jsonStr = extractJsonArray(raw);
+      const parsed = JSON.parse(jsonStr) as unknown;
 
-    const jsonStr = extractJsonArray(raw);
-    const parsed = JSON.parse(jsonStr) as unknown;
+      if (!Array.isArray(parsed)) {
+        throw new AiProviderError("AI returned invalid quiz format.");
+      }
 
-    if (!Array.isArray(parsed)) {
-      aiLog("QUIZ_GEN_ERROR", { error: "AI returned non-array JSON", raw });
-      return fallbackQuiz(safeContext, safeCount);
+      const valid = parsed.filter(isQuizQuestion).slice(0, safeCount);
+      if (valid.length >= 2) {
+        aiLog("QUIZ_GEN_SUCCESS", { validCount: valid.length, attempt });
+        return valid;
+      }
+
+      lastError = new AiProviderError("AI returned too few valid questions.");
+    } catch (err) {
+      lastError = err;
+      aiLog("QUIZ_GEN_ATTEMPT_FAILED", { attempt, error: String(err) });
     }
-
-    const valid = parsed.filter(isQuizQuestion).slice(0, safeCount);
-    aiLog("QUIZ_GEN_SUCCESS", { validCount: valid.length });
-    
-    if (valid.length >= 2) return valid;
-    
-    return fallbackQuiz(safeContext, safeCount);
-  } catch (err: any) {
-    aiLog("QUIZ_GEN_CRITICAL_FAILURE", { error: err?.message || err });
-    return fallbackQuiz(safeContext, safeCount);
   }
+
+  if (lastError instanceof AiConfigurationError) throw lastError;
+  if (lastError instanceof AiProviderError) throw lastError;
+  throw new AiProviderError(sanitizeProviderError(lastError));
 }
 
 export async function chatWithCourseContext(
@@ -244,15 +183,15 @@ export async function chatWithCourseContext(
     return "Please share a question about the course and I will help.";
   }
 
-  aiLog("CHAT_START", { message: safeMessage, historyLength: safeHistory.length });
-
-  if (!token || !client) {
-    aiLog("CHAT_DISABLED", { reason: "HuggingFace client not configured" });
-    return fallbackChatReply(sectionContext, safeMessage);
+  if (!safeContext.trim()) {
+    throw new AiProviderError("No course content available for this assistant.");
   }
 
+  const inference = assertAiClient();
+  aiLog("CHAT_START", { message: safeMessage, historyLength: safeHistory.length });
+
   try {
-    const response = await client.chatCompletion({
+    const response = await inference.chatCompletion({
       model,
       temperature: 0.5,
       max_tokens: 800,
@@ -260,11 +199,11 @@ export async function chatWithCourseContext(
         {
           role: "system",
           content:
-            "You are a professional Pharmacy Education Assistant. Your primary goal is to help students understand the provided lesson context. Be precise, educational, and encouraging. Cite specific parts of the context when possible. If the context doesn't contain the answer, say you don't know based on the current material and encourage them to check other parts of the course.",
+            "You are a professional Pharmacy Education Assistant. Answer using only the provided course context. If the answer is not in the context, say so clearly.",
         },
         {
           role: "system",
-          content: `HERE IS THE LESSON CONTEXT YOU MUST USE:\n---\n${safeContext}\n---`,
+          content: `COURSE CONTEXT:\n---\n${safeContext}\n---`,
         },
         ...safeHistory.map((t) => ({ role: t.role, content: t.content })),
         { role: "user", content: safeMessage },
@@ -273,15 +212,17 @@ export async function chatWithCourseContext(
 
     const reply = response.choices?.[0]?.message?.content?.trim();
     if (!reply) {
-      aiLog("CHAT_ERROR", { error: "AI returned empty response" });
-      return fallbackChatReply(sectionContext, safeMessage);
+      throw new AiProviderError("AI returned an empty response.");
     }
-    
+
     aiLog("CHAT_SUCCESS", { replyLength: reply.length });
     return reply;
-  } catch (err: any) {
-    aiLog("CHAT_CRITICAL_FAILURE", { error: err?.message || err });
-    return fallbackChatReply(sectionContext, safeMessage);
+  } catch (err) {
+    aiLog("CHAT_FAILURE", { error: String(err) });
+    if (err instanceof AiConfigurationError || err instanceof AiProviderError) {
+      throw err;
+    }
+    throw new AiProviderError(sanitizeProviderError(err));
   }
 }
 

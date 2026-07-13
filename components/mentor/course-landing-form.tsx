@@ -1,11 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { refreshPortalAfterMutation } from "@/lib/client/refresh-portal-data";
 import { useCourseStudio } from "@/components/mentor/course-studio-context";
+import { CourseCategoryInput } from "@/components/mentor/course-category-input";
 import { RichTextArea } from "@/components/rich-text-area";
 import { FileUploader } from "@/components/upload/file-uploader";
+import { cn } from "@/lib/utils";
 
 export type CourseLandingInitial = {
   title: string;
@@ -35,7 +38,7 @@ export function CourseLandingForm({
   courseId: string;
   initial: CourseLandingInitial;
 }) {
-  const { readOnly } = useCourseStudio();
+  const { readOnly, registerStepHandlers } = useCourseStudio();
   const router = useRouter();
   const [title, setTitle] = useState(initial.title);
   const [subtitle, setSubtitle] = useState(initial.subtitle ?? "");
@@ -59,8 +62,77 @@ export function CourseLandingForm({
     initialDur != null && initialDur > 0 ? String(initialDur % 60) : "",
   );
   const [saving, setSaving] = useState(false);
+  const [mediaUploading, setMediaUploading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const descLen = useMemo(() => plainTextLength(description), [description]);
+
+  function inputClass(field: string) {
+    return cn(
+      "h-10 w-full border px-3 text-sm disabled:bg-[var(--surface-muted)]",
+      fieldErrors[field]
+        ? "border-destructive focus:border-destructive"
+        : "border-[var(--border)]",
+    );
+  }
+
+  function validateForNext(): boolean {
+    const errors: Record<string, string> = {};
+    if (title.trim().length < 3) {
+      errors.title = "Title must be at least 3 characters.";
+    }
+    if (plainTextLength(description) < 50) {
+      errors.description = "Description must be at least 50 characters of text.";
+    }
+    if (!language.trim()) {
+      errors.language = "Language is required.";
+    }
+    if (!level.trim()) {
+      errors.level = "Level is required.";
+    }
+    if (!primaryTopic.trim()) {
+      errors.primaryTopic = "Primary topic is required.";
+    }
+    if (!thumbnailUrl.trim()) {
+      errors.thumbnail = "Upload a course cover image.";
+    }
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      const firstKey = Object.keys(errors)[0];
+      const idMap: Record<string, string> = {
+        title: "cl-title",
+        description: "cl-description",
+        language: "cl-lang",
+        level: "cl-level",
+        primaryTopic: "cl-topic",
+        thumbnail: "cl-thumbnail",
+      };
+      const el = document.getElementById(idMap[firstKey] ?? firstKey);
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      el?.focus();
+      toast.error("Complete the required landing page fields before continuing.");
+      return false;
+    }
+    return true;
+  }
+
+  useEffect(() => {
+    registerStepHandlers({
+      navigationLocked: saving || mediaUploading,
+      onNext: () => validateForNext(),
+    });
+    return () => registerStepHandlers(null);
+  }, [
+    registerStepHandlers,
+    title,
+    description,
+    language,
+    level,
+    primaryTopic,
+    thumbnailUrl,
+    saving,
+    mediaUploading,
+  ]);
 
   async function save() {
     setSaving(true);
@@ -113,7 +185,7 @@ export function CourseLandingForm({
         return;
       }
       toast.success("Landing page saved.");
-      router.refresh();
+      refreshPortalAfterMutation(router);
     } finally {
       setSaving(false);
     }
@@ -122,30 +194,42 @@ export function CourseLandingForm({
   return (
     <div className="space-y-5 px-6 py-5">
       {readOnly ? (
-        <p className="rounded border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-sm text-[var(--muted)]">
+        <p className="rounded border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-sm text-muted-foreground">
           This course is pending review. Landing page fields are read-only.
         </p>
       ) : null}
 
       <div>
-        <label htmlFor="cl-title" className="mb-1 block text-xs font-semibold">
+        <label htmlFor="cl-title" className="mb-1 block text-xs font-bold text-foreground">
           Course title
         </label>
         <input
           id="cl-title"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            if (fieldErrors.title) {
+              setFieldErrors((prev) => {
+                const next = { ...prev };
+                delete next.title;
+                return next;
+              });
+            }
+          }}
           maxLength={120}
           disabled={readOnly}
-          className="h-10 w-full border border-[var(--border)] px-3 text-sm disabled:bg-[var(--surface-muted)]"
+          className={inputClass("title")}
         />
-        <p className="mt-1 text-right text-[11px] text-[var(--muted)]">
+        {fieldErrors.title ? (
+          <p className="mt-1 text-xs text-destructive">{fieldErrors.title}</p>
+        ) : null}
+        <p className="mt-1 text-right text-[11px] text-muted-foreground">
           {title.length} / 120
         </p>
       </div>
 
       <div>
-        <label htmlFor="cl-sub" className="mb-1 block text-xs font-semibold">
+        <label htmlFor="cl-sub" className="mb-1 block text-xs font-bold text-foreground">
           Course subtitle
         </label>
         <input
@@ -156,23 +240,35 @@ export function CourseLandingForm({
           disabled={readOnly}
           className="h-10 w-full border border-[var(--border)] px-3 text-sm disabled:bg-[var(--surface-muted)]"
         />
-        <p className="mt-1 text-right text-[11px] text-[var(--muted)]">
+        <p className="mt-1 text-right text-[11px] text-muted-foreground">
           {subtitle.length} / 200
         </p>
       </div>
 
-      <div>
-        <span className="mb-1 block text-xs font-semibold">
+      <div id="cl-description">
+        <span className="mb-1 block text-xs font-bold text-foreground">
           Course description
         </span>
         <RichTextArea
           value={description}
-          onChange={setDescription}
+          onChange={(value) => {
+            setDescription(value);
+            if (fieldErrors.description) {
+              setFieldErrors((prev) => {
+                const next = { ...prev };
+                delete next.description;
+                return next;
+              });
+            }
+          }}
           disabled={readOnly}
           placeholder="Describe what students will learn."
           minHeightClass="min-h-[200px]"
         />
-        <p className="mt-1 text-[11px] text-[var(--muted)]">
+        {fieldErrors.description ? (
+          <p className="mt-1 text-xs text-destructive">{fieldErrors.description}</p>
+        ) : null}
+        <p className="mt-1 text-[11px] text-muted-foreground">
           {descLen} characters of text (aim for a thorough description; 50+
           required to submit).
         </p>
@@ -180,34 +276,61 @@ export function CourseLandingForm({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label htmlFor="cl-lang" className="mb-1 block text-xs font-semibold">
+          <label htmlFor="cl-lang" className="mb-1 block text-xs font-bold text-foreground">
             Language
           </label>
           <select
             id="cl-lang"
             value={language}
-            onChange={(e) => setLanguage(e.target.value)}
+            onChange={(e) => {
+              setLanguage(e.target.value);
+              if (fieldErrors.language) {
+                setFieldErrors((prev) => {
+                  const next = { ...prev };
+                  delete next.language;
+                  return next;
+                });
+              }
+            }}
             disabled={readOnly}
-            className="h-10 w-full border border-[var(--border)] bg-white px-2 text-sm disabled:bg-[var(--surface-muted)]"
+            className={cn(
+              "h-10 w-full border bg-white px-2 text-sm disabled:bg-[var(--surface-muted)]",
+              fieldErrors.language ? "border-destructive" : "border-[var(--border)]",
+            )}
           >
             <option value="English">English</option>
             <option value="English (US)">English (US)</option>
             <option value="English (UK)">English (UK)</option>
           </select>
+          {fieldErrors.language ? (
+            <p className="mt-1 text-xs text-destructive">{fieldErrors.language}</p>
+          ) : null}
         </div>
         <div>
           <label
             htmlFor="cl-level"
-            className="mb-1 block text-xs font-semibold"
+            className="mb-1 block text-xs font-bold text-foreground"
           >
             Level
           </label>
           <select
             id="cl-level"
             value={level}
-            onChange={(e) => setLevel(e.target.value)}
+            onChange={(e) => {
+              setLevel(e.target.value);
+              if (fieldErrors.level) {
+                setFieldErrors((prev) => {
+                  const next = { ...prev };
+                  delete next.level;
+                  return next;
+                });
+              }
+            }}
             disabled={readOnly}
-            className="h-10 w-full border border-[var(--border)] bg-white px-2 text-sm disabled:bg-[var(--surface-muted)]"
+            className={cn(
+              "h-10 w-full border bg-white px-2 text-sm disabled:bg-[var(--surface-muted)]",
+              fieldErrors.level ? "border-destructive" : "border-[var(--border)]",
+            )}
           >
             <option value="">— Select level —</option>
             <option value="Beginner">Beginner</option>
@@ -215,25 +338,27 @@ export function CourseLandingForm({
             <option value="Advanced">Advanced</option>
             <option value="All levels">All levels</option>
           </select>
+          {fieldErrors.level ? (
+            <p className="mt-1 text-xs text-destructive">{fieldErrors.level}</p>
+          ) : null}
         </div>
         <div>
-          <label htmlFor="cl-cat" className="mb-1 block text-xs font-semibold">
+          <label htmlFor="cl-cat" className="mb-1 block text-xs font-bold text-foreground">
             Category
           </label>
-          <input
+          <CourseCategoryInput
             id="cl-cat"
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            maxLength={120}
+            onChange={setCategory}
             disabled={readOnly}
-            placeholder="e.g. Pharmacy"
+            placeholder="e.g. Business, Design, Pharmacy…"
             className="h-10 w-full border border-[var(--border)] px-3 text-sm disabled:bg-[var(--surface-muted)]"
           />
         </div>
         <div>
           <label
             htmlFor="cl-subcat"
-            className="mb-1 block text-xs font-semibold"
+            className="mb-1 block text-xs font-bold text-foreground"
           >
             Subcategory
           </label>
@@ -250,22 +375,34 @@ export function CourseLandingForm({
       </div>
 
       <div>
-        <label htmlFor="cl-topic" className="mb-1 block text-xs font-semibold">
+        <label htmlFor="cl-topic" className="mb-1 block text-xs font-bold text-foreground">
           Primary topic
         </label>
         <input
           id="cl-topic"
           value={primaryTopic}
-          onChange={(e) => setPrimaryTopic(e.target.value)}
+          onChange={(e) => {
+            setPrimaryTopic(e.target.value);
+            if (fieldErrors.primaryTopic) {
+              setFieldErrors((prev) => {
+                const next = { ...prev };
+                delete next.primaryTopic;
+                return next;
+              });
+            }
+          }}
           maxLength={200}
           disabled={readOnly}
           placeholder="What is primarily taught?"
-          className="h-10 w-full border border-[var(--border)] px-3 text-sm disabled:bg-[var(--surface-muted)]"
+          className={inputClass("primaryTopic")}
         />
+        {fieldErrors.primaryTopic ? (
+          <p className="mt-1 text-xs text-destructive">{fieldErrors.primaryTopic}</p>
+        ) : null}
       </div>
 
       <div>
-        <span className="mb-1 block text-xs font-semibold">
+        <span className="mb-1 block text-xs font-bold text-foreground">
           Estimated course duration (optional)
         </span>
         <div className="flex flex-wrap items-center gap-2">
@@ -283,7 +420,7 @@ export function CourseLandingForm({
             className="h-10 w-20 border border-[var(--border)] px-2 text-sm disabled:bg-[var(--surface-muted)]"
             aria-label="Hours"
           />
-          <span className="text-sm text-[var(--muted)]">hr</span>
+          <span className="text-sm text-muted-foreground">hr</span>
           <input
             type="number"
             min={0}
@@ -298,27 +435,43 @@ export function CourseLandingForm({
             className="h-10 w-16 border border-[var(--border)] px-2 text-sm disabled:bg-[var(--surface-muted)]"
             aria-label="Minutes"
           />
-          <span className="text-sm text-[var(--muted)]">min</span>
+          <span className="text-sm text-muted-foreground">min</span>
         </div>
-        <p className="mt-1 text-[11px] leading-relaxed text-[var(--muted)]">
+        <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
           Leave blank to auto-estimate from lesson video lengths plus about 30
           minutes if the course includes reading-style lessons.
         </p>
       </div>
 
+      <div id="cl-thumbnail">
       <FileUploader
         purpose="thumbnail"
         courseId={courseId}
         currentUrl={thumbnailUrl}
-        onUploadComplete={setThumbnailUrl}
+        onUploadComplete={(url) => {
+          setThumbnailUrl(url);
+          if (fieldErrors.thumbnail) {
+            setFieldErrors((prev) => {
+              const next = { ...prev };
+              delete next.thumbnail;
+              return next;
+            });
+          }
+        }}
+        onUploadingChange={setMediaUploading}
         disabled={readOnly}
       />
+      {fieldErrors.thumbnail ? (
+        <p className="mt-1 text-xs text-destructive">{fieldErrors.thumbnail}</p>
+      ) : null}
+      </div>
 
       <FileUploader
         purpose="promo-video"
         courseId={courseId}
         currentUrl={promoVideoUrl}
         onUploadComplete={setPromoVideoUrl}
+        onUploadingChange={setMediaUploading}
         disabled={readOnly}
       />
 

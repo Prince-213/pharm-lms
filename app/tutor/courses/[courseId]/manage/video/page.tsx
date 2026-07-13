@@ -24,7 +24,7 @@ export default async function MentorCourseSetupVideoPage() {
                 <h2 className="text-xl font-semibold text-[var(--foreground)]">
                   Arrange your ideal studio and get early feedback
                 </h2>
-                <p className="leading-relaxed text-[var(--muted)]">
+                <p className="leading-relaxed text-muted-foreground">
                   It&apos;s important to test your audio and video setup before
                   recording your actual course lessons. Proper planning ensures
                   your content looks professional and keeps students engaged.
@@ -81,7 +81,7 @@ export default async function MentorCourseSetupVideoPage() {
                   </span>
                 </div>
                 <TutorialVideoPlayer url={TUTORIAL_VIDEO_URL} />
-                <div className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-xs italic text-[var(--muted)] line-clamp-3">
+                <div className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-xs italic text-muted-foreground line-clamp-3">
                   Watch our Masterclass on setting up your home recording
                   studio. We cover everything from lighting to sound treatment.
                 </div>

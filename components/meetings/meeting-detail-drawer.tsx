@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Video } from "lucide-react";
 import { MeetingRequestActions } from "@/components/meetings/meeting-request-actions";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Sheet,
   SheetContent,
@@ -41,7 +42,7 @@ export function MeetingDetailDrawer({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full overflow-y-auto border-[var(--border)] sm:max-w-md"
+        className="w-full overflow-y-auto border-[#d1d7dc] px-5 sm:max-w-md sm:px-6"
       >
         {event ? (
           <>
@@ -54,77 +55,100 @@ export function MeetingDetailDrawer({
               </SheetDescription>
             </SheetHeader>
 
-            <div className="mt-6 space-y-5 text-sm">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--muted)]">
-                  Status
-                </p>
-                <p className="mt-1 font-semibold text-[var(--foreground)]">
-                  {event.displayStatus}
-                </p>
-              </div>
+            <div className="mt-6 space-y-4 text-sm">
+              <Card className="border-[#d1d7dc] bg-white shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-semibold">Status</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <p className="font-semibold text-[var(--foreground)]">
+                    {event.displayStatus}
+                  </p>
+                </CardContent>
+              </Card>
 
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--muted)]">
-                  {isHost ? "Student" : "Host"}
-                </p>
-                <p className="mt-1 font-semibold">{event.counterpartyName}</p>
-                {event.counterpartyEmail ? (
-                  <p className="text-xs text-[var(--muted)]">
-                    {event.counterpartyEmail}
-                  </p>
-                ) : null}
-                {!isHost && event.counterpartyRole ? (
-                  <span className="mt-2 inline-flex rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--muted)]">
-                    {hostRoleLabel(event.counterpartyRole)}
-                  </span>
-                ) : null}
-                {event.enrolledCoursesLine ? (
-                  <p className="mt-2 text-xs text-[var(--muted)]">
-                    {event.enrolledCoursesLine}
-                  </p>
-                ) : null}
-              </div>
+              <Card className="border-[#d1d7dc] bg-white shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-semibold">
+                    {isHost ? "Student" : "Host"}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 pt-0">
+                  <p className="font-semibold">{event.counterpartyName}</p>
+                  {event.counterpartyEmail ? (
+                    <p className="text-xs text-muted-foreground">
+                      {event.counterpartyEmail}
+                    </p>
+                  ) : null}
+                  {!isHost && event.counterpartyRole ? (
+                    <span className="inline-flex rounded-full bg-[#f7f9fa] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                      {hostRoleLabel(event.counterpartyRole)}
+                    </span>
+                  ) : null}
+                  {event.enrolledCoursesLine ? (
+                    <p className="text-xs text-muted-foreground">
+                      {event.enrolledCoursesLine}
+                    </p>
+                  ) : null}
+                </CardContent>
+              </Card>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--muted)]">
-                    Submitted
-                  </p>
-                  <p className="mt-1 text-xs text-[var(--foreground)]">
-                    {formatCalendarEventTime(event.submittedAt)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--muted)]">
-                    Preferred
-                  </p>
-                  <p className="mt-1 text-xs text-[var(--foreground)]">
-                    {formatCalendarEventTime(event.preferredTime)}
-                  </p>
-                </div>
-                <div className="sm:col-span-2">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--muted)]">
-                    Scheduled
-                  </p>
-                  <p className="mt-1 text-xs text-[var(--foreground)]">
-                    {formatCalendarEventTime(event.scheduledAt)}
-                  </p>
-                </div>
-              </div>
+              <Card className="border-[#d1d7dc] bg-white shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-semibold">Timeline</CardTitle>
+                </CardHeader>
+                <CardContent className="grid gap-3 pt-0 sm:grid-cols-2">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                      Submitted
+                    </p>
+                    <p className="mt-1 text-xs text-[var(--foreground)]">
+                      {formatCalendarEventTime(event.submittedAt)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                      Preferred
+                    </p>
+                    <p className="mt-1 text-xs text-[var(--foreground)]">
+                      {formatCalendarEventTime(event.preferredTime)}
+                    </p>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                      Scheduled
+                    </p>
+                    <p className="mt-1 text-xs text-[var(--foreground)]">
+                      {formatCalendarEventTime(event.scheduledAt)}
+                    </p>
+                  </div>
+                  {event.openedAt ? (
+                    <div className="sm:col-span-2">
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                        First join opened
+                      </p>
+                      <p className="mt-1 text-xs text-[var(--foreground)]">
+                        {formatCalendarEventTime(event.openedAt)}
+                      </p>
+                    </div>
+                  ) : null}
+                </CardContent>
+              </Card>
 
               {event.message?.trim() ? (
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--muted)]">
-                    Message
-                  </p>
-                  <p className="mt-1 rounded-lg border border-[var(--border)] bg-[var(--surface-muted)]/30 px-3 py-2 text-xs leading-relaxed text-[var(--foreground)]">
-                    {event.message.trim()}
-                  </p>
-                </div>
+                <Card className="border-[#d1d7dc] bg-white shadow-sm">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold">Message</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <p className="rounded-lg border border-[#d1d7dc] bg-[#f7f9fa] px-3 py-2 text-xs leading-relaxed text-[var(--foreground)]">
+                      {event.message.trim()}
+                    </p>
+                  </CardContent>
+                </Card>
               ) : null}
 
-              <div className="flex flex-col gap-3 border-t border-[var(--border)] pt-4">
+              <div className="flex flex-col gap-3 border-t border-[#d1d7dc] pt-4">
                 {event.canAcceptReject ? (
                   <MeetingRequestActions
                     meetingRequestId={event.meetingRequestId}
@@ -163,7 +187,7 @@ export function MeetingDetailDrawer({
             </div>
           </>
         ) : (
-          <p className="text-sm text-[var(--muted)]">Select a meeting slot.</p>
+          <p className="text-sm text-muted-foreground">Select a meeting slot.</p>
         )}
       </SheetContent>
     </Sheet>

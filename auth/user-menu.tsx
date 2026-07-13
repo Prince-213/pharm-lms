@@ -66,13 +66,13 @@ export function UserMenu() {
           <p className="leading-none text-sm font-bold text-[var(--foreground)]">
             {user.name || "User"}
           </p>
-          <p className="mt-1 text-xs text-[var(--muted)]">
+          <p className="mt-1 text-xs text-muted-foreground">
             {userRoleLabel(user.role)}
           </p>
         </div>
         <ChevronDown
           className={cn(
-            "h-4 w-4 text-[var(--muted)] transition-transform duration-200",
+            "h-4 w-4 text-muted-foreground transition-transform duration-200",
             isOpen && "rotate-180",
           )}
         />
@@ -88,7 +88,7 @@ export function UserMenu() {
               <p className="truncate text-sm font-bold text-[var(--foreground)]">
                 {user.name}
               </p>
-              <p className="truncate text-xs text-[var(--muted)]">
+              <p className="truncate text-xs text-muted-foreground">
                 {user.email}
               </p>
             </div>
@@ -100,7 +100,7 @@ export function UserMenu() {
                     ? `/${role.toLowerCase()}/dashboard`
                     : "/student/dashboard"
                 }
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[var(--muted)] transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
                 role="menuitem"
               >
                 <LayoutDashboard className="h-4 w-4 shrink-0" />
@@ -108,7 +108,7 @@ export function UserMenu() {
               </Link>
               <Link
                 href={profileHref}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[var(--muted)] transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
                 role="menuitem"
               >
                 <User className="h-4 w-4 shrink-0" />
@@ -116,7 +116,7 @@ export function UserMenu() {
               </Link>
               <Link
                 href={profileHref}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[var(--muted)] transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
                 role="menuitem"
               >
                 <Settings className="h-4 w-4 shrink-0" />

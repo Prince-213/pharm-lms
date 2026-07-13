@@ -40,7 +40,7 @@ export function InstructorCourseHeader({
         <div className="flex min-w-0 flex-1 items-center gap-2 lg:gap-3">
           <Link
             href="/tutor/courses"
-            className="hidden shrink-0 text-xs font-medium text-[var(--muted)] transition hover:text-[var(--foreground)] lg:inline"
+            className="hidden shrink-0 text-xs font-medium text-muted-foreground transition hover:text-[var(--foreground)] lg:inline"
           >
             {"<"} Back to courses
           </Link>
@@ -51,11 +51,11 @@ export function InstructorCourseHeader({
           <h1 className="min-w-0 truncate text-sm font-semibold text-[var(--foreground)] lg:text-base">
             {courseTitle}
           </h1>
-          <span className="shrink-0 rounded bg-[var(--surface-muted)] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+          <span className="shrink-0 rounded bg-[var(--surface-muted)] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
             {statusLabel}
           </span>
           {topMeta ? (
-            <span className="hidden truncate text-xs text-[var(--muted)] xl:inline">
+            <span className="hidden truncate text-xs text-muted-foreground xl:inline">
               {topMeta}
             </span>
           ) : null}
@@ -85,7 +85,7 @@ export function InstructorCourseHeader({
           {settingsHref ? (
             <Link
               href={settingsHref}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-[var(--radius-sm)] text-[var(--muted)] transition hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-[var(--radius-sm)] text-muted-foreground transition hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
               aria-label="Course settings"
             >
               <Settings className="h-4 w-4" aria-hidden />

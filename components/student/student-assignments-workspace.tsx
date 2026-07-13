@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import { Fragment, useMemo, useState } from "react";
 import { StudentAssignmentRowStatus } from "@/components/assignments/assignment-status-badges";
+import { AssignmentInstructionsBody } from "@/components/assignments/assignment-instructions-body";
 import { AssignmentSubmitForm } from "@/components/student/assignment-submit-form";
 import {
   type AssignmentStatus,
@@ -24,10 +25,10 @@ export type StudentAssignmentRow = {
   courseId: string;
   courseTitle: string;
   mentorName: string;
-  dueAtIso: string | null;
   assignmentStatus: AssignmentStatus;
   closed: boolean;
-  description: string;
+  instructions: string;
+  sectionTitle: string | null;
   hasHandout: boolean;
   handoutHref: string | null;
   instructionsLinkUrl: string | null;
@@ -74,7 +75,7 @@ function rowMatchesFilter(row: StudentAssignmentRow, f: FilterId): boolean {
 function StatTile({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-center shadow-[var(--shadow-sm)]">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
         {label}
       </p>
       <p className="mt-0.5 text-lg font-semibold tabular-nums text-[var(--foreground)]">
@@ -127,7 +128,7 @@ export function StudentAssignmentsWorkspace({
         <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
           Assignments
         </h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">
+        <p className="mt-1 text-sm text-muted-foreground">
           Work from your enrolled courses. Search, filter, then expand a row for
           instructions and submission.
         </p>
@@ -140,7 +141,7 @@ export function StudentAssignmentsWorkspace({
             strokeWidth={1.25}
           />
           <p className="mt-4 text-sm font-semibold">No assignments yet</p>
-          <p className="mt-2 max-w-sm text-xs text-[var(--muted)]">
+          <p className="mt-2 max-w-sm text-xs text-muted-foreground">
             When your tutor publishes an assignment in a course you&apos;re
             enrolled in, it will appear here.
           </p>
@@ -157,7 +158,7 @@ export function StudentAssignmentsWorkspace({
 
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <label className="relative min-w-[200px] flex-1 sm:max-w-md">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -175,7 +176,7 @@ export function StudentAssignmentsWorkspace({
                     "rounded-full px-3 py-1.5 text-xs font-semibold transition",
                     filter === f.id
                       ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
-                      : "bg-[var(--surface-muted)] text-[var(--muted)] hover:text-[var(--foreground)]",
+                      : "bg-[var(--surface-muted)] text-muted-foreground hover:text-[var(--foreground)]",
                   )}
                 >
                   {f.label}
@@ -187,12 +188,11 @@ export function StudentAssignmentsWorkspace({
           {/* Desktop table */}
           <div className="hidden overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-sm)] md:block">
             <table className="w-full min-w-[640px] text-left text-sm">
-              <thead className="sticky top-0 z-10 border-b border-[var(--border)] bg-[var(--background)] text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+              <thead className="sticky top-0 z-10 border-b border-[var(--border)] bg-[var(--background)] text-xs font-bold uppercase tracking-wide text-muted-foreground">
                 <tr>
                   <th className="w-8 px-3 py-3" />
                   <th className="px-3 py-3">Assignment</th>
                   <th className="px-3 py-3">Course</th>
-                  <th className="px-3 py-3">Due</th>
                   <th className="px-3 py-3">Your status</th>
                 </tr>
               </thead>
@@ -200,8 +200,8 @@ export function StudentAssignmentsWorkspace({
                 {filtered.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={5}
-                      className="px-4 py-12 text-center text-sm text-[var(--muted)]"
+                      colSpan={4}
+                      className="px-4 py-12 text-center text-sm text-muted-foreground"
                     >
                       No assignments match your filters.
                     </td>
@@ -225,7 +225,7 @@ export function StudentAssignmentsWorkspace({
                                 e.stopPropagation();
                                 toggleExpand(r.assignmentId);
                               }}
-                              className="rounded p-1 text-[var(--muted)] hover:bg-[var(--surface-muted)]"
+                              className="rounded p-1 text-muted-foreground hover:bg-[var(--surface-muted)]"
                               aria-expanded={open}
                             >
                               {open ? (
@@ -246,14 +246,9 @@ export function StudentAssignmentsWorkspace({
                             >
                               {r.courseTitle}
                             </Link>
-                            <span className="mt-0.5 block text-xs text-[var(--muted)]">
+                            <span className="mt-0.5 block text-xs text-muted-foreground">
                               {r.mentorName}
                             </span>
-                          </td>
-                          <td className="px-3 py-3 text-xs text-[var(--muted)] tabular-nums">
-                            {r.dueAtIso
-                              ? new Date(r.dueAtIso).toLocaleString()
-                              : "—"}
                           </td>
                           <td className="px-3 py-3">
                             <StudentAssignmentRowStatus
@@ -265,7 +260,7 @@ export function StudentAssignmentsWorkspace({
                         {open ? (
                           <tr className="bg-[var(--background)]">
                             <td
-                              colSpan={5}
+                              colSpan={4}
                               className="border-t border-[var(--border)] px-4 py-4"
                             >
                               <AssignmentDetailPanel row={r} />
@@ -283,7 +278,7 @@ export function StudentAssignmentsWorkspace({
           {/* Mobile cards */}
           <ul className="space-y-3 md:hidden">
             {filtered.length === 0 ? (
-              <li className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-8 text-center text-sm text-[var(--muted)]">
+              <li className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-8 text-center text-sm text-muted-foreground">
                 No assignments match your filters.
               </li>
             ) : (
@@ -300,15 +295,15 @@ export function StudentAssignmentsWorkspace({
                       className="flex w-full items-start gap-2 px-4 py-3 text-left"
                     >
                       {open ? (
-                        <ChevronDown className="mt-0.5 h-4 w-4 shrink-0 text-[var(--muted)]" />
+                        <ChevronDown className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                       ) : (
-                        <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-[var(--muted)]" />
+                        <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                       )}
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold text-[var(--foreground)]">
                           {r.title}
                         </p>
-                        <p className="mt-1 text-xs text-[var(--muted)]">
+                        <p className="mt-1 text-xs text-muted-foreground">
                           <Link
                             href={`/student/course/${r.courseId}`}
                             onClick={(e) => e.stopPropagation()}
@@ -324,11 +319,6 @@ export function StudentAssignmentsWorkspace({
                             assignmentClosed={r.closed}
                             submission={r.submission}
                           />
-                          {r.dueAtIso ? (
-                            <span className="text-[11px] text-[var(--muted)]">
-                              Due {new Date(r.dueAtIso).toLocaleDateString()}
-                            </span>
-                          ) : null}
                         </div>
                       </div>
                     </button>
@@ -353,7 +343,7 @@ function AssignmentDetailPanel({ row }: { row: StudentAssignmentRow }) {
     <div className="space-y-4">
       {(row.hasHandout && row.handoutHref) || row.instructionsLinkUrl ? (
         <div className="flex flex-wrap gap-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-xs">
-          <span className="font-bold uppercase tracking-wide text-[var(--muted)]">
+          <span className="font-bold uppercase tracking-wide text-muted-foreground">
             Materials
           </span>
           {row.handoutHref ? (
@@ -382,12 +372,17 @@ function AssignmentDetailPanel({ row }: { row: StudentAssignmentRow }) {
       ) : null}
 
       <div>
-        <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+        <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
           Instructions
         </p>
-        <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-[var(--foreground)]">
-          {row.description}
-        </p>
+        {row.sectionTitle ? (
+          <p className="mt-1 text-xs font-medium text-muted-foreground">
+            Section: {row.sectionTitle}
+          </p>
+        ) : null}
+        <div className="mt-2">
+          <AssignmentInstructionsBody instructions={row.instructions} />
+        </div>
       </div>
 
       {row.submission?.feedback ? (
@@ -415,7 +410,7 @@ function AssignmentDetailPanel({ row }: { row: StudentAssignmentRow }) {
       ) : null}
 
       <div className="border-t border-[var(--border)] pt-4">
-        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
           {row.submission ? "Update your submission" : "Your submission"}
         </p>
         <AssignmentSubmitForm

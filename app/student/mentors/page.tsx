@@ -46,7 +46,7 @@ export default async function StudentMentorsPage() {
         <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
           Mentors
         </h1>
-        <p className="max-w-2xl text-sm leading-relaxed text-[var(--muted)]">
+        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
           Browse mentors and book a 1-on-1 coaching session (no course
           enrollment required).
         </p>
@@ -88,7 +88,7 @@ export default async function StudentMentorsPage() {
           })}
         </ul>
       ) : (
-        <div className="rounded-[var(--radius-xl)] border border-dashed border-[var(--border)] bg-[var(--surface)] px-6 py-12 text-center text-sm text-[var(--muted)]">
+        <div className="rounded-[var(--radius-xl)] border border-dashed border-[var(--border)] bg-[var(--surface)] px-6 py-12 text-center text-sm text-muted-foreground">
           No mentors are available yet.
         </div>
       )}

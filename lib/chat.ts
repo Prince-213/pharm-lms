@@ -37,6 +37,7 @@ export async function listThreadsForUser(
   });
 
   return threads.map((t) => {
+    const self = t.participants.find((p) => p.user.id === userId);
     const others = t.participants
       .filter((p) => p.user.id !== userId)
       .map((p) => p.user);
@@ -47,13 +48,29 @@ export async function listThreadsForUser(
       role: "GROUP",
     };
     const last = t.messages[0];
+    const lastReadAt = self?.lastReadAt ?? null;
+    const unread = Boolean(
+      last &&
+        last.senderId !== userId &&
+        (!lastReadAt || last.createdAt > lastReadAt),
+    );
     return {
       id: t.id,
       lastMessageAt: t.lastMessageAt,
       other,
       preview: last?.body.slice(0, 120) ?? null,
-      unread: false,
+      unread,
     };
+  });
+}
+
+export async function markThreadAsRead(
+  threadId: string,
+  userId: string,
+): Promise<void> {
+  await db.chatThreadParticipant.updateMany({
+    where: { threadId, userId },
+    data: { lastReadAt: new Date() },
   });
 }
 
@@ -78,6 +95,9 @@ export async function loadThreadForUser(threadId: string, userId: string) {
     },
   });
   if (!thread) return null;
+
+  await markThreadAsRead(threadId, userId);
+
   const other = thread.participants.find((p) => p.user.id !== userId)?.user ?? {
     id: "group",
     fullName: "Group conversation",
@@ -85,4 +105,9 @@ export async function loadThreadForUser(threadId: string, userId: string) {
     role: "GROUP",
   };
   return { thread, other };
+}
+
+export async function countUnreadThreadsForUser(userId: string): Promise<number> {
+  const threads = await listThreadsForUser(userId);
+  return threads.filter((t) => t.unread).length;
 }

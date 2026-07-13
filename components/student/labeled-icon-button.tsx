@@ -12,7 +12,7 @@ const toneClasses: Record<Tone, string> = {
   primary:
     "border-[var(--primary)]/25 bg-[var(--primary-soft)]/40 text-[var(--primary-strong)] hover:bg-[var(--primary-soft)]/60",
   success:
-    "border-[var(--success)]/60 bg-[var(--success-soft)] text-[var(--success)]",
+    "border-primary/40 bg-primary/10 text-primary",
 };
 
 type LabeledIconButtonProps = {

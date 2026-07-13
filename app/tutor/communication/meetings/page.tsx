@@ -14,6 +14,7 @@ import {
   formatEnrolledCoursesLine,
 } from "@/lib/meetings/crm-display";
 import { reconcileStaleMeetingsThrottled } from "@/lib/meetings/reconcile-stale-meetings";
+import { notifyLateOrMissedMeetings } from "@/lib/notifications/meeting-events";
 import { roleHomePath } from "@/lib/rbac";
 
 export default async function MentorCommunicationMeetingsPage() {
@@ -24,6 +25,7 @@ export default async function MentorCommunicationMeetingsPage() {
     redirect(roleHomePath(session.user.role));
 
   await reconcileStaleMeetingsThrottled();
+  void notifyLateOrMissedMeetings(session.user.id);
 
   const [requests, meetings, enrollmentRows, availability] =
     await withDbRetry(async () => {
@@ -102,7 +104,7 @@ export default async function MentorCommunicationMeetingsPage() {
     <div className="px-5 py-6 text-[var(--foreground)] sm:px-8">
       <div className="mb-8">
         <h2 className="text-2xl font-bold">Meetings</h2>
-        <p className="mt-1 max-w-2xl text-sm text-[var(--muted)]">
+        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
           Set your weekly availability, then review and respond to student
           booking requests from one place.
         </p>
@@ -111,7 +113,7 @@ export default async function MentorCommunicationMeetingsPage() {
       <MentorMeetingsAvailabilityCallout />
 
       <section className="mt-6">
-        <p className="mb-3 text-sm text-[var(--muted)]">
+        <p className="mb-3 text-sm text-muted-foreground">
           Click a day or event to review requests, accept bookings, or join a
           session.
         </p>
@@ -122,7 +124,7 @@ export default async function MentorCommunicationMeetingsPage() {
             availableWeekdays={availableWeekdays}
           />
         ) : (
-          <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface)] px-6 py-12 text-center text-sm text-[var(--muted)]">
+          <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface)] px-6 py-12 text-center text-sm text-muted-foreground">
             <p className="font-semibold text-[var(--foreground)]">
               No meeting activity yet
             </p>

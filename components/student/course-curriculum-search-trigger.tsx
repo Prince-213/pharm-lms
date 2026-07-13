@@ -8,7 +8,7 @@ export function CourseCurriculumSearchTrigger() {
       type="button"
       title="Find in course outline"
       aria-label="Find in course outline"
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-transparent text-[var(--muted)] transition hover:border-[#d1d7dc] hover:bg-[#f7f9fa] hover:text-[var(--foreground)]"
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-transparent text-muted-foreground transition hover:border-[#d1d7dc] hover:bg-[#f7f9fa] hover:text-[var(--foreground)]"
       onClick={() => {
         const el = document.getElementById("course-curriculum-filter");
         if (el instanceof HTMLElement) {

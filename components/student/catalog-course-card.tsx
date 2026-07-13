@@ -61,7 +61,7 @@ export function CatalogCourseCard({
         <h3 className="line-clamp-2 min-h-[2.6rem] text-sm font-bold leading-snug text-[var(--foreground)] group-hover:text-[var(--primary)]">
           {course.title}
         </h3>
-        <p className="mt-1 line-clamp-1 text-xs text-[var(--muted)]">
+        <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
           {course.mentorName} - {course.learnerCount.toLocaleString()} learners
         </p>
 
@@ -76,10 +76,10 @@ export function CatalogCourseCard({
               />
             ))}
           </div>
-          <span className="text-[var(--muted)]">(placeholder)</span>
+          <span className="text-muted-foreground">(placeholder)</span>
         </div>
 
-        <p className="mt-2 line-clamp-2 min-h-[2.4rem] text-xs leading-relaxed text-[var(--muted)]">
+        <p className="mt-2 line-clamp-2 min-h-[2.4rem] text-xs leading-relaxed text-muted-foreground">
           {course.subtitle?.trim() ||
             "Open the overview to see curriculum, outcomes, and enrollment details."}
         </p>
@@ -93,11 +93,11 @@ export function CatalogCourseCard({
                 { zeroAsFree: true },
               )}
             </span>
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)] group-hover:text-[var(--primary)]">
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground group-hover:text-[var(--primary)]">
               Details
             </span>
           </div>
-          <span className="flex h-9 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] text-xs font-semibold text-[var(--muted)] transition group-hover:border-[var(--primary)]/35 group-hover:text-[var(--primary)]">
+          <span className="flex h-9 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] text-xs font-semibold text-muted-foreground transition group-hover:border-[var(--primary)]/35 group-hover:text-[var(--primary)]">
             View course overview
           </span>
         </div>

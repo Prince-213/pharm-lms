@@ -50,7 +50,7 @@ export function InstructorFooter() {
       <div className="grid grid-cols-2 gap-6 px-6 py-8 text-xs md:grid-cols-4">
         <div>
           <h4 className="mb-2 font-semibold">In-demand Careers</h4>
-          <ul className="space-y-1 text-[var(--muted)]">
+          <ul className="space-y-1 text-muted-foreground">
             <li>Data Scientist</li>
             <li>Cloud Engineer</li>
             <li>Project Manager</li>
@@ -58,7 +58,7 @@ export function InstructorFooter() {
         </div>
         <div>
           <h4 className="mb-2 font-semibold">Web Development</h4>
-          <ul className="space-y-1 text-[var(--muted)]">
+          <ul className="space-y-1 text-muted-foreground">
             <li>Web Development</li>
             <li>JavaScript</li>
             <li>React JS</li>
@@ -66,7 +66,7 @@ export function InstructorFooter() {
         </div>
         <div>
           <h4 className="mb-2 font-semibold">Data Science</h4>
-          <ul className="space-y-1 text-[var(--muted)]">
+          <ul className="space-y-1 text-muted-foreground">
             <li>Data Science</li>
             <li>Python</li>
             <li>Machine Learning</li>
@@ -74,14 +74,14 @@ export function InstructorFooter() {
         </div>
         <div>
           <h4 className="mb-2 font-semibold">Leadership</h4>
-          <ul className="space-y-1 text-[var(--muted)]">
+          <ul className="space-y-1 text-muted-foreground">
             <li>Leadership</li>
             <li>Management Skills</li>
             <li>Communication</li>
           </ul>
         </div>
       </div>
-      <div className="border-t border-[var(--border)] px-6 py-4 text-xs text-[var(--muted)]">
+      <div className="border-t border-[var(--border)] px-6 py-4 text-xs text-muted-foreground">
         PharmLms © 2026 PharmLms.
       </div>
     </footer>

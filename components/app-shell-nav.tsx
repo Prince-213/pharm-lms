@@ -83,7 +83,7 @@ export function AppShellNav({
               "shrink-0 rounded-full px-3 py-2 text-sm font-medium transition-colors sm:px-4",
               active
                 ? "bg-[var(--primary-soft)] text-[var(--primary-strong)] ring-1 ring-[var(--border)]"
-                : "text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]",
+                : "text-muted-foreground hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]",
             )}
           >
             {item.label}

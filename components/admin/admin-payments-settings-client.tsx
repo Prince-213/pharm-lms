@@ -68,7 +68,7 @@ export function AdminPaymentsSettingsClient() {
   }
 
   if (loading) {
-    return <p className="text-sm text-[var(--muted)]">Loading settings…</p>;
+    return <p className="text-sm text-muted-foreground">Loading settings…</p>;
   }
 
   return (
@@ -88,7 +88,7 @@ export function AdminPaymentsSettingsClient() {
             onChange={(e) => setFeePercent(Number(e.target.value))}
             className="h-11"
           />
-          <p className="text-xs text-[var(--muted)]">
+          <p className="text-xs text-muted-foreground">
             Applied when a purchase is verified; stored on each transaction row.
           </p>
         </div>
@@ -103,7 +103,7 @@ export function AdminPaymentsSettingsClient() {
             onChange={(e) => setMinWithdrawalNaira(Number(e.target.value))}
             className="h-11"
           />
-          <p className="text-xs text-[var(--muted)]">
+          <p className="text-xs text-muted-foreground">
             Whole naira; tutors cannot request less than this amount.
           </p>
         </div>

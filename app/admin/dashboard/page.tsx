@@ -74,8 +74,46 @@ const STATUS_LABELS: Record<string, string> = {
   PUBLISHED: "Published",
 };
 
+function NotificationRow({
+  notification,
+}: {
+  notification: {
+    title: string;
+    body: string | null;
+    kind: string;
+    readAt: Date | null;
+    createdAt: Date;
+  };
+}) {
+  return (
+    <div className="flex flex-wrap items-baseline justify-between gap-2 px-1 py-0.5">
+      <div className="min-w-0">
+        <p
+          className={`font-medium text-[var(--foreground)] ${notification.readAt ? "" : "text-[var(--primary)]"}`}
+        >
+          {notification.title}
+        </p>
+        {notification.body ? (
+          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
+            {notification.body}
+          </p>
+        ) : null}
+        <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+          {notification.kind.replaceAll("_", " ")}
+        </p>
+      </div>
+      <time
+        className="shrink-0 text-xs text-muted-foreground"
+        dateTime={notification.createdAt.toISOString()}
+      >
+        {notification.createdAt.toLocaleDateString()}
+      </time>
+    </div>
+  );
+}
+
 export default async function AdminDashboardPage() {
-  await requireAdminSession();
+  const session = await requireAdminSession();
 
   const fourteenDaysAgo = new Date();
   fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
@@ -104,6 +142,7 @@ export default async function AdminDashboardPage() {
     courseStatusGroups,
     sales30d,
     pendingWithdrawals,
+    recentNotifications,
   ] = await Promise.all([
     db.course.count({ where: { status: CourseStatus.SUBMITTED } }),
     db.course.count({ where: { status: CourseStatus.PUBLISHED } }),
@@ -156,6 +195,20 @@ export default async function AdminDashboardPage() {
       where: { status: WithdrawalRequestStatus.PENDING },
       _count: { _all: true },
       _sum: { amountMinorUnits: true },
+    }),
+    db.notification.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
+      take: 8,
+      select: {
+        id: true,
+        kind: true,
+        title: true,
+        body: true,
+        href: true,
+        readAt: true,
+        createdAt: true,
+      },
     }),
   ]);
 
@@ -291,7 +344,7 @@ export default async function AdminDashboardPage() {
         >
           {enrollmentTrendData.every((d) => d.y === 0) ? (
             <div className="flex min-h-[310px] items-center justify-center">
-              <p className="text-sm text-[var(--muted)]">
+              <p className="text-sm text-muted-foreground">
                 No enrollments in the last 6 months.
               </p>
             </div>
@@ -307,7 +360,7 @@ export default async function AdminDashboardPage() {
         >
           {courseStatusData.length === 0 ? (
             <div className="flex min-h-[310px] items-center justify-center">
-              <p className="text-sm text-[var(--muted)]">No courses yet.</p>
+              <p className="text-sm text-muted-foreground">No courses yet.</p>
             </div>
           ) : (
             <CourseStatusChart data={courseStatusData} />
@@ -327,13 +380,13 @@ export default async function AdminDashboardPage() {
               <li key={href}>
                 <Link
                   href={href}
-                  className="flex items-center justify-between rounded-lg border border-(--border) bg-(--surface-muted) px-4 py-3 text-sm font-medium text-foreground transition-all hover:border-(--primary)/40 hover:bg-white hover:shadow-sm"
+                  className="flex items-center justify-between rounded-lg border border-border bg-muted px-4 py-3 text-sm font-medium text-foreground transition-all hover:border-primary/40 hover:bg-white hover:shadow-sm"
                 >
                   <span className="flex items-center gap-3">
-                    <Icon className="h-4 w-4 text-(--primary)" />
+                    <Icon className="h-4 w-4 text-primary" />
                     {label}
                   </span>
-                  <ArrowRight className="h-4 w-4 text-(--muted-soft)" />
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
                 </Link>
               </li>
             ))}
@@ -347,7 +400,7 @@ export default async function AdminDashboardPage() {
           className="col-span-12 xl:col-span-8"
         >
           {recentEnrollments.length === 0 ? (
-            <p className="text-sm text-(--muted)">No enrollments yet.</p>
+            <p className="text-sm text-muted-foreground">No enrollments yet.</p>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -364,10 +417,10 @@ export default async function AdminDashboardPage() {
                       <TableCell className="font-medium text-foreground">
                         {e.student.fullName}
                       </TableCell>
-                      <TableCell className="text-(--muted)">
+                      <TableCell className="text-muted-foreground">
                         {e.course.title}
                       </TableCell>
-                      <TableCell className="text-right text-xs text-(--muted-soft)">
+                      <TableCell className="text-right text-xs text-muted-foreground">
                         {e.enrolledAt.toLocaleDateString()}
                       </TableCell>
                     </TableRow>
@@ -386,7 +439,7 @@ export default async function AdminDashboardPage() {
         className="mb-6"
       >
         {topCourses.length === 0 ? (
-          <p className="text-sm text-[var(--muted)]">No enrollment data yet.</p>
+          <p className="text-sm text-muted-foreground">No enrollment data yet.</p>
         ) : (
           <Table>
             <TableHeader>
@@ -410,7 +463,7 @@ export default async function AdminDashboardPage() {
                     <TableCell className="font-medium">
                       {course?.title ?? "Course removed"}
                     </TableCell>
-                    <TableCell className="text-[var(--muted)]">
+                    <TableCell className="text-muted-foreground">
                       {course?.mentor.fullName ?? "—"}
                     </TableCell>
                     <TableCell className="text-right">
@@ -427,50 +480,82 @@ export default async function AdminDashboardPage() {
         )}
       </AdminPanel>
 
-      {/* Recent catalog activity */}
-      <AdminPanel
-        title="Recent catalog activity"
-        description="Latest approval workflow events"
-        className="mb-6"
-      >
-        {recentWorkflow.length === 0 ? (
-          <p className="text-sm text-[var(--muted)]">
-            No workflow history yet.
-          </p>
-        ) : (
-          <ul className="divide-y divide-[var(--border)] text-sm">
-            {recentWorkflow.map((w) => (
-              <li
-                key={w.id}
-                className="flex flex-wrap items-baseline justify-between gap-2 py-3 first:pt-0 last:pb-0"
-              >
-                <div>
-                  <p className="font-medium text-[var(--foreground)]">
-                    {w.course.title}
-                  </p>
-                  <p className="text-xs text-[var(--muted)]">
-                    {w.previousStatus} → {w.newStatus}
-                    {w.note
-                      ? ` · ${w.note.slice(0, 80)}${w.note.length > 80 ? "…" : ""}`
-                      : ""}
-                  </p>
-                </div>
-                <time
-                  className="shrink-0 text-xs text-[var(--muted)]"
-                  dateTime={w.createdAt.toISOString()}
+      {/* Recent catalog activity + notifications */}
+      <div className="mb-6 grid grid-cols-12 gap-4 md:gap-6">
+        <AdminPanel
+          title="Recent catalog activity"
+          description="Latest approval workflow events"
+          className="col-span-12 xl:col-span-6"
+        >
+          {recentWorkflow.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No workflow history yet.
+            </p>
+          ) : (
+            <ul className="divide-y divide-[var(--border)] text-sm">
+              {recentWorkflow.map((w) => (
+                <li
+                  key={w.id}
+                  className="flex flex-wrap items-baseline justify-between gap-2 py-3 first:pt-0 last:pb-0"
                 >
-                  {w.createdAt.toLocaleDateString()}
-                </time>
-              </li>
-            ))}
-          </ul>
-        )}
-      </AdminPanel>
+                  <div>
+                    <p className="font-medium text-[var(--foreground)]">
+                      {w.course.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {w.previousStatus} → {w.newStatus}
+                      {w.note
+                        ? ` · ${w.note.slice(0, 80)}${w.note.length > 80 ? "…" : ""}`
+                        : ""}
+                    </p>
+                  </div>
+                  <time
+                    className="shrink-0 text-xs text-muted-foreground"
+                    dateTime={w.createdAt.toISOString()}
+                  >
+                    {w.createdAt.toLocaleDateString()}
+                  </time>
+                </li>
+              ))}
+            </ul>
+          )}
+        </AdminPanel>
+
+        <AdminPanel
+          title="Recent notifications"
+          description="Course reviews, meetings, and system alerts"
+          className="col-span-12 xl:col-span-6"
+        >
+          {recentNotifications.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No notifications yet. Submitted courses and meeting requests will
+              appear here.
+            </p>
+          ) : (
+            <ul className="divide-y divide-[var(--border)] text-sm">
+              {recentNotifications.map((n) => (
+                <li key={n.id} className="py-3 first:pt-0 last:pb-0">
+                  {n.href ? (
+                    <Link
+                      href={n.href}
+                      className="group block rounded-lg transition hover:bg-muted/40"
+                    >
+                      <NotificationRow notification={n} />
+                    </Link>
+                  ) : (
+                    <NotificationRow notification={n} />
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </AdminPanel>
+      </div>
 
       <div className="flex justify-center">
         <Link
           href="/admin/messages"
-          className="inline-flex items-center gap-2 rounded-md border border-[var(--border)] px-3 py-1.5 text-xs font-semibold text-[var(--muted)] transition hover:border-[var(--primary)]/40 hover:text-[var(--primary)]"
+          className="inline-flex items-center gap-2 rounded-md border border-[var(--border)] px-3 py-1.5 text-xs font-semibold text-muted-foreground transition hover:border-[var(--primary)]/40 hover:text-[var(--primary)]"
         >
           <MessageSquare className="h-3.5 w-3.5" />
           Open messages inbox

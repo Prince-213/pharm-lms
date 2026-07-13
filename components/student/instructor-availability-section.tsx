@@ -23,9 +23,9 @@ export function InstructorAvailabilitySection({
             Weekly availability
           </h2>
         </div>
-        <p className="text-xs text-[var(--muted)]">{timezoneLabel}</p>
+        <p className="text-xs text-muted-foreground">{timezoneLabel}</p>
       </div>
-      <p className="mt-1 text-xs text-[var(--muted)]">
+      <p className="mt-1 text-xs text-muted-foreground">
         Recurring hours when sessions can be booked. Use &quot;Book now&quot; to
         pick a specific slot.
       </p>
@@ -33,7 +33,7 @@ export function InstructorAvailabilitySection({
         {availability.length > 0 ? (
           <MentorWeeklySchedule availability={availability} />
         ) : (
-          <p className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface-muted)]/40 py-10 text-center text-sm text-[var(--muted)]">
+          <p className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface-muted)]/40 py-10 text-center text-sm text-muted-foreground">
             No weekly hours published yet. Check back soon.
           </p>
         )}

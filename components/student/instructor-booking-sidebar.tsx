@@ -63,7 +63,7 @@ export function InstructorBookingSidebar({
 
     if (enrolledCourseIds.length === 0) {
       return (
-        <p className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface-muted)] px-4 py-4 text-center text-xs leading-relaxed text-[var(--muted)]">
+        <p className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface-muted)] px-4 py-4 text-center text-xs leading-relaxed text-muted-foreground">
           Enroll in one of this tutor&apos;s courses to book a live session.
         </p>
       );
@@ -72,7 +72,7 @@ export function InstructorBookingSidebar({
     if (needsCoursePick) {
       return (
         <div className="space-y-3">
-          <p className="text-xs font-medium text-[var(--muted)]">
+          <p className="text-xs font-medium text-muted-foreground">
             Select a course for this booking:
           </p>
           <ul className="space-y-1.5">
@@ -131,7 +131,7 @@ export function InstructorBookingSidebar({
                 ))}
               </div>
             </div>
-            <p className="mt-1 text-xs text-[var(--muted)]">
+            <p className="mt-1 text-xs text-muted-foreground">
               Based on {reviewCount.toLocaleString()} review
               {reviewCount === 1 ? "" : "s"}
             </p>
@@ -142,7 +142,7 @@ export function InstructorBookingSidebar({
           <h2 className="font-display text-lg font-bold text-[var(--ink-deep)]">
             Book a session
           </h2>
-          <p className="mt-2 text-xs leading-relaxed text-[var(--muted)]">
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
             {hostKind === "tutor"
               ? "One-on-one video call aligned with your enrolled course."
               : "Private mentoring session — independent of course enrollment."}
@@ -150,14 +150,14 @@ export function InstructorBookingSidebar({
 
           <ul className="mt-5 space-y-3.5 text-sm">
             <li className="border-b border-[var(--border-subtle)] pb-3.5">
-              <span className="text-[10px] font-bold uppercase tracking-wide text-[var(--muted-soft)]">
+              <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                 Next availability
               </span>
               <p className="mt-1 font-semibold text-[var(--primary)]">{nextOpen}</p>
-              <p className="text-[11px] text-[var(--muted-soft)]">{timezoneLabel}</p>
+              <p className="text-[11px] text-muted-foreground">{timezoneLabel}</p>
             </li>
             <li>
-              <span className="text-[10px] font-bold uppercase tracking-wide text-[var(--muted-soft)]">
+              <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                 Session length
               </span>
               <p className="mt-1 font-semibold text-[var(--foreground)]">
@@ -173,7 +173,7 @@ export function InstructorBookingSidebar({
               className="mt-0.5 h-4 w-4 shrink-0 text-[var(--primary)]"
               strokeWidth={2}
             />
-            <p className="text-[11px] leading-relaxed text-[var(--muted)]">
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
               Sessions run on Jitsi. Your tutor confirms the time or suggests
               another slot that works.
             </p>

@@ -2,10 +2,16 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
+import { buildEnrolledCourseContext } from "@/lib/ai/course-context";
+import {
+  AiConfigurationError,
+  AiProviderError,
+} from "@/lib/ai/huggingface-errors";
 import { chatWithCourseContext } from "@/lib/ai/huggingface";
 import { db } from "@/lib/db";
 import { studentMayAccessCourseContent } from "@/lib/payments/student-course-access";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { toUserFacingError } from "@/lib/user-facing-error";
 
 const schema = z.object({
   courseId: z.string().cuid(),
@@ -20,13 +26,6 @@ const schema = z.object({
     .max(12)
     .optional(),
 });
-
-function cleanText(input: string) {
-  return input
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -69,43 +68,37 @@ export async function POST(request: Request) {
     );
   }
 
-  const completed = await db.lessonProgress.findMany({
-    where: {
-      studentId: session.user.id,
-      completed: true,
-      lesson: { section: { courseId } },
-    },
-    select: { lesson: { select: { sectionId: true } } },
-  });
-  const sectionIds = [...new Set(completed.map((c) => c.lesson.sectionId))];
-  if (!sectionIds.length) {
-    return NextResponse.json(
-      {
-        error:
-          "Complete at least one lesson to chat with context-aware assistant.",
-      },
-      { status: 400 },
-    );
-  }
-
   const lessons = await db.lesson.findMany({
-    where: { section: { courseId, id: { in: sectionIds } } },
+    where: { section: { courseId } },
     select: {
       title: true,
       content: true,
-      section: { select: { title: true } },
+      section: { select: { title: true, description: true } },
     },
     orderBy: [{ section: { position: "asc" } }, { position: "asc" }],
   });
 
-  const context = lessons
-    .map(
-      (lesson) =>
-        `Section: ${lesson.section.title}\nLesson: ${lesson.title}\n${cleanText(lesson.content ?? "")}`,
-    )
-    .join("\n\n");
+  const context = buildEnrolledCourseContext(lessons);
+  if (!context.trim()) {
+    return NextResponse.json(
+      { error: "This course has no lesson content for the assistant yet." },
+      { status: 400 },
+    );
+  }
 
-  const reply = await chatWithCourseContext(context, message, history);
-
-  return NextResponse.json({ reply }, { status: 200 });
+  try {
+    const reply = await chatWithCourseContext(context, message, history);
+    return NextResponse.json({ reply }, { status: 200 });
+  } catch (err) {
+    const status = err instanceof AiConfigurationError ? 503 : 502;
+    return NextResponse.json(
+      {
+        error: toUserFacingError(
+          err,
+          "Could not reach the course assistant. Try again shortly.",
+        ),
+      },
+      { status },
+    );
+  }
 }

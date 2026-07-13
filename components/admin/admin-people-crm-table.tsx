@@ -19,6 +19,7 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { sendChatMessageAction } from "@/app/actions/chat";
 import { adminDeleteUserAndData, setUserActiveAction } from "@/app/admin/people/actions";
+import { refreshPortalAfterMutation } from "@/lib/client/refresh-portal-data";
 
 export type AdminPersonRow = {
   id: string;
@@ -157,7 +158,7 @@ export function AdminPeopleCrmTable({
       else {
         setMessage(next ? "Account activated." : "Account deactivated.");
         closePanel();
-        router.refresh();
+        refreshPortalAfterMutation(router);
       }
     });
   }
@@ -178,7 +179,7 @@ export function AdminPeopleCrmTable({
       setMessage("Message sent.");
       setDmBody("");
       setLastThreadId(res.threadId);
-      router.refresh();
+      refreshPortalAfterMutation(router);
     });
   }
 
@@ -194,7 +195,7 @@ export function AdminPeopleCrmTable({
       }
       setMessage("Account and related data were permanently removed.");
       closePanel();
-      router.refresh();
+      refreshPortalAfterMutation(router);
     });
   }
 
@@ -231,24 +232,24 @@ export function AdminPeopleCrmTable({
                   <p className="truncate px-2.5 pb-1.5 pt-0.5 text-xs font-semibold text-[var(--foreground)]">
                     {activePerson.fullName}
                   </p>
-                  <p className="border-b border-[var(--border)] px-2.5 pb-2 text-[10px] text-[var(--muted)]">
+                  <p className="border-b border-[var(--border)] px-2.5 pb-2 text-[10px] text-muted-foreground">
                     {activePerson.email}
                   </p>
                   <div className="max-h-[min(72vh,520px)] overflow-y-auto py-1">
                     <div className="px-2.5 pb-2 pt-1">
                       {mentorProfile ? (
                         <div className="mb-3 rounded-lg border border-[var(--border)] bg-[var(--background)] p-2.5">
-                          <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                             Mentor profile
                           </p>
                           <div className="mt-2 grid gap-1 text-xs text-[var(--foreground)]">
                             {mentorProfile.mentorProfileSubmittedAtIso ? (
-                              <p className="text-[11px] text-[var(--muted)]">
+                              <p className="text-[11px] text-muted-foreground">
                                 Submitted:{" "}
                                 {new Date(mentorProfile.mentorProfileSubmittedAtIso).toLocaleString()}
                               </p>
                             ) : (
-                              <p className="text-[11px] text-[var(--muted)]">
+                              <p className="text-[11px] text-muted-foreground">
                                 Not submitted yet
                               </p>
                             )}
@@ -256,29 +257,29 @@ export function AdminPeopleCrmTable({
                               <p className="font-medium">{mentorProfile.mentorHeadline}</p>
                             ) : null}
                             {mentorProfile.mentorYearsExperience !== null ? (
-                              <p className="text-[11px] text-[var(--muted)]">
+                              <p className="text-[11px] text-muted-foreground">
                                 Experience: {mentorProfile.mentorYearsExperience} years
                               </p>
                             ) : null}
                             {mentorProfile.mentorSpecialties ? (
-                              <p className="text-[11px] text-[var(--muted)]">
+                              <p className="text-[11px] text-muted-foreground">
                                 Specialties: {mentorProfile.mentorSpecialties}
                               </p>
                             ) : null}
                             {mentorProfile.phoneNumber ? (
-                              <p className="text-[11px] text-[var(--muted)]">
+                              <p className="text-[11px] text-muted-foreground">
                                 Phone: {mentorProfile.phoneNumber}
                               </p>
                             ) : null}
                             {mentorProfile.country || mentorProfile.state || mentorProfile.city ? (
-                              <p className="text-[11px] text-[var(--muted)]">
+                              <p className="text-[11px] text-muted-foreground">
                                 Location: {[mentorProfile.city, mentorProfile.state, mentorProfile.country]
                                   .filter(Boolean)
                                   .join(", ")}
                               </p>
                             ) : null}
                             {mentorProfile.addressLine1 ? (
-                              <p className="text-[11px] text-[var(--muted)]">
+                              <p className="text-[11px] text-muted-foreground">
                                 Address: {mentorProfile.addressLine1}
                                 {mentorProfile.addressLine2 ? `, ${mentorProfile.addressLine2}` : ""}
                                 {mentorProfile.postalCode ? ` (${mentorProfile.postalCode})` : ""}
@@ -304,14 +305,14 @@ export function AdminPeopleCrmTable({
                                 Website
                               </a>
                             ) : null}
-                            <p className="mt-1 line-clamp-5 text-[11px] text-[var(--muted)]">
+                            <p className="mt-1 line-clamp-5 text-[11px] text-muted-foreground">
                               {mentorProfile.bio?.trim() || "No bio provided."}
                             </p>
                           </div>
                         </div>
                       ) : null}
 
-                      <label className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+                      <label className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                         In-app message
                       </label>
                       <textarea
@@ -356,7 +357,7 @@ export function AdminPeopleCrmTable({
                         "flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-medium disabled:opacity-50",
                         activePerson.isActive
                           ? "text-rose-800 hover:bg-rose-50"
-                          : "text-emerald-800 hover:bg-emerald-50",
+                          : "text-primary hover:bg-primary/10",
                       )}
                     >
                       {pending ? (
@@ -374,7 +375,7 @@ export function AdminPeopleCrmTable({
                       onClick={closePanel}
                       className="flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)]"
                     >
-                      <Mail className="h-4 w-4 shrink-0 text-[var(--muted)]" />
+                      <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
                       Email
                     </a>
 
@@ -383,7 +384,7 @@ export function AdminPeopleCrmTable({
                       onClick={() => copyUserId(activePerson.id)}
                       className="flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)]"
                     >
-                      <Copy className="h-4 w-4 shrink-0 text-[var(--muted)]" />
+                      <Copy className="h-4 w-4 shrink-0 text-muted-foreground" />
                       {copiedId === activePerson.id ? "ID copied" : "Copy user ID"}
                     </button>
 
@@ -406,18 +407,18 @@ export function AdminPeopleCrmTable({
                     <button
                       type="button"
                       onClick={backToMenu}
-                      className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-semibold text-[var(--muted)] hover:bg-[var(--background)]"
+                      className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-semibold text-muted-foreground hover:bg-[var(--background)]"
                     >
                       <ArrowLeft className="h-3 w-3" />
                       Back
                     </button>
                   </div>
-                  <p className="text-xs leading-relaxed text-[var(--muted)]">
+                  <p className="text-xs leading-relaxed text-muted-foreground">
                     Permanently removes login access and related activity
                     {role === "TUTOR" ? ", including every course they own and learner data for those courses" : ""}
                     . This cannot be undone.
                   </p>
-                  <label className="mt-3 block text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+                  <label className="mt-3 block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                     Type email to confirm
                   </label>
                   <input
@@ -451,7 +452,7 @@ export function AdminPeopleCrmTable({
     <div className="space-y-4">
       <div className="grid gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 sm:grid-cols-3">
         <label className="relative sm:col-span-2">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -471,7 +472,7 @@ export function AdminPeopleCrmTable({
       </div>
 
       {message ? (
-        <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-900 ring-1 ring-emerald-100">{message}</p>
+        <p className="rounded-lg bg-primary/10 px-3 py-2 text-sm text-primary ring-1 ring-primary/15">{message}</p>
       ) : null}
       {error ? (
         <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-900 ring-1 ring-rose-100">{error}</p>
@@ -480,7 +481,7 @@ export function AdminPeopleCrmTable({
       <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[940px] text-left text-sm">
-            <thead className="border-b border-[var(--border)] bg-[var(--background)] text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+            <thead className="border-b border-[var(--border)] bg-[var(--background)] text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               <tr>
                 <th className="px-4 py-3">Name</th>
                 <th className="px-4 py-3">Email</th>
@@ -493,7 +494,7 @@ export function AdminPeopleCrmTable({
             <tbody className="divide-y divide-[var(--border)]">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-16 text-center text-[var(--muted)]">
+                  <td colSpan={6} className="px-4 py-16 text-center text-muted-foreground">
                     No records match your filters.
                   </td>
                 </tr>
@@ -502,15 +503,15 @@ export function AdminPeopleCrmTable({
                   <tr key={u.id} className="align-top">
                     <td className="px-4 py-3">
                       <p className="font-medium text-[var(--foreground)]">{u.fullName}</p>
-                      <p className="mt-1 text-[11px] text-[var(--muted)]">ID: {u.id}</p>
+                      <p className="mt-1 text-[11px] text-muted-foreground">ID: {u.id}</p>
                     </td>
-                    <td className="px-4 py-3 text-[var(--muted)]">{u.email}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{u.email}</td>
                     <td className="px-4 py-3">
                       <span
                         className={clsx(
                           "rounded-full px-2 py-0.5 text-xs font-semibold ring-1",
                           u.isActive
-                            ? "bg-emerald-50 text-emerald-900 ring-emerald-200"
+                            ? "bg-primary/10 text-primary ring-primary/20"
                             : "bg-rose-50 text-rose-900 ring-rose-200",
                         )}
                       >
@@ -520,12 +521,12 @@ export function AdminPeopleCrmTable({
                     <td className="px-4 py-3">
                       <p className="tabular-nums text-[var(--foreground)]">{u.primaryMetricValue}</p>
                       {u.secondaryMetricLabel && typeof u.secondaryMetricValue === "number" ? (
-                        <p className="text-xs text-[var(--muted)]">
+                        <p className="text-xs text-muted-foreground">
                           {u.secondaryMetricLabel}: {u.secondaryMetricValue}
                         </p>
                       ) : null}
                     </td>
-                    <td className="px-4 py-3 text-xs text-[var(--muted)]">
+                    <td className="px-4 py-3 text-xs text-muted-foreground">
                       {new Date(u.createdAtIso).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3 text-right">

@@ -18,7 +18,11 @@ export default async function StudentLoginPage({
       ? raw
       : "/student/dashboard";
   const portalAuthError =
-    sp.authError === "wrong_portal" ? ("wrong_portal" as const) : null;
+    sp.authError === "wrong_portal"
+      ? ("wrong_portal" as const)
+      : sp.authError === "account_disabled"
+        ? ("account_disabled" as const)
+        : null;
 
   return (
     <AuthPageShell actorType="student" mode="login">

@@ -62,7 +62,7 @@ export function CourseNotesTab({
         <div className="min-w-0 flex flex-col">
           <label
             htmlFor="notes-lecture-select"
-            className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-soft)]"
+            className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
           >
             Lecture
           </label>
@@ -86,13 +86,13 @@ export function CourseNotesTab({
           <h3 className="text-sm font-bold text-[var(--foreground)]">
             Your notes
           </h3>
-          <p className="mt-0.5 text-xs text-[var(--muted-soft)]">
+          <p className="mt-0.5 text-xs text-muted-foreground">
             Private to you. Add reminders and takeaways for this lecture.
           </p>
         </div>
 
         {notes.length === 0 ? (
-          <p className="px-4 py-10 text-center text-sm text-[var(--muted)] sm:px-5">
+          <p className="px-4 py-10 text-center text-sm text-muted-foreground sm:px-5">
             No notes for this lecture yet. Add one below.
           </p>
         ) : (
@@ -135,7 +135,7 @@ export function CourseNotesTab({
                         type="button"
                         disabled={isPending}
                         onClick={() => setEditingId(null)}
-                        className="inline-flex h-9 items-center px-3 text-xs font-semibold text-[var(--muted)]"
+                        className="inline-flex h-9 items-center px-3 text-xs font-semibold text-muted-foreground"
                       >
                         Cancel
                       </button>
@@ -147,7 +147,7 @@ export function CourseNotesTab({
                       <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--foreground)]">
                         {n.body}
                       </p>
-                      <p className="mt-2 text-[11px] text-[var(--muted-soft)]">
+                      <p className="mt-2 text-[11px] text-muted-foreground">
                         {new Date(n.updatedAt).toLocaleString()}
                       </p>
                     </div>

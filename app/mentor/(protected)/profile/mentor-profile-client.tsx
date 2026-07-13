@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { refreshPortalAfterMutation } from "@/lib/client/refresh-portal-data";
 import { ProfileAvatarPicker } from "@/components/profile/profile-avatar-picker";
 import {
   ProfileEditorHeader,
@@ -14,6 +15,8 @@ import {
   ProfileTextField,
 } from "@/components/profile/profile-editor-shell";
 import { ProfileSettingsTabs } from "@/components/profile/profile-settings-tabs";
+import { MentorProfileStatus } from "@/generated/prisma/enums";
+import { mentorVisibleToStudents } from "@/lib/auth/mentor-profile-visibility";
 import {
   submitMentorProfileAction,
   updateMentorProfileAction,
@@ -45,7 +48,7 @@ export function MentorProfileClient({
         return;
       }
       toast.success("Profile saved.", { id: tid });
-      router.refresh();
+      refreshPortalAfterMutation(router);
     });
   }
 
@@ -57,21 +60,56 @@ export function MentorProfileClient({
         toast.error(res.message, { id: tid });
         return;
       }
-      toast.success("Profile submitted. Waiting for admin activation.", {
+      toast.success("Profile submitted for admin review.", {
         id: tid,
       });
-      router.refresh();
+      refreshPortalAfterMutation(router);
     });
   }
 
   const submitted = Boolean(user.mentorProfileSubmittedAt);
+  const visibleToStudents = mentorVisibleToStudents(
+    user.mentorProfileStatus as MentorProfileStatus,
+  );
+  const statusLabel =
+    user.mentorProfileStatus === MentorProfileStatus.APPROVED
+      ? "Approved"
+      : user.mentorProfileStatus === MentorProfileStatus.PENDING_REVIEW
+        ? "Pending review"
+        : user.mentorProfileStatus === MentorProfileStatus.REJECTED
+          ? "Needs updates"
+          : submitted
+            ? "Submitted"
+            : "Not submitted";
 
   return (
     <ProfileEditorRoot className="max-w-3xl">
       <ProfileEditorHeader
         title="Settings"
-        description="Complete your profile and submit it for review. Your account becomes visible to students after an admin activates it."
+        description="Complete your profile and submit it for review. Student directory listing requires admin approval — your dashboard is always available."
       />
+
+      <div className="sticky top-0 z-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-4 shadow-[var(--shadow-sm)] sm:px-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0 space-y-1">
+            <p className="text-sm font-semibold text-[var(--foreground)]">
+              Submit for review
+            </p>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Save your changes, then submit once all requirements are met. An
+              admin will activate your profile for student booking.
+            </p>
+            <p className="text-xs font-medium text-[var(--foreground)]">
+              Status: {statusLabel}
+            </p>
+          </div>
+          <ButtonRow
+            pending={pending}
+            submitted={submitted}
+            onSubmit={submitProfile}
+          />
+        </div>
+      </div>
 
       <form action={submitUpdate} className="space-y-8">
         <ProfileSettingsTabs
@@ -82,27 +120,23 @@ export function MentorProfileClient({
               label: "Account",
               content: (
                 <ProfileSegment
-                  title="Account status"
-                  description="Visibility and review state."
+                  title="Profile verification"
+                  description="Controls whether students can find you in the mentor directory."
                 >
                   <ProfileReadOnlySwitchRow
                     label="Visible to students"
                     description={
-                      user.isActive
-                        ? "Your mentor profile is active and bookable."
-                        : "Students cannot book you until an admin activates your account."
+                      visibleToStudents
+                        ? "Your mentor profile is approved and listed for students."
+                        : "Students cannot find you in the directory until your profile is approved."
                     }
-                    on={user.isActive}
+                    on={visibleToStudents}
                   />
                   <p className="text-sm font-medium text-[var(--foreground)]">
-                    {user.isActive
-                      ? "Active"
-                      : submitted
-                        ? "Pending activation"
-                        : "Profile not submitted"}
+                    {statusLabel}
                   </p>
                   {submitted ? (
-                    <p className="text-xs text-[var(--muted)]">
+                    <p className="text-xs text-muted-foreground">
                       Submitted:{" "}
                       {new Date(
                         user.mentorProfileSubmittedAt as string,
@@ -283,17 +317,6 @@ export function MentorProfileClient({
           pending={pending}
         />
       </form>
-
-      <ProfileSegment
-        title="Submit for review"
-        description="After saving, submit once you meet all requirements. An admin will activate your profile for student booking."
-      >
-        <ButtonRow
-          pending={pending}
-          submitted={submitted}
-          onSubmit={submitProfile}
-        />
-      </ProfileSegment>
     </ProfileEditorRoot>
   );
 }
@@ -308,7 +331,7 @@ function ButtonRow({
   onSubmit: () => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex shrink-0 flex-wrap items-center gap-3 sm:justify-end">
       <button
         type="button"
         disabled={pending || submitted}
@@ -318,7 +341,7 @@ function ButtonRow({
         {submitted ? "Profile submitted" : "Submit profile"}
       </button>
       {!submitted ? (
-        <span className="text-xs text-[var(--muted)]">
+        <span className="text-xs text-muted-foreground sm:max-w-[12rem]">
           Admin activation is required before students can book you.
         </span>
       ) : null}

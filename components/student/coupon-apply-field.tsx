@@ -78,8 +78,8 @@ export function CouponApplyField({
 
   if (applied) {
     return (
-      <div className="flex items-center justify-between gap-3 rounded-sm border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs">
-        <span className="flex min-w-0 items-center gap-2 text-emerald-800">
+      <div className="flex items-center justify-between gap-3 rounded-sm border border-primary/20 bg-primary/10 px-3 py-2 text-xs">
+        <span className="flex min-w-0 items-center gap-2 text-primary">
           <Ticket className="h-4 w-4 shrink-0" aria-hidden />
           <span className="min-w-0 truncate">
             <strong className="font-mono font-bold tracking-wide">
@@ -92,7 +92,7 @@ export function CouponApplyField({
           type="button"
           onClick={() => onCleared()}
           aria-label="Remove coupon"
-          className="inline-flex shrink-0 items-center gap-1 rounded-sm px-1.5 py-0.5 text-[11px] font-semibold text-emerald-900 underline-offset-2 hover:underline"
+          className="inline-flex shrink-0 items-center gap-1 rounded-sm px-1.5 py-0.5 text-[11px] font-semibold text-primary underline-offset-2 hover:underline"
         >
           <X className="h-3 w-3" aria-hidden />
           Remove
@@ -148,7 +148,7 @@ export function CouponApplyField({
             setError(null);
           }}
           aria-label="Close coupon field"
-          className="inline-flex h-10 w-8 shrink-0 items-center justify-center rounded-sm text-[var(--muted)] hover:text-[var(--foreground)]"
+          className="inline-flex h-10 w-8 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:text-[var(--foreground)]"
         >
           <X className="h-4 w-4" />
         </button>

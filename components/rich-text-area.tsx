@@ -82,7 +82,7 @@ export function RichTextArea({
       </div>
       <div
         ref={ref}
-        className={`${minHeightClass} w-full px-3 py-2 text-sm outline-none ${disabled ? "bg-[var(--surface-muted)] text-[var(--muted)]" : ""}`}
+        className={`${minHeightClass} w-full px-3 py-2 text-sm outline-none ${disabled ? "bg-[var(--surface-muted)] text-muted-foreground" : ""}`}
         contentEditable={!disabled}
         suppressContentEditableWarning
         data-placeholder={placeholder}
@@ -94,7 +94,7 @@ export function RichTextArea({
       <style>{`
         [contenteditable][data-placeholder]:empty:before {
           content: attr(data-placeholder);
-          color: var(--muted);
+          color: var(--muted-foreground);
         }
       `}</style>
     </div>

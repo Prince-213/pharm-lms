@@ -14,7 +14,7 @@ const styles: Record<CourseStatus, string> = {
   [CourseStatus.SUBMITTED]: "bg-amber-50 text-amber-950 ring-amber-200",
   [CourseStatus.APPROVED]: "bg-sky-50 text-sky-950 ring-sky-200",
   [CourseStatus.REJECTED]: "bg-rose-50 text-rose-950 ring-rose-200",
-  [CourseStatus.PUBLISHED]: "bg-emerald-50 text-emerald-950 ring-emerald-200",
+  [CourseStatus.PUBLISHED]: "bg-primary/10 text-primary ring-primary/20",
 };
 
 export function AdminCourseStatusBadge({ status }: { status: CourseStatus }) {

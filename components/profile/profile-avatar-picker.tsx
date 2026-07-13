@@ -117,7 +117,7 @@ export function ProfileAvatarPicker({
       <div className="flex flex-wrap items-center gap-4">
         <div
           className={cn(
-            "flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--border)] bg-[var(--surface-muted)] text-lg font-semibold text-[var(--muted)]",
+            "flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--border)] bg-[var(--surface-muted)] text-lg font-semibold text-muted-foreground",
           )}
         >
           {imgSrc ? (
@@ -157,7 +157,7 @@ export function ProfileAvatarPicker({
                 revokeTransient();
                 onChange("");
               }}
-              className="text-sm font-medium text-[var(--muted)] underline-offset-2 hover:text-[var(--foreground)] hover:underline disabled:opacity-50"
+              className="text-sm font-medium text-muted-foreground underline-offset-2 hover:text-[var(--foreground)] hover:underline disabled:opacity-50"
             >
               Remove photo
             </button>
@@ -165,7 +165,7 @@ export function ProfileAvatarPicker({
         </div>
       </div>
       {hint ? (
-        <p className="text-xs leading-relaxed text-[var(--muted)]">{hint}</p>
+        <p className="text-xs leading-relaxed text-muted-foreground">{hint}</p>
       ) : null}
     </div>
   );

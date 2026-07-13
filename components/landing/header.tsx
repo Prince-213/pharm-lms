@@ -69,7 +69,7 @@ const LandingHeader = () => {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-bold text-[var(--accent)] transition-colors hover:text-[var(--accent-deep)] xl:text-[15px]"
+              className="text-sm font-bold text-accent transition-colors hover:text-[var(--accent-deep)] xl:text-[15px]"
             >
               {link.label}
             </Link>
@@ -81,7 +81,7 @@ const LandingHeader = () => {
           <Link href={loginHref}>
             <Button
               variant="outline"
-              className="px-4 text-sm bg-white text-[var(--accent)] border-[var(--accent)] hover:bg-[var(--accent)] hover:text-white cursor-pointer transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] xl:px-5 xl:text-[15px]"
+              className="cursor-pointer border-accent bg-white px-4 text-sm text-accent transition-all duration-300 hover:scale-[1.02] hover:bg-accent hover:text-accent-foreground active:scale-[0.98] xl:px-5 xl:text-[15px]"
             >
               <span>Login</span>
               <ArrowRightIcon className="ml-1" />

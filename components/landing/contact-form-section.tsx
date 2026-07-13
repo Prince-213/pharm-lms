@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 export function ContactFormSection() {
   const [formData, setFormData] = useState({
@@ -40,83 +43,70 @@ export function ContactFormSection() {
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-5">
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-[var(--ink-deep)]">
-                    Full Name
-                  </label>
-                  <input
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input
+                    id="fullName"
                     type="text"
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleChange}
                     placeholder="Full Name"
-                    className="w-full rounded-lg border border-[#e0e0e0] bg-white py-3 px-4 text-sm text-[var(--ink-deep)] placeholder:text-[var(--muted-soft)] outline-none focus:border-[var(--emerald)]"
                   />
                 </div>
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-[var(--ink-deep)]">
-                    Email
-                  </label>
-                  <input
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Email"
-                    className="w-full rounded-lg border border-[#e0e0e0] bg-white py-3 px-4 text-sm text-[var(--ink-deep)] placeholder:text-[var(--muted-soft)] outline-none focus:border-[var(--emerald)]"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-[var(--ink-deep)]">
-                    Phone
-                  </label>
-                  <input
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
                     type="tel"
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
                     placeholder="Phone"
-                    className="w-full rounded-lg border border-[#e0e0e0] bg-white py-3 px-4 text-sm text-[var(--ink-deep)] placeholder:text-[var(--muted-soft)] outline-none focus:border-[var(--emerald)]"
                   />
                 </div>
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-[var(--ink-deep)]">
-                    Subject
-                  </label>
-                  <input
+                <div className="space-y-2">
+                  <Label htmlFor="subject">Subject</Label>
+                  <Input
+                    id="subject"
                     type="text"
                     name="subject"
                     value={formData.subject}
                     onChange={handleChange}
                     placeholder="Subject"
-                    className="w-full rounded-lg border border-[#e0e0e0] bg-white py-3 px-4 text-sm text-[var(--ink-deep)] placeholder:text-[var(--muted-soft)] outline-none focus:border-[var(--emerald)]"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium text-[var(--ink-deep)]">
-                  Message
-                </label>
-                <textarea
+              <div className="space-y-2">
+                <Label htmlFor="message">Message</Label>
+                <Textarea
+                  id="message"
                   name="message"
                   value={formData.message}
                   onChange={handleChange}
                   placeholder="Message"
                   rows={5}
-                  className="w-full rounded-lg border border-[#e0e0e0] bg-white py-3 px-4 text-sm text-[var(--ink-deep)] placeholder:text-[var(--muted-soft)] outline-none focus:border-[var(--emerald)] resize-none"
                 />
               </div>
 
-              <button
-                type="submit"
-                className="w-full rounded-full bg-[var(--emerald)] py-6 text-sm font-semibold text-white transition hover:bg-[var(--primary-strong)]"
-              >
+              <Button type="submit" className="w-full rounded-full py-6">
                 Submit Now
-              </button>
+              </Button>
             </form>
           </div>
 

@@ -5,9 +5,9 @@ const assignmentPill: Record<AssignmentStatus, string> = {
   [AssignmentStatus.DRAFT]:
     "bg-amber-100 text-amber-950 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-100 dark:ring-amber-800",
   [AssignmentStatus.SENT]:
-    "bg-emerald-100 text-emerald-950 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-100 dark:ring-emerald-800",
+    "bg-primary/15 text-primary ring-primary/20 dark:bg-primary/20 dark:text-primary-foreground/90 dark:ring-primary/30",
   [AssignmentStatus.CLOSED]:
-    "bg-[var(--surface-muted)] text-[var(--muted)] ring-[var(--border)]",
+    "bg-[var(--surface-muted)] text-muted-foreground ring-[var(--border)]",
 };
 
 const submissionPill: Record<SubmissionStatus, string> = {
@@ -55,7 +55,7 @@ export function StudentAssignmentRowStatus({
 }) {
   if (assignmentClosed) {
     return (
-      <span className="inline-flex rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--muted)] ring-1 ring-[var(--border)]">
+      <span className="inline-flex rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground ring-1 ring-[var(--border)]">
         Closed
       </span>
     );

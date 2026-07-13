@@ -52,7 +52,7 @@ export function PortalSwitchLink({
         className={cn(
           "font-semibold transition-colors",
           isSidebar
-            ? "text-xs text-[var(--muted)] group-hover:text-[var(--ink-deep)]"
+            ? "text-xs text-muted-foreground group-hover:text-[var(--ink-deep)]"
             : "text-sm text-white group-hover:text-white/80",
         )}
       >

@@ -85,7 +85,7 @@ export function AdminCouponsTable({ coupons }: { coupons: AdminCouponRow[] }) {
     <div className="overflow-x-auto">
       <table className="w-full min-w-[860px] border-separate border-spacing-0 text-sm">
         <thead>
-          <tr className="text-left text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+          <tr className="text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             <th className="border-b border-[var(--border)] px-3 py-2.5">
               Code
             </th>
@@ -130,7 +130,7 @@ export function AdminCouponsTable({ coupons }: { coupons: AdminCouponRow[] }) {
                 ? "bg-amber-50 text-amber-800"
                 : exhausted
                   ? "bg-amber-50 text-amber-800"
-                  : "bg-emerald-50 text-emerald-800";
+                  : "bg-primary/10 text-primary";
             const busy = pendingId === c.id;
             return (
               <tr
@@ -143,7 +143,7 @@ export function AdminCouponsTable({ coupons }: { coupons: AdminCouponRow[] }) {
                 <td className="px-3 py-3 tabular-nums">{c.percentOff}% off</td>
                 <td className="px-3 py-3">
                   {c.courses.length === 0 ? (
-                    <span className="text-[var(--muted)]">No courses</span>
+                    <span className="text-muted-foreground">No courses</span>
                   ) : c.courses.length === 1 ? (
                     <span title={c.courses[0].title}>{c.courses[0].title}</span>
                   ) : (
@@ -152,7 +152,7 @@ export function AdminCouponsTable({ coupons }: { coupons: AdminCouponRow[] }) {
                       className="cursor-help"
                     >
                       {c.courses[0].title}{" "}
-                      <span className="text-[var(--muted)]">
+                      <span className="text-muted-foreground">
                         + {c.courses.length - 1} more
                       </span>
                     </span>
@@ -165,7 +165,7 @@ export function AdminCouponsTable({ coupons }: { coupons: AdminCouponRow[] }) {
                 <td className="px-3 py-3 tabular-nums">
                   {c.maxRedemptionsPerStudent}
                 </td>
-                <td className="px-3 py-3 text-[var(--muted)]">
+                <td className="px-3 py-3 text-muted-foreground">
                   {formatDate(c.expiresAt)}
                 </td>
                 <td className="px-3 py-3">
@@ -182,7 +182,7 @@ export function AdminCouponsTable({ coupons }: { coupons: AdminCouponRow[] }) {
                       disabled={busy}
                       onClick={() => onToggle(c)}
                       title={c.isActive ? "Deactivate" : "Activate"}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-[var(--muted)] transition hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)] disabled:opacity-50"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)] disabled:opacity-50"
                     >
                       <Power className="h-4 w-4" />
                     </button>

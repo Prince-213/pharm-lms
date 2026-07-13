@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { UserRole } from "@/generated/prisma/enums";
+import { MentorProfileStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { resolveMediaUrl } from "@/lib/media-url";
 import { roleHomePath } from "@/lib/rbac";
@@ -18,7 +18,7 @@ export default async function MentorProfilePage() {
       fullName: true,
       avatarUrl: true,
       bio: true,
-      isActive: true,
+      mentorProfileStatus: true,
       mentorHeadline: true,
       mentorSpecialties: true,
       mentorYearsExperience: true,

@@ -32,10 +32,10 @@ export default async function AdminBadgesPage() {
         <AdminPanel title="Catalog" description="No badges in the database yet">
           <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-[var(--border)] bg-[var(--background)] py-14 text-center">
             <Award
-              className="h-10 w-10 text-[var(--muted)]"
+              className="h-10 w-10 text-muted-foreground"
               strokeWidth={1.25}
             />
-            <p className="mt-4 max-w-md text-sm text-[var(--muted)]">
+            <p className="mt-4 max-w-md text-sm text-muted-foreground">
               Create a badge above. Each badge stores its rule type and
               threshold; the engine awards it automatically when a student
               crosses the threshold.
@@ -72,10 +72,10 @@ export default async function AdminBadgesPage() {
                     <p className="font-semibold text-[var(--foreground)]">
                       {b.name}
                     </p>
-                    <p className="mt-1 line-clamp-2 text-xs text-[var(--muted)]">
+                    <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
                       {b.description}
                     </p>
-                    <p className="mt-2 text-[11px] font-medium uppercase tracking-wide text-[var(--muted)]">
+                    <p className="mt-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                       {describeRuleConfig(b.ruleType, b.ruleConfig)} ·{" "}
                       {b._count.awarded} awarded
                     </p>

@@ -133,10 +133,10 @@ export function InstructorProfilePage({
             />
 
             <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)] sm:p-6">
-              <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--muted-soft)]">
+              <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                 About
               </h2>
-              <div className="mt-4 space-y-4 text-sm leading-relaxed text-[var(--muted)]">
+              <div className="mt-4 space-y-4 text-sm leading-relaxed text-muted-foreground">
                 {bioParagraphs.map((para) => (
                   <p key={para}>{para}</p>
                 ))}
@@ -256,10 +256,10 @@ export function InstructorProfilePage({
           />
 
           <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)] sm:p-6">
-            <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--muted-soft)]">
+            <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
               About me
             </h2>
-            <div className="mt-4 space-y-4 text-sm leading-relaxed text-[var(--muted)]">
+            <div className="mt-4 space-y-4 text-sm leading-relaxed text-muted-foreground">
               {bioParagraphs.map((para) => (
                 <p key={para}>{para}</p>
               ))}
@@ -313,7 +313,7 @@ export function InstructorProfilePage({
 
 function FooterLink({ href, label }: { href: string; label: string }) {
   return (
-    <p className="text-center text-xs text-[var(--muted)]">
+    <p className="text-center text-xs text-muted-foreground">
       <Link
         href={href}
         className="font-semibold text-[var(--primary)] hover:underline"

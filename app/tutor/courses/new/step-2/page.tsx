@@ -21,7 +21,7 @@ export default function NewCourseStep2Page() {
       <header className="border-b border-[var(--border)] bg-[var(--surface)]">
         <div className="mx-auto flex h-12 w-full max-w-5xl items-center justify-between px-4 text-xs">
           <span className="text-sm font-bold tracking-tight">PharmLms</span>
-          <span className="rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-[11px] font-semibold text-[var(--muted)]">
+          <span className="rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
             Step 1 of 3
           </span>
           <Link href="/tutor/courses" className="text-[var(--primary)]">
@@ -37,7 +37,7 @@ export default function NewCourseStep2Page() {
           <h1 className="text-center font-display text-3xl font-bold tracking-tight sm:text-4xl">
             How about a working title?
           </h1>
-          <p className="mt-3 text-center text-sm text-[var(--muted)]">
+          <p className="mt-3 text-center text-sm text-muted-foreground">
             It is fine if this is temporary. You can update the course title
             later from the course basics page.
           </p>
@@ -48,7 +48,7 @@ export default function NewCourseStep2Page() {
               placeholder="e.g. Learn Pharmacy Case Studies from Scratch"
               className="h-12 w-full rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--background)] px-3 text-sm"
             />
-            <p className="mt-1 text-right text-xs text-[var(--muted)]">
+            <p className="mt-1 text-right text-xs text-muted-foreground">
               {remaining} characters left
             </p>
           </div>

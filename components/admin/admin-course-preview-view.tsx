@@ -101,7 +101,7 @@ function TabButton({
         "flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors sm:flex-none sm:px-4",
         active
           ? "bg-[var(--background)] text-[var(--foreground)] shadow-sm ring-1 ring-[var(--border)]"
-          : "text-[var(--muted)] hover:bg-[var(--background)] hover:text-[var(--foreground)]",
+          : "text-muted-foreground hover:bg-[var(--background)] hover:text-[var(--foreground)]",
       )}
     >
       <Icon className="h-4 w-4 shrink-0 opacity-80" strokeWidth={1.75} />
@@ -120,7 +120,7 @@ function StatTile({
 }) {
   return (
     <div className="rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 py-3 text-center">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--muted)]">{label}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
       <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-[var(--foreground)]">{value}</p>
     </div>
   );
@@ -188,8 +188,8 @@ function lessonVideoPlayableUrl(lesson: AdminPreviewLesson): string | null {
 function SectionResourcesList({ resources }: { resources: AdminPreviewSectionResource[] }) {
   if (resources.length === 0) return null;
   return (
-    <div className="my-4 rounded-xl border border-emerald-200/80 bg-emerald-50/50 px-3 py-3 dark:border-emerald-900/40 dark:bg-emerald-950/20">
-      <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-200">
+    <div className="my-4 rounded-xl border border-primary/20 bg-primary/10 px-3 py-3 dark:border-primary/30 dark:bg-primary/20">
+      <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-primary dark:text-primary-foreground/90">
         Section resources
       </p>
       <ul className="space-y-2">
@@ -199,7 +199,7 @@ function SectionResourcesList({ resources }: { resources: AdminPreviewSectionRes
           return (
             <li key={r.id}>
               <div className="flex items-start gap-2 rounded-lg px-1 py-1">
-                <div className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400">
+                <div className="mt-0.5 shrink-0 text-primary dark:text-primary/80">
                   {r.type === "LINK" ? (
                     <Link2 className="h-4 w-4" strokeWidth={2} />
                   ) : (
@@ -207,10 +207,10 @@ function SectionResourcesList({ resources }: { resources: AdminPreviewSectionRes
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold leading-snug text-emerald-950 dark:text-emerald-50">
+                  <p className="text-sm font-semibold leading-snug text-primary dark:text-primary-foreground">
                     {r.title}
                   </p>
-                  <p className="mt-0.5 line-clamp-2 text-xs leading-snug text-emerald-900/80 dark:text-emerald-100/80">
+                  <p className="mt-0.5 line-clamp-2 text-xs leading-snug text-primary/80 dark:text-primary-foreground/90/80">
                     {formatResourceMetaLine(res)}
                   </p>
                 </div>
@@ -220,7 +220,7 @@ function SectionResourcesList({ resources }: { resources: AdminPreviewSectionRes
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-md p-2 text-emerald-700 transition-colors hover:bg-emerald-100/80 dark:text-emerald-300 dark:hover:bg-emerald-900/40"
+                      className="rounded-md p-2 text-primary transition-colors hover:bg-primary/15 dark:text-primary-foreground/80 dark:hover:bg-primary/25"
                       title="Open link"
                       aria-label={`Open ${r.title}`}
                     >
@@ -231,7 +231,7 @@ function SectionResourcesList({ resources }: { resources: AdminPreviewSectionRes
                     <a
                       href={href}
                       download={resourceDownloadFilename(res)}
-                      className="rounded-md p-2 text-emerald-700 transition-colors hover:bg-emerald-100/80 dark:text-emerald-300 dark:hover:bg-emerald-900/40"
+                      className="rounded-md p-2 text-primary transition-colors hover:bg-primary/15 dark:text-primary-foreground/80 dark:hover:bg-primary/25"
                       title="Download"
                       aria-label={`Download ${r.title}`}
                     >
@@ -239,7 +239,7 @@ function SectionResourcesList({ resources }: { resources: AdminPreviewSectionRes
                     </a>
                   ) : null}
                   {!href ? (
-                    <span className="max-w-[140px] px-1 text-[10px] leading-tight text-emerald-800/70 dark:text-emerald-200/70">
+                    <span className="max-w-[140px] px-1 text-[10px] leading-tight text-primary/70 dark:text-primary-foreground/90/70">
                       {r.type === "FILE" && r.url?.startsWith("r2://")
                         ? "Signed URL unavailable (check storage config)."
                         : "No playable URL."}
@@ -316,7 +316,7 @@ export function AdminCoursePreviewView({ data }: { data: AdminCoursePreviewPaylo
                     <AdminCourseStatusBadge status={data.status} />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Tutor</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tutor</p>
                     <p className="mt-1 text-sm font-medium text-[var(--foreground)]">{data.mentor.fullName}</p>
                     {data.mentor.email ? (
                       <a
@@ -328,14 +328,14 @@ export function AdminCoursePreviewView({ data }: { data: AdminCoursePreviewPaylo
                     ) : null}
                   </div>
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Price</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Price</p>
                     <p className="mt-1 text-lg font-semibold tabular-nums text-[var(--foreground)]">
                       {data.formattedPrice}
                     </p>
                   </div>
                   {metaChips.length ? (
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Catalog meta</p>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Catalog meta</p>
                       <div className="mt-2 flex flex-wrap gap-2">
                         {metaChips.map((m) => (
                           <MetaChip key={m}>{m}</MetaChip>
@@ -361,7 +361,7 @@ export function AdminCoursePreviewView({ data }: { data: AdminCoursePreviewPaylo
             className="animate-in fade-in duration-200"
           >
             {data.sections.length === 0 ? (
-              <p className="text-sm text-[var(--muted)]">No sections yet.</p>
+              <p className="text-sm text-muted-foreground">No sections yet.</p>
             ) : (
               <ul className="space-y-2">
                 {data.sections.map((section, sIdx) => {
@@ -379,16 +379,16 @@ export function AdminCoursePreviewView({ data }: { data: AdminCoursePreviewPaylo
                       >
                         <ChevronRight
                           className={clsx(
-                            "h-4 w-4 shrink-0 text-[var(--muted)] transition-transform",
+                            "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
                             open && "rotate-90",
                           )}
                           strokeWidth={2}
                         />
                         <span className="min-w-0 flex-1">
-                          <span className="text-xs font-medium text-[var(--muted)]">Section {sIdx + 1}</span>
+                          <span className="text-xs font-medium text-muted-foreground">Section {sIdx + 1}</span>
                           <span className="mt-0.5 block font-semibold text-[var(--foreground)]">{section.title}</span>
                         </span>
-                        <span className="shrink-0 rounded-full bg-[var(--surface)] px-2 py-0.5 text-xs font-medium text-[var(--muted)] ring-1 ring-[var(--border)]">
+                        <span className="shrink-0 rounded-full bg-[var(--surface)] px-2 py-0.5 text-xs font-medium text-muted-foreground ring-1 ring-[var(--border)]">
                           {section.lessons.length} lessons
                         </span>
                       </button>
@@ -411,7 +411,7 @@ export function AdminCoursePreviewView({ data }: { data: AdminCoursePreviewPaylo
                               return (
                                 <li key={lesson.id} className="px-3 py-3">
                                   <div className="flex flex-wrap items-baseline gap-2">
-                                    <span className="text-xs tabular-nums text-[var(--muted)]">
+                                    <span className="text-xs tabular-nums text-muted-foreground">
                                       {sIdx + 1}.{lIdx + 1}
                                     </span>
                                     <span className="font-medium text-[var(--foreground)]">{lesson.title}</span>
@@ -458,7 +458,7 @@ export function AdminCoursePreviewView({ data }: { data: AdminCoursePreviewPaylo
                                         </div>
                                       ) : null}
                                       {lesson.videoUrl?.startsWith("r2://") ? (
-                                        <p className="break-all font-mono text-[10px] text-[var(--muted)]">
+                                        <p className="break-all font-mono text-[10px] text-muted-foreground">
                                           {lesson.videoUrl}
                                         </p>
                                       ) : null}
@@ -483,7 +483,7 @@ export function AdminCoursePreviewView({ data }: { data: AdminCoursePreviewPaylo
                                       ) : null}
                                     </div>
                                   ) : (
-                                    <p className="mt-1 text-xs text-[var(--muted)]">No lesson body.</p>
+                                    <p className="mt-1 text-xs text-muted-foreground">No lesson body.</p>
                                   )}
                                 </li>
                               );
@@ -508,7 +508,7 @@ export function AdminCoursePreviewView({ data }: { data: AdminCoursePreviewPaylo
                   dangerouslySetInnerHTML={{ __html: data.description }}
                 />
               ) : (
-                <p className="text-sm text-[var(--muted)]">No description.</p>
+                <p className="text-sm text-muted-foreground">No description.</p>
               )}
             </AdminPanel>
 
@@ -518,26 +518,26 @@ export function AdminCoursePreviewView({ data }: { data: AdminCoursePreviewPaylo
                   {data.welcomeMessage}
                 </pre>
               ) : (
-                <p className="text-sm text-[var(--muted)]">No welcome message.</p>
+                <p className="text-sm text-muted-foreground">No welcome message.</p>
               )}
             </AdminPanel>
 
             <AdminPanel title="Completion & congratulatory" description="End-of-course messaging configuration.">
               <dl className="grid gap-4 sm:grid-cols-2">
                 <div className="rounded-lg border border-[var(--border)] bg-[var(--background)] px-4 py-3">
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Title</dt>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Title</dt>
                   <dd className="mt-1 text-sm text-[var(--foreground)]">{data.congratulatoryTitle ?? "—"}</dd>
                 </div>
                 <div className="rounded-lg border border-[var(--border)] bg-[var(--background)] px-4 py-3">
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Content type</dt>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Content type</dt>
                   <dd className="mt-1 text-sm text-[var(--foreground)]">{data.congratulatoryContentType ?? "—"}</dd>
                 </div>
                 <div className="rounded-lg border border-[var(--border)] bg-[var(--background)] px-4 py-3 sm:col-span-2">
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Legacy message</dt>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Legacy message</dt>
                   <dd className="mt-1 text-sm text-[var(--foreground)]">{data.congratulatoryMessage ?? "—"}</dd>
                 </div>
                 <div className="rounded-lg border border-[var(--border)] bg-[var(--background)] px-4 py-3 sm:col-span-2">
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Video URL</dt>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Video URL</dt>
                   <dd className="mt-1 break-all font-mono text-sm text-[var(--foreground)]">
                     {data.congratulatoryVideoUrl ? (
                       <a
@@ -555,13 +555,13 @@ export function AdminCoursePreviewView({ data }: { data: AdminCoursePreviewPaylo
                 </div>
               </dl>
               <div className="mt-6">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Article body</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Article body</p>
                 {data.congratulatoryArticle?.trim() ? (
                   <pre className="mt-2 max-h-[min(50vh,400px)] overflow-y-auto whitespace-pre-wrap rounded-xl border border-[var(--border)] bg-[var(--background)] p-4 font-sans text-sm leading-relaxed text-[var(--foreground)]">
                     {data.congratulatoryArticle}
                   </pre>
                 ) : (
-                  <p className="mt-2 text-sm text-[var(--muted)]">No article body.</p>
+                  <p className="mt-2 text-sm text-muted-foreground">No article body.</p>
                 )}
               </div>
             </AdminPanel>
@@ -572,7 +572,7 @@ export function AdminCoursePreviewView({ data }: { data: AdminCoursePreviewPaylo
           <div className="grid gap-6 lg:grid-cols-2 animate-in fade-in duration-200">
             <AdminPanel title="Announcements" description="Posts in the course announcements thread.">
               {data.announcements.length === 0 ? (
-                <p className="text-sm text-[var(--muted)]">No announcements yet.</p>
+                <p className="text-sm text-muted-foreground">No announcements yet.</p>
               ) : (
                 <ul className="space-y-3">
                   {data.announcements.map((post) => (
@@ -581,7 +581,7 @@ export function AdminCoursePreviewView({ data }: { data: AdminCoursePreviewPaylo
                       className="rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 py-3"
                     >
                       <p className="text-sm leading-relaxed text-[var(--foreground)]">{post.body}</p>
-                      <p className="mt-2 text-[11px] font-medium uppercase tracking-wide text-[var(--muted)]">
+                      <p className="mt-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                         {new Date(post.createdAtIso).toLocaleString()}
                       </p>
                     </li>
@@ -591,7 +591,7 @@ export function AdminCoursePreviewView({ data }: { data: AdminCoursePreviewPaylo
             </AdminPanel>
             <AdminPanel title="General forum" description="Discussion thread — author and role shown per post.">
               {data.forumPosts.length === 0 ? (
-                <p className="text-sm text-[var(--muted)]">No forum posts yet.</p>
+                <p className="text-sm text-muted-foreground">No forum posts yet.</p>
               ) : (
                 <ul className="space-y-3">
                   {data.forumPosts.map((post) => (
@@ -601,10 +601,10 @@ export function AdminCoursePreviewView({ data }: { data: AdminCoursePreviewPaylo
                     >
                       <p className="text-xs font-semibold text-[var(--foreground)]">
                         {post.authorName}
-                        <span className="font-normal text-[var(--muted)]"> · {post.authorRole}</span>
+                        <span className="font-normal text-muted-foreground"> · {post.authorRole}</span>
                       </p>
                       <p className="mt-2 text-sm leading-relaxed text-[var(--foreground)]">{post.body}</p>
-                      <p className="mt-2 text-[11px] font-medium uppercase tracking-wide text-[var(--muted)]">
+                      <p className="mt-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                         {new Date(post.createdAtIso).toLocaleString()}
                       </p>
                     </li>

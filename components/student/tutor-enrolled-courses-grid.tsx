@@ -35,7 +35,7 @@ function MiniCourseCard({ course }: { course: TutorCourseCard }) {
             unoptimized={thumb.startsWith("http")}
           />
         ) : (
-          <span className="flex h-full items-center justify-center text-[var(--muted)]">
+          <span className="flex h-full items-center justify-center text-muted-foreground">
             <BookOpen className="h-8 w-8 opacity-40" strokeWidth={1.25} />
           </span>
         )}
@@ -64,7 +64,7 @@ export function TutorEnrolledCoursesSection({
           <h2 className="font-display text-lg font-bold text-[var(--ink-deep)]">
             Your courses with {tutorName.split(" ")[0]}
           </h2>
-          <p className="mt-1 text-xs text-[var(--muted)]">
+          <p className="mt-1 text-xs text-muted-foreground">
             Courses you&apos;re enrolled in — open the overview or continue
             learning.
           </p>
@@ -89,7 +89,7 @@ export function TutorEnrolledCoursesSection({
         </ul>
       ) : (
         <div className="mt-5 rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface-muted)]/30 px-5 py-10 text-center">
-          <p className="text-sm text-[var(--muted)]">
+          <p className="text-sm text-muted-foreground">
             You&apos;re not enrolled in any of this tutor&apos;s courses yet.
           </p>
           {publishedCourses.length > 0 ? (

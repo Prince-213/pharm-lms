@@ -79,7 +79,7 @@ export function StudentSecondaryNav() {
               "shrink-0 border-b-2 px-2 py-3 text-sm font-semibold transition-colors sm:px-3",
               active
                 ? "border-[var(--primary)] text-[var(--foreground)]"
-                : "border-transparent text-[var(--muted)] hover:text-[var(--foreground)]",
+                : "border-transparent text-muted-foreground hover:text-foreground",
             )}
           >
             {tab.label}

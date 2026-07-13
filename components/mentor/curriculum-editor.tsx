@@ -215,7 +215,7 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
   }
 
   if (loading) {
-    return <p className="p-6 text-sm text-[var(--muted)]">Loading curriculum...</p>;
+    return <p className="p-6 text-sm text-muted-foreground">Loading curriculum...</p>;
   }
 
   if (error) {
@@ -229,7 +229,7 @@ export function CurriculumEditor({ courseId }: { courseId: string }) {
         quizzes, and assignments.
       </div>
       {saving ? (
-        <p className="text-xs text-[var(--muted)]">Saving changes...</p>
+        <p className="text-xs text-muted-foreground">Saving changes...</p>
       ) : null}
 
       {sections.map((section, sectionIndex) => (

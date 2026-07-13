@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { parseAssignmentDescription } from "@/lib/assignments/parse-assignment-description";
+import { revalidateCourseSurfaces } from "@/lib/cache/revalidate-portals";
 import { requireMentorCourse, requireMentorCourseEditable } from "@/lib/mentor-course-auth";
 
 const createSectionBodySchema = z.object({
@@ -38,7 +40,6 @@ export async function GET(
       description: true,
       createdAt: true,
       status: true,
-      dueDate: true,
     },
   });
 
@@ -48,12 +49,15 @@ export async function GET(
       .filter((assignment) =>
         assignment.description?.includes(`Section:${section.id}`),
       )
-      .map((assignment) => ({
-        ...assignment,
-        description:
-          assignment.description?.replace(`Section:${section.id}`, "").trim() ??
-          "",
-      })),
+      .map((assignment) => {
+        const { instructions } = parseAssignmentDescription(
+          assignment.description,
+        );
+        return {
+          ...assignment,
+          description: instructions,
+        };
+      }),
   }));
 
   return NextResponse.json({ sections: sectionsWithAssignments });
@@ -90,5 +94,6 @@ export async function POST(
     },
   });
 
+  revalidateCourseSurfaces(courseId);
   return NextResponse.json(section, { status: 201 });
 }

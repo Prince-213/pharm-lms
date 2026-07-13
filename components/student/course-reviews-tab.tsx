@@ -87,13 +87,13 @@ export function CourseReviewsTab({
               <div className="mt-1 flex items-center gap-2">
                 <ReviewStars rating={Math.round(ratingAverage)} />
               </div>
-              <p className="mt-1 text-xs font-semibold text-[var(--muted)]">
+              <p className="mt-1 text-xs font-semibold text-muted-foreground">
                 Course rating · {reviewCount.toLocaleString()}{" "}
                 {reviewCount === 1 ? "rating" : "ratings"}
               </p>
             </div>
           ) : (
-            <p className="mt-3 text-sm text-[var(--muted)]">
+            <p className="mt-3 text-sm text-muted-foreground">
               No ratings yet. Be the first to leave feedback when you are
               eligible.
             </p>
@@ -102,7 +102,7 @@ export function CourseReviewsTab({
 
         {reviewCount > 0 ? (
           <div className="min-w-0 flex-1 space-y-2 lg:max-w-md">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-soft)]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Rating distribution
             </p>
             {[5, 4, 3, 2, 1].map((stars) => {
@@ -124,7 +124,7 @@ export function CourseReviewsTab({
                       style={{ width: `${w}%` }}
                     />
                   </div>
-                  <span className="w-10 shrink-0 text-right tabular-nums text-[var(--muted)]">
+                  <span className="w-10 shrink-0 text-right tabular-nums text-muted-foreground">
                     {pct}%
                   </span>
                 </div>
@@ -139,7 +139,7 @@ export function CourseReviewsTab({
           Reviews
         </h3>
         {reviews.length === 0 ? (
-          <p className="mt-2 text-sm text-[var(--muted)]">
+          <p className="mt-2 text-sm text-muted-foreground">
             No written reviews yet.
           </p>
         ) : (
@@ -158,7 +158,7 @@ export function CourseReviewsTab({
                     </span>
                     <time
                       dateTime={r.createdAt.toISOString()}
-                      className="text-[11px] tabular-nums text-[var(--muted-soft)]"
+                      className="text-[11px] tabular-nums text-muted-foreground"
                     >
                       {r.createdAt.toLocaleDateString(undefined, {
                         year: "numeric",
@@ -169,7 +169,7 @@ export function CourseReviewsTab({
                   </div>
                   <ReviewStars rating={r.rating} />
                   {r.comment?.trim() ? (
-                    <p className="pt-1 text-sm leading-relaxed text-[var(--muted)]">
+                    <p className="pt-1 text-sm leading-relaxed text-muted-foreground">
                       {r.comment.trim()}
                     </p>
                   ) : null}

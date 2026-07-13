@@ -1,6 +1,7 @@
-import { UserRole } from "@/generated/prisma/enums";
+import { MeetingStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/notifications/email-service";
+import { createNotification } from "@/lib/notifications/notification-service";
 
 function appBaseUrl() {
   return (process.env.NEXTAUTH_URL || "").replace(/\/$/, "");
@@ -46,14 +47,12 @@ export async function notifyHostNewMeetingRequest(
   }
   const body = bodyParts.join(" · ");
 
-  await db.notification.create({
-    data: {
-      userId: host.id,
-      kind: isInstant ? "MEETING_INSTANT" : "MEETING_REQUEST",
-      title,
-      body,
-      href,
-    },
+  await createNotification({
+    userId: host.id,
+    kind: isInstant ? "MEETING_INSTANT" : "MEETING_REQUEST",
+    title,
+    body,
+    href,
   });
 
   const link = `${base}${href}`;
@@ -93,14 +92,12 @@ export async function notifyStudentMeetingAccepted(
   const joinPath = `/student/meetings/join/${req.meeting.id}`;
   const joinUrl = base ? `${base}${joinPath}` : joinPath;
 
-  await db.notification.create({
-    data: {
-      userId: req.student.id,
-      kind: "MEETING_ACCEPTED",
-      title: `Meeting confirmed with ${req.mentor.fullName}`,
-      body: `Scheduled for ${when}.`,
-      href,
-    },
+  await createNotification({
+    userId: req.student.id,
+    kind: "MEETING_ACCEPTED",
+    title: `Meeting confirmed with ${req.mentor.fullName}`,
+    body: `Scheduled for ${when}.`,
+    href,
   });
 
   void sendEmail({
@@ -129,14 +126,12 @@ export async function notifyStudentMeetingRejected(
   const href = "/student/meetings";
   const base = appBaseUrl();
 
-  await db.notification.create({
-    data: {
-      userId: req.student.id,
-      kind: "MEETING_REJECTED",
-      title: `Meeting request declined`,
-      body: `${req.mentor.fullName} was not available for this time.`,
-      href,
-    },
+  await createNotification({
+    userId: req.student.id,
+    kind: "MEETING_REJECTED",
+    title: `Meeting request declined`,
+    body: `${req.mentor.fullName} was not available for this time.`,
+    href,
   });
 
   void sendEmail({
@@ -147,3 +142,68 @@ export async function notifyStudentMeetingRejected(
 <p><a href="${base}${href}">Meetings</a></p>`,
   });
 }
+
+const LATE_MEETING_KIND = "MEETING_MISSED";
+
+/**
+ * Notifies host + student when a scheduled meeting passed without anyone joining.
+ * Safe to call on page load (deduped by notification kind + meeting id in title).
+ */
+export async function notifyLateOrMissedMeetings(
+  mentorId: string,
+): Promise<void> {
+  const cutoff = new Date(Date.now() - 15 * 60 * 1000);
+  const stale = await db.meeting.findMany({
+    where: {
+      mentorId,
+      status: MeetingStatus.SCHEDULED,
+      startsAt: { lt: cutoff },
+      openedAt: null,
+    },
+    include: {
+      student: { select: { id: true, fullName: true } },
+      mentor: { select: { id: true, fullName: true, role: true } },
+      meetingRequest: { select: { course: { select: { title: true } } } },
+    },
+    take: 20,
+  });
+
+  for (const meeting of stale) {
+    const when = new Date(meeting.startsAt).toLocaleString();
+    const courseTitle = meeting.meetingRequest.course?.title ?? "Coaching session";
+    const hostHref = meetingsHrefForRole(meeting.mentor.role);
+    const studentHref = "/student/meetings";
+
+    const existing = await db.notification.findFirst({
+      where: {
+        kind: LATE_MEETING_KIND,
+        userId: meeting.mentor.id,
+        title: { contains: meeting.id },
+      },
+      select: { id: true },
+    });
+    if (existing) continue;
+
+    await createNotification({
+      userId: meeting.mentor.id,
+      kind: LATE_MEETING_KIND,
+      title: `Missed meeting · ${meeting.id.slice(0, 8)}`,
+      body: `${meeting.student.fullName} did not join ${courseTitle} (${when}).`,
+      href: hostHref,
+    });
+
+    await createNotification({
+      userId: meeting.student.id,
+      kind: LATE_MEETING_KIND,
+      title: `Missed meeting with ${meeting.mentor.fullName}`,
+      body: `Your session for ${courseTitle} at ${when} was not joined.`,
+      href: studentHref,
+    });
+
+    await db.meeting.update({
+      where: { id: meeting.id },
+      data: { status: MeetingStatus.EXPIRED },
+    });
+  }
+}
+

@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { CurriculumEditorSkeleton } from "@/components/ui/route-loading-skeleton";
+import { CurriculumEditorSkeleton } from "@/components/mentor/curriculum-editor-ui";
 
 const CurriculumEditorV2 = dynamic(
   () =>

@@ -123,7 +123,7 @@ export function NewCouponDialog({
         type="button"
         disabled
         title="At least one published, paid course is required to create a coupon."
-        className="inline-flex cursor-not-allowed items-center gap-2 rounded-md bg-[var(--surface-muted)] px-4 py-2 text-sm font-semibold text-[var(--muted)]"
+        className="inline-flex cursor-not-allowed items-center gap-2 rounded-md bg-[var(--surface-muted)] px-4 py-2 text-sm font-semibold text-muted-foreground"
       >
         <Plus className="h-4 w-4" />
         New coupon
@@ -167,7 +167,7 @@ export function NewCouponDialog({
                 type="button"
                 aria-label="Close"
                 onClick={() => setOpen(false)}
-                className="text-[var(--muted)] hover:text-[var(--foreground)]"
+                className="text-muted-foreground hover:text-[var(--foreground)]"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -195,7 +195,7 @@ export function NewCouponDialog({
                       className="mt-1 h-10 w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 font-mono text-sm uppercase tracking-wide outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-soft)]"
                       placeholder="SAVE25"
                     />
-                    <span className="mt-1 block text-xs text-[var(--muted)]">
+                    <span className="mt-1 block text-xs text-muted-foreground">
                       Letters, numbers, dashes, and underscores.
                     </span>
                   </label>
@@ -230,13 +230,13 @@ export function NewCouponDialog({
                     <button
                       type="button"
                       onClick={() => setSelectedIds(new Set())}
-                      className="text-xs font-semibold text-[var(--muted)] underline-offset-2 hover:underline"
+                      className="text-xs font-semibold text-muted-foreground underline-offset-2 hover:underline"
                     >
                       Clear
                     </button>
                   </div>
                   <div className="relative mt-2">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
+                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <input
                       type="search"
                       placeholder="Search courses by title or mentor"
@@ -247,7 +247,7 @@ export function NewCouponDialog({
                   </div>
                   <div className="mt-2 max-h-56 overflow-y-auto rounded-md border border-[var(--border)] bg-[var(--background)]">
                     {filtered.length === 0 ? (
-                      <p className="px-3 py-6 text-center text-xs text-[var(--muted)]">
+                      <p className="px-3 py-6 text-center text-xs text-muted-foreground">
                         No courses match your search.
                       </p>
                     ) : (
@@ -270,11 +270,11 @@ export function NewCouponDialog({
                                   <span className="block truncate font-medium text-[var(--foreground)]">
                                     {c.title}
                                   </span>
-                                  <span className="block text-xs text-[var(--muted)]">
+                                  <span className="block text-xs text-muted-foreground">
                                     {c.mentorName}
                                   </span>
                                 </span>
-                                <span className="shrink-0 text-xs font-semibold tabular-nums text-[var(--muted)]">
+                                <span className="shrink-0 text-xs font-semibold tabular-nums text-muted-foreground">
                                   {formatMinorUnitsToCurrency(
                                     c.priceMinorUnits,
                                     c.priceCurrency,
@@ -300,7 +300,7 @@ export function NewCouponDialog({
                       onChange={(e) => setExpiresAt(e.target.value)}
                       className="mt-1 h-10 w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-soft)]"
                     />
-                    <span className="mt-1 block text-xs text-[var(--muted)]">
+                    <span className="mt-1 block text-xs text-muted-foreground">
                       Leave blank for no expiry.
                     </span>
                   </label>
@@ -316,7 +316,7 @@ export function NewCouponDialog({
                       className="mt-1 h-10 w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-sm tabular-nums outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-soft)]"
                       placeholder="Unlimited"
                     />
-                    <span className="mt-1 block text-xs text-[var(--muted)]">
+                    <span className="mt-1 block text-xs text-muted-foreground">
                       Optional cap.
                     </span>
                   </label>
@@ -340,7 +340,7 @@ export function NewCouponDialog({
                       }
                       className="mt-1 h-10 w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-sm tabular-nums outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-soft)]"
                     />
-                    <span className="mt-1 block text-xs text-[var(--muted)]">
+                    <span className="mt-1 block text-xs text-muted-foreground">
                       Default 1.
                     </span>
                   </label>
@@ -355,7 +355,7 @@ export function NewCouponDialog({
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="rounded-md px-3 py-2 text-sm font-semibold text-[var(--muted)] hover:text-[var(--foreground)]"
+                  className="rounded-md px-3 py-2 text-sm font-semibold text-muted-foreground hover:text-[var(--foreground)]"
                 >
                   Cancel
                 </button>

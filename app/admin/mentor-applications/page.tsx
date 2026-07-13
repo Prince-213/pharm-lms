@@ -42,7 +42,7 @@ export default async function AdminMentorApplicationsPage() {
         {pending.length ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-[var(--border)] bg-[var(--surface-muted)] text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+              <thead className="border-b border-[var(--border)] bg-[var(--surface-muted)] text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3">Mentor</th>
                   <th className="px-4 py-3">Submitted</th>
@@ -56,12 +56,12 @@ export default async function AdminMentorApplicationsPage() {
                       <p className="font-semibold text-[var(--foreground)]">
                         {m.fullName}
                       </p>
-                      <p className="text-xs text-[var(--muted)]">{m.email}</p>
-                      <p className="mt-2 line-clamp-4 text-xs text-[var(--muted)]">
+                      <p className="text-xs text-muted-foreground">{m.email}</p>
+                      <p className="mt-2 line-clamp-4 text-xs text-muted-foreground">
                         {m.bio?.trim() || "No bio provided."}
                       </p>
                     </td>
-                    <td className="px-4 py-3 align-top text-xs text-[var(--muted)]">
+                    <td className="px-4 py-3 align-top text-xs text-muted-foreground">
                       {m.mentorReviewRequestedAt
                         ? new Date(m.mentorReviewRequestedAt).toLocaleString()
                         : "—"}
@@ -109,7 +109,7 @@ export default async function AdminMentorApplicationsPage() {
             </table>
           </div>
         ) : (
-          <p className="text-sm text-[var(--muted)]">No pending applications.</p>
+          <p className="text-sm text-muted-foreground">No pending applications.</p>
         )}
       </AdminPanel>
     </>

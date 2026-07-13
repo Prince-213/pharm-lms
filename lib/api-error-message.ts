@@ -1,10 +1,12 @@
 /** Best-effort message from fetch JSON error payloads (Zod flatten, strings, etc.). */
+import { toUserFacingError } from "@/lib/user-facing-error";
+
 export function formatApiErrorBody(body: unknown): string {
   if (body === null || body === undefined) {
-    return "Request failed (empty response).";
+    return "Request failed. Please try again.";
   }
   if (typeof body !== "object") {
-    return "Request failed.";
+    return "Request failed. Please try again.";
   }
   const o = body as Record<string, unknown>;
 
@@ -14,21 +16,27 @@ export function formatApiErrorBody(body: unknown): string {
     if (field && typeof field === "object") {
       const parts = Object.entries(field).flatMap(([key, msgs]) =>
         Array.isArray(msgs)
-          ? msgs.filter((m): m is string => typeof m === "string").map((m) => `${key}: ${m}`)
+          ? msgs
+              .filter((m): m is string => typeof m === "string")
+              .map((m) => `${key}: ${m}`)
           : [],
       );
-      if (parts.length) return parts.join(" ");
+      if (parts.length) {
+        return toUserFacingError(parts.join(" "), "Please check the form and try again.");
+      }
     }
     const form = d.formErrors as unknown;
     if (Array.isArray(form)) {
       const msgs = form.filter((x): x is string => typeof x === "string");
-      if (msgs.length) return msgs.join(" ");
+      if (msgs.length) {
+        return toUserFacingError(msgs.join(" "), "Please check the form and try again.");
+      }
     }
   }
 
   if (typeof o.error === "string" && o.error.trim()) {
-    return o.error.trim();
+    return toUserFacingError(o.error, "Could not complete the request. Please try again.");
   }
 
-  return "Could not create the course. Try again.";
+  return "Could not complete the request. Please try again.";
 }

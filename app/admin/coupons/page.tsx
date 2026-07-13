@@ -83,10 +83,10 @@ export default async function AdminCouponsPage() {
         >
           <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-[var(--border)] bg-[var(--background)] py-14 text-center">
             <Ticket
-              className="h-10 w-10 text-[var(--muted)]"
+              className="h-10 w-10 text-muted-foreground"
               strokeWidth={1.25}
             />
-            <p className="mt-4 max-w-md text-sm text-[var(--muted)]">
+            <p className="mt-4 max-w-md text-sm text-muted-foreground">
               Coupon codes apply a percentage discount to one or more courses
               during checkout. Use the New coupon button above to create one.
             </p>

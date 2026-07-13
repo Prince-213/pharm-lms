@@ -2,16 +2,20 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { formatApiErrorBody } from "@/lib/api-error-message";
 import {
   clearMentorNewCourseDraft,
   mergeMentorNewCourseDraft,
   readMentorNewCourseDraft,
 } from "@/lib/mentor-new-course-draft";
+import { toUserFacingError } from "@/lib/user-facing-error";
 
 export default function NewCourseStep4Page() {
   const router = useRouter();
+  const { data: session, status: sessionStatus } = useSession();
   const options = [
     "I'm very busy right now (0-2 hours)",
     "I'll work on this on the side (2-4 hours)",
@@ -20,17 +24,26 @@ export default function NewCourseStep4Page() {
   ];
   const [timeChoice, setTimeChoice] = useState(options[2]);
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function createCourseAndGoToStudio() {
-    setError(null);
+    if (sessionStatus === "loading") {
+      toast.message("Checking your session…");
+      return;
+    }
+
+    if (!session?.user?.id) {
+      toast.error("Please sign in again to create a course.");
+      router.push("/tutor/login?callbackUrl=/tutor/courses/new/step-4");
+      return;
+    }
+
     const draft = readMentorNewCourseDraft();
     if (!draft.title || draft.title.length < 3) {
-      setError("Add a course title in step 1.");
+      toast.error("Add a course title in step 1.");
       return;
     }
     if (!draft.category?.trim()) {
-      setError("Choose a category in step 2.");
+      toast.error("Choose or enter a category in step 2.");
       return;
     }
 
@@ -53,38 +66,46 @@ export default function NewCourseStep4Page() {
         try {
           payload = JSON.parse(raw) as unknown;
         } catch {
-          setError(
-            raw.length > 200
-              ? `Server error (${response.status}).`
-              : raw || `Server error (${response.status}).`,
+          toast.error(
+            response.status === 401
+              ? "Your session expired. Please sign in again."
+              : "Could not create your course. Please try again.",
           );
+          if (response.status === 401) {
+            router.push("/tutor/login?callbackUrl=/tutor/courses/new/step-4");
+          }
           return;
         }
       }
 
       if (!response.ok) {
-        setError(formatApiErrorBody(payload));
+        if (response.status === 401) {
+          toast.error("Your session expired. Please sign in again.");
+          router.push("/tutor/login?callbackUrl=/tutor/courses/new/step-4");
+          return;
+        }
+        toast.error(formatApiErrorBody(payload));
         return;
       }
 
       const course = payload as { id?: string };
       if (!course?.id) {
-        setError(
-          "Course was created but no id was returned. Refresh your courses list.",
+        toast.error(
+          "Course was created but we could not open it. Check your courses list.",
         );
         return;
       }
 
       clearMentorNewCourseDraft();
+      toast.success("Course created. Opening curriculum builder…");
       router.push(`/tutor/courses/${course.id}/manage/curriculum`);
     } catch (err) {
-      const msg =
-        err instanceof TypeError
-          ? "Network error — check your connection or try again."
-          : err instanceof Error
-            ? err.message
-            : "Something went wrong.";
-      setError(msg);
+      toast.error(
+        toUserFacingError(
+          err,
+          "Network error. Check your connection and try again.",
+        ),
+      );
     } finally {
       setPending(false);
     }
@@ -106,7 +127,7 @@ export default function NewCourseStep4Page() {
         <h1 className="text-center text-4xl font-bold">
           How much time can you spend creating your course per week?
         </h1>
-        <p className="mt-3 text-center text-sm text-[var(--muted)]">
+        <p className="mt-3 text-center text-sm text-muted-foreground">
           There&apos;s no wrong answer. We can help you achieve your goals even
           if you don&apos;t have much time.
         </p>
@@ -126,15 +147,10 @@ export default function NewCourseStep4Page() {
             </button>
           ))}
         </div>
-        <p className="mt-8 text-center text-xs text-[var(--muted)]">
+        <p className="mt-8 text-center text-xs text-muted-foreground">
           New courses are saved as drafts until you submit them for review and
           they are approved.
         </p>
-        {error ? (
-          <p className="mt-6 text-center text-sm text-[#b32d0f]" role="alert">
-            {error}
-          </p>
-        ) : null}
       </main>
       <footer className="fixed bottom-0 left-0 right-0 flex items-center justify-between border-t border-[var(--border)] bg-[var(--surface)] px-4 py-3">
         <Link
@@ -145,7 +161,7 @@ export default function NewCourseStep4Page() {
         </Link>
         <button
           type="button"
-          disabled={pending}
+          disabled={pending || sessionStatus === "loading"}
           onClick={() => void createCourseAndGoToStudio()}
           className="rounded-sm bg-[var(--primary)] px-3 py-1 text-xs font-semibold text-white disabled:opacity-60"
         >

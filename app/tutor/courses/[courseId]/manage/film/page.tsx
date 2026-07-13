@@ -20,13 +20,13 @@ export default function MentorCourseFilmEditPage({
         <h2 className="text-xl font-semibold">
           You&apos;re ready to share your knowledge.
         </h2>
-        <p className="text-sm text-[var(--muted)]">
+        <p className="text-sm text-muted-foreground">
           This is your moment. If you&apos;ve structured your course and used
           our setup, you&apos;re prepared.
         </p>
         <div className="rounded border border-[var(--border)] bg-[var(--surface-muted)] p-4">
           <h3 className="mb-2 text-lg font-semibold">Tips</h3>
-          <ul className="list-disc space-y-2 pl-5 text-sm text-[var(--muted)]">
+          <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
             <li>Take breaks and review frequently.</li>
             <li>Build rapport with your learners.</li>
             <li>Keep your recording environment controlled.</li>

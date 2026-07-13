@@ -36,7 +36,7 @@ export default async function StudentMessagesPage({
         <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
           Messages
         </h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">
+        <p className="mt-1 text-sm text-muted-foreground">
           Conversations with your mentors and admins. New messages appear here
           automatically.
         </p>
@@ -44,7 +44,7 @@ export default async function StudentMessagesPage({
 
       <div className="flex min-h-[480px] flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-sm)] md:flex-row">
         <aside className="flex w-full flex-col border-b border-[var(--border)] bg-[var(--surface-muted)]/30 md:w-[300px] md:border-b-0 md:border-r">
-          <div className="flex items-center gap-2 border-b border-[var(--border)] px-3 py-2 text-xs font-semibold text-[var(--muted)]">
+          <div className="flex items-center gap-2 border-b border-[var(--border)] px-3 py-2 text-xs font-semibold text-muted-foreground">
             <Inbox className="h-3.5 w-3.5" />
             Conversations · {threads.length}
           </div>
@@ -55,7 +55,7 @@ export default async function StudentMessagesPage({
                 strokeWidth={1.25}
               />
               <p className="mt-3 text-sm font-semibold">No messages yet</p>
-              <p className="mt-2 max-w-[240px] text-xs text-[var(--muted)]">
+              <p className="mt-2 max-w-[240px] text-xs text-muted-foreground">
                 When a mentor or admin reaches out, the thread will show up
                 here. You can also start one by booking a meeting from a mentor
                 profile.
@@ -76,11 +76,11 @@ export default async function StudentMessagesPage({
                     <p className="truncate text-sm font-semibold">
                       {t.other.fullName}
                     </p>
-                    <p className="mt-0.5 truncate text-xs text-[var(--muted)]">
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
                       {t.preview ?? "No messages yet."}
                     </p>
                     {t.lastMessageAt ? (
-                      <p className="mt-1 text-[10px] uppercase tracking-wide text-[var(--muted)]">
+                      <p className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">
                         {t.lastMessageAt.toLocaleString()}
                       </p>
                     ) : null}
@@ -96,13 +96,13 @@ export default async function StudentMessagesPage({
             <>
               <header className="border-b border-[var(--border)] px-5 py-3">
                 <p className="text-sm font-bold">{active.other.fullName}</p>
-                <p className="text-xs text-[var(--muted)]">
+                <p className="text-xs text-muted-foreground">
                   {active.other.role.toLowerCase()} · {active.other.email}
                 </p>
               </header>
               <ol className="flex-1 space-y-3 overflow-y-auto px-5 py-4">
                 {active.thread.messages.length === 0 ? (
-                  <li className="py-12 text-center text-sm text-[var(--muted)]">
+                  <li className="py-12 text-center text-sm text-muted-foreground">
                     No messages yet — say hello.
                   </li>
                 ) : (
@@ -129,7 +129,7 @@ export default async function StudentMessagesPage({
                             className={
                               mine
                                 ? "mt-1 text-[10px] uppercase tracking-wide text-white/70"
-                                : "mt-1 text-[10px] uppercase tracking-wide text-[var(--muted)]"
+                                : "mt-1 text-[10px] uppercase tracking-wide text-muted-foreground"
                             }
                           >
                             {m.sender.fullName} · {m.createdAt.toLocaleString()}
@@ -146,7 +146,7 @@ export default async function StudentMessagesPage({
               />
             </>
           ) : (
-            <div className="flex flex-1 items-center justify-center px-8 py-16 text-center text-sm text-[var(--muted)]">
+            <div className="flex flex-1 items-center justify-center px-8 py-16 text-center text-sm text-muted-foreground">
               Select a conversation, or wait for a mentor to message you.
             </div>
           )}

@@ -19,7 +19,7 @@ export default function MentorCourseCaptionsPage({
         </h1>
       </div>
       <div className="space-y-4 px-6 py-5">
-        <p className="text-sm text-[var(--muted)]">
+        <p className="text-sm text-muted-foreground">
           Upload captions for better accessibility and learning outcomes.
         </p>
         <FileUploader

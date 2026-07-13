@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { CourseStatus, UserRole } from "@/generated/prisma/enums";
+import { jsonError } from "@/lib/api/json-error";
+import { requireApiRoles } from "@/lib/auth/require-api-session";
+import { searchPublishedCourses } from "@/lib/courses/public-catalog";
 import { db } from "@/lib/db";
 import { createCourseSchema } from "@/lib/validation/lms";
-import { searchPublishedCourses } from "@/lib/courses/public-catalog";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -20,28 +21,32 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ courses });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Failed to search courses.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[api/courses GET]", e);
+    return jsonError(e, 500, "Could not load courses. Please try again.");
   }
 }
 
 export async function POST(request: Request) {
-  const session = await auth();
-  if (!session?.user || session.user.role !== UserRole.TUTOR) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const gate = await requireApiRoles(UserRole.TUTOR);
+  if (gate.error) return gate.error;
+
+  const { session } = gate;
+  const mentorId = session.user.id;
 
   let body: unknown;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonError(null, 400, "Invalid request. Please try again.");
   }
 
   const parsed = createCourseSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Validation failed", details: parsed.error.flatten() },
+      {
+        error: "Please check the course details and try again.",
+        details: parsed.error.flatten(),
+      },
       { status: 400 },
     );
   }
@@ -53,7 +58,7 @@ export async function POST(request: Request) {
   try {
     const course = await db.course.create({
       data: {
-        mentorId: session.user.id,
+        mentorId,
         title: parsed.data.title.trim(),
         subtitle: parsed.data.subtitle?.trim() || null,
         description,
@@ -66,8 +71,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(course, { status: 201 });
   } catch (e) {
-    const message =
-      e instanceof Error ? e.message : "Database error while creating course.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[api/courses POST]", e);
+    return jsonError(e, 500, "Could not create your course. Please try again.");
   }
 }

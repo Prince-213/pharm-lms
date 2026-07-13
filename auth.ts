@@ -7,6 +7,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { z } from "zod";
 import { type MentorProfileStatus, UserRole } from "@/generated/prisma/enums";
+import { ensureMentorCanSignIn } from "@/lib/auth/mentor-login-access";
 import { isAppleOAuthEnabled } from "@/lib/auth/apple-oauth-enabled";
 import { customPrismaAdapter } from "@/lib/auth/custom-prisma-adapter";
 import { isGoogleOAuthEnabled } from "@/lib/auth/google-oauth-enabled";
@@ -26,6 +27,23 @@ function warnAuthDbFailure(scope: string, error: unknown) {
 
 class WrongPortalCredentials extends CredentialsSignin {
   code = "WRONG_PORTAL";
+}
+
+class AccountDisabledCredentials extends CredentialsSignin {
+  code = "ACCOUNT_DISABLED";
+}
+
+function loginPathForAccountDisabled(
+  intent: string | undefined,
+  role: UserRole,
+): string {
+  if (intent === "mentor" || role === UserRole.MENTOR) {
+    return "/mentor/login?authError=account_disabled";
+  }
+  if (intent === "tutor" || role === UserRole.TUTOR) {
+    return "/tutor/login?authError=account_disabled";
+  }
+  return "/student/login?authError=account_disabled";
 }
 
 const loginSchema = z.object({
@@ -51,8 +69,17 @@ const providers: NextAuthConfig["providers"] = [
       const user = await prisma.user.findUnique({
         where: { email },
       });
-      if (!user?.passwordHash || !user.isActive) {
+      if (!user?.passwordHash) {
         return null;
+      }
+      const loginAccess = await ensureMentorCanSignIn({
+        id: user.id,
+        role: user.role,
+        isActive: user.isActive,
+        mentorProfileStatus: user.mentorProfileStatus,
+      });
+      if (!loginAccess.isActive) {
+        throw new AccountDisabledCredentials();
       }
       const isValid = await compare(parsed.data.password, user.passwordHash);
       if (!isValid) {
@@ -145,11 +172,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return true;
       }
       const email = rawEmail.toLowerCase();
-      let row: { role: UserRole; isActive: boolean } | null = null;
+      let row: {
+        role: UserRole;
+        isActive: boolean;
+        mentorProfileStatus: MentorProfileStatus;
+        id: string;
+      } | null = null;
       try {
         row = await prisma.user.findUnique({
           where: { email },
-          select: { role: true, isActive: true },
+          select: {
+            id: true,
+            role: true,
+            isActive: true,
+            mentorProfileStatus: true,
+          },
         });
       } catch (error) {
         warnAuthDbFailure("signIn lookup", error);
@@ -160,8 +197,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!row) {
         return true;
       }
-      if (!row.isActive) {
-        return "/student/login?authError=account_disabled";
+      const loginAccess = await ensureMentorCanSignIn(row);
+      if (!loginAccess.isActive) {
+        cookieStore.delete("oauth_intent");
+        return loginPathForAccountDisabled(intent, row.role);
       }
       if (row.role !== expectedRole) {
         cookieStore.delete("oauth_intent");
@@ -191,8 +230,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             token.sub = row.id;
             token.role = row.role;
             token.mentorProfileStatus = row.mentorProfileStatus;
+          } else if (row && row.role === UserRole.MENTOR) {
+            const loginAccess = await ensureMentorCanSignIn(row);
+            if (loginAccess.isActive) {
+              token.sub = row.id;
+              token.role = row.role;
+              token.mentorProfileStatus = row.mentorProfileStatus;
+            } else {
+              token.sub = undefined;
+              (token as { role?: UserRole }).role = undefined;
+              (token as { mentorProfileStatus?: MentorProfileStatus }).mentorProfileStatus =
+                undefined;
+            }
           } else {
             token.sub = undefined;
+            (token as { role?: UserRole }).role = undefined;
+            (token as { mentorProfileStatus?: MentorProfileStatus }).mentorProfileStatus =
+              undefined;
           }
         } catch (error) {
           warnAuthDbFailure("jwt fresh-login lookup", error);
@@ -207,13 +261,32 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         try {
           const row = await prisma.user.findUnique({
             where: { id: token.sub as string },
-            select: { role: true, mentorProfileStatus: true, isActive: true },
+            select: {
+              id: true,
+              role: true,
+              mentorProfileStatus: true,
+              isActive: true,
+            },
           });
           if (row?.isActive) {
             token.role = row.role;
             token.mentorProfileStatus = row.mentorProfileStatus;
+          } else if (row && row.role === UserRole.MENTOR) {
+            const loginAccess = await ensureMentorCanSignIn(row);
+            if (loginAccess.isActive) {
+              token.role = row.role;
+              token.mentorProfileStatus = row.mentorProfileStatus;
+            } else {
+              token.sub = undefined;
+              (token as { role?: UserRole }).role = undefined;
+              (token as { mentorProfileStatus?: MentorProfileStatus }).mentorProfileStatus =
+                undefined;
+            }
           } else {
             token.sub = undefined;
+            (token as { role?: UserRole }).role = undefined;
+            (token as { mentorProfileStatus?: MentorProfileStatus }).mentorProfileStatus =
+              undefined;
           }
         } catch (error) {
           warnAuthDbFailure("jwt session-refresh lookup", error);

@@ -161,8 +161,8 @@ export function SectionQuizLauncher({
           open || showResults
             ? "border-[var(--primary)] bg-[var(--primary-soft)] text-[var(--primary-strong)] ring-2 ring-[var(--primary)]/20"
             : attemptedThisSession
-              ? "border-[var(--success)]/60 bg-[var(--success-soft)] text-[var(--success)]"
-              : "border-[#d1d7dc] bg-white text-[var(--foreground)] hover:border-[var(--primary)]/40 hover:bg-[#fafafa]",
+              ? "border-primary/40 bg-primary/10 text-primary"
+              : "border-border bg-white text-foreground hover:border-primary/40 hover:bg-muted/40",
         )}
       >
         <ListChecks
@@ -223,14 +223,14 @@ export function SectionQuizLauncher({
                 >
                   Section quiz
                 </p>
-                <p className="text-xs text-[var(--muted)]">
+                <p className="text-xs text-muted-foreground">
                   Answer and review instantly.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-md p-1 text-[var(--muted)] hover:bg-[var(--surface-muted)]"
+                className="rounded-md p-1 text-muted-foreground hover:bg-[var(--surface-muted)]"
                 aria-label="Close quiz"
               >
                 <X className="h-4 w-4" />
@@ -250,7 +250,7 @@ export function SectionQuizLauncher({
                     className={
                       activeQuizId === q.id
                         ? "rounded-full bg-[var(--primary)] px-3 py-1.5 text-xs font-semibold text-[var(--primary-foreground)]"
-                        : "rounded-full border border-[var(--border)] px-3 py-1.5 text-xs font-semibold text-[var(--muted)]"
+                        : "rounded-full border border-[var(--border)] px-3 py-1.5 text-xs font-semibold text-muted-foreground"
                     }
                   >
                     {q.title}
@@ -261,7 +261,7 @@ export function SectionQuizLauncher({
 
             <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
               {!activeQuiz || !questions.length ? (
-                <p className="text-sm text-[var(--muted)]">
+                <p className="text-sm text-muted-foreground">
                   No questions configured for this quiz.
                 </p>
               ) : !showResults ? (
@@ -289,7 +289,7 @@ export function SectionQuizLauncher({
                     <p className="text-sm font-semibold text-[var(--foreground)]">
                       Quiz results
                     </p>
-                    <p className="text-xs text-[var(--muted)]">
+                    <p className="text-xs text-muted-foreground">
                       {!hasAnswerKey
                         ? "This quiz has no configured answer keys, so only your responses were saved."
                         : `Score: ${serverScore ?? 0}% — saved to your achievements.`}
@@ -302,15 +302,15 @@ export function SectionQuizLauncher({
                     >
                       <div className="flex items-start gap-2">
                         {r.isCorrect === true ? (
-                          <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-600" />
+                          <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />
                         ) : r.isCorrect === false ? (
                           <HelpCircle className="mt-0.5 h-4 w-4 text-amber-600" />
                         ) : (
-                          <HelpCircle className="mt-0.5 h-4 w-4 text-[var(--muted)]" />
+                          <HelpCircle className="mt-0.5 h-4 w-4 text-muted-foreground" />
                         )}
                         <div className="text-sm font-medium text-[var(--foreground)]">
                           <div className="mb-1 flex items-center gap-2">
-                            <span className="text-xs font-bold text-[var(--muted)] opacity-60">
+                            <span className="text-xs font-bold text-muted-foreground opacity-60">
                               Q{index + 1}
                             </span>
                             {r.q.type === "free_text" && r.q.badge ? (
@@ -322,12 +322,12 @@ export function SectionQuizLauncher({
                           {r.q.prompt}
                         </div>
                       </div>
-                      <p className="mt-2 text-xs text-[var(--muted)]">
+                      <p className="mt-2 text-xs text-muted-foreground">
                         <span className="font-semibold">Your answer:</span>{" "}
                         {r.userAnswer || "No answer"}
                       </p>
                       {r.q.type === "multiple_choice" ? (
-                        <p className="mt-1 text-xs text-[var(--muted)]">
+                        <p className="mt-1 text-xs text-muted-foreground">
                           <span className="font-semibold">Result:</span>{" "}
                           {r.isCorrect === true
                             ? "Correct."
@@ -336,7 +336,7 @@ export function SectionQuizLauncher({
                               : "Not graded."}
                         </p>
                       ) : (
-                        <p className="mt-1 text-xs text-[var(--muted)]">
+                        <p className="mt-1 text-xs text-muted-foreground">
                           <span className="font-semibold">
                             Expected answer:
                           </span>{" "}
@@ -353,7 +353,7 @@ export function SectionQuizLauncher({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-md border border-[var(--border)] px-3 py-1.5 text-xs font-semibold text-[var(--muted)]"
+                className="rounded-md border border-[var(--border)] px-3 py-1.5 text-xs font-semibold text-muted-foreground"
               >
                 Close
               </button>
@@ -421,7 +421,7 @@ function QuestionBlock({
       <div className="rounded-lg border border-[var(--border)] bg-[var(--background)] p-3">
         <div className="text-sm font-medium text-[var(--foreground)]">
           <div className="mb-1 flex items-center gap-2">
-            <span className="text-xs font-bold text-[var(--muted)] opacity-60">
+            <span className="text-xs font-bold text-muted-foreground opacity-60">
               Q{index + 1}
             </span>
           </div>
@@ -453,7 +453,7 @@ function QuestionBlock({
     <div className="rounded-lg border border-[var(--border)] bg-[var(--background)] p-3">
       <div className="text-sm font-medium text-[var(--foreground)]">
         <div className="mb-1 flex items-center gap-2">
-          <span className="text-xs font-bold text-[var(--muted)] opacity-60">
+          <span className="text-xs font-bold text-muted-foreground opacity-60">
             Q{index + 1}
           </span>
           {q.badge ? (

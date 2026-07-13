@@ -12,7 +12,6 @@ const createSchema = z.object({
   courseId: z.string().min(1),
   title: z.string().min(2).max(120),
   description: z.string().min(2).max(4000),
-  dueAt: z.string().optional(),
   publish: z.boolean().optional(),
   instructionsFileUrl: z.string().max(2000).optional(),
   instructionsLinkUrl: z.string().max(2000).optional(),
@@ -60,11 +59,6 @@ export async function createAssignmentAction(
   });
   if (!course) return { ok: false, message: "Course not found." };
 
-  const dueDate = parsed.data.dueAt ? new Date(parsed.data.dueAt) : null;
-  if (dueDate && Number.isNaN(dueDate.getTime())) {
-    return { ok: false, message: "Invalid due date." };
-  }
-
   const status = parsed.data.publish
     ? AssignmentStatus.SENT
     : AssignmentStatus.DRAFT;
@@ -78,7 +72,7 @@ export async function createAssignmentAction(
       instructionsFileUrl: fileUrl ?? null,
       instructionsLinkUrl: linkUrl ?? null,
       instructionsLinkLabel: linkUrl ? (linkLabel ?? "Open link") : null,
-      dueDate,
+      dueDate: null,
       status,
     },
     select: { id: true },

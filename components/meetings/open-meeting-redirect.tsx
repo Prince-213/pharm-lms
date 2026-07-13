@@ -30,7 +30,7 @@ export function OpenMeetingRedirect({
     return (
       <div className="mx-auto max-w-md space-y-4 px-4 py-16 text-center">
         <p className="font-semibold text-[var(--foreground)]">Popup blocked</p>
-        <p className="text-sm text-[var(--muted)]">
+        <p className="text-sm text-muted-foreground">
           Allow popups for this site, or open the meeting manually below.
         </p>
         <a
@@ -59,7 +59,7 @@ export function OpenMeetingRedirect({
       <p className="font-semibold text-[var(--foreground)]">
         Opening your meeting…
       </p>
-      <p className="text-sm text-[var(--muted)]">
+      <p className="text-sm text-muted-foreground">
         It should open in a new tab; this page will return to your dashboard.
       </p>
     </div>

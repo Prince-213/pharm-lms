@@ -127,6 +127,7 @@ model User {
   sessions                 Session[]
   auditEntries             AuditLog[]
   notifications            Notification[]
+  notificationSubscriptions NotificationSubscription[]
   courseReviews            CourseReview[]
   studentLessonNotes       StudentLessonNote[]
   coursePurchasesAsStudent CoursePurchase[]        @relation("CoursePurchaseStudent")
@@ -507,6 +508,20 @@ model Notification {
   @@index([assignmentId])
 }
 
+model NotificationSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, endpoint])
+  @@index([userId])
+}
+
 model CourseReview {
   id        String   @id @default(cuid())
   courseId  String
@@ -562,11 +577,12 @@ model ChatThread {
 }
 
 model ChatThreadParticipant {
-  id       String     @id @default(cuid())
-  threadId String
-  userId   String
-  thread   ChatThread @relation(fields: [threadId], references: [id])
-  user     User       @relation(fields: [userId], references: [id])
+  id         String     @id @default(cuid())
+  threadId   String
+  userId     String
+  lastReadAt DateTime?
+  thread     ChatThread @relation(fields: [threadId], references: [id])
+  user       User       @relation(fields: [userId], references: [id])
 
   @@unique([threadId, userId])
 }

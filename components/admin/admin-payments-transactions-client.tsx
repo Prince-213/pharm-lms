@@ -170,7 +170,7 @@ export function AdminPaymentsTransactionsClient() {
               <TableRow>
                 <TableCell
                   colSpan={9}
-                  className="text-center text-[var(--muted)]"
+                  className="text-center text-muted-foreground"
                 >
                   No transactions match these filters.
                 </TableCell>

@@ -96,7 +96,7 @@ export function NewBadgeDialog() {
                 type="button"
                 aria-label="Close"
                 onClick={() => setOpen(false)}
-                className="text-[var(--muted)] hover:text-[var(--foreground)]"
+                className="text-muted-foreground hover:text-[var(--foreground)]"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -133,7 +133,7 @@ export function NewBadgeDialog() {
                 />
               </label>
 
-              <p className="rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-xs text-[var(--muted)]">
+              <p className="rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-xs text-muted-foreground">
                 {ruleOption.description}
               </p>
 
@@ -181,7 +181,7 @@ export function NewBadgeDialog() {
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="rounded-md px-3 py-2 text-sm font-semibold text-[var(--muted)] hover:text-[var(--foreground)]"
+                  className="rounded-md px-3 py-2 text-sm font-semibold text-muted-foreground hover:text-[var(--foreground)]"
                 >
                   Cancel
                 </button>

@@ -183,7 +183,7 @@ export default async function PerformanceOverviewPage() {
             <MentorEnrollmentChart data={mentorEnrollmentData} />
           ) : (
             <div className="flex min-h-[300px] items-center justify-center">
-              <p className="text-sm text-[var(--muted)]">
+              <p className="text-sm text-muted-foreground">
                 No enrollment data for the last 6 months.
               </p>
             </div>
@@ -198,7 +198,7 @@ export default async function PerformanceOverviewPage() {
         >
           <div className="space-y-4">
             <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
-              <p className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
+              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Course revenue (6 mo.)
               </p>
               <p className="mt-1 text-2xl font-bold text-[var(--foreground)]">
@@ -207,7 +207,7 @@ export default async function PerformanceOverviewPage() {
                   "NGN",
                 )}
               </p>
-              <p className="mt-1 text-xs text-[var(--muted)]">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Net to you after fees · {(purchaseCount as number).toLocaleString()}{" "}
                 lifetime sales
               </p>

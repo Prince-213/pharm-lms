@@ -57,7 +57,7 @@ export function AdminBroadcastForm() {
           <h2 className="text-base font-bold text-[var(--foreground)]">
             Broadcast notification
           </h2>
-          <p className="mt-1 text-xs leading-relaxed text-[var(--muted)]">
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
             Delivers an in-app notification (bell icon) to each person in the
             audience. Admin accounts are not targeted. Use for outages, policy
             updates, or platform-wide reminders.
@@ -69,7 +69,7 @@ export function AdminBroadcastForm() {
         <div>
           <label
             htmlFor="broadcast-audience"
-            className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]"
+            className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground"
           >
             Audience
           </label>
@@ -89,7 +89,7 @@ export function AdminBroadcastForm() {
         <div>
           <label
             htmlFor="broadcast-title"
-            className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]"
+            className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground"
           >
             Title
           </label>
@@ -99,13 +99,13 @@ export function AdminBroadcastForm() {
             required
             maxLength={180}
             placeholder="e.g. Scheduled maintenance tonight"
-            className="h-11 w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 text-sm text-[var(--foreground)] placeholder:text-[var(--muted)]"
+            className="h-11 w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 text-sm text-[var(--foreground)] placeholder:text-muted-foreground"
           />
         </div>
         <div>
           <label
             htmlFor="broadcast-body"
-            className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]"
+            className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground"
           >
             Message
           </label>
@@ -116,13 +116,13 @@ export function AdminBroadcastForm() {
             rows={5}
             maxLength={2000}
             placeholder="Short details students and staff should know."
-            className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm leading-relaxed text-[var(--foreground)] placeholder:text-[var(--muted)]"
+            className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm leading-relaxed text-[var(--foreground)] placeholder:text-muted-foreground"
           />
         </div>
         <div>
           <label
             htmlFor="broadcast-href"
-            className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]"
+            className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground"
           >
             Link (optional)
           </label>
@@ -131,7 +131,7 @@ export function AdminBroadcastForm() {
             name="href"
             maxLength={500}
             placeholder="/student/browse or https://…"
-            className="h-11 w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 text-sm text-[var(--foreground)] placeholder:text-[var(--muted)]"
+            className="h-11 w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 text-sm text-[var(--foreground)] placeholder:text-muted-foreground"
           />
         </div>
         {error ? (

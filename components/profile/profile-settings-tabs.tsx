@@ -38,7 +38,7 @@ export function ProfileSettingsTabs({
                 "rounded-lg px-4 py-2 text-xs font-semibold uppercase tracking-wide transition-colors sm:text-sm sm:normal-case sm:tracking-tight",
                 selected
                   ? "bg-[var(--surface)] text-[var(--foreground)] shadow-[var(--shadow-sm)]"
-                  : "text-[var(--muted)] hover:text-[var(--foreground)]",
+                  : "text-muted-foreground hover:text-[var(--foreground)]",
               )}
             >
               {t.label}

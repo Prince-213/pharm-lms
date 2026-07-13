@@ -29,7 +29,7 @@ export function MentorCoachingSection({
           <h2 className="font-display text-lg font-bold text-[var(--ink-deep)]">
             Coaching with {firstName}
           </h2>
-          <p className="mt-1 text-xs text-[var(--muted)]">
+          <p className="mt-1 text-xs text-muted-foreground">
             One-on-one sessions — no course enrollment required.
           </p>
         </div>
@@ -52,7 +52,7 @@ export function MentorCoachingSection({
         ))}
       </ul>
 
-      <p className="mt-4 flex items-center gap-2 text-xs text-[var(--muted)]">
+      <p className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
         <Users className="h-3.5 w-3.5 shrink-0" />
         Book a slot from the sidebar when you are ready to meet.
       </p>

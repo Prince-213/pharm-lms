@@ -1,42 +1,57 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { MagnifyingGlassIcon } from "@phosphor-icons/react";
-import { VerifyCertificateModal, type VerifyResult } from "@/components/landing/verify-certificate-modal";
+import {
+  VerifyCertificateModal,
+  type VerifyResult,
+} from "@/components/landing/verify-certificate-modal";
+import { verifyCertificate } from "@/lib/certificates/verify-certificate";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+function formatIssueDate(iso: string) {
+  return new Intl.DateTimeFormat("en-GB", {
+    month: "long",
+    year: "numeric",
+  }).format(new Date(iso));
+}
 
 export function ValidateHeroSection() {
   const [certId, setCertId] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [verifyStatus, setVerifyStatus] = useState<"loading" | "done">("loading");
   const [result, setResult] = useState<VerifyResult>({ status: null });
+  const [pending, startTransition] = useTransition();
 
   const handleVerify = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!certId.trim()) return;
+    const id = certId.trim();
+    if (!id || pending) return;
 
     setModalOpen(true);
     setVerifyStatus("loading");
     setResult({ status: null });
 
-    // Simulate API verification
-    setTimeout(() => {
-      const isValid = certId.trim().length >= 6;
-      if (isValid) {
+    startTransition(async () => {
+      const certificate = await verifyCertificate(id);
+      if (certificate) {
         setResult({
           status: "valid",
-          certificateId: certId.trim().toUpperCase(),
-          courseName: "Advanced Clinical Pharmacy",
-          recipientName: "Prince E. Izuogu",
-          issuedDate: "June 2026",
+          certificateId: certificate.certificateNumber,
+          courseName: certificate.courseTitle,
+          recipientName: certificate.holderName,
+          issuedDate: formatIssueDate(certificate.issuedAt),
         });
       } else {
         setResult({
           status: "invalid",
-          message: "The certificate ID is too short. Please enter a valid certificate ID.",
+          message:
+            "The certificate ID you entered could not be found in our system. Please check and try again.",
         });
       }
       setVerifyStatus("done");
-    }, 2000);
+    });
   };
 
   return (
@@ -73,21 +88,25 @@ export function ValidateHeroSection() {
         </h1>
         <form onSubmit={handleVerify} className="w-[90%] sm:w-[80%] mx-auto">
           <div className="w-full h-fit flex items-center gap-3 sm:gap-5 justify-between">
-            <div className="w-full gap-3 sm:gap-5 flex items-center overflow-hidden rounded-[18px] border border-[var(--border)] h-14 sm:h-20 bg-white">
-              <input
+            <div className="w-full gap-3 sm:gap-5 flex items-center overflow-hidden rounded-[18px] border border-border h-14 sm:h-20 bg-white px-4 sm:px-6">
+              <Input
                 type="text"
                 value={certId}
                 onChange={(e) => setCertId(e.target.value)}
-                className="outline-none border-none w-full px-4 sm:px-6 text-sm"
+                className="h-full border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
                 placeholder="Enter Certificate ID..."
+                autoComplete="off"
+                disabled={pending}
               />
             </div>
-            <button
+            <Button
               type="submit"
-              className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-[var(--emerald)] flex items-center justify-center shrink-0"
+              size="icon-lg"
+              disabled={pending || !certId.trim()}
+              className="size-14 sm:size-20 shrink-0 rounded-2xl"
             >
-              <MagnifyingGlassIcon className="text-white w-5 h-5 sm:w-7 sm:h-7" />
-            </button>
+              <MagnifyingGlassIcon className="text-primary-foreground w-5 h-5 sm:w-7 sm:h-7" />
+            </Button>
           </div>
         </form>
       </div>

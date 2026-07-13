@@ -45,7 +45,7 @@ export default async function StudentMeetingsPage() {
         <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
           Meetings
         </h1>
-        <p className="max-w-2xl text-sm leading-relaxed text-[var(--muted)]">
+        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
           Track requests, scheduled times, and join live sessions. To book a
           course instructor go to{" "}
           <Link
@@ -68,7 +68,7 @@ export default async function StudentMeetingsPage() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Card className="border-[var(--border)] shadow-[var(--shadow-sm)]">
           <CardContent className="px-4 py-3 text-center">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
               Pending
             </p>
             <p className="mt-1 text-xl font-semibold tabular-nums text-[var(--foreground)]">
@@ -78,7 +78,7 @@ export default async function StudentMeetingsPage() {
         </Card>
         <Card className="border-[var(--border)] shadow-[var(--shadow-sm)]">
           <CardContent className="px-4 py-3 text-center">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
               Upcoming
             </p>
             <p className="mt-1 text-xl font-semibold tabular-nums text-[var(--foreground)]">
@@ -88,7 +88,7 @@ export default async function StudentMeetingsPage() {
         </Card>
         <Card className="border-[var(--border)] shadow-[var(--shadow-sm)]">
           <CardContent className="px-4 py-3 text-center">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
               Active
             </p>
             <p className="mt-1 text-xl font-semibold tabular-nums text-[var(--foreground)]">
@@ -98,7 +98,7 @@ export default async function StudentMeetingsPage() {
         </Card>
         <Card className="border-[var(--border)] shadow-[var(--shadow-sm)]">
           <CardContent className="px-4 py-3 text-center">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
               Joined
             </p>
             <p className="mt-1 text-xl font-semibold tabular-nums text-[var(--foreground)]">
@@ -111,7 +111,7 @@ export default async function StudentMeetingsPage() {
       {calendarEvents.length > 0 ? (
         <MeetingsCrmClient events={calendarEvents} role="student" />
       ) : (
-        <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface)] px-6 py-12 text-center text-sm text-[var(--muted)]">
+        <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface)] px-6 py-12 text-center text-sm text-muted-foreground">
           <p>
             No meeting activity yet. When you book from Tutors or Mentors,
             requests and scheduled sessions appear on the calendar.

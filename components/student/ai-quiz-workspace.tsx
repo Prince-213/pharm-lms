@@ -28,11 +28,13 @@ export function AiQuizWorkspace({
   courseId,
   courseTitle,
   completedSectionsCount,
+  hasCourseContent = true,
   embedded = false,
 }: {
   courseId: string;
   courseTitle: string;
   completedSectionsCount: number;
+  hasCourseContent?: boolean;
   embedded?: boolean;
 }) {
   const [attempt, setAttempt] = useState<AttemptPayload | null>(null);
@@ -62,7 +64,7 @@ export function AiQuizWorkspace({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           courseId,
-          source: "completed",
+          source: "course",
           questionCount: 4,
         }),
       });
@@ -135,12 +137,12 @@ export function AiQuizWorkspace({
             AI quiz for {courseTitle}
           </h1>
         )}
-        <p className="mt-2 text-sm text-[var(--muted)]">
-          Generates questions from sections you have completed, then compares
-          your answers against the best-fit answers with explanations.
+        <p className="mt-2 text-sm text-muted-foreground">
+          Generates questions from all lesson content in this course, then
+          compares your answers with explanations.
         </p>
-        <div className="mt-4 flex flex-wrap gap-3 text-xs text-[var(--muted)]">
-          <span className="rounded-full border border-[var(--border)] px-2.5 py-1">
+        <div className="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground">
+          <span className="rounded-full border border-[#d1d7dc] bg-white px-2.5 py-1">
             Completed sections: {completedSectionsCount}
           </span>
           <span className="rounded-full border border-[var(--border)] px-2.5 py-1">
@@ -150,7 +152,7 @@ export function AiQuizWorkspace({
         <button
           type="button"
           onClick={() => void generate()}
-          disabled={generating || completedSectionsCount === 0}
+          disabled={generating || !hasCourseContent}
           className="mt-5 inline-flex h-11 items-center gap-2 rounded-[var(--radius-md)] bg-[var(--primary)] px-4 text-sm font-semibold text-[var(--primary-foreground)] disabled:opacity-50"
         >
           {generating ? (
@@ -160,9 +162,9 @@ export function AiQuizWorkspace({
           )}
           Generate personalized quiz
         </button>
-        {completedSectionsCount === 0 ? (
+        {!hasCourseContent ? (
           <p className="mt-2 text-xs text-amber-700">
-            Complete at least one lesson first.
+            This course needs lesson content before quizzes can be generated.
           </p>
         ) : null}
         {error ? <p className="mt-2 text-sm text-rose-700">{error}</p> : null}
@@ -174,7 +176,7 @@ export function AiQuizWorkspace({
             <h2 className="text-lg font-semibold text-[var(--foreground)]">
               Quiz questions
             </h2>
-            <span className="text-xs text-[var(--muted)]">
+            <span className="text-xs text-muted-foreground">
               {attempt.questions.length} questions
             </span>
           </div>
@@ -237,7 +239,7 @@ export function AiQuizWorkspace({
             <p className="mt-1 text-3xl font-bold text-[var(--foreground)]">
               {Math.round(result.score)}%
             </p>
-            <p className="text-sm text-[var(--muted)]">
+            <p className="text-sm text-muted-foreground">
               Correct: {result.reviews.filter((r) => r.isCorrect).length} /{" "}
               {result.reviews.length}
             </p>
@@ -248,7 +250,7 @@ export function AiQuizWorkspace({
               Missed vs correct answers
             </h3>
             {wrong.length === 0 ? (
-              <p className="mt-2 text-sm text-emerald-700">
+              <p className="mt-2 text-sm text-primary">
                 Excellent — all answers are correct.
               </p>
             ) : (
@@ -268,11 +270,11 @@ export function AiQuizWorkspace({
                       <span className="font-semibold">Your answer:</span>{" "}
                       {r.userAnswer || "No answer"}
                     </p>
-                    <p className="mt-1 text-xs text-emerald-900">
+                    <p className="mt-1 text-xs text-primary">
                       <span className="font-semibold">Correct:</span>{" "}
                       {r.correctAnswer}
                     </p>
-                    <p className="mt-1 text-xs text-[var(--muted)]">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       {r.explanation}
                     </p>
                   </li>
@@ -293,7 +295,7 @@ export function AiQuizWorkspace({
                 >
                   <div className="flex items-start gap-2">
                     {r.isCorrect ? (
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-600" />
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />
                     ) : (
                       <XCircle className="mt-0.5 h-4 w-4 text-rose-600" />
                     )}
@@ -301,10 +303,10 @@ export function AiQuizWorkspace({
                       {r.question}
                     </p>
                   </div>
-                  <p className="mt-2 text-xs text-[var(--muted)]">
+                  <p className="mt-2 text-xs text-muted-foreground">
                     Your answer: {r.userAnswer || "No answer"}
                   </p>
-                  <p className="text-xs text-[var(--muted)]">
+                  <p className="text-xs text-muted-foreground">
                     Correct answer: {r.correctAnswer}
                   </p>
                 </li>

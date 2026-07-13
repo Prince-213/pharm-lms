@@ -100,7 +100,7 @@ export function DeleteCourseConfirmModal({
                 typed && !matches
                   ? "border-red-300 focus:ring-red-200"
                   : typed && matches
-                    ? "border-emerald-400 focus:ring-emerald-200"
+                    ? "border-primary focus:ring-primary/20"
                     : "border-slate-300 focus:ring-slate-200"
               }`}
             />
@@ -110,7 +110,7 @@ export function DeleteCourseConfirmModal({
               </p>
             ) : null}
             {typed && matches ? (
-              <p className="mt-1 text-xs text-emerald-600">✓ Name confirmed.</p>
+              <p className="mt-1 text-xs text-primary">✓ Name confirmed.</p>
             ) : null}
           </div>
 

@@ -1,9 +1,12 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
+import {
+  revalidateMessaging,
+  revalidateTutorPortal,
+} from "@/lib/cache/revalidate-portals";
 import { db } from "@/lib/db";
 
 const sendSchema = z.object({
@@ -101,9 +104,7 @@ export async function sendChatMessageAction(
     }),
   ]);
 
-  revalidatePath("/mentor/communication/messages");
-  revalidatePath("/admin/messages");
-  revalidatePath("/student/messages");
+  revalidateMessaging();
   return { ok: true, threadId };
 }
 
@@ -167,7 +168,7 @@ export async function broadcastToCourseAction(input: {
     ]);
   }
 
-  revalidatePath("/mentor/communication/messages");
-  revalidatePath("/tutor/communication/announcements");
+  revalidateMessaging();
+  revalidateTutorPortal(course.id);
   return { ok: true, recipients: studentIds.length };
 }

@@ -57,16 +57,16 @@ export async function proxy(req: NextRequest) {
 
   const userRole = (token?.role as UserRole | undefined) ?? null;
 
-  if (!token && needsAuth && !isAuthPage) {
+  if (!token?.sub && needsAuth && !isAuthPage) {
     const loginPath = loginPathForPathname(pathname);
     return NextResponse.redirect(new URL(loginPath, req.url));
   }
 
-  if (userRole && needsAuth && !canAccessRolePath(userRole, pathname)) {
+  if (userRole && token?.sub && needsAuth && !canAccessRolePath(userRole, pathname)) {
     return NextResponse.redirect(new URL(roleHomePath(userRole), req.url));
   }
 
-  if (userRole && isAuthPage) {
+  if (userRole && token?.sub && isAuthPage) {
     const loginPath = normalizePathname(pathname);
     const userHome = roleHomePath(userRole);
     const userLoginPath = loginPathForPathname(userHome);

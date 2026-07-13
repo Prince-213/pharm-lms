@@ -4,6 +4,7 @@ import { MoreVertical, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { refreshPortalAfterMutation } from "@/lib/client/refresh-portal-data";
 import { CourseStatus } from "@/generated/prisma/enums";
 import { DeleteCourseConfirmModal } from "@/components/mentor/delete-course-confirm-modal";
 import { canTutorDeleteCourse } from "@/lib/courses/tutor-delete-course-policy";
@@ -58,7 +59,7 @@ export function CourseCardMenu({
       }
       setShowModal(false);
       toast.success("Course deleted.");
-      router.refresh();
+      refreshPortalAfterMutation(router);
     } catch {
       setError("Something went wrong. Please try again.");
       toast.error("Something went wrong. Please try again.");

@@ -17,10 +17,10 @@ import {
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { CatalogCourseContent } from "@/components/student/catalog-course-content";
+import { CatalogPaidPurchaseSection } from "@/components/student/catalog-paid-purchase-section";
 import { CatalogPreviewMedia } from "@/components/student/catalog-preview-media";
 import { CatalogPurchaseRail } from "@/components/student/catalog-purchase-rail";
 import { EnrollCourseButton } from "@/components/student/enroll-course-button";
-import { PaidPurchaseSection } from "@/components/student/paid-purchase-section";
 import { WishlistHeartButton } from "@/components/student/wishlist-heart-button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -36,17 +36,16 @@ import {
   formatResourceMetaLine,
   resourceDownloadFilename,
 } from "@/lib/section-resource-meta";
+import {
+  udemyBorderClass,
+  udemyCardShadow,
+  udemySurfaceMutedClass,
+} from "@/lib/ui/udemy-surface";
 import { cn } from "@/lib/utils";
 
 type Variant = "catalog" | "tutorPreview";
 
 export type CatalogInteraction = "student" | "readonly" | "guest";
-
-/** Udemy-like neutral chrome (works with Pharm tokens on body) */
-const udemyBorder = "border-[#d1d7dc]";
-const udemySurfaceMuted = "bg-[#f7f9fa]";
-const udemyShadow =
-  "shadow-[0_2px_4px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.12)]";
 
 function SectionHeading({
   title,
@@ -64,7 +63,7 @@ function SectionHeading({
           {title}
         </h2>
         {description ? (
-          <p className="mt-1 max-w-2xl text-sm text-[var(--muted-soft)]">
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
             {description}
           </p>
         ) : null}
@@ -171,7 +170,7 @@ export function CourseCatalogDetail({
     <div
       className={cn(
         "min-h-screen font-sans text-[var(--foreground)]",
-        udemySurfaceMuted,
+        udemySurfaceMutedClass,
         "selection:bg-[var(--primary-soft)] selection:text-[var(--primary-strong)]",
       )}
     >
@@ -201,7 +200,7 @@ export function CourseCatalogDetail({
               </>
             )}
             <span className="text-[var(--header-fg-muted)]">
-              {course.category || "Pharmacy"}
+              {course.category || "General"}
             </span>
           </nav>
 
@@ -306,7 +305,7 @@ export function CourseCatalogDetail({
               <div
                 className={cn(
                   "border bg-white",
-                  udemyBorder,
+                  udemyBorderClass,
                   "shadow-[0_2px_4px_rgba(0,0,0,0.05)]",
                 )}
               >
@@ -342,12 +341,12 @@ export function CourseCatalogDetail({
               <div
                 className={cn(
                   "border bg-white px-5 py-6 sm:px-8 sm:py-8",
-                  udemyBorder,
+                  udemyBorderClass,
                   "shadow-[0_2px_4px_rgba(0,0,0,0.05)]",
                 )}
               >
                 <div
-                  className="prose-custom max-w-none text-base leading-relaxed text-[var(--muted)] [&_a]:font-semibold [&_a]:text-[var(--primary)] [&_a]:underline [&_li]:mb-1 [&_p]:mb-4 [&_strong]:text-[var(--foreground)] [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-5"
+                  className="prose-custom max-w-none text-base leading-relaxed text-muted-foreground [&_a]:font-semibold [&_a]:text-[var(--primary)] [&_a]:underline [&_li]:mb-1 [&_p]:mb-4 [&_strong]:text-[var(--foreground)] [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-5"
                   // biome-ignore lint/security/noDangerouslySetInnerHtml: Rich text from course editor (mentor-controlled).
                   dangerouslySetInnerHTML={{ __html: course.description }}
                 />
@@ -366,14 +365,14 @@ export function CourseCatalogDetail({
               <div
                 className={cn(
                   "border bg-white",
-                  udemyBorder,
+                  udemyBorderClass,
                   "shadow-[0_2px_4px_rgba(0,0,0,0.05)]",
                 )}
               >
                 {reviews.length === 0 ? (
                   <div className="flex flex-col items-center gap-3 px-6 py-14 text-center sm:py-16">
                     <div
-                      className="flex h-14 w-14 items-center justify-center rounded-full border border-[#d1d7dc] bg-[#f7f9fa] text-[var(--muted-soft)]"
+                      className="flex h-14 w-14 items-center justify-center rounded-full border border-[#d1d7dc] bg-[#f7f9fa] text-muted-foreground"
                       aria-hidden
                     >
                       <MessageSquareQuote
@@ -384,7 +383,7 @@ export function CourseCatalogDetail({
                     <p className="text-base font-bold text-[var(--foreground)]">
                       No reviews yet
                     </p>
-                    <p className="max-w-sm text-sm leading-relaxed text-[var(--muted-soft)]">
+                    <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
                       When learners rate this course and share optional written
                       feedback, their reviews will show up here.
                     </p>
@@ -406,7 +405,7 @@ export function CourseCatalogDetail({
                               </p>
                               <time
                                 dateTime={r.createdAt.toISOString()}
-                                className="shrink-0 text-xs tabular-nums text-[var(--muted-soft)]"
+                                className="shrink-0 text-xs tabular-nums text-muted-foreground"
                               >
                                 {r.createdAt.toLocaleDateString(undefined, {
                                   year: "numeric",
@@ -417,7 +416,7 @@ export function CourseCatalogDetail({
                             </div>
                             <CatalogReviewStars rating={r.rating} />
                             {r.comment?.trim() ? (
-                              <p className="text-sm leading-relaxed text-[var(--muted)]">
+                              <p className="text-sm leading-relaxed text-muted-foreground">
                                 {r.comment.trim()}
                               </p>
                             ) : null}
@@ -448,7 +447,7 @@ export function CourseCatalogDetail({
                       key={`${res.id}-${i}`}
                       className={cn(
                         "flex items-center gap-3 border bg-white p-4",
-                        udemyBorder,
+                        udemyBorderClass,
                         "shadow-[0_2px_4px_rgba(0,0,0,0.05)] transition-shadow hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]",
                       )}
                     >
@@ -463,7 +462,7 @@ export function CourseCatalogDetail({
                         <p className="truncate text-sm font-bold text-[var(--foreground)]">
                           {res.title}
                         </p>
-                        <p className="truncate text-xs text-[var(--muted-soft)]">
+                        <p className="truncate text-xs text-muted-foreground">
                           {formatResourceMetaLine(res)}
                         </p>
                       </div>
@@ -473,7 +472,7 @@ export function CourseCatalogDetail({
                             <a
                               href={res.href}
                               download={resourceDownloadFilename(res)}
-                              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-[#d1d7dc] bg-white text-[var(--muted)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)]"
+                              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-[#d1d7dc] bg-white text-muted-foreground transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)]"
                               aria-label={`Download ${res.title}`}
                             >
                               <Download className="h-4 w-4" />
@@ -483,7 +482,7 @@ export function CourseCatalogDetail({
                               href={res.href}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-[#d1d7dc] bg-white text-[var(--muted)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)]"
+                              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-[#d1d7dc] bg-white text-muted-foreground transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)]"
                               aria-label={`Open link: ${res.title}`}
                             >
                               <ExternalLink className="h-4 w-4" />
@@ -491,7 +490,7 @@ export function CourseCatalogDetail({
                           )
                         ) : (
                           <span
-                            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-[#d1d7dc] bg-[#f7f9fa] text-[var(--muted)]/50"
+                            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-[#d1d7dc] bg-[#f7f9fa] text-muted-foreground/50"
                             title="File link could not be resolved"
                           >
                             <Download className="h-4 w-4" />
@@ -499,7 +498,7 @@ export function CourseCatalogDetail({
                         )
                       ) : (
                         <div
-                          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-[#d1d7dc] bg-[#f7f9fa] text-[var(--muted)]/40"
+                          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-[#d1d7dc] bg-[#f7f9fa] text-muted-foreground/40"
                           title="Enroll to access"
                         >
                           <Lock className="h-4 w-4" />
@@ -514,14 +513,14 @@ export function CourseCatalogDetail({
             <div
               className={cn(
                 "border bg-white px-5 py-6 sm:px-8 sm:py-8",
-                udemyBorder,
+                udemyBorderClass,
                 "shadow-[0_2px_4px_rgba(0,0,0,0.05)]",
               )}
             >
               <h2 className="text-[1.375rem] font-bold text-[var(--foreground)]">
                 Instructor
               </h2>
-              <p className="mt-1 text-sm text-[var(--muted-soft)]">
+              <p className="mt-1 text-sm text-muted-foreground">
                 Your course mentor on this program.
               </p>
               <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-start">
@@ -534,7 +533,7 @@ export function CourseCatalogDetail({
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-[var(--muted-soft)]">
+                    <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-muted-foreground">
                       {course.mentor.fullName[0]}
                     </div>
                   )}
@@ -557,7 +556,7 @@ export function CourseCatalogDetail({
                     </span>
                   </div>
                   {course.mentor.bio ? (
-                    <p className="mt-5 text-sm leading-relaxed text-[var(--muted)]">
+                    <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
                       {course.mentor.bio}
                     </p>
                   ) : null}
@@ -571,8 +570,8 @@ export function CourseCatalogDetail({
               <Card
                 className={cn(
                   "overflow-hidden rounded-sm bg-white",
-                  udemyBorder,
-                  udemyShadow,
+                  udemyBorderClass,
+                  udemyCardShadow,
                 )}
               >
                 <CatalogPreviewMedia
@@ -607,14 +606,14 @@ export function CourseCatalogDetail({
                         </Link>
                       ) : enrollment && !canAct ? (
                         <div
-                          className="flex h-12 w-full cursor-not-allowed items-center justify-center rounded-sm bg-[var(--surface-muted)] text-center text-sm font-bold text-[var(--muted)]"
+                          className="flex h-12 w-full cursor-not-allowed items-center justify-center rounded-sm bg-[var(--surface-muted)] text-center text-sm font-bold text-muted-foreground"
                           title="Preview mode"
                         >
                           Continue learning (preview)
                         </div>
                       ) : canAct && isStudent ? (
                         (course.priceMinorUnits ?? 0) > 0 ? (
-                          <PaidPurchaseSection
+                          <CatalogPaidPurchaseSection
                             courseId={courseId}
                             basePriceMinorUnits={course.priceMinorUnits ?? 0}
                             priceCurrency={course.priceCurrency}
@@ -674,7 +673,7 @@ export function CourseCatalogDetail({
                           </Link>
                         </div>
                       ) : (
-                        <div className="rounded-sm border border-[#d1d7dc] bg-[#f7f9fa] p-4 text-center text-sm font-semibold text-[var(--muted)]">
+                        <div className="rounded-sm border border-[#d1d7dc] bg-[#f7f9fa] p-4 text-center text-sm font-semibold text-muted-foreground">
                           Preview mode — enroll and wishlist are disabled.
                         </div>
                       )}
@@ -686,14 +685,14 @@ export function CourseCatalogDetail({
                           Browse more courses
                         </Link>
                       ) : (
-                        <span className="flex h-11 w-full cursor-not-allowed items-center justify-center rounded-sm border-2 border-[#d1d7dc] bg-[#f7f9fa] text-sm font-bold text-[var(--muted)]">
+                        <span className="flex h-11 w-full cursor-not-allowed items-center justify-center rounded-sm border-2 border-[#d1d7dc] bg-[#f7f9fa] text-sm font-bold text-muted-foreground">
                           Browse more courses
                         </span>
                       )}
                     </>
                   ) : (
                     <>
-                      <div className="rounded-sm border border-[#d1d7dc] bg-[#f7f9fa] p-4 text-sm text-[var(--muted)]">
+                      <div className="rounded-sm border border-[#d1d7dc] bg-[#f7f9fa] p-4 text-sm text-muted-foreground">
                         <p className="font-bold text-[var(--foreground)]">
                           Student preview
                         </p>
@@ -715,7 +714,7 @@ export function CourseCatalogDetail({
                     <p className="text-sm font-bold text-[var(--foreground)]">
                       This course includes:
                     </p>
-                    <ul className="mt-4 grid gap-x-6 gap-y-3 text-sm text-[var(--muted)] sm:grid-cols-2">
+                    <ul className="mt-4 grid gap-x-6 gap-y-3 text-sm text-muted-foreground sm:grid-cols-2">
                       <li className="flex gap-2">
                         <Play
                           className="mt-0.5 h-4 w-4 shrink-0 text-[var(--foreground)]"

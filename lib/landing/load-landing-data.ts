@@ -1,4 +1,4 @@
-import type { PopularCourseCardView } from "@/components/landing/popular-courses-carousel";
+import type { PopularCourseCardView } from "@/components/landing/popular-course-card";
 import {
   BlogPostStatus,
   CourseStatus,

@@ -1,6 +1,5 @@
 "use client";
 
-import confetti from "canvas-confetti";
 import { Award, CheckCircle2, PartyPopper, Trophy, X } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
@@ -38,11 +37,13 @@ export function CourseCompletionCta({
       const res = await completeCourseAction(courseId);
       if (res.ok) {
         setShowCelebration(true);
-        confetti({
-          particleCount: 120,
-          spread: 68,
-          origin: { y: 0.58 },
-          colors: ["#10b981", "#3b82f6", "#0d9488"],
+        void import("canvas-confetti").then(({ default: confetti }) => {
+          confetti({
+            particleCount: 120,
+            spread: 68,
+            origin: { y: 0.58 },
+            colors: ["#1e40af", "#3b82f6", "#3b82f6"],
+          });
         });
       }
     });
@@ -68,7 +69,7 @@ export function CourseCompletionCta({
             <button
               type="button"
               onClick={() => setShowCelebration(false)}
-              className="absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] transition hover:bg-[#fafafa] hover:text-[var(--foreground)] sm:right-4 sm:top-4"
+              className="absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-muted-foreground transition hover:bg-[#fafafa] hover:text-[var(--foreground)] sm:right-4 sm:top-4"
               aria-label="Close celebration"
             >
               <X className="h-5 w-5" strokeWidth={2} />
@@ -81,7 +82,7 @@ export function CourseCompletionCta({
               >
                 {congratulatoryTitle || "Course complete"}
               </h2>
-              <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-[var(--muted)] sm:mt-3 sm:text-base">
+              <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground sm:mt-3 sm:text-base">
                 You have finished all required lessons. Your progress is saved
                 and your completion is on record.
               </p>
@@ -110,9 +111,9 @@ export function CourseCompletionCta({
                     />
                   </div>
                 ) : (
-                  <div className="rounded-xl border border-[var(--border)] bg-[var(--success-soft)]/60 px-6 py-8 text-center">
+                  <div className="rounded-xl border border-border bg-primary/10 px-6 py-8 text-center">
                     <PartyPopper
-                      className="mx-auto h-10 w-10 text-[var(--success)]"
+                      className="mx-auto h-10 w-10 text-primary"
                       aria-hidden
                     />
                     <p className="mt-3 text-sm font-semibold text-[var(--foreground)]">
@@ -135,11 +136,13 @@ export function CourseCompletionCta({
                 <button
                   type="button"
                   onClick={() => {
-                    confetti({
-                      particleCount: 64,
-                      spread: 56,
-                      origin: { y: 0.52 },
-                      colors: ["#10b981", "#3b82f6"],
+                    void import("canvas-confetti").then(({ default: confetti }) => {
+                      confetti({
+                        particleCount: 64,
+                        spread: 56,
+                        origin: { y: 0.52 },
+                        colors: ["#1e40af", "#3b82f6"],
+                      });
                     });
                   }}
                   className="inline-flex h-11 items-center gap-2 rounded-[var(--radius-md)] bg-[var(--primary)] px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--primary-strong)]"
@@ -154,9 +157,9 @@ export function CourseCompletionCta({
       )}
 
       {alreadyCompleted ? (
-        <div className="rounded-xl border border-[var(--success)]/25 bg-[var(--success-soft)]/50 px-4 py-4 sm:px-5">
+        <div className="rounded-xl border border-primary/25 bg-primary/10 px-4 py-4 sm:px-5">
           <p className="flex flex-wrap items-center justify-center gap-2 text-center text-sm font-semibold text-[var(--foreground)]">
-            <Trophy className="h-4 w-4 shrink-0 text-[var(--success)]" />
+            <Trophy className="h-4 w-4 shrink-0 text-primary" />
             <span>Course completed</span>
             <button
               type="button"
@@ -179,7 +182,7 @@ export function CourseCompletionCta({
           ) : null}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-[var(--primary)]/20 bg-linear-to-r from-[var(--primary)] to-[#0d9488] p-[1px] shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-[var(--primary)]/20 bg-linear-to-r from-[var(--primary)] to-[#3b82f6] p-[1px] shadow-sm">
           <div className="relative flex flex-col items-stretch justify-between gap-5 rounded-[calc(var(--radius-xl)-1px)] bg-[var(--surface)] p-5 sm:flex-row sm:items-center sm:gap-6 sm:p-6">
             <div className="flex items-start gap-4 text-left sm:items-center">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--primary-soft)] text-[var(--primary-strong)] ring-1 ring-[var(--primary)]/15">
@@ -189,7 +192,7 @@ export function CourseCompletionCta({
                 <h3 className="text-base font-bold text-[var(--foreground)] sm:text-lg">
                   Ready to finish?
                 </h3>
-                <p className="mt-1 text-sm leading-relaxed text-[var(--muted)]">
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                   You have reached the end of the curriculum. Mark the course
                   complete to lock in your achievement.
                 </p>

@@ -1,8 +1,34 @@
 "use client";
 
-import { Upload, X, FileVideo, FileText, Image as ImageIcon, AlertCircle, RefreshCw, Trash2 } from "lucide-react";
-import { useCallback, useState, useRef } from "react";
+import {
+  Upload,
+  X,
+  FileVideo,
+  FileText,
+  Image as ImageIcon,
+  RefreshCw,
+  Trash2,
+  Loader2,
+} from "lucide-react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import {
+  uploadCourseFileWithProgress,
+  type CourseFileUploadProgress,
+} from "@/lib/upload/course-file-upload";
+import { formatFileSize } from "@/lib/upload/format-file-size";
+import {
+  formatFileListMeta,
+  resolveUploadedFileDisplay,
+} from "@/lib/upload/format-file-meta";
+import {
+  DOCUMENT_FILE_ACCEPT,
+  DOCUMENT_FILE_DESCRIPTION,
+  isDocumentFile,
+} from "@/lib/upload/document-file-types";
+import { udemyBorderClass } from "@/lib/ui/udemy-surface";
 import { cn } from "@/lib/utils";
 
 type UploadPurpose =
@@ -10,6 +36,7 @@ type UploadPurpose =
   | "promo-video"
   | "lesson-video"
   | "resource-file"
+  | "curriculum-resource"
   | "congrats-video";
 
 type FilePreview = {
@@ -32,12 +59,28 @@ type FileUploaderProps = {
   currentUrl?: string | null;
   /** Friendly label when file is already uploaded (e.g. original filename). */
   fileName?: string | null;
+  fileSizeBytes?: number | null;
+  mimeType?: string | null;
   label?: string;
   description?: string;
   showPreview?: boolean;
   compact?: boolean;
   onRemove?: () => void;
+  onUploadingChange?: (uploading: boolean) => void;
 };
+
+function progressStatusLabel(update: CourseFileUploadProgress): string {
+  if (update.phase === "processing") {
+    return "Saving file on server…";
+  }
+  if (update.phase === "complete") {
+    return "Upload complete";
+  }
+  if (update.total > 0) {
+    return `${formatFileSize(update.loaded)} of ${formatFileSize(update.total)}`;
+  }
+  return "Starting upload…";
+}
 
 export function FileUploader({
   purpose,
@@ -52,14 +95,43 @@ export function FileUploader({
   showPreview = true,
   compact = false,
   fileName,
+  fileSizeBytes,
+  mimeType,
   onRemove,
+  onUploadingChange,
 }: FileUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isReplacing, setIsReplacing] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadProgress, setUploadProgress] =
+    useState<CourseFileUploadProgress | null>(null);
   const [filePreview, setFilePreview] = useState<FilePreview | null>(null);
+  const [storedSizeBytes, setStoredSizeBytes] = useState<number | null>(
+    fileSizeBytes ?? null,
+  );
+  const [storedFileName, setStoredFileName] = useState<string | null>(
+    fileName?.trim() || null,
+  );
+  const [storedMimeType, setStoredMimeType] = useState<string | null>(
+    mimeType?.trim() || null,
+  );
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setStoredSizeBytes(fileSizeBytes ?? null);
+  }, [fileSizeBytes]);
+
+  useEffect(() => {
+    setStoredFileName(fileName?.trim() || null);
+  }, [fileName]);
+
+  useEffect(() => {
+    setStoredMimeType(mimeType?.trim() || null);
+  }, [mimeType]);
+
+  useEffect(() => {
+    onUploadingChange?.(isUploading);
+  }, [isUploading, onUploadingChange]);
 
   const getAcceptString = () => {
     if (accept) return accept;
@@ -72,6 +144,8 @@ export function FileUploader({
         return "video/*";
       case "resource-file":
         return ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt,image/*";
+      case "curriculum-resource":
+        return DOCUMENT_FILE_ACCEPT;
       default:
         return "*/*";
     }
@@ -88,6 +162,8 @@ export function FileUploader({
         return "Lesson video";
       case "resource-file":
         return "Resource file";
+      case "curriculum-resource":
+        return "Document file";
       case "congrats-video":
         return "Congratulatory video";
       default:
@@ -106,6 +182,8 @@ export function FileUploader({
         return "Upload your lecture video file.";
       case "resource-file":
         return "PDF, DOC, PPT, images, or other study materials.";
+      case "curriculum-resource":
+        return DOCUMENT_FILE_DESCRIPTION;
       case "congrats-video":
         return "Video shown when students complete the course.";
       default:
@@ -113,24 +191,28 @@ export function FileUploader({
     }
   };
 
-  const getFileIcon = () => {
+  const getFileIcon = (className = "h-4 w-4") => {
     switch (purpose) {
       case "thumbnail":
-        return <ImageIcon className="h-8 w-8 text-blue-500" />;
+        return <ImageIcon className={cn(className, "text-blue-500")} />;
       case "promo-video":
       case "lesson-video":
       case "congrats-video":
-        return <FileVideo className="h-8 w-8 text-purple-500" />;
+        return <FileVideo className={cn(className, "text-purple-500")} />;
       case "resource-file":
-        return <FileText className="h-8 w-8 text-emerald-500" />;
+      case "curriculum-resource":
+        return <FileText className={cn(className, "text-primary")} />;
       default:
-        return <Upload className="h-8 w-8 text-gray-400" />;
+        return <Upload className={cn(className, "text-muted-foreground")} />;
     }
   };
 
   const validateFile = (file: File): string | null => {
     if (file.size > maxSizeMb * 1024 * 1024) {
       return `File is too large. Maximum size is ${maxSizeMb}MB.`;
+    }
+    if (purpose === "curriculum-resource" && !isDocumentFile(file)) {
+      return "Please upload a document file (PDF, Word, Excel, PowerPoint, or TXT).";
     }
     const acceptStr = getAcceptString();
     if (acceptStr !== "*/*") {
@@ -145,7 +227,11 @@ export function FileUploader({
       if (isVideoType && !file.type.startsWith("video/")) {
         return "Please select a valid video file.";
       }
-      if (isPDFType && file.type !== "application/pdf" && !mimeTypes.includes(file.type)) {
+      if (
+        isPDFType &&
+        file.type !== "application/pdf" &&
+        !mimeTypes.includes(file.type)
+      ) {
         return "Please select a valid file type.";
       }
     }
@@ -161,9 +247,13 @@ export function FileUploader({
       }
 
       setIsUploading(true);
-      setUploadProgress(0);
+      setUploadProgress({
+        percent: 0,
+        loaded: 0,
+        total: file.size,
+        phase: "uploading",
+      });
 
-      // Create preview
       const preview: FilePreview = {
         name: file.name,
         size: file.size,
@@ -180,53 +270,36 @@ export function FileUploader({
         formData.set("file", file);
         formData.set("purpose", purpose);
 
-        const response = await fetch(`/api/tutor/courses/${courseId}/upload`, {
-          method: "POST",
-          body: formData,
-        });
+        const data = await uploadCourseFileWithProgress(
+          courseId,
+          formData,
+          (update) => {
+            setUploadProgress(update);
+          },
+        );
 
-        if (!response.ok) {
-          const body = (await response.json().catch(() => null)) as {
-            error?: string;
-          } | null;
-          const status = response.status;
-          const serverError = body?.error;
-          if (status === 413) {
-            throw new Error("File is too large for the server. Try a smaller file.");
-          }
-          if (status === 503) {
-            throw new Error(
-              serverError ??
-                "File storage is not configured on the server. Contact support.",
-            );
-          }
-          if (status === 502) {
-            throw new Error(serverError ?? "Storage upload failed. Try again.");
-          }
-          if (status === 403 || status === 409) {
-            throw new Error(
-              serverError ??
-                "This course cannot be edited right now. Save as draft first.",
-            );
-          }
-          throw new Error(serverError ?? "Upload failed");
-        }
-
-        const data = (await response.json()) as { url: string };
         onUploadComplete(data.url, {
           name: file.name,
           sizeBytes: file.size,
           mimeType: file.type || undefined,
         });
+        setStoredSizeBytes(file.size);
+        setStoredFileName(file.name);
+        setStoredMimeType(file.type || null);
         setIsReplacing(false);
         toast.success(`${getLabel()} uploaded successfully`);
-        setUploadProgress(100);
-        setTimeout(() => setUploadProgress(0), 1000);
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Upload failed");
+        const message =
+          err && typeof err === "object" && "message" in err
+            ? String((err as { message: string }).message)
+            : err instanceof Error
+              ? err.message
+              : "Upload failed";
+        toast.error(message);
         setFilePreview(null);
       } finally {
         setIsUploading(false);
+        setUploadProgress(null);
       }
     },
     [courseId, onUploadComplete, purpose, maxSizeMb],
@@ -274,7 +347,6 @@ export function FileUploader({
       if (file) {
         handleFileSelect(file);
       }
-      // Reset input
       e.target.value = "";
     },
     [handleFileSelect],
@@ -286,63 +358,120 @@ export function FileUploader({
     }
     setFilePreview(null);
   };
-  const displayName =
-    fileName?.trim() ||
-    (currentUrl?.startsWith("r2://")
-      ? "Uploaded file"
-      : currentUrl?.split("/").pop()?.split("?")[0]) ||
-    "Uploaded file";
+
+  const displayName = resolveUploadedFileDisplay({
+    fileName,
+    storedFileName,
+    previewName: filePreview?.name,
+    storageUrl: currentUrl,
+    mimeType: storedMimeType ?? filePreview?.type ?? mimeType,
+  });
+
+  const metaLabel = formatFileListMeta({
+    sizeBytes: storedSizeBytes ?? filePreview?.size ?? null,
+    mimeType: storedMimeType ?? filePreview?.type ?? mimeType ?? null,
+    fileName: displayName,
+  });
 
   if (currentUrl && !isReplacing && !isUploading) {
     return (
       <div className="space-y-2">
-        <label className="text-xs font-semibold text-[var(--foreground)]">
-          {getLabel()}
-        </label>
+        <label className="text-xs font-bold text-foreground">{getLabel()}</label>
         <div
           className={cn(
-            "rounded-lg border border-[var(--border)] bg-[var(--surface)]",
-            compact ? "p-3" : "p-4 shadow-sm",
+            "overflow-hidden border bg-white",
+            udemyBorderClass,
+            compact ? "shadow-none" : "shadow-[0_2px_4px_rgba(0,0,0,0.05)]",
           )}
         >
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5 hover:bg-[#f7f9fa]">
             <div className="flex min-w-0 items-center gap-3">
-              <div
-                className={cn(
-                  "shrink-0 rounded-lg bg-[var(--surface-muted)]",
-                  compact ? "p-1.5" : "p-2",
-                )}
-              >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-[#d1d7dc] bg-[#f7f9fa]">
                 {getFileIcon()}
-              </div>
+              </span>
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium text-[var(--foreground)]">
                   {displayName}
                 </p>
-                <p className="text-xs text-[var(--muted)]">Ready — replace or remove anytime</p>
+                <p className="text-xs text-muted-foreground">{metaLabel}</p>
               </div>
             </div>
             <div className="flex shrink-0 flex-wrap gap-2">
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => setIsReplacing(true)}
                 disabled={disabled}
-                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[var(--border)] bg-white px-3 text-xs font-semibold text-[var(--primary)] transition hover:bg-[var(--surface-muted)] disabled:opacity-50"
+                className="h-8 border-[#d1d7dc] bg-white text-xs font-bold text-[var(--primary)] hover:bg-[#f7f9fa]"
               >
                 <RefreshCw className="h-3.5 w-3.5" aria-hidden />
                 Replace
-              </button>
+              </Button>
               {onRemove ? (
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={onRemove}
                   disabled={disabled}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:opacity-50"
+                  className="h-8 border-red-200 bg-red-50 text-xs font-bold text-red-700 hover:bg-red-100"
                 >
                   <Trash2 className="h-3.5 w-3.5" aria-hidden />
                   Remove
-                </button>
+                </Button>
               ) : null}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isUploading && filePreview) {
+    const percent = uploadProgress?.percent ?? 0;
+    const statusLabel = uploadProgress
+      ? progressStatusLabel(uploadProgress)
+      : "Starting upload…";
+
+    return (
+      <div className="space-y-2">
+        <label className="text-xs font-bold text-foreground">{getLabel()}</label>
+        <div
+          className={cn(
+            "overflow-hidden border bg-white px-4 py-4 sm:px-5",
+            udemyBorderClass,
+          )}
+        >
+          <div className="flex items-start gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-[#d1d7dc] bg-[#f7f9fa]">
+              <Loader2
+                className="h-4 w-4 animate-spin text-[var(--primary)]"
+                aria-hidden
+              />
+            </span>
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <p className="truncate text-sm font-medium text-[var(--foreground)]">
+                  {filePreview.name}
+                </p>
+                <span className="shrink-0 text-xs font-semibold tabular-nums text-[var(--primary)]">
+                  {percent}%
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {formatFileListMeta({
+                  sizeBytes: filePreview.size,
+                  mimeType: filePreview.type,
+                  fileName: filePreview.name,
+                })}
+              </p>
+              <Progress
+                value={percent}
+                disableTransition
+                className="h-2 bg-[#eceff1]"
+              />
+              <p className="text-xs text-muted-foreground">{statusLabel}</p>
             </div>
           </div>
         </div>
@@ -353,102 +482,101 @@ export function FileUploader({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="text-xs font-semibold text-[var(--foreground)]">
+        <label className="text-xs font-bold text-foreground">
           {isReplacing ? `Replace ${getLabel().toLowerCase()}` : getLabel()}
         </label>
-        {isReplacing && (
-           <button
-           type="button"
-           onClick={() => setIsReplacing(false)}
-           className="text-xs font-semibold text-[var(--muted)] hover:text-[var(--foreground)]"
-         >
-           Cancel
-         </button>
-        )}
+        {isReplacing ? (
+          <button
+            type="button"
+            onClick={() => setIsReplacing(false)}
+            className="text-xs font-semibold text-muted-foreground hover:text-[var(--foreground)]"
+          >
+            Cancel
+          </button>
+        ) : null}
       </div>
 
       <div
         className={cn(
-          "relative rounded-lg border-2 border-dashed text-center transition-colors",
-          compact ? "p-4" : "p-6",
+          "relative border-2 border-dashed text-center transition-colors",
+          udemyBorderClass,
+          "bg-[#f7f9fa]",
+          compact ? "rounded-lg p-4" : "rounded-lg p-6",
           isDragging
             ? "border-[var(--primary)] bg-[var(--primary)]/5"
-            : "border-[var(--border)] hover:border-[var(--muted)]",
-          disabled || isUploading
-            ? "cursor-not-allowed opacity-50"
-            : "cursor-pointer",
+            : "hover:border-[#6a6f73]",
+          disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
         )}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        onClick={() => !disabled && !isUploading && inputRef.current?.click()}
+        onClick={() => !disabled && inputRef.current?.click()}
       >
         <input
           ref={inputRef}
           type="file"
           accept={getAcceptString()}
           onChange={handleInputChange}
-          disabled={disabled || isUploading}
+          disabled={disabled}
           className="hidden"
         />
 
-        {isUploading ? (
-          <div className="space-y-3">
-            <div className="flex justify-center">{getFileIcon()}</div>
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-[var(--foreground)]">{filePreview?.name}</p>
-              <div className="h-2 w-full rounded-full bg-[var(--border)]">
-                <div
-                  className="h-2 rounded-full bg-[var(--primary)] transition-all duration-300"
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
-              <p className="text-xs text-[var(--muted)]">{uploadProgress}% uploaded</p>
-            </div>
+        <div className="space-y-3">
+          <div className="flex justify-center">{getFileIcon("h-8 w-8")}</div>
+          <div>
+            <p className="text-sm font-medium text-[var(--foreground)]">
+              {isReplacing
+                ? "Select new file to replace"
+                : "Click to upload or drag and drop"}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {getDescription()}
+            </p>
           </div>
-        ) : (
-          <div className="space-y-3">
-            <div className="flex justify-center">{getFileIcon()}</div>
-            <div>
-              <p className="text-sm font-medium text-[var(--foreground)]">
-                {isReplacing ? "Select new file to replace" : "Click to upload or drag and drop"}
-              </p>
-              <p className="text-xs text-[var(--muted)] mt-1">{getDescription()}</p>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
 
-      {showPreview && filePreview && !isUploading && (
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] p-3">
+      {showPreview && filePreview && !isUploading ? (
+        <div
+          className={cn(
+            "rounded-lg border bg-[#f7f9fa] p-3",
+            udemyBorderClass,
+          )}
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {getFileIcon()}
-              <div>
-                <p className="text-xs font-medium text-[var(--foreground)]">{filePreview.name}</p>
-                <p className="text-[11px] text-[var(--muted)]">
-                  {(filePreview.size / 1024 / 1024).toFixed(2)} MB
+              <div className="min-w-0">
+                <p className="truncate text-xs font-medium text-[var(--foreground)]">
+                  {filePreview.name}
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  {formatFileListMeta({
+                    sizeBytes: filePreview.size,
+                    mimeType: filePreview.type,
+                    fileName: filePreview.name,
+                  })}
                 </p>
               </div>
             </div>
             <button
               type="button"
               onClick={clearPreview}
-              className="rounded p-1 text-[var(--muted)] hover:bg-[var(--surface-muted)]"
+              className="rounded p-1 text-muted-foreground hover:bg-white"
               aria-label="Remove preview"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
-          {filePreview.url && purpose === "thumbnail" && (
+          {filePreview.url && purpose === "thumbnail" ? (
             <img
               src={filePreview.url}
               alt="Preview"
               className="mt-2 max-h-32 rounded object-cover"
             />
-          )}
+          ) : null}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

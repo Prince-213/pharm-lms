@@ -25,6 +25,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
+import { refreshPortalAfterMutation } from "@/lib/client/refresh-portal-data";
 import {
   approveCourseAction,
   deleteCourseAction,
@@ -254,7 +255,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
       } else {
         toast.success("Course published successfully!", { id: toastId });
         closePanel();
-        router.refresh();
+        refreshPortalAfterMutation(router);
       }
     });
   }
@@ -268,7 +269,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
       } else {
         toast.success("Course rejected with feedback.", { id: toastId });
         closePanel();
-        router.refresh();
+        refreshPortalAfterMutation(router);
       }
     });
   }
@@ -282,7 +283,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
       } else {
         toast.success("Course deleted permanently.", { id: toastId });
         closePanel();
-        router.refresh();
+        refreshPortalAfterMutation(router);
       }
     });
   }
@@ -324,7 +325,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                   <p className="truncate px-2.5 pb-1.5 pt-0.5 text-xs font-semibold text-[var(--foreground)]">
                     {activeCourse.title}
                   </p>
-                  <p className="border-b border-[var(--border)] px-2.5 pb-2 text-[10px] text-[var(--muted)]">
+                  <p className="border-b border-[var(--border)] px-2.5 pb-2 text-[10px] text-muted-foreground">
                     Choose an action
                   </p>
                   <div className="max-h-[min(70vh,460px)] overflow-y-auto py-1">
@@ -333,7 +334,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                       onClick={closePanel}
                       className="flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)]"
                     >
-                      <BookOpen className="h-4 w-4 shrink-0 text-[var(--muted)]" />
+                      <BookOpen className="h-4 w-4 shrink-0 text-muted-foreground" />
                       Catalog overview
                     </Link>
                     <Link
@@ -341,7 +342,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                       onClick={closePanel}
                       className="flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)]"
                     >
-                      <MessagesSquare className="h-4 w-4 shrink-0 text-[var(--muted)]" />
+                      <MessagesSquare className="h-4 w-4 shrink-0 text-muted-foreground" />
                       Curriculum & forums
                     </Link>
                     <div className="my-1 border-t border-[var(--border)]" />
@@ -387,7 +388,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                       onClick={closePanel}
                       className="flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)]"
                     >
-                      <Mail className="h-4 w-4 shrink-0 text-[var(--muted)]" />
+                      <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
                       Email tutor
                     </a>
 
@@ -396,7 +397,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                       onClick={() => copyCourseId(activeCourse.id)}
                       className="flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)]"
                     >
-                      <Copy className="h-4 w-4 shrink-0 text-[var(--muted)]" />
+                      <Copy className="h-4 w-4 shrink-0 text-muted-foreground" />
                       {copiedId === activeCourse.id
                         ? "Course ID copied"
                         : "Copy course ID"}
@@ -433,13 +434,13 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                             : p,
                         )
                       }
-                      className="rounded p-1 text-[var(--muted)] hover:bg-[var(--background)] hover:text-[var(--foreground)]"
+                      className="rounded p-1 text-muted-foreground hover:bg-[var(--background)] hover:text-[var(--foreground)]"
                       aria-label="Back"
                     >
                       <ChevronDown className="h-4 w-4 -rotate-90" />
                     </button>
                   </div>
-                  <p className="mb-2 line-clamp-2 text-[11px] text-[var(--muted)]">
+                  <p className="mb-2 line-clamp-2 text-[11px] text-muted-foreground">
                     {activeCourse.title}
                   </p>
                   <label className="block text-xs font-medium text-[var(--foreground)]">
@@ -455,7 +456,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                   <div className="mt-3 flex justify-end gap-2">
                     <button
                       type="button"
-                      className="rounded-md px-2 py-1.5 text-xs font-medium text-[var(--muted)] hover:bg-[var(--background)]"
+                      className="rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground hover:bg-[var(--background)]"
                       onClick={closePanel}
                     >
                       Cancel
@@ -495,14 +496,14 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                             : p,
                         )
                       }
-                      className="rounded p-1 text-[var(--muted)] hover:bg-[var(--background)] hover:text-[var(--foreground)]"
+                      className="rounded p-1 text-muted-foreground hover:bg-[var(--background)] hover:text-[var(--foreground)]"
                       aria-label="Back"
                     >
                       <ChevronDown className="h-4 w-4 -rotate-90" />
                     </button>
                   </div>
 
-                  <p className="text-xs text-[var(--muted)]">
+                  <p className="text-xs text-muted-foreground">
                     This permanently deletes lessons, enrollments, assignments,
                     forum threads, meetings, and review history for this course.
                   </p>
@@ -523,7 +524,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                   <div className="mt-3 flex justify-end gap-2">
                     <button
                       type="button"
-                      className="rounded-md px-2 py-1.5 text-xs font-medium text-[var(--muted)] hover:bg-[var(--background)]"
+                      className="rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground hover:bg-[var(--background)]"
                       onClick={closePanel}
                     >
                       Cancel
@@ -559,7 +560,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
 
       <div className="grid gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 sm:grid-cols-2 lg:grid-cols-4">
         <label className="relative sm:col-span-2 lg:col-span-2">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -568,7 +569,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
           />
         </label>
 
-        <label className="flex items-center gap-2 text-xs font-medium text-[var(--muted)]">
+        <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
           Sort
           <select
             value={`${sortKey}:${sortDir}`}
@@ -590,7 +591,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
           </select>
         </label>
 
-        <label className="flex items-center gap-2 text-xs font-medium text-[var(--muted)]">
+        <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
           Rows
           <select
             value={pageSize}
@@ -616,14 +617,14 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
               "rounded-full px-3 py-1.5 text-xs font-semibold transition ring-1",
               filter === f.id
                 ? "bg-[var(--primary)] text-white ring-[var(--primary)]"
-                : "bg-[var(--surface)] text-[var(--muted)] ring-[var(--border)] hover:text-[var(--foreground)]",
+                : "bg-[var(--surface)] text-muted-foreground ring-[var(--border)] hover:text-[var(--foreground)]",
             )}
           >
             {f.label}
           </button>
         ))}
 
-        <div className="ml-auto text-xs text-[var(--muted)]">
+        <div className="ml-auto text-xs text-muted-foreground">
           Showing{" "}
           <span className="font-semibold text-[var(--foreground)]">
             {filtered.length}
@@ -635,7 +636,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
       <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1120px] text-left text-sm">
-            <thead className="border-b border-[var(--border)] bg-[var(--background)] text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+            <thead className="border-b border-[var(--border)] bg-[var(--background)] text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               <tr>
                 <th className="px-4 py-3">
                   <button
@@ -700,7 +701,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                 <tr>
                   <td
                     colSpan={8}
-                    className="px-4 py-16 text-center text-[var(--muted)]"
+                    className="px-4 py-16 text-center text-muted-foreground"
                   >
                     No courses match these filters.
                   </td>
@@ -712,7 +713,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                       <p className="max-w-[260px] font-medium leading-snug">
                         {c.title}
                       </p>
-                      <p className="mt-1 text-[11px] text-[var(--muted)]">
+                      <p className="mt-1 text-[11px] text-muted-foreground">
                         ID: {c.id}
                       </p>
                       {c.status === CourseStatus.REJECTED &&
@@ -725,7 +726,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                     </td>
                     <td className="px-4 py-3">
                       <p className="font-medium">{c.mentorName}</p>
-                      <p className="text-xs text-[var(--muted)]">
+                      <p className="text-xs text-muted-foreground">
                         {c.mentorEmail}
                       </p>
                     </td>
@@ -744,7 +745,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
                         c.priceCurrency,
                       )}
                     </td>
-                    <td className="px-4 py-3 text-xs text-[var(--muted)]">
+                    <td className="px-4 py-3 text-xs text-muted-foreground">
                       {new Date(c.updatedAt).toLocaleString()}
                     </td>
                     <td className="px-4 py-3 text-right">
@@ -775,7 +776,7 @@ export function AdminCoursesTable({ courses }: { courses: AdminCourseRow[] }) {
           </table>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] bg-[var(--background)] px-4 py-3 text-xs text-[var(--muted)]">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] bg-[var(--background)] px-4 py-3 text-xs text-muted-foreground">
           <p>
             Page{" "}
             <span className="font-semibold text-[var(--foreground)]">

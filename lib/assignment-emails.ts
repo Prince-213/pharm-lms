@@ -21,7 +21,6 @@ export async function emailEnrolledStudentsNewAssignment(
     select: {
       id: true,
       title: true,
-      dueDate: true,
       status: true,
       courseId: true,
       course: { select: { title: true } },
@@ -44,9 +43,6 @@ export async function emailEnrolledStudentsNewAssignment(
 
   for (const e of enrollments) {
     const firstName = e.student.fullName.trim().split(/\s+/)[0] || "there";
-    const dueLine = assignment.dueDate
-      ? `Due: ${assignment.dueDate.toLocaleString()}.`
-      : "No due date set.";
     void sendEmail({
       to: e.student.email,
       subject: `New assignment: ${assignment.title}`,
@@ -54,7 +50,6 @@ export async function emailEnrolledStudentsNewAssignment(
         studentName: firstName,
         courseTitle: assignment.course.title,
         assignmentTitle: assignment.title,
-        dueLine,
         assignmentsUrl,
       }),
     }).catch((err) => {

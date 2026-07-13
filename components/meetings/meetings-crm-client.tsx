@@ -3,6 +3,12 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { MeetingDetailDrawer } from "@/components/meetings/meeting-detail-drawer";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import type { CalendarEvent } from "@/lib/meetings/calendar-events";
 import {
   dateKeyFromDate,
@@ -55,6 +61,8 @@ export function MeetingsCrmClient({
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selected, setSelected] = useState<CalendarEvent | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [dayList, setDayList] = useState<CalendarEvent[]>([]);
+  const [dayListOpen, setDayListOpen] = useState(false);
 
   const eventsByDay = useMemo(() => {
     const map = new Map<string, CalendarEvent[]>();
@@ -82,6 +90,11 @@ export function MeetingsCrmClient({
     setViewMonth(d.getMonth());
   }
 
+  function openDayList(events: CalendarEvent[]) {
+    setDayList(events);
+    setDayListOpen(true);
+  }
+
   function openEvent(ev: CalendarEvent) {
     setSelected(ev);
     setDrawerOpen(true);
@@ -101,7 +114,7 @@ export function MeetingsCrmClient({
             <button
               type="button"
               onClick={() => shiftMonth(-1)}
-              className="rounded-lg p-2 text-[var(--muted)] transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
+              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
               aria-label="Previous month"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -119,7 +132,7 @@ export function MeetingsCrmClient({
             <button
               type="button"
               onClick={() => shiftMonth(1)}
-              className="rounded-lg p-2 text-[var(--muted)] transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
+              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
               aria-label="Next month"
             >
               <ChevronRight className="h-4 w-4" />
@@ -131,7 +144,7 @@ export function MeetingsCrmClient({
           {WEEKDAY_LABELS.map((label) => (
             <div
               key={label}
-              className="py-2 text-center text-[10px] font-bold uppercase tracking-wide text-[var(--muted)]"
+              className="py-2 text-center text-[10px] font-bold uppercase tracking-wide text-muted-foreground"
             >
               {label}
             </div>
@@ -161,14 +174,20 @@ export function MeetingsCrmClient({
                 const muted = isEmpty && (!showAvailabilityGray || !weekdayOk);
 
                 return (
-                  <div
+                  <button
                     key={dateKey}
+                    type="button"
+                    onClick={() => {
+                      if (dayEvents.length === 1) openEvent(dayEvents[0]);
+                      else if (dayEvents.length > 1) openDayList(dayEvents);
+                    }}
                     className={cn(
-                      "flex min-h-[88px] flex-col border-r border-[var(--border)] p-1.5 last:border-r-0 sm:p-2",
+                      "flex min-h-[88px] flex-col border-r border-[var(--border)] p-1.5 text-left last:border-r-0 sm:p-2",
                       muted
                         ? "bg-[var(--surface-muted)]/50 opacity-60"
-                        : "bg-[var(--surface)]",
+                        : "bg-[var(--surface)] hover:bg-[#f7f9fa]",
                       isToday && "ring-1 ring-inset ring-[var(--primary)]/30",
+                      dayEvents.length > 0 && "cursor-pointer",
                     )}
                   >
                     <span
@@ -176,7 +195,7 @@ export function MeetingsCrmClient({
                         "mb-1 text-[11px] font-semibold tabular-nums",
                         isToday
                           ? "text-[var(--primary)]"
-                          : "text-[var(--muted)]",
+                          : "text-muted-foreground",
                       )}
                     >
                       {dayDate.getDate()}
@@ -194,7 +213,7 @@ export function MeetingsCrmClient({
                             ev.kind === "scheduled" &&
                               "bg-[var(--primary-soft)]/60 text-[var(--primary-strong)]",
                             ev.kind === "active" &&
-                              "bg-emerald-100 text-emerald-800",
+                              "bg-primary/15 text-primary",
                             ev.kind === "completed" &&
                               "bg-slate-100 text-slate-600",
                             (ev.kind === "rejected" || ev.kind === "cancelled") &&
@@ -207,14 +226,17 @@ export function MeetingsCrmClient({
                       {dayEvents.length > 3 ? (
                         <button
                           type="button"
-                          onClick={() => openEvent(dayEvents[3])}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openDayList(dayEvents);
+                          }}
                           className="text-[10px] font-medium text-[var(--primary)]"
                         >
                           +{dayEvents.length - 3} more
                         </button>
                       ) : null}
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -222,7 +244,7 @@ export function MeetingsCrmClient({
         </div>
 
         {showAvailabilityGray ? (
-          <p className="border-t border-[var(--border)] px-4 py-2 text-[11px] text-[var(--muted)]">
+          <p className="border-t border-[var(--border)] px-4 py-2 text-[11px] text-muted-foreground">
             Gray days are outside your published weekly availability.
           </p>
         ) : null}
@@ -234,6 +256,33 @@ export function MeetingsCrmClient({
         onOpenChange={setDrawerOpen}
         role={role}
       />
+
+      <Sheet open={dayListOpen} onOpenChange={setDayListOpen}>
+        <SheetContent side="bottom" className="max-h-[70vh] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Meetings this day</SheetTitle>
+          </SheetHeader>
+          <ul className="mt-4 space-y-2">
+            {dayList.map((ev) => (
+              <li key={ev.id}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDayListOpen(false);
+                    openEvent(ev);
+                  }}
+                  className="w-full rounded-lg border border-[#d1d7dc] bg-white px-3 py-2 text-left text-sm hover:bg-[#f7f9fa]"
+                >
+                  <span className="font-semibold">{ev.label}</span>
+                  <span className="mt-0.5 block text-xs text-muted-foreground">
+                    {ev.displayStatus}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }

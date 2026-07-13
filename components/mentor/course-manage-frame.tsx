@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { CourseManageSidebar } from "@/components/mentor/course-manage-sidebar";
+import { CoursePlannerFloatingNav } from "@/components/mentor/course-planner-floating-nav";
 import { InstructorCourseHeader } from "@/components/mentor/instructor-course-header";
 import {
   Sheet,
@@ -63,7 +64,7 @@ export function CourseManageFrame({
               <Link
                 href="/tutor/courses"
                 onClick={() => setNavOpen(false)}
-                className="text-xs font-medium text-[var(--muted)] transition hover:text-[var(--foreground)]"
+                className="text-xs font-medium text-muted-foreground transition hover:text-[var(--foreground)]"
               >
                 {"<"} Back to courses
               </Link>
@@ -82,10 +83,12 @@ export function CourseManageFrame({
           </SheetContent>
         </Sheet>
 
-        <main className="min-w-0 flex-1 bg-[var(--surface-muted)] p-3 sm:p-4 lg:p-6">
+        <main className="min-w-0 flex-1 bg-[#f7f9fa] p-3 pb-24 sm:p-4 sm:pb-24 lg:p-6 lg:pb-24">
           {children}
         </main>
       </div>
+
+      <CoursePlannerFloatingNav courseId={courseId} />
     </>
   );
 }

@@ -20,7 +20,7 @@ export function MentorEnrollmentChart({ data }: MentorEnrollmentChartProps) {
       background: "transparent",
       animations: { enabled: true, speed: 500 },
     },
-    colors: ["#0f5238", "#10b981"],
+    colors: ["var(--primary)", "#1e40af"],
     fill: {
       type: "gradient",
       gradient: {
@@ -33,7 +33,7 @@ export function MentorEnrollmentChart({ data }: MentorEnrollmentChartProps) {
     stroke: { curve: "smooth", width: 2 },
     grid: {
       strokeDashArray: 4,
-      borderColor: "rgba(191,201,193,0.35)",
+      borderColor: "var(--border)",
       xaxis: { lines: { show: false } },
       yaxis: { lines: { show: true } },
     },

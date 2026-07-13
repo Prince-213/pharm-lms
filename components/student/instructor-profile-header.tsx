@@ -54,11 +54,11 @@ export function InstructorProfileHeader({
                 {fullName}
               </h1>
               {headline ? (
-                <p className="mt-2 text-sm font-semibold text-[var(--muted)]">
+                <p className="mt-2 text-sm font-semibold text-muted-foreground">
                   {headline}
                 </p>
               ) : null}
-              <p className="mt-3 line-clamp-3 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">
+              <p className="mt-3 line-clamp-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
                 {bioPreview}
               </p>
 
@@ -72,7 +72,7 @@ export function InstructorProfileHeader({
                       />
                       Teaches
                     </dt>
-                    <dd className="text-[var(--muted)]">{teachesLabel}</dd>
+                    <dd className="text-muted-foreground">{teachesLabel}</dd>
                   </div>
                 ) : null}
                 {speaksLabel ? (
@@ -84,7 +84,7 @@ export function InstructorProfileHeader({
                       />
                       Focus
                     </dt>
-                    <dd className="text-[var(--muted)]">{speaksLabel}</dd>
+                    <dd className="text-muted-foreground">{speaksLabel}</dd>
                   </div>
                 ) : null}
                 <div className="flex gap-2">
@@ -95,7 +95,7 @@ export function InstructorProfileHeader({
                     />
                     Platform
                   </dt>
-                  <dd className="text-[var(--muted)]">PharmLMS · Live sessions</dd>
+                  <dd className="text-muted-foreground">PharmLMS · Live sessions</dd>
                 </div>
               </dl>
             </div>
@@ -108,7 +108,7 @@ export function InstructorProfileHeader({
               <p className="font-display text-xl font-bold tabular-nums text-[var(--ink-deep)] sm:text-2xl">
                 {s.value}
               </p>
-              <p className="mt-1 text-[10px] font-bold uppercase tracking-wide text-[var(--muted-soft)]">
+              <p className="mt-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                 {s.label}
               </p>
             </div>

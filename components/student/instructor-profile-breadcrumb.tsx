@@ -15,7 +15,7 @@ export function InstructorProfileBreadcrumb({
   return (
     <nav
       aria-label="Breadcrumb"
-      className="flex flex-wrap items-center gap-1.5 text-xs text-[var(--muted)]"
+      className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground"
     >
       <Link
         href={listHref}

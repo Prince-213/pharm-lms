@@ -31,7 +31,7 @@ type LoginFormProps = {
   appleEnabled?: boolean;
   adminCredentialHints?: { email: string; password: string };
   /** Set when OAuth sign-in was rejected because the account role does not match this portal. */
-  portalAuthError?: "wrong_portal" | null;
+  portalAuthError?: "wrong_portal" | "account_disabled" | null;
 };
 
 const PORTAL_AUTH_BASE = {
@@ -133,7 +133,19 @@ export function LoginForm({
         : portalActorTitle
           ? `This account is not registered as a ${portalActorTitle.toLowerCase()}.`
           : null
-      : null;
+      : portalAuthError === "account_disabled"
+        ? actorType === "mentor"
+          ? "This mentor account has been deactivated by an admin. Contact support if you need help."
+          : "This account is not active. Contact support if you need help."
+        : null;
+
+  useEffect(() => {
+    if (portalAuthError === "account_disabled" && wrongPortalBanner) {
+      toast.error(wrongPortalBanner);
+    } else if (portalAuthError === "wrong_portal" && wrongPortalBanner) {
+      toast.error(wrongPortalBanner);
+    }
+  }, [portalAuthError, wrongPortalBanner]);
 
   function clearFieldError(field: keyof FieldErrors) {
     setFieldErrors((prev) => {
@@ -274,6 +286,12 @@ export function LoginForm({
           setError(
             `This account is not registered as a ${portalActorTitle.toLowerCase()}.`,
           );
+        } else if (signInResult.code === "ACCOUNT_DISABLED") {
+          setError(
+            actorType === "mentor"
+              ? "This mentor account has been deactivated by an admin. Contact support if you need help."
+              : "This account is not active. Contact support if you need help.",
+          );
         } else {
           setError("Account created, but sign-in failed. Try logging in.");
         }
@@ -300,15 +318,23 @@ export function LoginForm({
 
     if (result?.error) {
       if (result.code === "WRONG_PORTAL") {
-        setError(
-          isAdmin
-            ? "This account does not have admin access."
-            : portalActorTitle
-              ? `This account is not registered as a ${portalActorTitle.toLowerCase()}.`
-              : "Invalid credentials.",
-        );
+        const msg = isAdmin
+          ? "This account does not have admin access."
+          : portalActorTitle
+            ? `This account is not registered as a ${portalActorTitle.toLowerCase()}.`
+            : "Invalid credentials.";
+        setError(msg);
+        toast.error(msg);
+      } else if (result.code === "ACCOUNT_DISABLED") {
+        const msg =
+          actorType === "mentor"
+            ? "This mentor account has been deactivated by an admin. Contact support if you need help."
+            : "This account is not active. Contact support if you need help.";
+        setError(msg);
+        toast.error(msg);
       } else {
         setError("Invalid credentials.");
+        toast.error("Invalid credentials.");
       }
       setIsPending(false);
       return;
@@ -353,12 +379,12 @@ export function LoginForm({
           <h1 className="font-display text-2xl font-bold tracking-wide text-[var(--ink-deep)]">
             {formTitle}
           </h1>
-          <p className="text-base text-[var(--muted-soft)]">{formSubtitle}</p>
+          <p className="text-base text-muted-foreground">{formSubtitle}</p>
         </div>
       </div>
 
       {!isAdmin ? (
-        <p className="text-sm text-[var(--muted-soft)]">
+        <p className="text-sm text-muted-foreground">
           {isSignup ? "Already have an account?" : "No account yet?"}{" "}
           <Link
             href={`${PORTAL_AUTH_BASE[actorType as NonAdminPortalActor]}/${isSignup ? "login" : "signup"}`}
@@ -370,12 +396,12 @@ export function LoginForm({
       ) : null}
 
       {isSignup && !isAdmin ? (
-        <div className="flex items-center gap-2 text-xs font-medium text-[var(--muted-soft)]">
+        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
           <span
             className={
               signupStep === "details"
                 ? "text-[var(--accent)]"
-                : "text-[var(--muted)]"
+                : "text-muted-foreground"
             }
           >
             1. Account details
@@ -385,7 +411,7 @@ export function LoginForm({
             className={
               signupStep === "verify"
                 ? "text-[var(--accent)]"
-                : "text-[var(--muted)]"
+                : "text-muted-foreground"
             }
           >
             2. Verify email
@@ -631,7 +657,7 @@ export function LoginForm({
       ) : null}
 
       {isSignup && !isAdmin && otpDevHint && signupStep === "verify" ? (
-        <p className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2 text-center text-[11px] leading-relaxed text-[var(--muted-soft)]">
+        <p className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2 text-center text-[11px] leading-relaxed text-muted-foreground">
           <span className="font-medium text-[var(--foreground)]">
             Development mode:
           </span>{" "}
@@ -683,7 +709,7 @@ export function LoginForm({
         </div>
       ) : null}
 
-      <p className="text-sm text-[var(--muted-soft)]">
+      <p className="text-sm text-muted-foreground">
         By clicking continue, you agree to our{" "}
         <Link
           href="/legal/terms"

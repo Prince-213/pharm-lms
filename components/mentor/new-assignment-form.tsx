@@ -17,7 +17,6 @@ export function NewAssignmentForm({
   const [courseId, setCourseId] = useState(courses[0]?.id ?? "");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [dueAt, setDueAt] = useState("");
   const [publish, setPublish] = useState(true);
   const [instructionsLinkUrl, setInstructionsLinkUrl] = useState("");
   const [instructionsLinkLabel, setInstructionsLinkLabel] = useState("");
@@ -27,7 +26,6 @@ export function NewAssignmentForm({
   function reset() {
     setTitle("");
     setDescription("");
-    setDueAt("");
     setError(null);
     setPublish(true);
     setInstructionsLinkUrl("");
@@ -81,7 +79,6 @@ export function NewAssignmentForm({
         courseId,
         title: title.trim(),
         description: description.trim(),
-        dueAt: dueAt || undefined,
         publish,
         instructionsFileUrl,
         instructionsLinkUrl: instructionsLinkUrl.trim() || undefined,
@@ -99,7 +96,7 @@ export function NewAssignmentForm({
 
   if (courses.length === 0) {
     return (
-      <p className="rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] bg-[var(--surface)] p-4 text-sm text-[var(--muted)]">
+      <p className="rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] bg-[var(--surface)] p-4 text-sm text-muted-foreground">
         Create a course first — assignments must belong to one of your courses.
       </p>
     );
@@ -115,7 +112,7 @@ export function NewAssignmentForm({
           <h3 className="text-base font-bold text-[var(--foreground)]">
             Assignment composer
           </h3>
-          <p className="mt-1 text-sm text-[var(--muted)]">
+          <p className="mt-1 text-sm text-muted-foreground">
             Pick a course (required), add instructions, and optionally attach a
             handout file or reference link. Enrolled students are emailed when
             you publish.
@@ -171,24 +168,13 @@ export function NewAssignmentForm({
           </label>
           <label className="text-sm">
             <span className="font-semibold text-[var(--foreground)]">
-              Due date (optional)
-            </span>
-            <input
-              type="datetime-local"
-              value={dueAt}
-              onChange={(e) => setDueAt(e.target.value)}
-              className={control}
-            />
-          </label>
-          <label className="text-sm">
-            <span className="font-semibold text-[var(--foreground)]">
               Handout file (optional)
             </span>
             <input
               type="file"
               accept=".pdf,.doc,.docx,.zip,.txt,.png,.jpg,.jpeg,.webp,.ppt,.pptx,.xls,.xlsx"
               onChange={(e) => setHandoutFile(e.target.files?.[0] ?? null)}
-              className="mt-1 block w-full text-xs text-[var(--muted)] file:mr-2 file:rounded file:border file:border-[var(--border)] file:bg-[var(--surface)] file:px-2 file:py-1 file:text-sm file:text-[var(--foreground)]"
+              className="mt-1 block w-full text-xs text-muted-foreground file:mr-2 file:rounded file:border file:border-[var(--border)] file:bg-[var(--surface)] file:px-2 file:py-1 file:text-sm file:text-[var(--foreground)]"
             />
           </label>
           <label className="md:col-span-2 text-sm">
@@ -248,7 +234,7 @@ export function NewAssignmentForm({
                 setOpen(false);
                 reset();
               }}
-              className="rounded px-3 py-2 text-sm font-semibold text-[var(--muted)] hover:text-[var(--foreground)]"
+              className="rounded px-3 py-2 text-sm font-semibold text-muted-foreground hover:text-[var(--foreground)]"
             >
               Cancel
             </button>

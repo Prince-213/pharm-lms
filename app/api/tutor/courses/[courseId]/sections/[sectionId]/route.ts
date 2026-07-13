@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { revalidateCourseSurfaces } from "@/lib/cache/revalidate-portals";
 import { requireMentorCourseEditable } from "@/lib/mentor-course-auth";
 
 const updateSectionBodySchema = z.object({
@@ -44,6 +45,7 @@ export async function PATCH(
     },
   });
 
+  revalidateCourseSurfaces(courseId);
   return NextResponse.json(updated);
 }
 
@@ -69,5 +71,6 @@ export async function DELETE(
     db.courseSection.delete({ where: { id: sectionId } }),
   ]);
 
+  revalidateCourseSurfaces(courseId);
   return NextResponse.json({ success: true });
 }

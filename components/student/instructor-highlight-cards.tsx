@@ -26,7 +26,7 @@ export function InstructorHighlightCards({ cards }: InstructorHighlightCardsProp
             <h3 className="mt-3 text-sm font-bold text-[var(--ink-deep)]">
               {card.title}
             </h3>
-            <p className="mt-2 text-xs leading-relaxed text-[var(--muted)]">
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
               {card.description}
             </p>
           </article>

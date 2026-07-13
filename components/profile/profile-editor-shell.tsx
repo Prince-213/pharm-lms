@@ -14,10 +14,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 const fieldClass =
-  "h-11 rounded-md border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] placeholder:text-[var(--muted)] focus-visible:border-[var(--primary)] focus-visible:ring-[var(--primary-soft)]";
+  "h-11 rounded-md border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] placeholder:text-muted-foreground focus-visible:border-[var(--primary)] focus-visible:ring-[var(--primary-soft)]";
 
 const textareaFieldClass =
-  "min-h-[120px] rounded-md border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] placeholder:text-[var(--muted)] focus-visible:border-[var(--primary)] focus-visible:ring-[var(--primary-soft)]";
+  "min-h-[120px] rounded-md border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] placeholder:text-muted-foreground focus-visible:border-[var(--primary)] focus-visible:ring-[var(--primary-soft)]";
 
 export function ProfileReadOnlySwitchRow({
   label,
@@ -33,7 +33,7 @@ export function ProfileReadOnlySwitchRow({
       <div className="min-w-0">
         <p className="text-sm font-semibold">{label}</p>
         {description ? (
-          <p className="mt-0.5 text-xs leading-relaxed text-[var(--muted)]">
+          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
             {description}
           </p>
         ) : null}
@@ -86,7 +86,7 @@ export function ProfileEditorHeader({
         {title}
       </h1>
       {description ? (
-        <p className="max-w-xl text-sm leading-relaxed text-[var(--muted)]">
+        <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
           {description}
         </p>
       ) : null}
@@ -165,7 +165,7 @@ export function ProfileTextField({
         className={cn(fieldClass, readOnly && "bg-[var(--surface-muted)]")}
       />
       {hint ? (
-        <p className="text-xs leading-relaxed text-[var(--muted)]">{hint}</p>
+        <p className="text-xs leading-relaxed text-muted-foreground">{hint}</p>
       ) : null}
     </div>
   );
@@ -205,7 +205,7 @@ export function ProfileTextareaField({
         className={textareaFieldClass}
       />
       {hint ? (
-        <p className="text-xs leading-relaxed text-[var(--muted)]">{hint}</p>
+        <p className="text-xs leading-relaxed text-muted-foreground">{hint}</p>
       ) : null}
     </div>
   );

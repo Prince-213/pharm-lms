@@ -9,7 +9,9 @@ import { CourseCompletionCta } from "@/components/student/course-completion-cta"
 import { CourseContentSidebar } from "@/components/student/course-content-sidebar";
 import { CourseLessonNavGroup } from "@/components/student/course-lesson-nav-group";
 import { CourseLessonQuickActions } from "@/components/student/course-lesson-quick-actions";
+import { CourseFloatingLessonBar } from "@/components/student/course-floating-lesson-bar";
 import { CourseNotesTab } from "@/components/student/course-notes-tab";
+import { CoursePlayerTabs } from "@/components/student/course-player-tabs";
 import { CourseReviewsTab } from "@/components/student/course-reviews-tab";
 import { CourseSessionShell } from "@/components/student/course-session-shell";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +31,7 @@ import { resolveMediaUrl } from "@/lib/media-url";
 import { roleHomePath } from "@/lib/rbac";
 import { ProgressProvider } from "@/lib/student/progress-context";
 import { studentHasPaidCourseAccess } from "@/lib/payments/student-course-access";
+import { buildCoursePlayerHref } from "@/lib/student/course-player-href";
 import { cn } from "@/lib/utils";
 
 const COURSE_PLAYER_TABS = [
@@ -205,6 +208,7 @@ export default async function StudentCourseLearningPage({
     lessonNotesRows,
     aiQuizProgressRows,
     hasFullSectionComplete,
+    passedSectionQuizRows,
   ] = await Promise.all([
     db.lessonProgress.findMany({
       where: {
@@ -275,6 +279,14 @@ export default async function StudentCourseLearningPage({
         })
       : Promise.resolve([]),
     studentHasCompletedAtLeastOneFullSection(session.user.id, courseId),
+    db.sectionQuizAttempt.findMany({
+      where: {
+        studentId: session.user.id,
+        score: { gte: 70 },
+        quiz: { section: { courseId } },
+      },
+      select: { quiz: { select: { sectionId: true } } },
+    }),
   ]);
   const progressMap: Record<string, boolean> = {};
   for (const p of progressRows) {
@@ -314,6 +326,9 @@ export default async function StudentCourseLearningPage({
   const completedSectionIdsForAi = [
     ...new Set(aiQuizProgressRows.map((p) => p.lesson.sectionId)),
   ];
+  const sectionQuizPassedIds = new Set(
+    passedSectionQuizRows.map((row) => row.quiz.sectionId),
+  );
 
   const videoSrc = selected?.videoUrl
     ? selected.videoUrl.startsWith("r2://")
@@ -322,13 +337,8 @@ export default async function StudentCourseLearningPage({
     : null;
 
   const base = `/student/course/${courseId}`;
-  const qs = (lessonId: string | null, t: string) => {
-    const p = new URLSearchParams();
-    if (lessonId) p.set("lesson", lessonId);
-    if (t !== "overview") p.set("tab", t);
-    const s = p.toString();
-    return s ? `${base}?${s}` : base;
-  };
+  const qs = (lessonId: string | null, t: string) =>
+    buildCoursePlayerHref(courseId, lessonId, t);
 
   const lessonLine = selected
     ? `${selected.title} · ${course.mentor.fullName}`
@@ -383,7 +393,7 @@ export default async function StudentCourseLearningPage({
     : null;
 
   const stage = !selected ? (
-    <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-emerald-100/75">
+    <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-primary-foreground/90/75">
       This course has no lessons yet.
     </div>
   ) : (
@@ -437,32 +447,13 @@ export default async function StudentCourseLearningPage({
           <div className="flex w-full items-end justify-between gap-3 pb-0">
             <div
               id="curriculum-tabs"
-              className="-mx-4 flex min-w-0 flex-1 flex-nowrap items-end gap-x-1 overflow-x-auto px-4 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:px-0 lg:flex-wrap lg:overflow-visible [&::-webkit-scrollbar]:hidden"
+              className="-mx-4 flex min-w-0 flex-1 flex-nowrap items-end gap-x-1 overflow-x-auto px-4 sm:mx-0 sm:px-0 lg:flex-wrap lg:overflow-visible [&::-webkit-scrollbar]:hidden"
             >
-             {/*  <CourseCurriculumSearchTrigger /> */}
-              {(
-                [
-                  ["overview", "Overview"],
-                  ["notes", "Notes"],
-                  ["announcements", "Announcements"],
-                  ["forum", "Forums"],
-                  ["ai-quiz", "AI Quiz"],
-                  ["reviews", "Reviews"],
-                ] as const
-              ).map(([id, label]) => (
-                <Link
-                  key={id}
-                  href={qs(selected.id, id)}
-                  className={cn(
-                    "relative shrink-0 px-3 py-3 text-xs font-medium uppercase tracking-[0.05em] transition-all",
-                    tab === id
-                      ? "text-[#0f5238] after:absolute after:bottom-0 after:left-1 after:right-1 after:h-[3px] after:rounded-t after:bg-[var(--primary)]"
-                      : "text-slate-400 hover:text-slate-900",
-                  )}
-                >
-                  {label}
-                </Link>
-              ))}
+              <CoursePlayerTabs
+                courseId={courseId}
+                lessonId={selected.id}
+                activeTab={tab}
+              />
             </div>
             <div className="hidden shrink-0 pb-2 lg:block">
               <CourseLessonQuickActions
@@ -580,6 +571,7 @@ export default async function StudentCourseLearningPage({
               courseId={course.id}
               courseTitle={course.title}
               completedSectionsCount={completedSectionIdsForAi.length}
+              hasCourseContent={totalLessons > 0}
               embedded
             />
           ) : tab === "reviews" ? (
@@ -668,13 +660,21 @@ export default async function StudentCourseLearningPage({
             progressMap={progressMap}
             currentTab={tab}
             lessonNav={lessonNav}
+            currentSectionId={selectedSection?.id ?? null}
+            sectionQuizPassedIds={[...sectionQuizPassedIds]}
+            sectionOrder={course.sections.map((s) => s.id)}
           />
         }
       />
-      <CourseChatBubble
-        courseId={courseId}
-        disabled={completedSectionCount === 0}
-      />
+      {selected ? (
+        <CourseFloatingLessonBar
+          courseId={courseId}
+          lessonId={selected.id}
+          initialCompleted={progressMap[selected.id] ?? false}
+          quizzes={selectedSection?.quizzes ?? []}
+        />
+      ) : null}
+      <CourseChatBubble courseId={courseId} disabled={totalLessons === 0} />
     </ProgressProvider>
   );
 }

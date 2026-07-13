@@ -1,9 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { CoursePurchaseStatus, CourseStatus, UserRole } from "@/generated/prisma/enums";
 import { evaluateStudentBadges } from "@/lib/badges/evaluate-student-badges";
+import { revalidateStudentPortal } from "@/lib/cache/revalidate-portals";
 import { db } from "@/lib/db";
 
 export type EnrollResult =
@@ -88,10 +88,7 @@ export async function enrollInCourseAction(
 
   await evaluateStudentBadges(session.user.id);
 
-  revalidatePath("/student/courses");
-  revalidatePath("/student/browse");
-  revalidatePath("/student/dashboard");
-  revalidatePath("/student/achievements");
+  revalidateStudentPortal(courseId);
   return { ok: true, courseId };
 }
 
@@ -119,9 +116,6 @@ export async function unenrollFromCourseAction(
     return { ok: false, message: "Could not unenroll. Please try again." };
   }
 
-  revalidatePath("/student/courses");
-  revalidatePath("/student/browse");
-  revalidatePath("/student/dashboard");
-  revalidatePath("/student/achievements");
+  revalidateStudentPortal(courseId);
   return { ok: true, courseId };
 }

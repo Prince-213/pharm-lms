@@ -17,12 +17,8 @@ import {
 import { LogoutButton } from "@/auth/logout-button";
 import { cn } from "@/lib/utils";
 import { useProgress } from "@/lib/student/progress-context";
-import {
-  Tooltip,
-  TooltipProvider,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { SimpleTooltip } from "@/components/ui/simple-tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Sheet,
@@ -53,7 +49,7 @@ function RailLink({
   isActive = false,
 }: RailLinkItem & { isActive?: boolean }) {
   return (
-    <Tooltip content={label} side="right">
+    <SimpleTooltip content={label} side="right">
       <Link
         href={href}
         className={cn(
@@ -73,7 +69,7 @@ function RailLink({
         )}
         <Icon className="h-5 w-5" strokeWidth={isActive ? 2.5 : 2} />
       </Link>
-    </Tooltip>
+    </SimpleTooltip>
   );
 }
 
@@ -81,7 +77,7 @@ function ProgressRing({ pct }: { pct: number }) {
   const r = 18;
   const circ = 2 * Math.PI * r;
   return (
-    <Tooltip content={`${pct}% complete`} side="bottom">
+    <SimpleTooltip content={`${pct}% complete`} side="bottom">
       <div className="relative flex h-10 w-10 shrink-0 cursor-default items-center justify-center">
         <svg className="absolute inset-0 h-full w-full -rotate-90">
           <circle
@@ -103,14 +99,14 @@ function ProgressRing({ pct }: { pct: number }) {
             strokeDasharray={circ}
             strokeDashoffset={circ * (1 - pct / 100)}
             strokeLinecap="round"
-            className="text-emerald-400 transition-all duration-700 ease-in-out"
+            className="text-primary/80 transition-all duration-700 ease-in-out"
           />
         </svg>
         <span className="text-[10px] font-black tracking-tighter text-[var(--header-fg)]">
           {pct}%
         </span>
       </div>
-    </Tooltip>
+    </SimpleTooltip>
   );
 }
 
@@ -252,12 +248,12 @@ export function CourseSessionShell({
               </SheetContent>
             </Sheet>
 
-            <div className="hidden items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-950/40 px-3 py-1 sm:flex">
+            <div className="hidden items-center gap-1.5 rounded-full border border-primary/20 bg-primary/20 px-3 py-1 sm:flex">
               <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary/100" />
               </span>
-              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-100">
+              <span className="text-[10px] font-black uppercase tracking-widest text-primary-foreground/90">
                 Live
               </span>
             </div>

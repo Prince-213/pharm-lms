@@ -21,8 +21,8 @@ export function CourseChatBubble({
     {
       role: "assistant",
       content: disabled
-        ? "Complete at least one lesson and I will help you revise using your completed section context."
-        : "Hi! I am your section-aware study assistant. Ask me anything about what you have completed so far.",
+        ? "This course has no lesson content for the assistant yet."
+        : "Hi! I can help you study using the full enrolled course content. Ask about concepts, workflows, or exam-style questions.",
     },
   ]);
 
@@ -102,8 +102,8 @@ export function CourseChatBubble({
               <p className="text-sm font-semibold text-[var(--foreground)]">
                 Course assistant
               </p>
-              <p className="text-[11px] text-[var(--muted)]">
-                Grounded in your completed sections
+              <p className="text-[11px] text-muted-foreground">
+                Grounded in your enrolled course content
               </p>
             </div>
           </div>
@@ -122,7 +122,7 @@ export function CourseChatBubble({
               </div>
             ))}
             {sending ? (
-              <div className="inline-flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-xs text-[var(--muted)]">
+              <div className="inline-flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-xs text-muted-foreground">
                 <Loader2 className="h-3 w-3 animate-spin" />
                 Thinking...
               </div>

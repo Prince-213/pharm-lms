@@ -15,7 +15,7 @@ function revalidateMentorVisibility() {
 
 export async function approveMentorApplicationAction(mentorId: string) {
   await requireAdminSession();
-  // Mentors sign up inactive; approval must activate them so students can see/book them.
+  // Approval lists the mentor in the student directory; login is already allowed.
   await db.user.update({
     where: { id: mentorId, role: UserRole.MENTOR },
     data: {
@@ -44,7 +44,6 @@ export async function rejectMentorApplicationAction(
       mentorReviewNote: trimmed.length
         ? trimmed
         : "Please update your profile and resubmit.",
-      isActive: false,
     },
     select: { id: true },
   });

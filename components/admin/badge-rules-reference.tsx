@@ -23,12 +23,12 @@ export function BadgeRulesReference() {
                 <p className="text-sm font-semibold text-[var(--foreground)]">
                   {rule.label}
                 </p>
-                <p className="mt-0.5 text-xs text-[var(--muted)]">
+                <p className="mt-0.5 text-xs text-muted-foreground">
                   {rule.description}
                 </p>
                 <div className="mt-2 grid gap-2 text-[11px] sm:grid-cols-2">
                   <div>
-                    <p className="font-semibold uppercase tracking-wide text-[var(--muted)]">
+                    <p className="font-semibold uppercase tracking-wide text-muted-foreground">
                       Rule type
                     </p>
                     <code className="mt-0.5 block rounded bg-[var(--surface-muted)] px-1.5 py-0.5 font-mono text-[10.5px] text-[var(--foreground)]">
@@ -36,7 +36,7 @@ export function BadgeRulesReference() {
                     </code>
                   </div>
                   <div>
-                    <p className="font-semibold uppercase tracking-wide text-[var(--muted)]">
+                    <p className="font-semibold uppercase tracking-wide text-muted-foreground">
                       Example config
                     </p>
                     <code className="mt-0.5 block rounded bg-[var(--surface-muted)] px-1.5 py-0.5 font-mono text-[10.5px] text-[var(--foreground)]">

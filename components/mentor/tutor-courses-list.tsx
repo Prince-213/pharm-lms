@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { CourseCardMenu } from "@/components/mentor/course-card-menu";
+import { Progress } from "@/components/ui/progress";
 import { CourseStatus } from "@/generated/prisma/enums";
 import { courseStatusLabel } from "@/lib/course-status-label";
 
@@ -139,7 +140,7 @@ export function TutorCoursesList({
 
   if (courses.length === 0) {
     return (
-      <div className="border border-[#e1e3e4] bg-white p-10 text-center text-sm text-[#404943]">
+      <div className="border border-[#d1d7dc] bg-white p-10 text-center text-sm text-muted-foreground">
         You have no courses yet. Use <strong>New Course</strong> to open the
         studio wizard.
       </div>
@@ -152,7 +153,7 @@ export function TutorCoursesList({
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <label className="relative min-w-0 flex-1 sm:max-w-md">
             <Search
-              className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#64748b]"
+              className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted-foreground"
               aria-hidden
             />
             <input
@@ -160,7 +161,7 @@ export function TutorCoursesList({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search your courses"
-              className="h-11 w-full rounded-md border border-[#e1e3e4] bg-white py-3 pl-11 pr-4 text-sm text-[#191c1d] shadow-sm outline-none transition placeholder:text-[#6b7280] focus:border-[#2d6a4f] focus:ring-2 focus:ring-[#2d6a4f]/15"
+              className="h-11 w-full rounded-md border border-[#d1d7dc] bg-white py-3 pl-11 pr-4 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/15"
             />
           </label>
           <div className="relative min-w-[180px] sm:w-auto">
@@ -171,7 +172,7 @@ export function TutorCoursesList({
               id="tutor-courses-sort"
               value={sort}
               onChange={(e) => setSort(e.target.value as SortId)}
-              className="h-11 w-full cursor-pointer appearance-none rounded-md border border-[#e1e3e4] bg-white pl-4 pr-10 text-sm font-semibold text-[#191c1d] shadow-sm outline-none focus:border-[#2d6a4f] focus:ring-2 focus:ring-[#2d6a4f]/15"
+              className="h-11 w-full cursor-pointer appearance-none rounded-md border border-[#d1d7dc] bg-white pl-4 pr-10 text-sm font-semibold text-foreground shadow-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
             >
               {SORT_OPTIONS.map((o) => (
                 <option key={o.id} value={o.id}>
@@ -180,7 +181,7 @@ export function TutorCoursesList({
               ))}
             </select>
             <span
-              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#64748b]"
+              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               aria-hidden
             >
               ▾
@@ -204,8 +205,8 @@ export function TutorCoursesList({
                 className={clsx(
                   "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition",
                   statusFilter === f.id
-                    ? "bg-[#2d6a4f] text-white shadow-sm"
-                    : "bg-[#f2f4f5] text-[#404943] hover:bg-[#e8eaec]",
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80",
                 )}
               >
                 {f.label}
@@ -213,8 +214,8 @@ export function TutorCoursesList({
                   className={clsx(
                     "tabular-nums",
                     statusFilter === f.id
-                      ? "text-white/80"
-                      : "text-[#64748b]",
+                      ? "text-primary-foreground/80"
+                      : "text-muted-foreground",
                   )}
                 >
                   {count}
@@ -224,9 +225,9 @@ export function TutorCoursesList({
           })}
         </div>
 
-        <p className="text-xs font-medium text-[#64748b]">
+        <p className="text-xs font-medium text-muted-foreground">
           Showing{" "}
-          <span className="font-semibold tabular-nums text-[#191c1d]">
+          <span className="font-semibold tabular-nums text-foreground">
             {filtered.length}
           </span>{" "}
           of{" "}
@@ -235,11 +236,11 @@ export function TutorCoursesList({
       </div>
 
       {filtered.length === 0 ? (
-        <div className="border border-dashed border-[#e1e3e4] bg-[#fafafa] px-6 py-12 text-center">
-          <p className="text-sm font-semibold text-[#191c1d]">
+        <div className="border border-dashed border-border bg-muted/30 px-6 py-12 text-center">
+          <p className="text-sm font-semibold text-foreground">
             No courses match your search
           </p>
-          <p className="mt-2 text-sm text-[#64748b]">
+          <p className="mt-2 text-sm text-muted-foreground">
             Try a different keyword or clear your status filter.
           </p>
           <button
@@ -248,7 +249,7 @@ export function TutorCoursesList({
               setSearch("");
               setStatusFilter("all");
             }}
-            className="mt-4 text-sm font-semibold text-[#0f5238] underline-offset-2 hover:underline"
+            className="mt-4 text-sm font-semibold text-primary underline-offset-2 hover:underline"
           >
             Reset filters
           </button>
@@ -261,7 +262,7 @@ export function TutorCoursesList({
             return (
               <article
                 key={course.id}
-                className="flex flex-col overflow-hidden border border-[#e1e3e4] bg-white shadow-sm transition hover:border-[#cbd5e1] sm:flex-row"
+                className="flex flex-col overflow-hidden border border-[#d1d7dc] bg-white shadow-sm transition hover:border-primary/30 sm:flex-row"
               >
                 <Link
                   href={`/tutor/courses/${course.id}/manage/curriculum`}
@@ -282,13 +283,13 @@ export function TutorCoursesList({
                 <div className="flex min-w-0 flex-1 flex-col justify-between gap-6 p-8">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <h2 className="font-display text-xl font-extrabold text-[#191c1d]">
+                      <h2 className="font-display text-xl font-extrabold text-foreground">
                         {course.title}
                       </h2>
-                      <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-[#404943]">
+                      <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                         {statusRibbon(course.status)}
                       </p>
-                      <p className="mt-2 text-xs text-[#64748b]">
+                      <p className="mt-2 text-xs text-muted-foreground">
                         {courseStatusLabel(course.status)}
                       </p>
                     </div>
@@ -301,26 +302,21 @@ export function TutorCoursesList({
                   </div>
                   <div>
                     <div className="mb-2 flex items-end justify-between text-sm font-semibold">
-                      <span className="text-[#191c1d]">
+                      <span className="text-foreground">
                         Finish your course
                       </span>
-                      <span className="text-[#0f5238]">{pct}% Complete</span>
+                      <span className="text-primary">{pct}% Complete</span>
                     </div>
-                    <div className="h-2 w-full overflow-hidden bg-[#e1e3e4]">
-                      <div
-                        className="h-full bg-[#2d6a4f] transition-all"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
+                    <Progress value={pct} className="h-2" />
                     <Link
                       href={`/tutor/courses/${course.id}/manage/curriculum`}
-                      className="mt-3 inline-block text-xs font-semibold uppercase tracking-wide text-[#0f5238] hover:underline"
+                      className="mt-3 inline-block text-xs font-semibold uppercase tracking-wide text-primary hover:underline"
                     >
                       Edit course →
                     </Link>
                     <Link
                       href={`/tutor/courses/${course.id}/overview`}
-                      className="mt-2 ml-3 inline-block text-xs font-semibold uppercase tracking-wide text-[#334155] hover:underline"
+                      className="mt-2 ml-3 inline-block text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground hover:underline"
                     >
                       Course overview →
                     </Link>
@@ -331,25 +327,25 @@ export function TutorCoursesList({
           })}
 
           <div className="grid gap-6 md:grid-cols-2">
-            <div className="flex flex-col items-center bg-[#f2f4f5] px-8 py-12 text-center">
-              <div className="mb-4 flex size-16 items-center justify-center rounded-xl bg-white text-2xl shadow-sm">
+            <div className="flex flex-col items-center bg-muted px-8 py-12 text-center">
+              <div className="mb-4 flex size-16 items-center justify-center rounded-xl bg-card text-2xl shadow-sm">
                 💡
               </div>
-              <h3 className="text-lg font-semibold text-[#191c1d]">
+              <h3 className="text-lg font-semibold text-foreground">
                 Instructor insights
               </h3>
-              <p className="mt-3 max-w-sm text-sm leading-relaxed text-[#404943]">
+              <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
                 Based on catalog trends, learners engage strongly with dosage
                 calculations and patient safety modules. Consider sequencing
                 those early in your next course.
               </p>
             </div>
-            <div className="flex flex-col items-center bg-[#0f5238] px-8 py-12 text-center text-white">
-              <div className="mb-4 flex size-16 items-center justify-center rounded-xl bg-[#2d6a4f] text-2xl shadow-lg">
+            <div className="flex flex-col items-center bg-primary px-8 py-12 text-center text-primary-foreground">
+              <div className="mb-4 flex size-16 items-center justify-center rounded-xl bg-primary-foreground/10 text-2xl shadow-lg">
                 ✨
               </div>
               <h3 className="text-lg font-semibold">Certification prep</h3>
-              <p className="mt-3 max-w-sm text-sm leading-relaxed text-[#a8e7c5]">
+              <p className="mt-3 max-w-sm text-sm leading-relaxed text-primary-foreground/80">
                 {firstCourseTitle
                   ? `Publish "${firstCourseTitle}" to unlock student enrollments and completion analytics.`
                   : "Publish a course to unlock enrollments, completion analytics, and program badges."}

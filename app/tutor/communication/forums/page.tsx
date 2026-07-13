@@ -58,13 +58,13 @@ export default async function TutorCommunicationForumsPage() {
       <div className="mb-8 flex items-start gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-muted)]">
           <MessagesSquare
-            className="h-5 w-5 text-[var(--muted)]"
+            className="h-5 w-5 text-muted-foreground"
             strokeWidth={1.75}
           />
         </div>
         <div>
           <h2 className="text-2xl font-bold">Course forums</h2>
-          <p className="mt-1 max-w-2xl text-sm text-[var(--muted)]">
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
             Choose a course to open its discussion. The same thread appears for
             enrolled students in the course.
           </p>
@@ -90,7 +90,7 @@ export default async function TutorCommunicationForumsPage() {
                   ) : (
                     <div className="flex h-full items-center justify-center bg-gradient-to-br from-[var(--surface-muted)] to-[var(--background)]">
                       <MessagesSquare
-                        className="h-12 w-12 text-[var(--muted)] opacity-40"
+                        className="h-12 w-12 text-muted-foreground opacity-40"
                         strokeWidth={1.25}
                       />
                     </div>
@@ -104,11 +104,11 @@ export default async function TutorCommunicationForumsPage() {
                     {course.title}
                   </p>
                   {course.subtitle?.trim() ? (
-                    <p className="mt-1 line-clamp-2 text-xs text-[var(--muted)]">
+                    <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
                       {course.subtitle.trim()}
                     </p>
                   ) : null}
-                  <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[var(--muted)]">
+                  <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
                     <span className="inline-flex items-center gap-1">
                       <Users className="h-3.5 w-3.5" strokeWidth={1.75} />
                       {course._count.enrollments} enrolled
@@ -130,7 +130,7 @@ export default async function TutorCommunicationForumsPage() {
           ))}
         </ul>
       ) : (
-        <p className="rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] bg-[var(--surface)] px-4 py-8 text-center text-sm text-[var(--muted)]">
+        <p className="rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] bg-[var(--surface)] px-4 py-8 text-center text-sm text-muted-foreground">
           You don’t have any courses yet. Create a course to use the forum.
         </p>
       )}

@@ -3,7 +3,7 @@ export type MentorProfileRow = {
   fullName: string;
   avatarUrl: string | null;
   bio: string | null;
-  isActive: boolean;
+  mentorProfileStatus: string;
   mentorHeadline: string | null;
   mentorSpecialties: string | null;
   mentorYearsExperience: number | null;

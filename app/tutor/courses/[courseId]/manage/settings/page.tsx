@@ -51,7 +51,7 @@ export default async function MentorCourseSettingsPage({
     <section className="mx-auto max-w-[960px] border border-[var(--border)] bg-[var(--surface)]">
       <div className="border-b border-[var(--border)] px-6 py-4">
         <h1 className="text-2xl font-bold text-[var(--foreground)]">Course settings</h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">
+        <p className="mt-1 text-sm text-muted-foreground">
           {course.title} · {courseStatusLabel(course.status)} · Last updated{" "}
           {course.updatedAt.toLocaleDateString()}
         </p>

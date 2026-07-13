@@ -48,7 +48,7 @@ export function MeetingHostCard({
             <p className="text-sm font-semibold leading-snug text-[var(--foreground)]">
               {fullName}
             </p>
-            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-[var(--muted)]">
+            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
               {displayBio}
             </p>
           </div>
@@ -61,7 +61,7 @@ export function MeetingHostCard({
             return (
               <li
                 key={`${row.text}-${i}`}
-                className="flex items-start gap-2 text-xs text-[var(--muted)]"
+                className="flex items-start gap-2 text-xs text-muted-foreground"
               >
                 <Icon
                   className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--muted-soft)]"

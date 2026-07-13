@@ -4,6 +4,7 @@ import { Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { sendChatMessageAction } from "@/app/actions/chat";
+import { refreshPortalAfterMutation } from "@/lib/client/refresh-portal-data";
 
 export function ThreadComposer({
   threadId,
@@ -34,7 +35,7 @@ export function ThreadComposer({
         return;
       }
       setBody("");
-      router.refresh();
+      refreshPortalAfterMutation(router);
     });
   }
 

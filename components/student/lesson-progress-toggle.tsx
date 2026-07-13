@@ -61,8 +61,8 @@ export function LessonProgressToggle({
         className={cn(
           "relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border text-[var(--foreground)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2",
           completed
-            ? "border-[var(--success)] bg-[var(--success-soft)] text-[var(--success)]"
-            : "border-[#d1d7dc] bg-white hover:border-[var(--primary)]/40 hover:bg-[#fafafa]",
+            ? "border-primary/40 bg-primary/10 text-primary"
+            : "border-border bg-white hover:border-primary/40 hover:bg-muted/40",
           isPending && "opacity-70",
           className,
         )}
@@ -70,9 +70,9 @@ export function LessonProgressToggle({
         {isPending ? (
           <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
         ) : completed ? (
-          <CheckCircle2 className="h-5 w-5 text-[var(--success)]" aria-hidden />
+          <CheckCircle2 className="h-5 w-5 text-primary" aria-hidden />
         ) : (
-          <NotebookPen className="h-5 w-5 text-[var(--muted)]" aria-hidden />
+          <NotebookPen className="h-5 w-5 text-muted-foreground" aria-hidden />
         )}
       </button>
     );
@@ -84,7 +84,7 @@ export function LessonProgressToggle({
         type="button"
         disabled={completed || isPending}
         onClick={handleToggle}
-        className="inline-flex h-10 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--primary)] px-5 text-sm font-bold text-white transition hover:bg-[var(--primary-strong)] disabled:cursor-default disabled:bg-[var(--success)] disabled:opacity-100"
+        className="inline-flex h-10 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-primary px-5 text-sm font-bold text-primary-foreground transition hover:bg-[var(--primary-strong)] disabled:cursor-default disabled:bg-primary/80 disabled:opacity-100"
       >
         {completed ? (
           <>

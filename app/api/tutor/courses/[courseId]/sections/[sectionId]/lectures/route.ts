@@ -3,6 +3,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
+import { revalidateCourseSurfaces } from "@/lib/cache/revalidate-portals";
 
 const createLectureBodySchema = z.object({
   title: z.string().min(3).max(180),
@@ -56,5 +57,6 @@ export async function POST(
     },
   });
 
+  revalidateCourseSurfaces(courseId);
   return NextResponse.json(lesson, { status: 201 });
 }

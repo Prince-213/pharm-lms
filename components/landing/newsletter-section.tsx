@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Send } from "lucide-react";
 import Image from "next/image";
 import { PaperPlaneIcon } from "@phosphor-icons/react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function NewsletterSection() {
   const [email, setEmail] = useState("");
@@ -70,21 +72,23 @@ export function NewsletterSection() {
 
               <form onSubmit={handleSubmit} className="relative">
                 <div className="relative flex items-center">
-                  <input
+                  <Input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email address"
-                    className="w-full rounded-r-full rounded-bl-full bg-[#1a1a2e] pl-6 pr-14 py-5 text-sm text-white placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-[var(--emerald)] transition-all"
+                    className="w-full rounded-r-full rounded-bl-full border-0 bg-[#1a1a2e] py-5 pl-6 pr-14 text-sm text-white placeholder:text-gray-400 focus-visible:ring-primary"
                     required
                   />
-                  <button
+                  <Button
                     type="submit"
-                    className="absolute right-2 flex h-10 w-10 items-center justify-center "
+                    size="icon"
+                    variant="ghost"
+                    className="absolute right-2 text-white hover:bg-white/10"
                     aria-label="Subscribe"
                   >
-                    <PaperPlaneIcon className="h-6 w-6 rotate-45 text-white" />
-                  </button>
+                    <PaperPlaneIcon className="h-6 w-6 rotate-45" />
+                  </Button>
                 </div>
               </form>
             </div>

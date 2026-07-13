@@ -1,0 +1,68 @@
+/**
+ * PharmLMS brand token bridge — maps shadcn semantic tokens to existing brand colors.
+ * Loaded after preset theme variables in globals.css.
+ */
+:root {
+  --background: #f5f7fa;
+  --foreground: #1a1a2e;
+
+  --card: #ffffff;
+  --card-foreground: #1a1a2e;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a2e;
+
+  --primary: #1e40af;
+  --primary-foreground: #ffffff;
+  --primary-strong: #1e3a8a;
+  --primary-soft: #dbeafe;
+  --primary-soft-text: #1e40af;
+
+  --secondary: #f1f5f9;
+  --secondary-foreground: #1a1a2e;
+
+  --muted: #f1f5f9;
+  --muted-foreground: #475569;
+  --muted-soft: #475569;
+
+  --accent: #7a4dfc;
+  --accent-foreground: #ffffff;
+  --accent-soft: #f3f0ff;
+  --accent-deep: #6b4ce6;
+
+  --destructive: #ef4444;
+  --border: #d1d7dc;
+  --input: #d1d7dc;
+  --ring: #1e40af;
+
+  --sidebar: #1e40af;
+  --sidebar-foreground: #f5f7fa;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #1e40af;
+  --sidebar-accent: rgb(255 255 255 / 0.1);
+  --sidebar-accent-foreground: #f5f7fa;
+  --sidebar-border: rgb(255 255 255 / 0.12);
+  --sidebar-ring: rgb(255 255 255 / 0.2);
+
+  /* Legacy aliases used across the codebase */
+  --surface: #ffffff;
+  --surface-muted: #f7f9fa;
+  --header: var(--sidebar);
+  --header-accent: var(--accent);
+  --header-fg: var(--sidebar-foreground);
+  --header-fg-muted: rgb(245 247 250 / 0.72);
+  --ink-deep: var(--foreground);
+  --ink-mid: #334155;
+  --emerald: var(--primary);
+  --live: var(--destructive);
+  --success: #1e40af;
+  --success-soft: #dbeafe;
+
+  --font-sans: var(--font-montserrat), "Montserrat", system-ui, sans-serif;
+  --font-title-active: var(--font-outfit), "Outfit", system-ui, sans-serif;
+}
+
+.auth-saas {
+  --auth-accent: var(--accent);
+  --auth-accent-hover: var(--accent-deep);
+  --auth-link: var(--accent);
+}

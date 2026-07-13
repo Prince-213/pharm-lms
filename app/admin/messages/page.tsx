@@ -85,9 +85,9 @@ export default async function AdminMessagesPage({
             className="lg:col-span-4"
           >
             {threads.length === 0 ? (
-              <div className="flex h-full min-h-[280px] flex-col items-center justify-center rounded-lg border border-dashed border-[var(--border)] bg-[var(--background)] px-4 py-10 text-center text-sm text-[var(--muted)]">
+              <div className="flex h-full min-h-[280px] flex-col items-center justify-center rounded-lg border border-dashed border-[var(--border)] bg-[var(--background)] px-4 py-10 text-center text-sm text-muted-foreground">
                 <Inbox
-                  className="h-9 w-9 text-[var(--muted)]"
+                  className="h-9 w-9 text-muted-foreground"
                   strokeWidth={1.25}
                 />
                 <p className="mt-3 font-semibold">No threads yet</p>
@@ -110,11 +110,11 @@ export default async function AdminMessagesPage({
                       <p className="truncate text-sm font-semibold text-[var(--foreground)]">
                         {t.other.fullName}
                       </p>
-                      <p className="mt-0.5 truncate text-xs text-[var(--muted)]">
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
                         {t.preview ?? "No messages yet."}
                       </p>
                       {t.lastMessageAt ? (
-                        <p className="mt-1 text-[10px] uppercase tracking-wide text-[var(--muted)]">
+                        <p className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">
                           {t.lastMessageAt.toLocaleString()}
                         </p>
                       ) : null}
@@ -133,7 +133,7 @@ export default async function AdminMessagesPage({
               <div className="flex flex-col">
                 <ol className="max-h-[480px] space-y-3 overflow-y-auto pb-4">
                   {active.thread.messages.length === 0 ? (
-                    <li className="py-12 text-center text-sm text-[var(--muted)]">
+                    <li className="py-12 text-center text-sm text-muted-foreground">
                       No messages yet.
                     </li>
                   ) : (
@@ -160,7 +160,7 @@ export default async function AdminMessagesPage({
                               className={
                                 mine
                                   ? "mt-1 text-[10px] uppercase tracking-wide text-white/70"
-                                  : "mt-1 text-[10px] uppercase tracking-wide text-[var(--muted)]"
+                                  : "mt-1 text-[10px] uppercase tracking-wide text-muted-foreground"
                               }
                             >
                               {m.sender.fullName} ·{" "}
@@ -178,7 +178,7 @@ export default async function AdminMessagesPage({
                 />
               </div>
             ) : (
-              <div className="flex min-h-[280px] flex-col items-center justify-center rounded-lg border border-dashed border-[var(--border)] bg-[var(--background)] px-4 py-10 text-center text-sm text-[var(--muted)]">
+              <div className="flex min-h-[280px] flex-col items-center justify-center rounded-lg border border-dashed border-[var(--border)] bg-[var(--background)] px-4 py-10 text-center text-sm text-muted-foreground">
                 Pick a thread on the left.
               </div>
             )}

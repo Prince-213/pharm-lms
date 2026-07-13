@@ -19,7 +19,6 @@ export const createAssignmentSchema = z.object({
   courseId: z.string().cuid(),
   title: z.string().min(5).max(150),
   description: z.string().min(20),
-  dueDate: z.string().datetime().optional(),
 });
 
 export const meetingRequestSchema = z.object({

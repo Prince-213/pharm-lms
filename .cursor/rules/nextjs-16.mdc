@@ -1,0 +1,32 @@
+---
+description: Next.js 16 App Router conventions for PharmLMS
+alwaysApply: true
+---
+
+# Next.js 16 (PharmLMS)
+
+This project uses **Next.js 16** with breaking changes vs older versions. Before writing Next.js code, read the relevant guide in `node_modules/next/dist/docs/`.
+
+## Tooling
+
+- Use **pnpm** (`pnpm run dev`, `pnpm dlx`, not npx).
+- Dev script uses webpack: `pnpm run dev`.
+
+## App Router
+
+- Use the App Router only (`app/`). No Pages Router.
+- `searchParams` and `params` in page/layout props are **Promises** — always `await` them.
+- Prefer Server Components by default; add `"use client"` only when needed (hooks, browser APIs, event handlers).
+- Use `redirect()` / `notFound()` from `next/navigation` in server code.
+- Colocate route handlers in `app/api/`.
+- Use `revalidatePath` / `revalidateTag` after server mutations.
+
+## Data & auth
+
+- Database access via `@/lib/db` or `@/lib/prisma` — never import Prisma in client components.
+- Auth via `@/auth` and portal-specific guards (`requireAdminSession`, role checks).
+- Preserve existing RBAC paths (`/student`, `/tutor`, `/mentor`, `/admin`).
+
+## Deprecations
+
+- Heed deprecation notices in Next 16 docs before using APIs from training data.

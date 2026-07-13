@@ -55,7 +55,7 @@ function CourseRow({ course }: { course: TutorCourseCard }) {
             unoptimized={thumb.startsWith("http")}
           />
         ) : (
-          <span className="flex h-full items-center justify-center text-[var(--muted)]">
+          <span className="flex h-full items-center justify-center text-muted-foreground">
             <BookOpen className="h-5 w-5" strokeWidth={1.5} />
           </span>
         )}
@@ -65,13 +65,13 @@ function CourseRow({ course }: { course: TutorCourseCard }) {
           {course.title}
         </p>
         {course.subtitle?.trim() ? (
-          <p className="mt-0.5 line-clamp-1 text-xs text-[var(--muted)]">
+          <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
             {course.subtitle.trim()}
           </p>
         ) : null}
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
           <span className="font-bold text-[var(--primary)]">{price}</span>
-          <span className="text-[var(--muted)]">
+          <span className="text-muted-foreground">
             {course.learnerCount.toLocaleString()} learners
           </span>
           {course.isEnrolled ? (
@@ -82,7 +82,7 @@ function CourseRow({ course }: { course: TutorCourseCard }) {
         </div>
       </div>
       <ChevronRight
-        className="mt-2 h-4 w-4 shrink-0 text-[var(--muted)]"
+        className="mt-2 h-4 w-4 shrink-0 text-muted-foreground"
         aria-hidden
       />
     </Link>
@@ -123,7 +123,7 @@ export function TutorCoursesDrawer({
             <SheetTitle className="font-display text-lg text-[var(--ink-deep)]">
               {tutorName}&apos;s courses
             </SheetTitle>
-            <SheetDescription className="text-[var(--muted)]">
+            <SheetDescription className="text-muted-foreground">
               Tap a course to open your overview or explore the catalog.
             </SheetDescription>
           </SheetHeader>
@@ -131,7 +131,7 @@ export function TutorCoursesDrawer({
           <div className="mt-4 max-h-[min(60vh,520px)] space-y-6 overflow-y-auto pr-1">
             {enrolled.length > 0 ? (
               <section>
-                <h3 className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-soft)]">
+                <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                   Your enrollments
                 </h3>
                 <ul className="mt-3 space-y-2">
@@ -146,7 +146,7 @@ export function TutorCoursesDrawer({
 
             {catalog.length > 0 ? (
               <section>
-                <h3 className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-soft)]">
+                <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                   {enrolled.length > 0 ? "More from this tutor" : "Published courses"}
                 </h3>
                 <ul className="mt-3 space-y-2">
@@ -160,7 +160,7 @@ export function TutorCoursesDrawer({
             ) : null}
 
             {courses.length === 0 ? (
-              <p className="py-8 text-center text-sm text-[var(--muted)]">
+              <p className="py-8 text-center text-sm text-muted-foreground">
                 No published courses yet.
               </p>
             ) : null}

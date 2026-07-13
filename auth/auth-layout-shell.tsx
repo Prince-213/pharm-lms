@@ -44,7 +44,7 @@ export function AuthLayoutShell({
             <p className="font-display text-xl leading-relaxed text-[var(--ink-deep)]">
               &ldquo;{quote}&rdquo;
             </p>
-            <footer className="text-sm font-semibold text-[var(--muted)]">
+            <footer className="text-sm font-semibold text-muted-foreground">
               ~ {author}
             </footer>
           </blockquote>
@@ -68,7 +68,7 @@ export function AuthLayoutShell({
 
         <Link
           href="/"
-          className="absolute top-7 left-5 inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm font-medium text-[var(--muted-soft)] transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--ink-deep)]"
+          className="absolute top-7 left-5 inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--ink-deep)]"
         >
           <ChevronLeft className="size-4" />
           Home

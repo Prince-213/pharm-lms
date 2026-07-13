@@ -214,7 +214,7 @@ export function AdminPaymentsWithdrawalsClient() {
                   <p className="truncate px-2.5 pb-1.5 pt-0.5 text-xs font-semibold text-[var(--foreground)]">
                     {activeRow.mentor.fullName}
                   </p>
-                  <p className="border-b border-[var(--border)] px-2.5 pb-2 text-[10px] text-[var(--muted)]">
+                  <p className="border-b border-[var(--border)] px-2.5 pb-2 text-[10px] text-muted-foreground">
                     {formatMinorUnitsToCurrency(activeRow.amountMinorUnits, "NGN")}{" "}
                     · Choose an action
                   </p>
@@ -264,7 +264,7 @@ export function AdminPaymentsWithdrawalsClient() {
                       onClick={closePanel}
                       className="flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)]"
                     >
-                      <Mail className="h-4 w-4 shrink-0 text-[var(--muted)]" />
+                      <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
                       Email tutor
                     </a>
                   </div>
@@ -289,13 +289,13 @@ export function AdminPaymentsWithdrawalsClient() {
                             : p,
                         )
                       }
-                      className="rounded p-1 text-[var(--muted)] hover:bg-[var(--background)] hover:text-[var(--foreground)]"
+                      className="rounded p-1 text-muted-foreground hover:bg-[var(--background)] hover:text-[var(--foreground)]"
                       aria-label="Back"
                     >
                       <ChevronDown className="h-4 w-4 -rotate-90" />
                     </button>
                   </div>
-                  <p className="mb-2 line-clamp-2 text-[11px] text-[var(--muted)]">
+                  <p className="mb-2 line-clamp-2 text-[11px] text-muted-foreground">
                     {activeRow.mentor.fullName} ·{" "}
                     {formatMinorUnitsToCurrency(activeRow.amountMinorUnits, "NGN")}
                   </p>
@@ -312,7 +312,7 @@ export function AdminPaymentsWithdrawalsClient() {
                   <div className="mt-3 flex justify-end gap-2">
                     <button
                       type="button"
-                      className="rounded-md px-2 py-1.5 text-xs font-medium text-[var(--muted)] hover:bg-[var(--background)]"
+                      className="rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground hover:bg-[var(--background)]"
                       onClick={closePanel}
                     >
                       Cancel
@@ -357,7 +357,7 @@ export function AdminPaymentsWithdrawalsClient() {
                 "rounded-lg px-4 py-2 text-sm font-semibold transition-colors",
                 active
                   ? "bg-[var(--surface)] text-[var(--foreground)] shadow-[var(--shadow-sm)]"
-                  : "text-[var(--muted)] hover:text-[var(--foreground)]",
+                  : "text-muted-foreground hover:text-[var(--foreground)]",
               )}
             >
               {t.label}
@@ -369,7 +369,7 @@ export function AdminPaymentsWithdrawalsClient() {
       <div className="overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-sm)]">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[var(--border)] text-left text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+            <tr className="border-b border-[var(--border)] text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               <th className="px-4 py-3">Requested</th>
               <th className="px-4 py-3">Tutor</th>
               <th className="px-4 py-3">Bank</th>
@@ -384,7 +384,7 @@ export function AdminPaymentsWithdrawalsClient() {
               <tr>
                 <td
                   colSpan={7}
-                  className="px-4 py-8 text-center text-[var(--muted)]"
+                  className="px-4 py-8 text-center text-muted-foreground"
                 >
                   No withdrawals in this view.
                 </td>
@@ -400,7 +400,7 @@ export function AdminPaymentsWithdrawalsClient() {
                 </td>
                 <td className="px-4 py-3">
                   <div className="font-medium">{r.mentor.fullName}</div>
-                  <div className="text-xs text-[var(--muted)]">
+                  <div className="text-xs text-muted-foreground">
                     {r.mentor.email}
                   </div>
                 </td>
@@ -410,16 +410,16 @@ export function AdminPaymentsWithdrawalsClient() {
                       <div className="font-medium">
                         {r.bankDisplay.accountName}
                       </div>
-                      <div className="text-xs text-[var(--muted)]">
+                      <div className="text-xs text-muted-foreground">
                         Bank code {r.bankDisplay.bankCode} ·{" "}
                         {r.bankDisplay.accountMasked}{" "}
                         {r.bankDisplay.verified ? (
-                          <span className="text-emerald-600">· Verified</span>
+                          <span className="text-primary">· Verified</span>
                         ) : null}
                       </div>
                     </div>
                   ) : (
-                    <span className="text-[var(--muted)]">No account</span>
+                    <span className="text-muted-foreground">No account</span>
                   )}
                 </td>
                 <td className="px-4 py-3 text-right font-medium tabular-nums">
@@ -451,7 +451,7 @@ export function AdminPaymentsWithdrawalsClient() {
                       />
                     </button>
                   ) : (
-                    <span className="text-xs text-[var(--muted)]">
+                    <span className="text-xs text-muted-foreground">
                       {r.rejectReason ? `Reason: ${r.rejectReason}` : "—"}
                     </span>
                   )}

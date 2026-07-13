@@ -2,7 +2,14 @@
 
 import { Bell, Check, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
 type NotificationItem = {
@@ -26,14 +33,12 @@ export function HeaderNotificationBell({
   bellButtonClassName,
 }: {
   className?: string;
-  /** e.g. mentor shell uses rounded-full */
   bellButtonClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<ApiResponse | null>(null);
   const [patching, setPatching] = useState(false);
-  const panelRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
     try {
@@ -56,18 +61,6 @@ export function HeaderNotificationBell({
     if (!open) return;
     void load();
   }, [open, load]);
-
-  useEffect(() => {
-    function onDocClick(e: MouseEvent) {
-      if (!panelRef.current?.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    if (open) {
-      document.addEventListener("mousedown", onDocClick);
-      return () => document.removeEventListener("mousedown", onDocClick);
-    }
-  }, [open]);
 
   const unreadCount = data?.unreadCount ?? 0;
   const items = data?.items ?? [];
@@ -100,70 +93,68 @@ export function HeaderNotificationBell({
   }
 
   return (
-    <div className={cn("relative", className)} ref={panelRef}>
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className={cn(
-          "relative p-2.5 text-[var(--muted)] transition-all hover:scale-105 hover:bg-[var(--surface-muted)] active:scale-95 rounded-xl",
-          bellButtonClassName,
-        )}
-        aria-label="Notifications"
-        aria-expanded={open}
-      >
-        {loading ? (
-          <Loader2 className="h-5 w-5 animate-spin opacity-50" />
-        ) : (
-          <Bell className="h-5 w-5" />
-        )}
-        {unreadCount > 0 ? (
-          <span className="absolute right-2 top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-0.5 text-[10px] font-bold text-white ring-2 ring-white">
-            {unreadCount > 9 ? "9+" : unreadCount}
-          </span>
-        ) : null}
-      </button>
-
-      {open ? (
-        <div className="absolute right-0 top-full z-50 mt-2 w-[min(100vw-2rem,22rem)] overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--background)] shadow-xl">
-          <div className="flex items-center justify-between border-b border-[var(--border)] px-3 py-2">
-            <span className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
-              Notifications
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className={cn("relative", bellButtonClassName, className)}
+          aria-label="Notifications"
+        >
+          {loading ? (
+            <Loader2 className="h-5 w-5 animate-spin opacity-50" />
+          ) : (
+            <Bell className="h-5 w-5" />
+          )}
+          {unreadCount > 0 ? (
+            <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-0.5 text-[10px] font-bold text-white ring-2 ring-background">
+              {unreadCount > 9 ? "9+" : unreadCount}
             </span>
-            {unreadCount > 0 ? (
-              <button
-                type="button"
-                disabled={patching}
-                onClick={() => void markAllRead()}
-                className="flex items-center gap-1 text-[11px] font-semibold text-[var(--primary)] hover:underline disabled:opacity-50"
-              >
-                <Check className="h-3 w-3" />
-                Mark all read
-              </button>
-            ) : null}
-          </div>
-          <ul className="max-h-[min(60vh,320px)] overflow-y-auto">
+          ) : null}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="end"
+        className="w-[min(100vw-2rem,22rem)] p-0"
+      >
+        <div className="flex items-center justify-between border-b px-3 py-2">
+          <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+            Notifications
+          </span>
+          {unreadCount > 0 ? (
+            <Button
+              type="button"
+              variant="link"
+              size="sm"
+              disabled={patching}
+              onClick={() => void markAllRead()}
+              className="h-auto gap-1 px-0 text-[11px]"
+            >
+              <Check className="h-3 w-3" />
+              Mark all read
+            </Button>
+          ) : null}
+        </div>
+        <ScrollArea className="max-h-[min(60vh,320px)]">
+          <ul>
             {items.length === 0 ? (
-              <li className="px-4 py-8 text-center text-sm text-[var(--muted)]">
+              <li className="px-4 py-8 text-center text-sm text-muted-foreground">
                 No notifications yet.
               </li>
             ) : (
               items.map((n) => {
                 const inner = (
                   <>
-                    <p
-                      className={cn(
-                        "text-sm font-semibold leading-snug text-[var(--foreground)]",
-                        !n.readAt && "text-[var(--foreground)]",
-                      )}
-                    >
+                    <p className="text-sm font-semibold leading-snug text-foreground">
                       {n.title}
                     </p>
                     {n.body ? (
-                      <p className="mt-0.5 line-clamp-2 text-xs text-[var(--muted)]">
+                      <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
                         {n.body}
                       </p>
                     ) : null}
-                    <p className="mt-1 text-[10px] text-[var(--muted)]">
+                    <p className="mt-1 text-[10px] text-muted-foreground">
                       {new Date(n.createdAt).toLocaleString()}
                     </p>
                   </>
@@ -173,14 +164,14 @@ export function HeaderNotificationBell({
                   <li
                     key={n.id}
                     className={cn(
-                      "border-b border-[var(--border-subtle)] last:border-0",
-                      !n.readAt && "bg-[var(--primary-soft)]/30",
+                      "border-b last:border-0",
+                      !n.readAt && "bg-primary/5",
                     )}
                   >
                     {n.href ? (
                       <Link
                         href={n.href}
-                        className="block px-3 py-2.5 transition hover:bg-[var(--surface-muted)]"
+                        className="block px-3 py-2.5 transition hover:bg-muted"
                         onClick={() => {
                           if (!n.readAt) void markOneRead(n.id);
                           setOpen(false);
@@ -191,7 +182,7 @@ export function HeaderNotificationBell({
                     ) : (
                       <button
                         type="button"
-                        className="w-full px-3 py-2.5 text-left transition hover:bg-[var(--surface-muted)]"
+                        className="w-full px-3 py-2.5 text-left transition hover:bg-muted"
                         onClick={() => {
                           if (!n.readAt) void markOneRead(n.id);
                         }}
@@ -204,8 +195,8 @@ export function HeaderNotificationBell({
               })
             )}
           </ul>
-        </div>
-      ) : null}
-    </div>
+        </ScrollArea>
+      </PopoverContent>
+    </Popover>
   );
 }

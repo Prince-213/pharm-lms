@@ -170,7 +170,7 @@ export function MentorMeetingsAvailabilityCallout() {
           <div className="flex gap-5">
             <div className="hidden h-28 w-36 shrink-0 rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] bg-[var(--background)] sm:flex sm:items-center sm:justify-center">
               <CalendarDays
-                className="h-12 w-12 text-[var(--muted)]"
+                className="h-12 w-12 text-muted-foreground"
                 strokeWidth={1.25}
               />
             </div>
@@ -179,11 +179,11 @@ export function MentorMeetingsAvailabilityCallout() {
                 Set your availability
               </h3>
               {!loaded ? (
-                <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   Loading current schedule...
                 </p>
               ) : scheduleConfigured ? (
-                <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   Your weekly template is saved. Students only see bookable slots
                   inside these windows. You can{" "}
                   <button
@@ -199,7 +199,7 @@ export function MentorMeetingsAvailabilityCallout() {
                   anytime.
                 </p>
               ) : (
-                <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   Choose the days and times you are open for one-on-one sessions.
                   Until you save a schedule, the booking UI may assume flexible
                   availability.
@@ -207,13 +207,13 @@ export function MentorMeetingsAvailabilityCallout() {
               )}
               {scheduleConfigured && loaded && summaryWindow && summaryTimezone ? (
                 <div className="mt-4 rounded-[var(--radius-lg)] border border-[var(--primary)]/25 bg-[var(--primary-soft)]/30 p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                     Active schedule
                   </p>
                   <p className="mt-1 text-base font-semibold tabular-nums text-[var(--foreground)]">
                     {summaryWindow}
                   </p>
-                  <p className="mt-0.5 text-xs text-[var(--muted)]">
+                  <p className="mt-0.5 text-xs text-muted-foreground">
                     {summaryTimezone}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-1.5">
@@ -224,7 +224,7 @@ export function MentorMeetingsAvailabilityCallout() {
                           "rounded-full px-2.5 py-1 text-[11px] font-bold",
                           dayEnabled[d.key]
                             ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
-                            : "bg-[var(--surface-muted)] text-[var(--muted)]",
+                            : "bg-[var(--surface-muted)] text-muted-foreground",
                         )}
                       >
                         {d.label.slice(0, 3)}
@@ -234,7 +234,7 @@ export function MentorMeetingsAvailabilityCallout() {
                 </div>
               ) : null}
               {savedHint ? (
-                <p className="mt-3 rounded-[var(--radius-md)] border border-emerald-200/80 bg-emerald-50 px-3 py-2 text-xs text-emerald-950 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-100">
+                <p className="mt-3 rounded-[var(--radius-md)] border border-primary/20 bg-primary/10 px-3 py-2 text-xs text-primary dark:border-primary/30 dark:bg-primary/20 dark:text-primary-foreground/90">
                   {savedHint}
                 </p>
               ) : null}
@@ -251,7 +251,7 @@ export function MentorMeetingsAvailabilityCallout() {
               </button>
             </div>
           </div>
-          <div className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--background)] p-4 text-xs text-[var(--muted)] sm:max-w-[220px]">
+          <div className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--background)] p-4 text-xs text-muted-foreground sm:max-w-[220px]">
             <p className="font-semibold text-[var(--foreground)]">Tip</p>
             <p className="mt-2 leading-relaxed">
               Block lunch or teaching hours so requests only land when you can
@@ -283,7 +283,7 @@ export function MentorMeetingsAvailabilityCallout() {
                 <h2 id={titleId} className="text-lg font-bold text-[var(--foreground)]">
                   Weekly hours
                 </h2>
-                <p className="mt-1 text-xs text-[var(--muted)]">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Turn days on or off, then set the window that repeats each
                   week.
                 </p>
@@ -291,7 +291,7 @@ export function MentorMeetingsAvailabilityCallout() {
               <button
                 type="button"
                 onClick={closeModal}
-                className="rounded p-1 text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
+                className="rounded p-1 text-muted-foreground hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
                 aria-label="Close"
               >
                 <X className="h-5 w-5" />
@@ -346,7 +346,7 @@ export function MentorMeetingsAvailabilityCallout() {
                     <span className="text-sm font-medium text-[var(--foreground)]">
                       {d.label}
                     </span>
-                    <label className="flex cursor-pointer items-center gap-2 text-xs text-[var(--muted)]">
+                    <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
                       <input
                         type="checkbox"
                         checked={dayEnabled[d.key]}

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { revalidateCourseSurfaces } from "@/lib/cache/revalidate-portals";
 import { requireMentorCourseEditable } from "@/lib/mentor-course-auth";
 
 const createLessonBodySchema = z.object({
@@ -49,5 +50,6 @@ export async function POST(
     },
   });
 
+  revalidateCourseSurfaces(courseId);
   return NextResponse.json(lesson, { status: 201 });
 }

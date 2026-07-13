@@ -22,7 +22,7 @@ export function BrowseSearchForm({ initialQuery }: { initialQuery: string }) {
       }}
     >
       <div className="relative flex-1">
-        <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
+        <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input
           type="search"
           name="q"
@@ -41,7 +41,7 @@ export function BrowseSearchForm({ initialQuery }: { initialQuery: string }) {
       {initialQuery ? (
         <Link
           href="/student/browse"
-          className="text-xs font-semibold text-[var(--muted)] hover:text-[var(--foreground)] sm:self-center"
+          className="text-xs font-semibold text-muted-foreground hover:text-[var(--foreground)] sm:self-center"
         >
           Clear
         </Link>

@@ -2,8 +2,9 @@ import { Suspense } from "react";
 import { AnimatedSection } from "@/components/landing/animated-section";
 import { CoursesCatalogSection } from "@/components/courses/courses-catalog-section";
 import {
+  countPublishedCourses,
   getCatalogFacets,
-  searchPublishedCourses,
+  searchPublishedCourseCards,
   type CatalogSort,
 } from "@/lib/courses/public-catalog";
 
@@ -11,13 +12,24 @@ type SearchParams = {
   q?: string;
   category?: string;
   level?: string;
+  price?: string;
   sort?: string;
+  view?: string;
   page?: string;
 };
 
 function parseSort(raw: string | undefined): CatalogSort {
-  if (raw === "popular" || raw === "free") return raw;
-  return "new";
+  if (raw === "new" || raw === "free") return raw;
+  return "popular";
+}
+
+function parsePrice(raw: string | undefined): "" | "free" | "paid" {
+  if (raw === "free" || raw === "paid") return raw;
+  return "";
+}
+
+function parseView(raw: string | undefined): "grid" | "list" {
+  return raw === "list" ? "list" : "grid";
 }
 
 export default async function CoursesPage({
@@ -29,38 +41,43 @@ export default async function CoursesPage({
   const q = (params.q ?? "").trim().slice(0, 80);
   const category = (params.category ?? "").trim().slice(0, 80);
   const level = (params.level ?? "").trim().slice(0, 80);
+  const price = parsePrice(params.price);
   const sort = parseSort(params.sort);
+  const view = parseView(params.view);
   const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
   const take = 12;
   const skip = (page - 1) * take;
 
-  const [courses, facets] = await Promise.all([
-    searchPublishedCourses({
-      q: q || undefined,
-      category: category || undefined,
-      level: level || undefined,
-      sort,
-      take,
-    }),
+  const searchBase = {
+    q: q || undefined,
+    category: category || undefined,
+    level: level || undefined,
+    price: price || undefined,
+    sort,
+  };
+
+  const [courses, facets, totalResults] = await Promise.all([
+    searchPublishedCourseCards({ ...searchBase, take, skip }),
     getCatalogFacets(),
+    countPublishedCourses(searchBase),
   ]);
 
-  const totalResults = courses.length;
-  const totalPages = Math.ceil(totalResults / take);
-  const pagedCourses = courses.slice(0, take);
+  const totalPages = Math.max(1, Math.ceil(totalResults / take));
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+    <div className="min-h-screen bg-[#f4f4f4] text-[var(--foreground)]">
       <main>
         <Suspense fallback={null}>
           <AnimatedSection>
             <CoursesCatalogSection
-              courses={pagedCourses}
+              courses={courses}
               facets={facets}
               activeQ={q}
               activeCategory={category}
               activeLevel={level}
+              activePrice={price}
               activeSort={sort}
+              activeView={view}
               currentPage={page}
               totalPages={totalPages}
               totalResults={totalResults}

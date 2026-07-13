@@ -10,7 +10,7 @@ function rolePill(role: UserRole) {
   if (role === UserRole.ADMIN) {
     return "bg-violet-50 text-violet-800 ring-violet-200";
   }
-  return "bg-emerald-50 text-emerald-800 ring-emerald-200";
+  return "bg-primary/10 text-primary ring-primary/20";
 }
 
 type ForumPost = {
@@ -51,11 +51,11 @@ export function CourseForumExperience({
       <div className="max-h-[60vh] space-y-3 overflow-auto p-4 sm:p-5">
         {!posts.length ? (
           <div className="rounded-lg border border-dashed border-[var(--border)] bg-[var(--background)] p-8 text-center">
-            <MessageCircle className="mx-auto h-8 w-8 text-[var(--muted)]" />
+            <MessageCircle className="mx-auto h-8 w-8 text-muted-foreground" />
             <p className="mt-2 text-sm font-medium text-[var(--foreground)]">
               No posts yet
             </p>
-            <p className="text-xs text-[var(--muted)]">
+            <p className="text-xs text-muted-foreground">
               Start the discussion with your first message.
             </p>
           </div>
@@ -93,7 +93,7 @@ export function CourseForumExperience({
                         {badges}
                       </span>
                     ) : null}
-                    <time className="ml-auto text-[10px] text-[var(--muted)]">
+                    <time className="ml-auto text-[10px] text-muted-foreground">
                       {post.createdAt.toLocaleString()}
                     </time>
                   </div>
@@ -146,7 +146,7 @@ export function CourseForumExperience({
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-soft)]">
             {eyebrow}
           </p>
-          <p className="mt-1 text-sm text-[var(--muted)]">{subtitle}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
         </div>
         {postsAndComposer}
       </div>
@@ -171,7 +171,7 @@ export function CourseForumExperience({
         <h1 className="mt-1 font-display text-2xl font-bold text-[var(--foreground)]">
           {courseTitle}
         </h1>
-        <p className="mt-2 text-sm text-[var(--muted)]">{subtitle}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
       </div>
 
       {postsAndComposer}

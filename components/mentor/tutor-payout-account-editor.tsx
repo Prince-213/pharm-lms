@@ -37,18 +37,18 @@ export function TutorPayoutAccountEditor({
           <p className="text-sm font-semibold text-[var(--foreground)]">
             Current account · {payoutSummary.accountName}
           </p>
-          <p className="mt-1 text-xs text-[var(--muted)]">
+          <p className="mt-1 text-xs text-muted-foreground">
             Bank code {payoutSummary.bankCode} · {payoutSummary.accountMasked}
           </p>
           {payoutSummary.verified ? (
-            <span className="mt-2 inline-flex rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+            <span className="mt-2 inline-flex rounded-full bg-primary/100/15 px-2.5 py-0.5 text-xs font-semibold text-primary dark:text-primary/80">
               Verified
             </span>
           ) : null}
         </div>
       ) : null}
 
-      <p className="text-xs text-[var(--muted)]">
+      <p className="text-xs text-muted-foreground">
         Use a personal bank account that matches your legal name. We verify with
         your bank before saving. Request withdrawals from the Payouts page after
         this is saved.

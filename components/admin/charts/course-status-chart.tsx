@@ -8,11 +8,11 @@ const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 export type StatusPoint = { label: string; count: number };
 
 const STATUS_COLORS: Record<string, string> = {
-  Draft: "#6b7280",
+  Draft: "#64748b",
   Submitted: "#ca8a04",
-  Approved: "#047857",
+  Approved: "#3b82f6",
   Rejected: "#ef4444",
-  Published: "#0f5238",
+  Published: "#1e40af",
 };
 
 type CourseStatusChartProps = {
@@ -21,7 +21,7 @@ type CourseStatusChartProps = {
 
 export function CourseStatusChart({ data }: CourseStatusChartProps) {
   const colors = data.map(
-    (d) => STATUS_COLORS[d.label] ?? "#10b981",
+    (d) => STATUS_COLORS[d.label] ?? "#1e40af",
   );
 
   const options: ApexOptions = {

@@ -25,6 +25,7 @@ import {
 } from "@/lib/section-resource-meta";
 import { useProgress } from "@/lib/student/progress-context";
 import { SectionQuizLauncher } from "@/components/student/section-quiz-launcher";
+import { SkipSectionLessonLink } from "@/components/student/skip-section-lesson-link";
 import { Badge } from "@/components/ui/badge";
 
 export type SidebarLesson = {
@@ -72,6 +73,17 @@ function effectiveResourceHref(
   return null;
 }
 
+function flatLessonIndex(sections: SidebarSection[], lessonId: string): number {
+  let index = 0;
+  for (const section of sections) {
+    for (const lesson of section.lessons) {
+      if (lesson.id === lessonId) return index;
+      index += 1;
+    }
+  }
+  return -1;
+}
+
 function buildLessonHref(
   courseId: string,
   lessonId: string,
@@ -92,6 +104,9 @@ export function CourseContentSidebar({
   intelBadge = "Progress",
   currentTab = "overview",
   lessonNav,
+  currentSectionId = null,
+  sectionQuizPassedIds = [],
+  sectionOrder = [],
 }: {
   courseId: string;
   sections: SidebarSection[];
@@ -102,6 +117,9 @@ export function CourseContentSidebar({
   currentTab?: string;
   /** Desktop sidebar: prev/next lesson controls above search. */
   lessonNav?: CourseLessonNav | null;
+  currentSectionId?: string | null;
+  sectionQuizPassedIds?: string[];
+  sectionOrder?: string[];
 }) {
   const { progressMap: contextMap } = useProgress();
   const progressMap = contextMap || initialProgressMap;
@@ -128,7 +146,27 @@ export function CourseContentSidebar({
     }
   }, [allSectionsOpen, sections]);
 
+  const passedQuizSet = useMemo(
+    () => new Set(sectionQuizPassedIds),
+    [sectionQuizPassedIds],
+  );
+
+  const currentSectionIndex = useMemo(() => {
+    if (!currentSectionId) return -1;
+    return sectionOrder.indexOf(currentSectionId);
+  }, [currentSectionId, sectionOrder]);
+
   const [filterQuery, setFilterQuery] = useState("");
+
+  function shouldConfirmSkip(targetSectionId: string) {
+    if (currentSectionIndex < 0) return false;
+    const targetIndex = sectionOrder.indexOf(targetSectionId);
+    if (targetIndex <= currentSectionIndex) return false;
+    if (!currentSectionId) return false;
+    const currentSection = sections.find((s) => s.id === currentSectionId);
+    if (!currentSection?.quizzes?.length) return false;
+    return !passedQuizSet.has(currentSectionId);
+  }
 
   const filteredSections = useMemo(() => {
     const q = filterQuery.trim().toLowerCase();
@@ -277,42 +315,75 @@ export function CourseContentSidebar({
                       const active = lesson.id === selectedLessonId;
                       const done = progressMap[lesson.id];
                       const isVideo = Boolean(lesson.videoUrl);
+                      const lessonHref = buildLessonHref(
+                        courseId,
+                        lesson.id,
+                        currentTab,
+                      );
+                      const confirmSkip = shouldConfirmSkip(section.id);
+                      const currentSection = sections.find(
+                        (s) => s.id === currentSectionId,
+                      );
+                      const lessonIndex = flatLessonIndex(
+                        sections,
+                        lesson.id,
+                      );
+                      const selectedIndex = selectedLessonId
+                        ? flatLessonIndex(sections, selectedLessonId)
+                        : -1;
+                      const locked =
+                        selectedIndex >= 0 && lessonIndex > selectedIndex + 1;
+                      const rowClass = clsx(
+                        "group flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-[13px] leading-relaxed transition-all duration-200 active:scale-[0.98]",
+                        active
+                          ? "border-l-[3px] border-l-[var(--primary)] bg-[#f7f9fa] font-bold text-[var(--primary)]"
+                          : done
+                            ? "text-muted-foreground hover:bg-[#f7f9fa]"
+                            : locked
+                              ? "opacity-50 hover:bg-[#f7f9fa]"
+                              : "text-slate-600 hover:bg-[#f7f9fa] hover:text-slate-900",
+                      );
+                      const rowBody = (
+                        <>
+                          <span className="mt-1 shrink-0">
+                            {done ? (
+                              <CheckCircle2 className="h-4 w-4 text-primary" strokeWidth={2.5} />
+                            ) : (
+                              <Circle className="h-4 w-4 text-slate-300 group-hover:text-slate-400" strokeWidth={2} />
+                            )}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <span className="block truncate">{lesson.title}</span>
+                            <div className="mt-1 flex items-center gap-2">
+                              <Badge variant={active ? "mint" : "outline"} className="text-[9px] h-4 px-1.5 font-bold uppercase tracking-tighter">
+                                {isVideo ? "Video" : "Article"}
+                              </Badge>
+                              {lesson.durationSec && (
+                                <span className="text-[10px] font-medium text-slate-400 tabular-nums">
+                                  {formatLessonDuration(lesson.durationSec)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      );
+
                       return (
                         <li key={lesson.id}>
-                          <Link
-                            href={buildLessonHref(
-                              courseId,
-                              lesson.id,
-                              currentTab,
-                            )}
-                            className={clsx(
-                              "group flex items-start gap-3 rounded-xl px-3 py-2.5 text-[13px] leading-relaxed transition-all duration-200 active:scale-[0.98]",
-                              active
-                                ? "bg-[#b1f0ce]/15 text-[#0f5238] font-bold ring-1 ring-[#b1f0ce]/40"
-                                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
-                            )}
-                          >
-                            <span className="mt-1 shrink-0">
-                              {done ? (
-                                <CheckCircle2 className="h-4 w-4 text-emerald-500" strokeWidth={2.5} />
-                              ) : (
-                                <Circle className="h-4 w-4 text-slate-300 group-hover:text-slate-400" strokeWidth={2} />
-                              )}
-                            </span>
-                            <div className="min-w-0 flex-1">
-                              <span className="block truncate">{lesson.title}</span>
-                              <div className="mt-1 flex items-center gap-2">
-                                <Badge variant={active ? "mint" : "outline"} className="text-[9px] h-4 px-1.5 font-bold uppercase tracking-tighter">
-                                  {isVideo ? "Video" : "Article"}
-                                </Badge>
-                                {lesson.durationSec && (
-                                  <span className="text-[10px] font-medium text-slate-400 tabular-nums">
-                                    {formatLessonDuration(lesson.durationSec)}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </Link>
+                          {confirmSkip ? (
+                            <SkipSectionLessonLink
+                              href={lessonHref}
+                              shouldConfirm
+                              currentSectionTitle={currentSection?.title}
+                              className={rowClass}
+                            >
+                              {rowBody}
+                            </SkipSectionLessonLink>
+                          ) : (
+                            <Link href={lessonHref} className={rowClass}>
+                              {rowBody}
+                            </Link>
+                          )}
                         </li>
                       );
                     })}
