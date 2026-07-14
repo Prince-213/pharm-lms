@@ -10,12 +10,7 @@ import {
 } from "@/components/courses/catalog-result-card";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Pagination,
@@ -34,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import type { PopularCourseCardView } from "@/components/landing/popular-course-card";
 import type { CatalogSort } from "@/lib/courses/public-catalog";
+import { cnUdemyInput, udemyBorderClass } from "@/lib/ui/udemy-surface";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -59,6 +55,7 @@ function buildHref(params: Record<string, string | undefined>) {
   return `/courses${s ? `?${s}` : ""}`;
 }
 
+/** Compact Udemy-style filter panel — tight title → content spacing. */
 function FilterCard({
   title,
   children,
@@ -67,12 +64,15 @@ function FilterCard({
   children: React.ReactNode;
 }) {
   return (
-    <Card className="shadow-none">
-      <CardHeader className="pb-2 pt-4 px-4">
-        <CardTitle className="text-sm">{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="px-4 pb-4">{children}</CardContent>
-    </Card>
+    <div
+      className={cn(
+        "rounded-md border bg-white px-4 py-3",
+        udemyBorderClass,
+      )}
+    >
+      <h3 className="text-sm font-bold text-foreground">{title}</h3>
+      <div className="mt-2">{children}</div>
+    </div>
   );
 }
 
@@ -198,7 +198,7 @@ export function CoursesCatalogSection({
         </div>
 
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-          <aside className="w-full shrink-0 space-y-4 lg:w-[220px]">
+          <aside className="w-full shrink-0 space-y-3 lg:w-[220px]">
             <FilterCard title="Search">
               <form onSubmit={handleSearch} className="relative">
                 <Input
@@ -206,7 +206,7 @@ export function CoursesCatalogSection({
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   placeholder="Search courses"
-                  className="pr-9"
+                  className={cnUdemyInput("h-9 rounded-sm pr-9")}
                 />
                 <Button
                   type="submit"
@@ -222,17 +222,8 @@ export function CoursesCatalogSection({
 
             {facets.categories.length > 0 ? (
               <FilterCard title="Category">
-                <div className="space-y-0.5">
-                  <Button
-                    variant="link"
-                    className={cn(
-                      "h-auto justify-start px-0 py-1 text-sm",
-                      !activeCategory
-                        ? "font-semibold text-primary"
-                        : "text-muted-foreground",
-                    )}
-                    asChild
-                  >
+                <ul className="flex flex-col gap-0.5">
+                  <li>
                     <Link
                       href={buildHref({
                         q: activeQ || undefined,
@@ -242,25 +233,21 @@ export function CoursesCatalogSection({
                           activeSort !== "popular" ? activeSort : undefined,
                         view: activeView !== "grid" ? activeView : undefined,
                       })}
+                      className={cn(
+                        "block py-0.5 text-sm leading-snug hover:text-primary",
+                        !activeCategory
+                          ? "font-bold text-primary"
+                          : "text-foreground",
+                      )}
                     >
                       All categories
                     </Link>
-                  </Button>
+                  </li>
                   {facets.categories.map((cat) => {
                     const active =
                       activeCategory.toLowerCase() === cat.toLowerCase();
                     return (
-                      <Button
-                        key={cat}
-                        variant="link"
-                        className={cn(
-                          "h-auto justify-start px-0 py-1 text-sm",
-                          active
-                            ? "font-semibold text-primary"
-                            : "text-muted-foreground",
-                        )}
-                        asChild
-                      >
+                      <li key={cat}>
                         <Link
                           href={buildHref({
                             q: activeQ || undefined,
@@ -274,21 +261,31 @@ export function CoursesCatalogSection({
                             view:
                               activeView !== "grid" ? activeView : undefined,
                           })}
+                          className={cn(
+                            "block py-0.5 text-sm leading-snug hover:text-primary",
+                            active
+                              ? "font-bold text-primary"
+                              : "text-foreground",
+                          )}
                         >
                           {cat}
                         </Link>
-                      </Button>
+                      </li>
                     );
                   })}
-                </div>
+                </ul>
               </FilterCard>
             ) : null}
 
             <FilterCard title="Price">
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-1.5">
                 <Button
                   variant={activePrice === "free" ? "default" : "outline"}
                   size="sm"
+                  className={cn(
+                    "h-8 rounded-sm",
+                    activePrice !== "free" && udemyBorderClass,
+                  )}
                   asChild
                 >
                   <Link
@@ -303,6 +300,10 @@ export function CoursesCatalogSection({
                 <Button
                   variant={activePrice === "paid" ? "default" : "outline"}
                   size="sm"
+                  className={cn(
+                    "h-8 rounded-sm",
+                    activePrice !== "paid" && udemyBorderClass,
+                  )}
                   asChild
                 >
                   <Link
@@ -319,7 +320,7 @@ export function CoursesCatalogSection({
 
             {facets.levels.length > 0 ? (
               <FilterCard title="Level">
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:grid-cols-1">
+                <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-3 lg:grid-cols-1">
                   {facets.levels.map((level) => {
                     const active =
                       activeLevel.toLowerCase() === level.toLowerCase();
@@ -328,6 +329,10 @@ export function CoursesCatalogSection({
                         key={level}
                         variant={active ? "default" : "outline"}
                         size="sm"
+                        className={cn(
+                          "h-8 rounded-sm",
+                          !active && udemyBorderClass,
+                        )}
                         asChild
                       >
                         <Link
