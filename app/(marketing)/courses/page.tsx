@@ -65,7 +65,7 @@ export default async function CoursesPage({
   const totalPages = Math.max(1, Math.ceil(totalResults / take));
 
   return (
-    <div className="min-h-screen bg-[#f4f4f4] text-[var(--foreground)]">
+    <div className="min-h-screen bg-background text-foreground">
       <main>
         <Suspense fallback={null}>
           <AnimatedSection>

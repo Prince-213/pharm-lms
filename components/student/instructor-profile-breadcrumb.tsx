@@ -1,5 +1,12 @@
-import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 type InstructorProfileBreadcrumbProps = {
   listHref: string;
@@ -13,20 +20,20 @@ export function InstructorProfileBreadcrumb({
   name,
 }: InstructorProfileBreadcrumbProps) {
   return (
-    <nav
-      aria-label="Breadcrumb"
-      className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground"
-    >
-      <Link
-        href={listHref}
-        className="font-semibold text-[var(--primary)] hover:underline"
-      >
-        {listLabel}
-      </Link>
-      <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50" aria-hidden />
-      <span className="truncate font-medium text-[var(--foreground)]">
-        {name}
-      </span>
-    </nav>
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link href={listHref}>{listLabel}</Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbPage className="max-w-[14rem] truncate font-medium">
+            {name}
+          </BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
   );
 }

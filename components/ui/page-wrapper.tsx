@@ -51,12 +51,12 @@ export function PageWrapper({
           {(heading ?? subheading) && (
             <div className="space-y-1">
               {heading && (
-                <h1 className="font-display text-2xl font-black tracking-tight text-[var(--foreground)] sm:text-3xl">
+                <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                   {heading}
                 </h1>
               )}
               {subheading && (
-                <p className="text-sm text-slate-500">{subheading}</p>
+                <p className="text-sm text-muted-foreground">{subheading}</p>
               )}
             </div>
           )}

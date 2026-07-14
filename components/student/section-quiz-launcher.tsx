@@ -11,6 +11,7 @@ import {
   seededShuffle,
 } from "@/lib/section-quiz-questions";
 import { LabeledIconButton } from "@/components/student/labeled-icon-button";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type SectionQuiz = {
@@ -32,7 +33,8 @@ export function SectionQuizLauncher({
     | "icon"
     | "labeled"
     | "sidebar-link"
-    | "section-badge";
+    | "section-badge"
+    | "button-group";
   size?: "sm" | "default";
   /** When set, opens this quiz first (e.g. sidebar row click). */
   defaultQuizId?: string;
@@ -170,14 +172,27 @@ export function SectionQuizLauncher({
           aria-hidden
         />
       </button>
+    ) : triggerVariant === "button-group" ? (
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => openQuiz()}
+        className="h-10 gap-2 rounded-none px-4 font-semibold"
+      >
+        <ListChecks className="h-4 w-4" aria-hidden />
+        Quiz
+      </Button>
     ) : triggerVariant === "sidebar-link" ? (
       <button
         type="button"
         onClick={() => openQuiz(defaultQuizId)}
-        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-[11px] font-bold text-amber-700 transition-colors bg-amber-50/50 hover:bg-amber-100/50"
+        className="flex w-full items-center gap-3 py-0 text-left text-sm text-foreground hover:text-primary"
       >
-        <ListChecks className="h-3.5 w-3.5 shrink-0" aria-hidden />
-        <span className="truncate">{linkLabel}</span>
+        <HelpCircle className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+        <span className="min-w-0 flex-1 truncate">{linkLabel}</span>
+        <span className="shrink-0 text-[10px] font-semibold uppercase text-muted-foreground">
+          Quiz
+        </span>
       </button>
     ) : triggerVariant === "section-badge" ? (
       <button

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { AssignmentStatus } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { revalidateCourseSurfaces } from "@/lib/cache/revalidate-portals";
+import { deriveQuizTitle } from "@/lib/curriculum/derive-quiz-title";
 import { requireMentorCourseEditable } from "@/lib/mentor-course-auth";
 
 const mcqQuestionSchema = z
@@ -50,12 +51,24 @@ const DEFAULT_MCQ_QUESTIONS = [
   },
 ];
 
-const createItemBodySchema = z.object({
-  itemType: z.enum(["QUIZ", "ASSIGNMENT"]),
-  title: z.string().min(2).max(140),
-  quizQuestions: z.array(mcqQuestionSchema).min(1).max(20).optional(),
-  assignmentDescription: z.string().max(5000).optional(),
-});
+const createItemBodySchema = z
+  .object({
+    itemType: z.enum(["QUIZ", "ASSIGNMENT"]),
+    title: z.string().max(140).optional(),
+    quizQuestions: z.array(mcqQuestionSchema).min(1).max(20).optional(),
+    assignmentDescription: z.string().max(5000).optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.itemType !== "ASSIGNMENT") return;
+    const title = data.title?.trim() ?? "";
+    if (title.length < 2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Assignment title is required.",
+        path: ["title"],
+      });
+    }
+  });
 
 export async function POST(
   request: Request,
@@ -91,7 +104,7 @@ export async function POST(
     const quiz = await db.sectionQuiz.create({
       data: {
         sectionId,
-        title: parsed.data.title,
+        title: deriveQuizTitle(questions),
         questions,
       },
     });
@@ -104,7 +117,7 @@ export async function POST(
     data: {
       courseId,
       createdById: session.user.id,
-      title: parsed.data.title,
+      title: parsed.data.title!.trim(),
       description: `Section:${sectionId}\n${assignmentBody}`,
       status: AssignmentStatus.DRAFT,
       dueDate: null,

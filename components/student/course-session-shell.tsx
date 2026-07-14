@@ -293,15 +293,15 @@ export function CourseSessionShell({
                 {childrenStage}
               </div>
 
-              <div className="border-t border-slate-200/60 bg-white pb-36 md:pb-32 lg:pb-0">
+              <div className="border-t border-[#d1d7dc] bg-white pb-20 lg:pb-0">
                 {childrenLessonPanel}
               </div>
             </div>
 
             {/* ─── Desktop Curriculum Sidebar ─── */}
-            <aside className="hidden lg:flex h-full w-full max-w-[340px] flex-col border-l border-slate-200/50 bg-white/80 backdrop-blur-md">
-              <ScrollArea className="flex-1">
-                <div className="min-h-0">{childrenSidebar}</div>
+            <aside className="hidden lg:flex h-full w-[400px] min-w-0 shrink-0 flex-col overflow-x-hidden border-l border-border bg-card">
+              <ScrollArea className="min-w-0 flex-1">
+                <div className="min-h-0 min-w-0 overflow-x-hidden">{childrenSidebar}</div>
               </ScrollArea>
             </aside>
           </div>

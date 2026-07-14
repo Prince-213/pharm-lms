@@ -2,6 +2,11 @@
 
 import { useState } from "react";
 import { Bot, Loader2, MessageCircle, Send, X } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
 type Turn = { role: "user" | "assistant"; content: string };
@@ -67,97 +72,100 @@ export function CourseChatBubble({
 
   return (
     <>
-      <button
+      <Button
         type="button"
+        size={open ? "icon" : "default"}
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "fixed z-[85] inline-flex items-center justify-center bg-[var(--primary)] text-[var(--primary-foreground)] shadow-[var(--shadow-lg)] transition hover:bg-[var(--primary-strong)]",
-          "bottom-32 right-4 md:bottom-28 lg:bottom-5 lg:right-5",
-          open
-            ? "h-12 w-12 rounded-full"
-            : "gap-1.5 rounded-full px-3 py-2.5 sm:px-4",
+          "fixed z-[85] bg-primary text-primary-foreground shadow-lg hover:bg-[var(--primary-strong)]",
+          "bottom-36 right-4 md:bottom-32 lg:bottom-24 lg:right-6",
+          !open && "gap-1.5 rounded-full px-3 sm:px-4",
         )}
         aria-label="Open course assistant"
       >
         {open ? (
           <X className="h-5 w-5 shrink-0" />
         ) : (
-          <MessageCircle className="h-5 w-5 shrink-0" />
+          <>
+            <MessageCircle className="h-5 w-5 shrink-0" />
+            <span className="text-xs font-semibold lg:hidden">Help</span>
+          </>
         )}
-        {!open ? (
-          <span className="text-xs font-semibold lg:hidden">Help</span>
-        ) : null}
-      </button>
+      </Button>
 
       {open ? (
-        <div
+        <Card
           className={cn(
-            "fixed z-[85] w-[min(92vw,380px)] overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-lg)]",
-            "bottom-44 right-4 md:bottom-40 lg:bottom-20 lg:right-5",
+            "fixed z-[85] w-[min(92vw,380px)] overflow-hidden border-[#d1d7dc] py-0 shadow-lg",
+            "bottom-52 right-4 md:bottom-48 lg:bottom-40 lg:right-6",
           )}
         >
-          <div className="flex items-center gap-2 border-b border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3">
-            <Bot className="h-4 w-4 text-[var(--primary)]" />
-            <div>
-              <p className="text-sm font-semibold text-[var(--foreground)]">
-                Course assistant
-              </p>
-              <p className="text-[11px] text-muted-foreground">
-                Grounded in your enrolled course content
-              </p>
+          <CardHeader className="border-b border-[#d1d7dc] bg-[#f7f9fa] px-4 py-3">
+            <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+              <Bot className="h-4 w-4 text-primary" />
+              Course assistant
+            </CardTitle>
+            <p className="text-[11px] text-muted-foreground">
+              Grounded in your enrolled course content
+            </p>
+          </CardHeader>
+
+          <ScrollArea className="max-h-[52vh] px-3 py-3">
+            <div className="space-y-2">
+              {turns.map((t, i) => (
+                <div
+                  key={`${t.role}-${i}`}
+                  className={
+                    t.role === "user"
+                      ? "ml-auto max-w-[88%] rounded-lg bg-primary px-3 py-2 text-xs text-primary-foreground"
+                      : "max-w-[88%] rounded-lg border border-[#d1d7dc] bg-background px-3 py-2 text-xs"
+                  }
+                >
+                  {t.content}
+                </div>
+              ))}
+              {sending ? (
+                <div className="inline-flex items-center gap-1 rounded-lg border border-[#d1d7dc] px-3 py-2 text-xs text-muted-foreground">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Thinking...
+                </div>
+              ) : null}
             </div>
-          </div>
+          </ScrollArea>
 
-          <div className="max-h-[52vh] space-y-2 overflow-auto px-3 py-3">
-            {turns.map((t, i) => (
-              <div
-                key={`${t.role}-${i}`}
-                className={
-                  t.role === "user"
-                    ? "ml-auto max-w-[88%] rounded-lg bg-[var(--primary)] px-3 py-2 text-xs text-[var(--primary-foreground)]"
-                    : "max-w-[88%] rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-xs text-[var(--foreground)]"
-                }
-              >
-                {t.content}
-              </div>
-            ))}
-            {sending ? (
-              <div className="inline-flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-xs text-muted-foreground">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                Thinking...
-              </div>
-            ) : null}
-          </div>
-
-          <div className="border-t border-[var(--border)] p-3">
+          <CardContent className="border-t border-[#d1d7dc] p-3">
             <div className="flex items-center gap-2">
-              <input
+              <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") void send();
                 }}
                 disabled={sending || disabled}
-                className="h-10 w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 text-sm"
                 placeholder={
                   disabled
                     ? "Complete lessons to unlock context chat"
                     : "Ask a question"
                 }
+                className="h-10"
               />
-              <button
+              <Button
                 type="button"
+                size="icon"
                 onClick={() => void send()}
                 disabled={sending || disabled || !input.trim()}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-md bg-[var(--primary)] text-[var(--primary-foreground)] disabled:opacity-60"
                 aria-label="Send message"
               >
                 <Send className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
-            {error ? <p className="mt-2 text-xs text-rose-700">{error}</p> : null}
-          </div>
-        </div>
+            {error ? (
+              <Alert variant="destructive" className="mt-2 py-2">
+                <AlertDescription className="text-xs">{error}</AlertDescription>
+              </Alert>
+            ) : null}
+          </CardContent>
+        </Card>
       ) : null}
     </>
   );

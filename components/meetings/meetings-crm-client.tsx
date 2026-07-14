@@ -3,6 +3,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { MeetingDetailDrawer } from "@/components/meetings/meeting-detail-drawer";
+import { Badge } from "@/components/ui/badge";
 import {
   Sheet,
   SheetContent,
@@ -14,6 +15,10 @@ import {
   dateKeyFromDate,
   isWeekdayAvailable,
 } from "@/lib/meetings/calendar-events";
+import {
+  meetingAccentBorderClass,
+  meetingStatusBadgeProps,
+} from "@/lib/meetings/meeting-ui";
 import { cn } from "@/lib/utils";
 
 const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -173,19 +178,32 @@ export function MeetingsCrmClient({
                 const isEmpty = dayEvents.length === 0;
                 const muted = isEmpty && (!showAvailabilityGray || !weekdayOk);
 
+                const openDayCell = () => {
+                  if (dayEvents.length === 1) openEvent(dayEvents[0]);
+                  else if (dayEvents.length > 1) openDayList(dayEvents);
+                };
+
                 return (
-                  <button
+                  <div
                     key={dateKey}
-                    type="button"
-                    onClick={() => {
-                      if (dayEvents.length === 1) openEvent(dayEvents[0]);
-                      else if (dayEvents.length > 1) openDayList(dayEvents);
-                    }}
+                    role={dayEvents.length > 0 ? "button" : undefined}
+                    tabIndex={dayEvents.length > 0 ? 0 : undefined}
+                    onClick={dayEvents.length > 0 ? openDayCell : undefined}
+                    onKeyDown={
+                      dayEvents.length > 0
+                        ? (e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              openDayCell();
+                            }
+                          }
+                        : undefined
+                    }
                     className={cn(
                       "flex min-h-[88px] flex-col border-r border-[var(--border)] p-1.5 text-left last:border-r-0 sm:p-2",
                       muted
                         ? "bg-[var(--surface-muted)]/50 opacity-60"
-                        : "bg-[var(--surface)] hover:bg-[#f7f9fa]",
+                        : "bg-[var(--surface)] hover:bg-muted/40",
                       isToday && "ring-1 ring-inset ring-[var(--primary)]/30",
                       dayEvents.length > 0 && "cursor-pointer",
                     )}
@@ -200,12 +218,15 @@ export function MeetingsCrmClient({
                     >
                       {dayDate.getDate()}
                     </span>
-                    <div className="flex flex-1 flex-col gap-1">
+                    <div className="flex min-w-0 flex-1 flex-col gap-1">
                       {dayEvents.slice(0, 3).map((ev) => (
                         <button
                           key={ev.id}
                           type="button"
-                          onClick={() => openEvent(ev)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEvent(ev);
+                          }}
                           className={cn(
                             "w-full truncate rounded px-1.5 py-0.5 text-left text-[10px] font-semibold transition-opacity hover:opacity-90",
                             ev.kind === "pending_request" &&
@@ -236,7 +257,7 @@ export function MeetingsCrmClient({
                         </button>
                       ) : null}
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -263,23 +284,44 @@ export function MeetingsCrmClient({
             <SheetTitle>Meetings this day</SheetTitle>
           </SheetHeader>
           <ul className="mt-4 space-y-2">
-            {dayList.map((ev) => (
-              <li key={ev.id}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDayListOpen(false);
-                    openEvent(ev);
-                  }}
-                  className="w-full rounded-lg border border-[#d1d7dc] bg-white px-3 py-2 text-left text-sm hover:bg-[#f7f9fa]"
-                >
-                  <span className="font-semibold">{ev.label}</span>
-                  <span className="mt-0.5 block text-xs text-muted-foreground">
-                    {ev.displayStatus}
-                  </span>
-                </button>
-              </li>
-            ))}
+            {dayList.map((ev) => {
+              const badge = meetingStatusBadgeProps(ev.kind);
+              return (
+                <li key={ev.id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDayListOpen(false);
+                      openEvent(ev);
+                    }}
+                    className={cn(
+                      "w-full rounded-lg border border-border bg-card text-left shadow-sm transition-colors hover:bg-muted/50",
+                      "border-l-4",
+                      meetingAccentBorderClass(ev.kind),
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-2 px-3 py-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-1 flex flex-wrap items-center gap-2">
+                          <Badge {...badge} className="text-[10px]">
+                            {ev.displayStatus}
+                          </Badge>
+                          <span className="text-[10px] tabular-nums text-muted-foreground">
+                            {ev.shortLabel}
+                          </span>
+                        </div>
+                        <p className="truncate text-sm font-semibold text-foreground">
+                          {ev.label}
+                        </p>
+                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                          {ev.counterpartyName}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </SheetContent>
       </Sheet>

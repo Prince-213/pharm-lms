@@ -2,6 +2,11 @@
 
 import type { ReactNode } from "react";
 import { Info, Loader2 } from "lucide-react";
+import {
+  CurriculumTreeChildren,
+  CurriculumTreeGroup,
+  type CurriculumGroupKind,
+} from "@/components/curriculum/curriculum-tree-group";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -114,19 +119,78 @@ export function PanelFormActions({
 export function CurriculumSectionHeading({
   title,
   description,
+  count,
 }: {
   title: string;
   description?: string;
+  count?: number;
 }) {
   return (
-    <div className="space-y-1">
-      <h4 className="text-xs font-bold uppercase tracking-wide text-foreground">
-        {title}
-      </h4>
-      {description ? (
-        <p className="text-xs text-muted-foreground">{description}</p>
+    <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
+      <div className="min-w-0 space-y-1">
+        <h4 className="text-sm font-semibold text-foreground">{title}</h4>
+        {description ? (
+          <p className="text-xs text-muted-foreground">{description}</p>
+        ) : null}
+      </div>
+      {count !== undefined && count > 0 ? (
+        <Badge variant="outline" className="shrink-0 tabular-nums">
+          {count}
+        </Badge>
       ) : null}
     </div>
+  );
+}
+
+type CurriculumSubsectionTone = "lectures" | "resources" | "assessments";
+
+const toneToGroupKind: Record<CurriculumSubsectionTone, CurriculumGroupKind> = {
+  lectures: "content",
+  resources: "resources",
+  assessments: "assessments",
+};
+
+const toneToTitle: Record<CurriculumSubsectionTone, string> = {
+  lectures: "Content",
+  resources: "Resources",
+  assessments: "Assessments",
+};
+
+/** Groups content inside a section with collapsible folder tree UI. */
+export function CurriculumSubsection({
+  tone,
+  title,
+  description,
+  count,
+  children,
+  className,
+  defaultOpen = true,
+}: {
+  tone: CurriculumSubsectionTone;
+  title?: string;
+  description?: string;
+  count?: number;
+  children: ReactNode;
+  className?: string;
+  defaultOpen?: boolean;
+}) {
+  const displayTitle = title ?? toneToTitle[tone];
+  return (
+    <section className={cn("mb-4 overflow-hidden rounded-lg border border-border", className)}>
+      <CurriculumTreeGroup
+        kind={toneToGroupKind[tone]}
+        title={displayTitle}
+        count={count}
+        defaultOpen={defaultOpen}
+      >
+        <CurriculumTreeChildren className="space-y-3 px-2 py-3 sm:px-3 sm:py-4">
+          {description ? (
+            <p className="px-1 text-xs text-muted-foreground">{description}</p>
+          ) : null}
+          {children}
+        </CurriculumTreeChildren>
+      </CurriculumTreeGroup>
+    </section>
   );
 }
 
@@ -160,17 +224,29 @@ export function CurriculumList({
 export function CurriculumListItem({
   children,
   className,
+  index,
 }: {
   children: ReactNode;
   className?: string;
+  /** Optional 1-based index shown beside the row (e.g. lecture number). */
+  index?: number;
 }) {
   return (
     <div
       className={cn(
-        "border-b border-[#d1d7dc] bg-[var(--surface)] px-4 py-4 last:border-b-0 sm:px-5",
+        "border-b border-[#d1d7dc] bg-white px-4 py-4 last:border-b-0 sm:px-5",
+        "even:bg-[#fafbfc]",
         className,
       )}
     >
+      {index !== undefined ? (
+        <div className="mb-3 flex items-center gap-2">
+          <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-[#eceff1] px-1.5 text-[11px] font-bold tabular-nums text-muted-foreground">
+            {index}
+          </span>
+          <span className="h-px flex-1 bg-[#d1d7dc]" aria-hidden />
+        </div>
+      ) : null}
       {children}
     </div>
   );

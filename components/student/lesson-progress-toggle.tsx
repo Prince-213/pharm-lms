@@ -2,6 +2,7 @@
 
 import { CheckCircle2, Loader2, NotebookPen } from "lucide-react";
 import { LabeledIconButton } from "@/components/student/labeled-icon-button";
+import { Button } from "@/components/ui/button";
 import { useProgress } from "@/lib/student/progress-context";
 import { cn } from "@/lib/utils";
 
@@ -15,7 +16,7 @@ export function LessonProgressToggle({
   courseId: string;
   lessonId: string;
   initialCompleted: boolean;
-  variant?: "default" | "icon" | "labeled";
+  variant?: "default" | "icon" | "labeled" | "button-group";
   className?: string;
 }) {
   const { progressMap, markAsComplete, isPending } = useProgress();
@@ -25,6 +26,30 @@ export function LessonProgressToggle({
     if (completed) return;
     markAsComplete(lessonId);
   };
+
+  if (variant === "button-group") {
+    const labelDone = "Lesson completed";
+    const labelPending = "Mark lesson as complete";
+    return (
+      <Button
+        type="button"
+        disabled={completed || isPending}
+        onClick={handleToggle}
+        className={cn(
+          "h-10 gap-2 rounded-none px-5 font-bold",
+          completed && "bg-primary/80",
+          className,
+        )}
+      >
+        {isPending ? (
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+        ) : completed ? (
+          <CheckCircle2 className="h-4 w-4" aria-hidden />
+        ) : null}
+        {completed ? "Lesson completed" : "Mark complete"}
+      </Button>
+    );
+  }
 
   if (variant === "labeled") {
     const labelDone = "Lesson completed";

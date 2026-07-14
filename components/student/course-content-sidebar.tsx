@@ -1,32 +1,44 @@
 "use client";
 
-import { clsx } from "clsx";
 import {
+  CheckCircle2,
   ChevronDown,
-  ChevronsDownUp,
-  Circle,
   Download,
   ExternalLink,
+  FileText,
+  HelpCircle,
   Link2,
-  CheckCircle2,
+  Play,
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import {
+  CurriculumTreeChildren,
+  CurriculumTreeGroup,
+  CurriculumTreeRow,
+} from "@/components/curriculum/curriculum-tree-group";
+import {
   CourseLessonNavGroup,
   type CourseLessonNav,
 } from "@/components/student/course-lesson-nav-group";
-import type { SectionResource } from "@/components/mentor/curriculum-editor-v2";
 import type { CatalogResourceItem } from "@/lib/course-catalog-detail";
-import { formatLessonDuration } from "@/lib/lesson-duration";
 import {
-  formatResourceMetaLine,
+  formatLessonDuration,
+  formatTotalDuration,
+} from "@/lib/lesson-duration";
+import {
+  formatResourceSizeLabel,
+  resourceDisplayName,
   resourceDownloadFilename,
 } from "@/lib/section-resource-meta";
 import { useProgress } from "@/lib/student/progress-context";
 import { SectionQuizLauncher } from "@/components/student/section-quiz-launcher";
 import { SkipSectionLessonLink } from "@/components/student/skip-section-lesson-link";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
+import { cnUdemyInput } from "@/lib/ui/udemy-surface";
 
 export type SidebarLesson = {
   id: string;
@@ -41,36 +53,23 @@ export type SidebarSection = {
   title: string;
   lessons: SidebarLesson[];
   description?: string | null;
-  /** From server with signed URLs; if omitted, parsed from `description` (no R2 resolve). */
   resources?: CatalogResourceItem[];
   quizzes?: { id: string; title: string; questions: unknown }[];
 };
 
-function parseSectionResources(
-  description: string | null | undefined,
-): SectionResource[] {
-  if (!description) return [];
-  try {
-    const p = JSON.parse(description) as { resources?: SectionResource[] };
-    return Array.isArray(p.resources) ? p.resources : [];
-  } catch {
-    return [];
-  }
+function buildLessonHref(
+  courseId: string,
+  lessonId: string,
+  currentTab: string,
+): string {
+  const p = new URLSearchParams();
+  p.set("lesson", lessonId);
+  if (currentTab !== "overview") p.set("tab", currentTab);
+  return `/student/course/${courseId}?${p.toString()}`;
 }
 
-function effectiveResourceHref(
-  r: SectionResource & { href?: string | null },
-): string | null {
-  if (r.href) return r.href;
-  const u = r.url?.trim();
-  if (
-    u?.startsWith("https://") ||
-    u?.startsWith("http://") ||
-    u?.startsWith("/")
-  ) {
-    return u;
-  }
-  return null;
+function sectionSeconds(lessons: SidebarLesson[]) {
+  return lessons.reduce((s, l) => s + (l.durationSec ?? 0), 0);
 }
 
 function flatLessonIndex(sections: SidebarSection[], lessonId: string): number {
@@ -84,23 +83,12 @@ function flatLessonIndex(sections: SidebarSection[], lessonId: string): number {
   return -1;
 }
 
-function buildLessonHref(
-  courseId: string,
-  lessonId: string,
-  currentTab: string,
-): string {
-  const p = new URLSearchParams();
-  p.set("lesson", lessonId);
-  if (currentTab !== "overview") p.set("tab", currentTab);
-  return `/student/course/${courseId}?${p.toString()}`;
-}
-
 export function CourseContentSidebar({
   courseId,
   sections,
   selectedLessonId,
   progressMap: initialProgressMap,
-  intelHeading = "Course outline",
+  intelHeading = "Course content",
   intelBadge = "Progress",
   currentTab = "overview",
   lessonNav,
@@ -115,7 +103,6 @@ export function CourseContentSidebar({
   intelHeading?: string;
   intelBadge?: string;
   currentTab?: string;
-  /** Desktop sidebar: prev/next lesson controls above search. */
   lessonNav?: CourseLessonNav | null;
   currentSectionId?: string | null;
   sectionQuizPassedIds?: string[];
@@ -124,27 +111,29 @@ export function CourseContentSidebar({
   const { progressMap: contextMap } = useProgress();
   const progressMap = contextMap || initialProgressMap;
 
-  const [open, setOpen] = useState<Record<string, boolean>>(() => {
-    const init: Record<string, boolean> = {};
-    for (const s of sections) init[s.id] = true;
-    return init;
-  });
+  const firstId = sections[0]?.id;
+  const [open, setOpen] = useState<Set<string>>(() =>
+    firstId ? new Set(sections.map((s) => s.id)) : new Set(),
+  );
 
-  const allSectionsOpen =
-    sections.length > 0 && sections.every((s) => open[s.id] ?? true);
+  const allOpen = sections.length > 0 && sections.every((s) => open.has(s.id));
+
+  const toggleSection = useCallback((id: string) => {
+    setOpen((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
 
   const expandCollapseAll = useCallback(() => {
-    if (allSectionsOpen) {
-      const firstId = sections[0]?.id;
-      const next: Record<string, boolean> = {};
-      for (const s of sections) next[s.id] = s.id === firstId;
-      setOpen(next);
+    if (allOpen) {
+      setOpen(firstId ? new Set([firstId]) : new Set());
     } else {
-      const next: Record<string, boolean> = {};
-      for (const s of sections) next[s.id] = true;
-      setOpen(next);
+      setOpen(new Set(sections.map((s) => s.id)));
     }
-  }, [allSectionsOpen, sections]);
+  }, [allOpen, firstId, sections]);
 
   const passedQuizSet = useMemo(
     () => new Set(sectionQuizPassedIds),
@@ -179,6 +168,69 @@ export function CourseContentSidebar({
       .filter((s) => s.lessons.length > 0);
   }, [sections, filterQuery]);
 
+  function renderResourceRow(res: CatalogResourceItem, idx: number) {
+    const name = resourceDisplayName(res);
+    const sizeLabel = formatResourceSizeLabel(res);
+    return (
+      <CurriculumTreeRow key={`${res.id}-${idx}`} className="min-w-0 px-1.5 py-0.5">
+        <div className="flex h-10 min-w-0 items-center gap-2 overflow-hidden rounded-md border border-border bg-card px-2">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm border border-border bg-muted text-primary">
+            {res.type === "FILE" ? (
+              <FileText className="h-3.5 w-3.5" />
+            ) : (
+              <Link2 className="h-3.5 w-3.5" />
+            )}
+          </div>
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <p className="truncate text-xs font-semibold leading-tight" title={name}>
+              {name}
+            </p>
+            <p
+              className="mt-0.5 truncate text-[10px] leading-none text-muted-foreground"
+              title={sizeLabel}
+            >
+              {sizeLabel}
+            </p>
+          </div>
+          {res.href ? (
+            res.type === "FILE" ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 shrink-0"
+                asChild
+              >
+                <a
+                  href={res.href}
+                  download={resourceDownloadFilename(res)}
+                  aria-label={`Download ${name}`}
+                >
+                  <Download className="h-3.5 w-3.5" />
+                </a>
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 shrink-0"
+                asChild
+              >
+                <a
+                  href={res.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Open ${name}`}
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              </Button>
+            )
+          ) : null}
+        </div>
+      </CurriculumTreeRow>
+    );
+  }
+
   const stats = useMemo(() => {
     let total = 0;
     let done = 0;
@@ -192,253 +244,237 @@ export function CourseContentSidebar({
   }, [sections, progressMap]);
 
   const pct = stats.total > 0 ? Math.round((stats.done / stats.total) * 100) : 0;
+  const contentSummary = `${stats.total} lecture${stats.total === 1 ? "" : "s"} · ${pct}% complete`;
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-transparent">
-      {/* ─── Header ─── */}
-      <div className="shrink-0 px-5 pb-4 pt-5">
+    <div className="flex h-full min-h-0 min-w-0 flex-col overflow-x-hidden bg-card">
+      <div className="shrink-0 px-4 pb-3 pt-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-display text-[11px] font-extrabold uppercase tracking-[0.12em] text-[var(--primary)]">
-            {intelHeading}
-          </h2>
-          <Badge variant="mint" className="text-[10px] py-0 px-2 h-5">
+          <h2 className="text-base font-bold text-foreground">{intelHeading}</h2>
+          <span className="text-[10px] font-bold uppercase tracking-wide text-primary">
             {intelBadge}
-          </Badge>
+          </span>
         </div>
+        <p className="mt-1 text-xs text-muted-foreground">{contentSummary}</p>
 
-        <div className="mt-4 space-y-2">
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="font-bold text-slate-500 uppercase tracking-wider">Progress</span>
-            <span className="font-black text-[var(--primary)] tracking-tighter">{pct}%</span>
-          </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100/50 ring-1 ring-slate-200/50">
-            <div
-              className="h-full rounded-full bg-[var(--primary)] transition-all duration-700 ease-out"
-              style={{ width: `${pct}%` }}
-            />
-          </div>
+        <div className="mt-3 space-y-1">
+          <Progress value={pct} className="h-1.5" />
         </div>
 
         {lessonNav ? (
-          <div className="mt-4 hidden lg:block">
+          <div className="mt-3 hidden lg:block">
             <CourseLessonNavGroup variant="sidebar" {...lessonNav} />
           </div>
         ) : null}
 
-        <div
-          className={clsx(
-            "flex items-center justify-between gap-2",
-            lessonNav ? "mt-3 lg:mt-4" : "mt-5",
-          )}
-        >
-          <button
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <Button
             type="button"
+            variant="link"
             onClick={expandCollapseAll}
-            className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[10px] font-bold uppercase tracking-wide text-[var(--primary)] transition hover:bg-[var(--primary-soft)]/30"
+            className="h-auto p-0 text-xs font-bold text-primary"
           >
-            <ChevronsDownUp className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            {allSectionsOpen ? "Collapse all" : "Expand all"}
-          </button>
+            {allOpen ? "Collapse all" : "Expand all"}
+          </Button>
         </div>
 
-        <div className="mt-3">
-          <div className="relative">
-            <input
-              type="search"
-              value={filterQuery}
-              onChange={(e) => setFilterQuery(e.target.value)}
-              placeholder="Search lessons…"
-              className={clsx(
-                "w-full rounded-xl border border-slate-200/60 bg-slate-50/50 px-4 py-2.5 text-xs text-[var(--foreground)]",
-                "placeholder:text-slate-400 font-medium",
-                "transition-all duration-200",
-                "focus:border-[var(--primary)] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[var(--primary-soft)]/20",
-              )}
-            />
-          </div>
+        <div className="mt-2">
+          <Input
+            type="search"
+            value={filterQuery}
+            onChange={(e) => setFilterQuery(e.target.value)}
+            placeholder="Search lessons…"
+            className={cnUdemyInput("h-9 text-xs")}
+          />
         </div>
       </div>
 
-      {/* ─── Curriculum List ─── */}
-      <nav className="min-h-0 flex-1 px-3 py-3" aria-label="Course curriculum">
-        {filteredSections.map((section) => {
-          const si = sections.findIndex((x) => x.id === section.id);
-          const sectionDone = section.lessons.filter(
-            (l) => progressMap[l.id],
-          ).length;
-          const isOpen = open[section.id] ?? true;
+      <nav
+        className="min-h-0 flex-1 overflow-y-auto px-3 pb-4"
+        aria-label="Course curriculum"
+      >
+        <div className="border border-border bg-card">
+          {filteredSections.map((section) => {
+            const secSecs = sectionSeconds(section.lessons);
+            const durLabel = secSecs > 0 ? formatTotalDuration(secSecs) : "—";
+            const isOpen = open.has(section.id);
+            const sectionDone = section.lessons.filter(
+              (l) => progressMap[l.id],
+            ).length;
+            const quizCount = section.quizzes?.length ?? 0;
+            const resourceCount = section.resources?.length ?? 0;
+            const subLine = `${sectionDone}/${section.lessons.length} · ${durLabel}`;
 
-          return (
-            <div key={section.id} className="mb-1">
-              <button
-                type="button"
-                onClick={() =>
-                  setOpen((o) => ({ ...o, [section.id]: !isOpen }))
-                }
-                className={clsx(
-                  "flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-all duration-200",
-                  "hover:bg-slate-100/50",
-                  isOpen && "bg-slate-100/30",
-                )}
+            return (
+              <div
+                key={section.id}
+                className="border-b border-border last:border-b-0"
               >
-                <div className={clsx(
-                  "flex h-6 w-6 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-slate-200/50 transition-transform duration-300",
-                  isOpen ? "rotate-0 shadow-inner" : "-rotate-90"
-                )}>
-                  <ChevronDown className="h-3 w-3 text-slate-500" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">
-                    Section {si + 1}
-                  </p>
-                  <p className="truncate text-xs font-bold text-slate-700">
+                <button
+                  type="button"
+                  onClick={() => toggleSection(section.id)}
+                  className="flex w-full items-start gap-2 bg-muted/50 px-3 py-3 text-left transition-colors hover:bg-muted sm:items-center"
+                >
+                  <ChevronDown
+                    className={cn(
+                      "mt-0.5 h-4 w-4 shrink-0 transition-transform sm:mt-0",
+                      isOpen ? "rotate-180" : "",
+                    )}
+                    aria-hidden
+                  />
+                  <span className="min-w-0 flex-1 text-xs font-bold text-foreground">
                     {section.title}
-                  </p>
-                </div>
-                <div className="flex shrink-0 items-center gap-1.5">
-                  {section.quizzes && section.quizzes.length > 0 ? (
-                    <SectionQuizLauncher
-                      quizzes={section.quizzes}
-                      triggerVariant="section-badge"
-                    />
-                  ) : null}
-                  <span className="text-[10px] font-black tabular-nums text-[var(--primary)] bg-[var(--primary-soft)]/10 px-2 py-1 rounded-md">
-                    {sectionDone}/{section.lessons.length}
                   </span>
-                </div>
-              </button>
+                  <span className="shrink-0 text-[10px] text-muted-foreground">
+                    {subLine}
+                  </span>
+                </button>
 
-              {isOpen && (
-                <div className="ml-6 mt-1 space-y-1 border-l-2 border-slate-100/80 pl-4 py-1">
-                  <ul className="space-y-1">
-                    {section.lessons.map((lesson) => {
-                      const active = lesson.id === selectedLessonId;
-                      const done = progressMap[lesson.id];
-                      const isVideo = Boolean(lesson.videoUrl);
-                      const lessonHref = buildLessonHref(
-                        courseId,
-                        lesson.id,
-                        currentTab,
-                      );
-                      const confirmSkip = shouldConfirmSkip(section.id);
-                      const currentSection = sections.find(
-                        (s) => s.id === currentSectionId,
-                      );
-                      const lessonIndex = flatLessonIndex(
-                        sections,
-                        lesson.id,
-                      );
-                      const selectedIndex = selectedLessonId
-                        ? flatLessonIndex(sections, selectedLessonId)
-                        : -1;
-                      const locked =
-                        selectedIndex >= 0 && lessonIndex > selectedIndex + 1;
-                      const rowClass = clsx(
-                        "group flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-[13px] leading-relaxed transition-all duration-200 active:scale-[0.98]",
-                        active
-                          ? "border-l-[3px] border-l-[var(--primary)] bg-[#f7f9fa] font-bold text-[var(--primary)]"
-                          : done
-                            ? "text-muted-foreground hover:bg-[#f7f9fa]"
-                            : locked
-                              ? "opacity-50 hover:bg-[#f7f9fa]"
-                              : "text-slate-600 hover:bg-[#f7f9fa] hover:text-slate-900",
-                      );
-                      const rowBody = (
-                        <>
-                          <span className="mt-1 shrink-0">
-                            {done ? (
-                              <CheckCircle2 className="h-4 w-4 text-primary" strokeWidth={2.5} />
-                            ) : (
-                              <Circle className="h-4 w-4 text-slate-300 group-hover:text-slate-400" strokeWidth={2} />
-                            )}
-                          </span>
-                          <div className="min-w-0 flex-1">
-                            <span className="block truncate">{lesson.title}</span>
-                            <div className="mt-1 flex items-center gap-2">
-                              <Badge variant={active ? "mint" : "outline"} className="text-[9px] h-4 px-1.5 font-bold uppercase tracking-tighter">
-                                {isVideo ? "Video" : "Article"}
-                              </Badge>
-                              {lesson.durationSec && (
-                                <span className="text-[10px] font-medium text-slate-400 tabular-nums">
-                                  {formatLessonDuration(lesson.durationSec)}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </>
-                      );
+                {isOpen ? (
+                  <div className="bg-background">
+                    {section.lessons.length > 0 ? (
+                      <CurriculumTreeGroup
+                        kind="content"
+                        title="Content"
+                        count={section.lessons.length}
+                        defaultOpen
+                      >
+                        <CurriculumTreeChildren>
+                          <ul className="list-none">
+                            {section.lessons.map((lesson) => {
+                              const active = lesson.id === selectedLessonId;
+                              const done = progressMap[lesson.id];
+                              const isVideo = Boolean(lesson.videoUrl);
+                              const lessonHref = buildLessonHref(
+                                courseId,
+                                lesson.id,
+                                currentTab,
+                              );
+                              const confirmSkip = shouldConfirmSkip(section.id);
+                              const lessonIndex = flatLessonIndex(
+                                sections,
+                                lesson.id,
+                              );
+                              const selectedIndex = selectedLessonId
+                                ? flatLessonIndex(sections, selectedLessonId)
+                                : -1;
+                              const locked =
+                                selectedIndex >= 0 &&
+                                lessonIndex > selectedIndex + 1;
 
-                      return (
-                        <li key={lesson.id}>
-                          {confirmSkip ? (
-                            <SkipSectionLessonLink
-                              href={lessonHref}
-                              shouldConfirm
-                              currentSectionTitle={currentSection?.title}
-                              className={rowClass}
-                            >
-                              {rowBody}
-                            </SkipSectionLessonLink>
-                          ) : (
-                            <Link href={lessonHref} className={rowClass}>
-                              {rowBody}
-                            </Link>
+                              const rowClass = cn(
+                                "flex w-full items-center justify-between gap-2 px-2 py-2.5 text-sm transition-colors hover:bg-muted/60",
+                                active &&
+                                  "border-l-2 border-l-primary bg-muted/80 font-semibold text-primary",
+                                locked && "opacity-50",
+                              );
+
+                              const rowBody = (
+                                <>
+                                  <span className="flex min-w-0 items-center gap-2">
+                                    {done ? (
+                                      <CheckCircle2
+                                        className="h-4 w-4 shrink-0 text-primary"
+                                        aria-hidden
+                                      />
+                                    ) : (
+                                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded border border-border bg-card">
+                                        {isVideo ? (
+                                          <Play
+                                            className="h-2.5 w-2.5"
+                                            fill="currentColor"
+                                            aria-hidden
+                                          />
+                                        ) : (
+                                          <FileText
+                                            className="h-2.5 w-2.5"
+                                            aria-hidden
+                                          />
+                                        )}
+                                      </span>
+                                    )}
+                                    <span className="truncate">
+                                      {lesson.title}
+                                    </span>
+                                  </span>
+                                  {lesson.durationSec ? (
+                                    <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
+                                      {formatLessonDuration(lesson.durationSec)}
+                                    </span>
+                                  ) : null}
+                                </>
+                              );
+
+                              return (
+                                <CurriculumTreeRow key={lesson.id}>
+                                  {confirmSkip ? (
+                                    <SkipSectionLessonLink
+                                      href={lessonHref}
+                                      shouldConfirm
+                                      currentSectionTitle={section.title}
+                                      className={rowClass}
+                                    >
+                                      {rowBody}
+                                    </SkipSectionLessonLink>
+                                  ) : (
+                                    <Link href={lessonHref} className={rowClass}>
+                                      {rowBody}
+                                    </Link>
+                                  )}
+                                </CurriculumTreeRow>
+                              );
+                            })}
+                          </ul>
+                        </CurriculumTreeChildren>
+                      </CurriculumTreeGroup>
+                    ) : null}
+
+                    {quizCount > 0 ? (
+                      <CurriculumTreeGroup
+                        kind="quiz"
+                        title="Quiz"
+                        count={quizCount}
+                        defaultOpen
+                      >
+                        <CurriculumTreeChildren>
+                          <ul className="list-none">
+                            {(section.quizzes ?? []).map((quiz) => (
+                              <CurriculumTreeRow key={quiz.id}>
+                                <div className="flex items-center justify-between gap-2 px-2 py-2.5 text-sm hover:bg-muted/60">
+                                  <SectionQuizLauncher
+                                    quizzes={section.quizzes ?? []}
+                                    triggerVariant="sidebar-link"
+                                    defaultQuizId={quiz.id}
+                                    quizTitle={quiz.title}
+                                  />
+                                </div>
+                              </CurriculumTreeRow>
+                            ))}
+                          </ul>
+                        </CurriculumTreeChildren>
+                      </CurriculumTreeGroup>
+                    ) : null}
+
+                    {resourceCount > 0 ? (
+                      <CurriculumTreeGroup
+                        kind="resources"
+                        title="Resources"
+                        count={resourceCount}
+                        defaultOpen
+                      >
+                        <CurriculumTreeChildren>
+                          {(section.resources ?? []).map((res, idx) =>
+                            renderResourceRow(res, idx),
                           )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-
-                  {/* ─── Section Resources ─── */}
-                  {(section.resources || []).length > 0 && (
-                    <div className="mt-3 space-y-2 border-t border-slate-100 pt-3 pr-2">
-                       <p className="px-3 text-[9px] font-black uppercase tracking-widest text-slate-400">Resources</p>
-                       <ul className="space-y-1">
-                          {section.resources?.map((res, idx) => (
-                             <li key={`${res.id}-${idx}`}>
-                                <a 
-                                   href={res.href || "#"} 
-                                   target="_blank" 
-                                   rel="noopener noreferrer"
-                                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-[11px] font-medium text-slate-500 transition-colors hover:bg-slate-50 hover:text-[var(--primary)]"
-                                >
-                                   {res.type === "LINK" ? (
-                                      <Link2 className="h-3.5 w-3.5 shrink-0 opacity-60" />
-                                   ) : (
-                                      <Download className="h-3.5 w-3.5 shrink-0 opacity-60" />
-                                   ) }
-                                   <span className="truncate">{res.title}</span>
-                                   <ExternalLink className="ml-auto h-3 w-3 opacity-0 group-hover:opacity-40" />
-                                </a>
-                             </li>
-                          ))}
-                       </ul>
-                    </div>
-                  )}
-                  
-                  {/* ─── Section Quizzes ─── */}
-                  {(section.quizzes || []).length > 0 && (
-                    <div className="mt-3 space-y-2 border-t border-slate-100 pt-3 pr-2">
-                       <p className="px-3 text-[9px] font-black uppercase tracking-widest text-slate-400">Section Quizzes</p>
-                       <ul className="space-y-1">
-                          {section.quizzes?.map((quiz) => (
-                             <li key={quiz.id}>
-                                <SectionQuizLauncher
-                                  quizzes={section.quizzes ?? []}
-                                  triggerVariant="sidebar-link"
-                                  defaultQuizId={quiz.id}
-                                  quizTitle={quiz.title}
-                                />
-                             </li>
-                          ))}
-                       </ul>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
+                        </CurriculumTreeChildren>
+                      </CurriculumTreeGroup>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
       </nav>
     </div>
   );

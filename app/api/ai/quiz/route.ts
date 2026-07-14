@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
-import { buildEnrolledCourseContext } from "@/lib/ai/course-context";
+import { loadCourseAiContextForStudent } from "@/lib/ai/load-course-ai-context";
 import {
   AiConfigurationError,
   AiProviderError,
@@ -99,28 +99,16 @@ export async function POST(request: Request) {
     }
   }
 
-  const lessons = await db.lesson.findMany({
-    where: {
-      section: {
-        courseId: parsed.data.courseId,
-        ...(sectionIds ? { id: { in: sectionIds } } : {}),
-      },
-    },
-    select: {
-      title: true,
-      content: true,
-      section: { select: { title: true, description: true } },
-    },
-    orderBy: [{ section: { position: "asc" } }, { position: "asc" }],
-  });
-  if (!lessons.length) {
+  const sectionContext = await loadCourseAiContextForStudent(
+    parsed.data.courseId,
+    sectionIds,
+  );
+  if (!sectionContext.trim()) {
     return NextResponse.json(
       { error: "No lesson content found for quiz generation." },
       { status: 400 },
     );
   }
-
-  const sectionContext = buildEnrolledCourseContext(lessons);
 
   try {
     const questions = await generateSectionQuiz(

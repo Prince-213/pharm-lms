@@ -121,6 +121,7 @@ export default async function MentorStudentsPage({
                 <th className="px-4 py-3">Course</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Enrolled</th>
+                <th className="px-4 py-3"> </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#f1f3f5]">
@@ -145,6 +146,14 @@ export default async function MentorStudentsPage({
                   </td>
                   <td className="px-4 py-3 text-[#6a6f73]">
                     {e.enrolledAt.toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/tutor/communication/messages?recipient=${e.student.id}`}
+                      className="text-xs font-semibold text-[var(--primary)] hover:underline"
+                    >
+                      Message
+                    </Link>
                   </td>
                 </tr>
               ))}

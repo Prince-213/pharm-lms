@@ -30,7 +30,6 @@ import {
   Upload,
   X,
   ChevronDown,
-  ChevronUp,
 } from "lucide-react";
 import {
   type ReactNode,
@@ -50,7 +49,7 @@ import {
   CurriculumListItem,
   CurriculumReadOnlyBanner,
   CurriculumSavingIndicator,
-  CurriculumSectionHeading,
+  CurriculumSubsection,
   formatSectionSummary,
   NewSectionCard,
   PanelFormActions,
@@ -68,6 +67,7 @@ import { formatApiErrorBody } from "@/lib/api-error-message";
 import { toast } from "sonner";
 import { notifyPortalMutation } from "@/lib/client/notify-portal-mutation";
 import { parseSectionDescription as parseDescription } from "@/lib/curriculum";
+import { deriveQuizTitle } from "@/lib/curriculum/derive-quiz-title";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -249,9 +249,8 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
 
   const canAddSection = useMemo(() => newSectionTitle.trim().length >= 3, [newSectionTitle]);
   const canAddItem = useMemo(() => {
-    if (itemTitle.trim().length < 2) return false;
     if (itemType === "QUIZ") return mcqRowsValid(quizMcqRows);
-    return true;
+    return itemTitle.trim().length >= 2;
   }, [itemTitle, itemType, quizMcqRows]);
   const canAddResource = useMemo(
     () =>
@@ -744,12 +743,16 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     }
     const quizQuestions =
       submittedType === "QUIZ" ? mcqRowsToPayload(quizMcqRows) : undefined;
+    const resolvedTitle =
+      submittedType === "QUIZ"
+        ? deriveQuizTitle(quizQuestions ?? [])
+        : itemTitle.trim();
     const tempId = crypto.randomUUID();
 
     // Optimistic UI
     const tempItem = {
       id: tempId,
-      title: itemTitle.trim(),
+      title: resolvedTitle,
       status: "DRAFT",
     };
 
@@ -773,7 +776,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           itemType: submittedType,
-          title: tempItem.title,
+          title: submittedType === "ASSIGNMENT" ? resolvedTitle : undefined,
           quizQuestions: submittedType === "QUIZ" ? quizQuestions : undefined,
           assignmentDescription: submittedType === "ASSIGNMENT" ? assignmentDescription : undefined,
         }),
@@ -1098,11 +1101,13 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                       </Button>
                     </SimpleTooltip>
                     <div className="mx-1 hidden h-4 w-px bg-border sm:block" />
-                    {expandedSections.has(section.id) ? (
-                      <ChevronUp className="size-4 text-muted-foreground" />
-                    ) : (
-                      <ChevronDown className="size-4 text-muted-foreground" />
-                    )}
+                    <ChevronDown
+                      className={cn(
+                        "size-4 shrink-0 text-muted-foreground transition-transform duration-200",
+                        expandedSections.has(section.id) && "rotate-180",
+                      )}
+                      aria-hidden
+                    />
                   </div>
                 </div>
               }
@@ -1122,20 +1127,20 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                 </Alert>
               ) : null}
               {/* ── Lectures ──────────────────────────────────────────────── */}
-              <div className="space-y-3">
-                <CurriculumSectionHeading
-                  title="Curriculum content"
-                  description="Lectures students watch or read in this section."
-                />
+              <CurriculumSubsection
+                tone="lectures"
+                description="Video or article content students complete in order."
+                count={section.lessons.length}
+              >
                 {section.lessons.length === 0 ? (
-                  <CurriculumEmptyState message='No lectures yet. Click "Curriculum item" and choose Add lecture.' />
+                  <CurriculumEmptyState message='No lectures yet. Click "Add lecture" below.' />
                 ) : (
                   <CurriculumList>
                 {section.lessons.map((lesson, lessonIndex) => {
                   const lessonType: "VIDEO" | "ARTICLE" =
                     lesson.content === null ? "VIDEO" : "ARTICLE";
                   return (
-                    <CurriculumListItem key={lesson.id} className="space-y-4">
+                    <CurriculumListItem key={lesson.id} className="space-y-4" index={lessonIndex + 1}>
                       <CurriculumItemMeta
                         icon={
                           lessonType === "VIDEO" ? (
@@ -1254,6 +1259,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                         <FileUploader
                           purpose="lesson-video"
                           courseId={courseId}
+                          hideLabel
                           onUploadingChange={handleMediaUploadingChange}
                           compact
                           currentUrl={lesson.videoUrl}
@@ -1308,12 +1314,18 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                 })}
                   </CurriculumList>
                 )}
-              </div>
+              </CurriculumSubsection>
 
               {/* ── Resources ───────────────────────────────────────────── */}
-              {section.resources.length > 0 ? (
-                <div className="mt-6 space-y-3">
-                  <CurriculumSectionHeading title="Resources" />
+              <CurriculumSubsection
+                tone="resources"
+                description="Downloadable files and external links for this section."
+                count={section.resources.length}
+                className="mt-5"
+              >
+                {section.resources.length === 0 ? (
+                  <CurriculumEmptyState message='No resources yet. Click "Resource" below to add a file or link.' />
+                ) : (
                   <CurriculumList>
                     {section.resources.map((resource) => (
                       <CurriculumListItem key={resource.id} className="space-y-3">
@@ -1350,6 +1362,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                           <FileUploader
                             purpose="curriculum-resource"
                             courseId={courseId}
+                            hideLabel
                             onUploadingChange={handleMediaUploadingChange}
                             compact
                             currentUrl={resource.url}
@@ -1386,14 +1399,19 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                       </CurriculumListItem>
                     ))}
                   </CurriculumList>
-                </div>
-              ) : null}
+                )}
+              </CurriculumSubsection>
 
               {/* ── Quizzes & assignments ───────────────────────────────── */}
               {(section.quizzes.length > 0 ||
                 section.assignmentItems.length > 0) && (
-                <div className="mt-6 space-y-3">
-                  <CurriculumSectionHeading title="Assessments" />
+                <CurriculumSubsection
+                  tone="assessments"
+                  title="Assessments"
+                  description="Quizzes and assignments that check understanding."
+                  count={section.quizzes.length + section.assignmentItems.length}
+                  className="mt-5"
+                >
                   <CurriculumList>
                     {section.quizzes.map((quiz) => (
                       <CurriculumListItem key={quiz.id}>
@@ -1424,11 +1442,11 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                       </CurriculumListItem>
                     ))}
                   </CurriculumList>
-                </div>
+                </CurriculumSubsection>
               )}
 
               {/* ── Add actions ─────────────────────────────────────────── */}
-              <div className="mt-6 flex flex-wrap gap-2 border-t border-border pt-5">
+              <div className="mt-6 flex flex-wrap gap-2 rounded-lg border border-dashed border-[#d1d7dc] bg-[#f7f9fa] px-4 py-4">
                 <Button
                   type="button"
                   variant="default"
@@ -1526,19 +1544,18 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                       />
                     </CurriculumField>
                   ) : (
-                    <CurriculumField label="Lecture video">
-                      <FileUploader
-                        purpose="lesson-video"
-                        courseId={courseId}
-                        onUploadingChange={handleMediaUploadingChange}
-                        compact
-                        disabled={interactionLocked}
-                        currentUrl={newLessonVideoUrl}
-                        onUploadComplete={(url) => setNewLessonVideoUrl(url)}
-                        onRemove={() => setNewLessonVideoUrl(null)}
-                        showPreview={false}
-                      />
-                    </CurriculumField>
+                    <FileUploader
+                      purpose="lesson-video"
+                      courseId={courseId}
+                      hideLabel
+                      onUploadingChange={handleMediaUploadingChange}
+                      compact
+                      disabled={interactionLocked}
+                      currentUrl={newLessonVideoUrl}
+                      onUploadComplete={(url) => setNewLessonVideoUrl(url)}
+                      onRemove={() => setNewLessonVideoUrl(null)}
+                      showPreview={false}
+                    />
                   )}
                   <PanelFormActions
                     onCancel={closePanel}
@@ -1562,7 +1579,33 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                 description="Quizzes use multiple-choice questions. Assignments include instructions and a due date."
               >
                 <div className="space-y-4">
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  {itemType === "ASSIGNMENT" ? (
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <CurriculumField label="Type" htmlFor={`item-type-${section.id}`}>
+                        <select
+                          id={`item-type-${section.id}`}
+                          value={itemType}
+                          disabled={interactionLocked}
+                          onChange={(e) =>
+                            setItemType(e.target.value as "QUIZ" | "ASSIGNMENT")
+                          }
+                          className={selectClassName}
+                        >
+                          <option value="QUIZ">Quiz</option>
+                          <option value="ASSIGNMENT">Assignment</option>
+                        </select>
+                      </CurriculumField>
+                      <CurriculumField label="Title" htmlFor={`item-title-${section.id}`}>
+                        <Input
+                          id={`item-title-${section.id}`}
+                          value={itemTitle}
+                          onChange={(e) => setItemTitle(e.target.value)}
+                          disabled={interactionLocked}
+                          placeholder="Assignment title"
+                        />
+                      </CurriculumField>
+                    </div>
+                  ) : (
                     <CurriculumField label="Type" htmlFor={`item-type-${section.id}`}>
                       <select
                         id={`item-type-${section.id}`}
@@ -1577,20 +1620,12 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                         <option value="ASSIGNMENT">Assignment</option>
                       </select>
                     </CurriculumField>
-                    <CurriculumField label="Title" htmlFor={`item-title-${section.id}`}>
-                      <Input
-                        id={`item-title-${section.id}`}
-                        value={itemTitle}
-                        onChange={(e) => setItemTitle(e.target.value)}
-                        disabled={interactionLocked}
-                        placeholder="Assessment title"
-                      />
-                    </CurriculumField>
-                  </div>
+                  )}
                   {itemType === "QUIZ" ? (
                     <div className="space-y-3">
                       <p className="text-xs text-muted-foreground">
                         Add one correct answer and three distractors per question.
+                        The first question becomes the quiz label for students.
                       </p>
                       {quizMcqRows.map((row, rowIndex) => (
                         <div
@@ -1774,28 +1809,27 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                       />
                     </CurriculumField>
                   ) : (
-                    <CurriculumField label="Document upload">
-                      <FileUploader
-                        purpose="curriculum-resource"
-                        courseId={courseId}
-                        onUploadingChange={handleMediaUploadingChange}
-                        compact
-                        disabled={interactionLocked}
-                        currentUrl={resourceFileUrl}
-                        fileName={resourceFileMeta?.name}
-                        fileSizeBytes={resourceFileMeta?.sizeBytes}
-                        mimeType={resourceFileMeta?.mimeType}
-                        onUploadComplete={(url, meta) => {
-                          setResourceFileUrl(url);
-                          if (meta) setResourceFileMeta(meta);
-                        }}
-                        onRemove={() => {
-                          setResourceFileUrl(null);
-                          setResourceFileMeta(null);
-                        }}
-                        showPreview={false}
-                      />
-                    </CurriculumField>
+                    <FileUploader
+                      purpose="curriculum-resource"
+                      courseId={courseId}
+                      hideLabel
+                      onUploadingChange={handleMediaUploadingChange}
+                      compact
+                      disabled={interactionLocked}
+                      currentUrl={resourceFileUrl}
+                      fileName={resourceFileMeta?.name}
+                      fileSizeBytes={resourceFileMeta?.sizeBytes}
+                      mimeType={resourceFileMeta?.mimeType}
+                      onUploadComplete={(url, meta) => {
+                        setResourceFileUrl(url);
+                        if (meta) setResourceFileMeta(meta);
+                      }}
+                      onRemove={() => {
+                        setResourceFileUrl(null);
+                        setResourceFileMeta(null);
+                      }}
+                      showPreview={false}
+                    />
                   )}
                   <PanelFormActions
                     onCancel={closePanel}
@@ -1895,19 +1929,29 @@ function SortableSection(props: {
       }}
       style={style}
       className={cn(
-        "mb-4 overflow-hidden rounded-xl border border-[#d1d7dc] bg-white shadow-[0_2px_4px_rgba(0,0,0,0.08)] transition-shadow",
-        isExpanded && "shadow-[0_2px_4px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.12)]",
+        "mb-6 overflow-hidden rounded-xl border border-[#c3c9cf] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-shadow",
+        isExpanded && "shadow-[0_4px_16px_rgba(0,0,0,0.1)] ring-1 ring-primary/10",
       )}
       {...attributes}
     >
       <div
         className={cn(
-          "flex cursor-pointer select-none items-center gap-2 px-4 py-3.5 transition-colors sm:px-5",
+          "flex cursor-pointer select-none items-center gap-2 px-4 py-4 transition-colors sm:px-5",
           isExpanded
-            ? "border-b border-[#d1d7dc] bg-[#f7f9fa]"
-            : "hover:bg-[#eceff1]/60",
+            ? "border-b-2 border-primary/20 bg-gradient-to-r from-primary/[0.06] to-[#f7f9fa]"
+            : "bg-[#f7f9fa] hover:bg-[#eceff1]",
         )}
         onClick={onToggle}
+        aria-expanded={isExpanded}
+        aria-label={isExpanded ? "Collapse section" : "Expand section"}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onToggle();
+          }
+        }}
       >
         <SimpleTooltip content="Drag to reorder" side="right">
           <button
@@ -1925,7 +1969,7 @@ function SortableSection(props: {
         {titleRow}
       </div>
       {isExpanded ? (
-        <div className="space-y-6 px-4 py-5 sm:px-6 sm:py-6">{children}</div>
+        <div className="space-y-5 bg-[#eef1f3]/40 px-3 py-4 sm:px-4 sm:py-5">{children}</div>
       ) : null}
     </div>
   );

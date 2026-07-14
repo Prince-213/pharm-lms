@@ -79,31 +79,51 @@ export const studentPortalConfig: PortalNavConfig = {
   homeHref: "/student/dashboard",
   footerLabel: "Pharmacy Academy",
   maxContentWidth: "max-w-[1400px]",
+  titleExtras: [
+    { href: "/student/browse", label: "Browse" },
+    { href: "/student/messages", label: "Messages" },
+    { href: "/student/tutors", label: "Tutors" },
+    { href: "/student/mentors", label: "Mentors" },
+  ],
   groups: [
     {
-      label: "Workspace",
+      label: "Learning",
       items: [
         { href: "/student/dashboard", label: "My learning", icon: BookOpen },
         { href: "/student/courses", label: "My courses", icon: GraduationCap },
-        { href: "/student/browse", label: "Browse", icon: Search },
         {
           href: "/student/assignments",
           label: "Assignments",
           icon: ClipboardList,
         },
-        { href: "/student/leaderboard", label: "Leaderboard", icon: Trophy },
       ],
     },
     {
-      label: "Personal",
+      label: "Discover",
       items: [
-        { href: "/student/profile", label: "Profile", icon: User },
+        { href: "/student/browse", label: "Browse", icon: Search },
         { href: "/student/wishlist", label: "Wishlist", icon: Heart },
+      ],
+    },
+    {
+      label: "Connect",
+      items: [
+        { href: "/student/messages", label: "Messages", icon: MessageSquare },
         { href: "/student/meetings", label: "Meetings", icon: Calendar },
         { href: "/student/tutors", label: "Tutors", icon: School },
         { href: "/student/mentors", label: "Mentors", icon: Users },
+      ],
+    },
+    {
+      label: "Progress",
+      items: [
+        { href: "/student/leaderboard", label: "Leaderboard", icon: Trophy },
         { href: "/student/achievements", label: "Badges", icon: Award },
       ],
+    },
+    {
+      label: "Account",
+      items: [{ href: "/student/profile", label: "Profile", icon: User }],
     },
   ],
 };
@@ -163,9 +183,10 @@ export const tutorPortalConfig: PortalNavConfig = {
       items: [
         { href: `${TUTOR}/courses`, label: "Courses", icon: BookOpen },
         {
-          href: `${TUTOR}/communication`,
+          href: `${TUTOR}/communication/messages`,
           label: "Communication",
           icon: MessageSquare,
+          activePrefix: `${TUTOR}/communication`,
         },
         {
           href: `${TUTOR}/performance/overview`,

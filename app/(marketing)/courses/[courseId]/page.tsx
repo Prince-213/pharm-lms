@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { auth } from "@/auth";
+import { safeAuth } from "@/lib/auth/safe-session";
 import { AnimatedSection } from "@/components/landing/animated-section";
 import { CourseCatalogDetail } from "@/components/student/course-catalog-detail";
 import { UserRole } from "@/generated/prisma/enums";
@@ -11,7 +11,7 @@ export default async function PublicCourseDetailPage({
   params: Promise<{ courseId: string }>;
 }) {
   const { courseId } = await params;
-  const session = await auth();
+  const session = await safeAuth();
 
   if (session?.user?.role === UserRole.STUDENT) {
     const data = await loadCourseCatalogDetail(courseId, {

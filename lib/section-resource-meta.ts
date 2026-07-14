@@ -34,6 +34,24 @@ export function resourceDownloadFilename(res: SectionResource): string {
   return deriveFilenameFromResourceUrl(res.url);
 }
 
+/** Short label for student curriculum sidebar (prefer real filename). */
+export function resourceDisplayName(res: SectionResource): string {
+  const original = res.originalFileName?.trim();
+  if (original) return original;
+  const fromUrl = deriveFilenameFromResourceUrl(res.url);
+  if (fromUrl && fromUrl !== "download") return fromUrl;
+  return res.title?.trim() || "Resource";
+}
+
+/** Size-only secondary line (or "Link" for URLs). Avoids MIME dumps. */
+export function formatResourceSizeLabel(res: SectionResource): string {
+  if (res.type === "LINK") return "Link";
+  if (res.sizeBytes != null && res.sizeBytes >= 0) {
+    return formatBytes(res.sizeBytes);
+  }
+  return extensionFromUrl(res.url) || "File";
+}
+
 /**
  * One muted line: type · size · filename (e.g. `PDF · 2.4 MB · syllabus.pdf`).
  */

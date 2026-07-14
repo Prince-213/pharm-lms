@@ -1,8 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { buildCoursePlayerHref } from "@/lib/student/course-player-href";
 import { cn } from "@/lib/utils";
 
 const TABS = [
@@ -15,25 +13,21 @@ const TABS = [
 ] as const;
 
 export function CoursePlayerTabs({
-  courseId,
-  lessonId,
   activeTab,
+  onTabChange,
   className,
 }: {
-  courseId: string;
-  lessonId: string | null;
+  courseId?: string;
+  lessonId?: string | null;
   activeTab: string;
+  onTabChange: (tab: string) => void;
   className?: string;
 }) {
-  const router = useRouter();
-
   return (
     <Tabs
       value={activeTab}
       className={cn("min-w-0 flex-1", className)}
-      onValueChange={(value) => {
-        router.push(buildCoursePlayerHref(courseId, lessonId, value));
-      }}
+      onValueChange={onTabChange}
     >
       <TabsList
         variant="line"

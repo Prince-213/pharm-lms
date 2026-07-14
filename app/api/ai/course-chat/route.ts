@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
-import { buildEnrolledCourseContext } from "@/lib/ai/course-context";
+import { loadCourseAiContextForStudent } from "@/lib/ai/load-course-ai-context";
 import {
   AiConfigurationError,
   AiProviderError,
@@ -68,17 +68,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const lessons = await db.lesson.findMany({
-    where: { section: { courseId } },
-    select: {
-      title: true,
-      content: true,
-      section: { select: { title: true, description: true } },
-    },
-    orderBy: [{ section: { position: "asc" } }, { position: "asc" }],
-  });
-
-  const context = buildEnrolledCourseContext(lessons);
+  const context = await loadCourseAiContextForStudent(courseId);
   if (!context.trim()) {
     return NextResponse.json(
       { error: "This course has no lesson content for the assistant yet." },

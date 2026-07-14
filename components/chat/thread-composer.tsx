@@ -4,16 +4,21 @@ import { Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { sendChatMessageAction } from "@/app/actions/chat";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { refreshPortalAfterMutation } from "@/lib/client/refresh-portal-data";
 
 export function ThreadComposer({
   threadId,
   recipientId,
   placeholder = "Write a message…",
+  redirectBase,
 }: {
   threadId?: string;
   recipientId?: string;
   placeholder?: string;
+  /** After starting a thread, navigate to `${redirectBase}?thread=id` */
+  redirectBase?: string;
 }) {
   const router = useRouter();
   const [body, setBody] = useState("");
@@ -35,6 +40,11 @@ export function ThreadComposer({
         return;
       }
       setBody("");
+      if (redirectBase && result.threadId) {
+        router.push(`${redirectBase}?thread=${result.threadId}`);
+        router.refresh();
+        return;
+      }
       refreshPortalAfterMutation(router);
     });
   }
@@ -42,25 +52,23 @@ export function ThreadComposer({
   return (
     <form
       onSubmit={onSubmit}
-      className="flex items-end gap-2 border-t border-[#e3e5e8] bg-white p-3"
+      className="flex flex-col gap-2 border-t border-border bg-card p-3"
     >
-      <textarea
-        value={body}
-        onChange={(e) => setBody(e.target.value)}
-        placeholder={placeholder}
-        rows={2}
-        maxLength={4000}
-        className="flex-1 resize-y rounded border border-[var(--border)] bg-white px-3 py-2 text-sm leading-relaxed outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-soft)]"
-      />
-      <button
-        type="submit"
-        disabled={pending || !body.trim()}
-        className="inline-flex h-10 items-center gap-2 rounded bg-[var(--primary)] px-4 text-sm font-semibold text-white transition hover:bg-[var(--primary-strong)] disabled:opacity-50"
-      >
-        <Send className="h-4 w-4" />
-        {pending ? "Sending…" : "Send"}
-      </button>
-      {error ? <p className="ml-3 text-xs text-rose-600">{error}</p> : null}
+      <div className="flex items-end gap-2">
+        <Textarea
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          placeholder={placeholder}
+          rows={2}
+          maxLength={4000}
+          className="min-h-[2.5rem] flex-1 resize-y"
+        />
+        <Button type="submit" disabled={pending || !body.trim()} className="shrink-0">
+          <Send className="h-4 w-4" />
+          {pending ? "Sending…" : "Send"}
+        </Button>
+      </div>
+      {error ? <p className="text-xs text-destructive">{error}</p> : null}
     </form>
   );
 }

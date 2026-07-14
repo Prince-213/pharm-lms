@@ -63,6 +63,8 @@ type FileUploaderProps = {
   mimeType?: string | null;
   label?: string;
   description?: string;
+  /** Hide the uploader heading (use when a parent field or item row already labels the control). */
+  hideLabel?: boolean;
   showPreview?: boolean;
   compact?: boolean;
   onRemove?: () => void;
@@ -92,6 +94,7 @@ export function FileUploader({
   currentUrl,
   label,
   description,
+  hideLabel = false,
   showPreview = true,
   compact = false,
   fileName,
@@ -375,53 +378,53 @@ export function FileUploader({
 
   if (currentUrl && !isReplacing && !isUploading) {
     return (
-      <div className="space-y-2">
-        <label className="text-xs font-bold text-foreground">{getLabel()}</label>
+      <div className={hideLabel ? undefined : "space-y-2"}>
+        {hideLabel ? null : (
+          <label className="text-xs font-bold text-foreground">{getLabel()}</label>
+        )}
         <div
           className={cn(
-            "overflow-hidden border bg-white",
+            "relative flex h-14 min-h-14 items-center gap-3 overflow-hidden border bg-card px-4 py-2 sm:px-5 hover:bg-muted/50",
             udemyBorderClass,
-            compact ? "shadow-none" : "shadow-[0_2px_4px_rgba(0,0,0,0.05)]",
+            compact ? "shadow-none" : "shadow-sm",
           )}
         >
-          <div className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5 hover:bg-[#f7f9fa]">
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-[#d1d7dc] bg-[#f7f9fa]">
-                {getFileIcon()}
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-[var(--foreground)]">
-                  {displayName}
-                </p>
-                <p className="text-xs text-muted-foreground">{metaLabel}</p>
-              </div>
-            </div>
-            <div className="flex shrink-0 flex-wrap gap-2">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-border bg-muted">
+            {getFileIcon()}
+          </span>
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <p className="truncate text-sm font-medium text-foreground" title={displayName}>
+              {displayName}
+            </p>
+            <p className="truncate text-xs text-muted-foreground" title={metaLabel}>
+              {metaLabel}
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsReplacing(true)}
+              disabled={disabled}
+              className="h-8 text-xs"
+            >
+              <RefreshCw className="h-3.5 w-3.5" aria-hidden />
+              Replace
+            </Button>
+            {onRemove ? (
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setIsReplacing(true)}
+                onClick={onRemove}
                 disabled={disabled}
-                className="h-8 border-[#d1d7dc] bg-white text-xs font-bold text-[var(--primary)] hover:bg-[#f7f9fa]"
+                className="h-8 border-destructive/30 bg-destructive/5 text-xs text-destructive hover:bg-destructive/10"
               >
-                <RefreshCw className="h-3.5 w-3.5" aria-hidden />
-                Replace
+                <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                Remove
               </Button>
-              {onRemove ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={onRemove}
-                  disabled={disabled}
-                  className="h-8 border-red-200 bg-red-50 text-xs font-bold text-red-700 hover:bg-red-100"
-                >
-                  <Trash2 className="h-3.5 w-3.5" aria-hidden />
-                  Remove
-                </Button>
-              ) : null}
-            </div>
+            ) : null}
           </div>
         </div>
       </div>
@@ -435,42 +438,37 @@ export function FileUploader({
       : "Starting upload…";
 
     return (
-      <div className="space-y-2">
-        <label className="text-xs font-bold text-foreground">{getLabel()}</label>
+      <div className={hideLabel ? undefined : "space-y-2"}>
+        {hideLabel ? null : (
+          <label className="text-xs font-bold text-foreground">{getLabel()}</label>
+        )}
         <div
           className={cn(
-            "overflow-hidden border bg-white px-4 py-4 sm:px-5",
+            "flex h-14 min-h-14 items-center gap-3 overflow-hidden border bg-card px-4 py-4 sm:px-5",
             udemyBorderClass,
           )}
         >
-          <div className="flex items-start gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-[#d1d7dc] bg-[#f7f9fa]">
-              <Loader2
-                className="h-4 w-4 animate-spin text-[var(--primary)]"
-                aria-hidden
-              />
+          <div className="flex min-w-0 flex-1 items-start gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-border bg-muted">
+              <Loader2 className="h-4 w-4 animate-spin text-primary" aria-hidden />
             </span>
             <div className="min-w-0 flex-1 space-y-2">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <p className="truncate text-sm font-medium text-[var(--foreground)]">
+                <p className="truncate text-sm font-medium text-foreground">
                   {filePreview.name}
                 </p>
-                <span className="shrink-0 text-xs font-semibold tabular-nums text-[var(--primary)]">
+                <span className="shrink-0 text-xs font-semibold tabular-nums text-primary">
                   {percent}%
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="truncate text-xs text-muted-foreground">
                 {formatFileListMeta({
                   sizeBytes: filePreview.size,
                   mimeType: filePreview.type,
                   fileName: filePreview.name,
                 })}
               </p>
-              <Progress
-                value={percent}
-                disableTransition
-                className="h-2 bg-[#eceff1]"
-              />
+              <Progress value={percent} disableTransition className="h-2" />
               <p className="text-xs text-muted-foreground">{statusLabel}</p>
             </div>
           </div>
@@ -480,31 +478,43 @@ export function FileUploader({
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <label className="text-xs font-bold text-foreground">
-          {isReplacing ? `Replace ${getLabel().toLowerCase()}` : getLabel()}
-        </label>
-        {isReplacing ? (
-          <button
-            type="button"
-            onClick={() => setIsReplacing(false)}
-            className="text-xs font-semibold text-muted-foreground hover:text-[var(--foreground)]"
-          >
-            Cancel
-          </button>
-        ) : null}
-      </div>
+    <div className={hideLabel ? undefined : "space-y-2"}>
+      {hideLabel ? (
+        isReplacing ? (
+          <div className="mb-2 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setIsReplacing(false)}
+              className="text-xs font-semibold text-muted-foreground hover:text-foreground"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : null
+      ) : (
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-bold text-foreground">
+            {isReplacing ? `Replace ${getLabel().toLowerCase()}` : getLabel()}
+          </label>
+          {isReplacing ? (
+            <button
+              type="button"
+              onClick={() => setIsReplacing(false)}
+              className="text-xs font-semibold text-muted-foreground hover:text-foreground"
+            >
+              Cancel
+            </button>
+          ) : null}
+        </div>
+      )}
 
       <div
         className={cn(
-          "relative border-2 border-dashed text-center transition-colors",
+          "relative flex min-h-14 items-center justify-center border-2 border-dashed text-center transition-colors",
           udemyBorderClass,
-          "bg-[#f7f9fa]",
+          "bg-muted/40",
           compact ? "rounded-lg p-4" : "rounded-lg p-6",
-          isDragging
-            ? "border-[var(--primary)] bg-[var(--primary)]/5"
-            : "hover:border-[#6a6f73]",
+          isDragging ? "border-primary bg-primary/5" : "hover:border-muted-foreground/50",
           disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
         )}
         onDrop={handleDrop}
@@ -524,7 +534,7 @@ export function FileUploader({
         <div className="space-y-3">
           <div className="flex justify-center">{getFileIcon("h-8 w-8")}</div>
           <div>
-            <p className="text-sm font-medium text-[var(--foreground)]">
+            <p className="text-sm font-medium text-foreground">
               {isReplacing
                 ? "Select new file to replace"
                 : "Click to upload or drag and drop"}
@@ -537,17 +547,12 @@ export function FileUploader({
       </div>
 
       {showPreview && filePreview && !isUploading ? (
-        <div
-          className={cn(
-            "rounded-lg border bg-[#f7f9fa] p-3",
-            udemyBorderClass,
-          )}
-        >
+        <div className={cn("rounded-lg border bg-muted/40 p-3", udemyBorderClass)}>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 items-center gap-2">
               {getFileIcon()}
               <div className="min-w-0">
-                <p className="truncate text-xs font-medium text-[var(--foreground)]">
+                <p className="truncate text-xs font-medium text-foreground">
                   {filePreview.name}
                 </p>
                 <p className="text-[11px] text-muted-foreground">
@@ -562,7 +567,7 @@ export function FileUploader({
             <button
               type="button"
               onClick={clearPreview}
-              className="rounded p-1 text-muted-foreground hover:bg-white"
+              className="rounded p-1 text-muted-foreground hover:bg-background"
               aria-label="Remove preview"
             >
               <X className="h-4 w-4" />

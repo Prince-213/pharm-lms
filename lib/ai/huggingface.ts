@@ -1,12 +1,15 @@
 import { InferenceClient } from "@huggingface/inference";
+import type { InferenceProvider } from "@huggingface/inference";
 import {
   AiConfigurationError,
   AiProviderError,
 } from "@/lib/ai/huggingface-errors";
 
 const token = process.env.HUGGINGFACE_API_KEY;
+const provider = (process.env.HUGGINGFACE_INFERENCE_PROVIDER ??
+  "auto") as InferenceProvider;
 const model =
-  process.env.HUGGINGFACE_QUIZ_MODEL ?? "mistralai/Mistral-7B-Instruct-v0.2";
+  process.env.HUGGINGFACE_QUIZ_MODEL ?? "Qwen/Qwen2.5-7B-Instruct";
 
 function aiLog(action: string, data: unknown) {
   const timestamp = new Date().toISOString();
@@ -83,7 +86,7 @@ function sanitizeProviderError(err: unknown): string {
     if (/rate limit|429/i.test(msg)) {
       return "AI service is rate-limited. Please wait a moment and try again.";
     }
-    if (/model.*not found|404/i.test(msg)) {
+    if (/model.*not found|404|no inference provider/i.test(msg)) {
       return "Configured AI model is unavailable. Contact support.";
     }
   }
@@ -104,13 +107,14 @@ export async function generateSectionQuiz(
 
   const prompt = `
 [SYSTEM]
-You are a Pharmacy School Professor. Generate challenging multiple-choice questions (MCQs) strictly from the lesson content.
+You are a Pharmacy School Professor. Generate challenging multiple-choice questions (MCQs) strictly from the teaching content below.
 
 [INSTRUCTIONS]
-1. Generate ${safeCount} unique MCQs.
-2. Each question must reference specific concepts from the text.
-3. Provide 4 distinct options per question.
-4. Return ONLY a valid JSON array. No markdown fences or commentary.
+1. Generate ${safeCount} unique MCQs about pharmacy and course subject matter.
+2. Each question must test understanding of concepts in the lesson/resource text — not filenames, uploads, LMS mechanics, or metadata.
+3. Never ask about file names, resource titles as labels, section order, or platform details.
+4. Provide 4 distinct options per question.
+5. Return ONLY a valid JSON array. No markdown fences or commentary.
 
 [FORMAT]
 [
@@ -135,6 +139,7 @@ ${safeContext}
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const response = await inference.chatCompletion({
+        provider,
         model,
         messages: [{ role: "user", content: prompt }],
         temperature: attempt === 0 ? 0.7 : 0.4,
@@ -192,6 +197,7 @@ export async function chatWithCourseContext(
 
   try {
     const response = await inference.chatCompletion({
+      provider,
       model,
       temperature: 0.5,
       max_tokens: 800,
@@ -199,7 +205,7 @@ export async function chatWithCourseContext(
         {
           role: "system",
           content:
-            "You are a professional Pharmacy Education Assistant. Answer using only the provided course context. If the answer is not in the context, say so clearly.",
+            "You are a professional Pharmacy Education Assistant. Answer using only the provided course teaching content. Focus on pharmacy and subject-matter concepts. Never ask about or emphasize filenames, upload metadata, or LMS mechanics. If the answer is not in the context, say so clearly.",
         },
         {
           role: "system",

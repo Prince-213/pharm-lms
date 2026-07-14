@@ -7,13 +7,17 @@ import {
   acceptMeetingRequestAction,
   rejectMeetingRequestAction,
 } from "@/app/tutor/communication/meetings/actions";
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 
 export function MeetingRequestActions({
   meetingRequestId,
   preferredTime,
+  onSuccess,
 }: {
   meetingRequestId: string;
   preferredTime: Date | null;
+  onSuccess?: () => void;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -32,6 +36,7 @@ export function MeetingRequestActions({
       toast.success("Meeting scheduled. The student was notified.", {
         id: tid,
       });
+      onSuccess?.();
       router.refresh();
     });
   }
@@ -45,28 +50,30 @@ export function MeetingRequestActions({
         return;
       }
       toast.success("Request declined. The student was notified.", { id: tid });
+      onSuccess?.();
       router.refresh();
     });
   }
 
   return (
-    <div className="flex flex-wrap justify-end gap-2">
-      <button
+    <ButtonGroup className="w-full">
+      <Button
         type="button"
+        variant="outline"
         disabled={pending}
         onClick={() => reject()}
-        className="rounded border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-200"
+        className="flex-1 text-destructive hover:text-destructive"
       >
         Reject
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
         disabled={pending}
         onClick={() => accept()}
-        className="rounded bg-[var(--primary)] px-2.5 py-1 text-xs font-semibold text-[var(--primary-foreground)] hover:bg-[var(--primary-strong)] disabled:opacity-60"
+        className="flex-1"
       >
         Accept
-      </button>
-    </div>
+      </Button>
+    </ButtonGroup>
   );
 }

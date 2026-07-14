@@ -8,6 +8,8 @@ import { InstructorProfileHeader } from "@/components/student/instructor-profile
 import { MentorCoachingSection } from "@/components/student/mentor-coaching-section";
 import { StudentSecondaryNav } from "@/components/student/student-secondary-nav";
 import { TutorEnrolledCoursesSection } from "@/components/student/tutor-enrolled-courses-grid";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import type {
   MentorProfileData,
   TutorCourseCard,
@@ -78,7 +80,7 @@ export function InstructorProfilePage({
       "Hosts live sessions and keeps material aligned with current practice expectations.";
 
     return (
-      <div className="space-y-6 text-[var(--foreground)]">
+      <div className="space-y-6 text-foreground">
         {/* <StudentSecondaryNav /> */}
 
         <InstructorProfileBreadcrumb
@@ -132,16 +134,18 @@ export function InstructorProfilePage({
               timezoneLabel={timezoneLabel}
             />
 
-            <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)] sm:p-6">
-              <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                About
-              </h2>
-              <div className="mt-4 space-y-4 text-sm leading-relaxed text-muted-foreground">
+            <Card className="shadow-none">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                  About
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm leading-relaxed text-muted-foreground">
                 {bioParagraphs.map((para) => (
                   <p key={para}>{para}</p>
                 ))}
-              </div>
-            </section>
+              </CardContent>
+            </Card>
 
             <InstructorHighlightCards
               cards={[
@@ -255,28 +259,27 @@ export function InstructorProfilePage({
             timezoneLabel={timezoneLabel}
           />
 
-          <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)] sm:p-6">
-            <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-              About me
-            </h2>
-            <div className="mt-4 space-y-4 text-sm leading-relaxed text-muted-foreground">
+          <Card className="shadow-none">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                About me
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm leading-relaxed text-muted-foreground">
               {bioParagraphs.map((para) => (
                 <p key={para}>{para}</p>
               ))}
-            </div>
-            {mentor.specialties.length > 0 ? (
-              <ul className="mt-5 flex flex-wrap gap-2">
-                {mentor.specialties.map((tag) => (
-                  <li
-                    key={tag}
-                    className="rounded-full border border-[var(--border)] bg-[var(--surface-muted)]/50 px-3 py-1 text-xs font-medium text-[var(--foreground)]"
-                  >
-                    {tag}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </section>
+              {mentor.specialties.length > 0 ? (
+                <ul className="flex flex-wrap gap-2 pt-1">
+                  {mentor.specialties.map((tag) => (
+                    <li key={tag}>
+                      <Badge variant="secondary">{tag}</Badge>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </CardContent>
+          </Card>
 
           <InstructorHighlightCards
             cards={[

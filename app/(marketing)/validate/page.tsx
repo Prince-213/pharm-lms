@@ -6,7 +6,7 @@ import { LeadingProfessionalsSection } from "@/components/landing/leading-profes
 import { NewsletterSection } from "@/components/landing/newsletter-section";
 import { ValidateHeroSection } from "@/components/landing/validate-hero-section";
 import { WhatLearnersSaySection } from "@/components/landing/what-learners-say-section";
-import { auth } from "@/auth";
+import { safeAuth } from "@/lib/auth/safe-session";
 import { loadLandingPopularCoursePages } from "@/lib/landing/load-landing-data";
 
 export const metadata: Metadata = {
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ValidatePage() {
-  const session = await auth();
+  const session = await safeAuth();
   const studentId = session?.user?.role === "STUDENT" ? session.user.id : undefined;
   const pages = await loadLandingPopularCoursePages(studentId, 3, 3);
 

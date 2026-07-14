@@ -118,7 +118,7 @@ export default async function StudentTutorsPage() {
           })}
         </ul>
       ) : (
-        <div className="rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center text-sm text-muted-foreground">
+        <div className="rounded-xl border border-dashed border-border bg-muted/40 px-6 py-12 text-center text-sm text-muted-foreground">
           <p>No tutors are available yet.</p>
         </div>
       )}
