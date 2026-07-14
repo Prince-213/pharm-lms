@@ -12,10 +12,6 @@ export default function AdminLoginPage() {
           mode="login"
           callbackUrl="/admin/dashboard"
           googleEnabled={false}
-          adminCredentialHints={{
-            email: "admin@pharmlms.com",
-            password: "ChangeMe123!",
-          }}
         />
       </CrossSectorSessionGate>
     </AdminAuthPageShell>
