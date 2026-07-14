@@ -50,9 +50,7 @@ export default async function Home() {
         <EmpowerSection />
       </AnimatedSection>
 
-      <AnimatedSection delay={0.1}>
-        <CourseCategorySection />
-      </AnimatedSection>
+     
 
       <AnimatedSection delay={0.1}>
         <FeaturedCoursesSection courses={dbCourses} />
