@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { createAssignmentAction } from "@/app/tutor/assignments/actions";
+import { uploadCourseFileWithProgress } from "@/lib/upload/course-file-upload";
 
 export function NewAssignmentForm({
   courses,
@@ -51,24 +52,14 @@ export function NewAssignmentForm({
           const fd = new FormData();
           fd.set("file", handoutFile);
           fd.set("purpose", "assignment-handout");
-          const up = await fetch(`/api/tutor/courses/${courseId}/upload`, {
-            method: "POST",
-            body: fd,
-          });
-          if (!up.ok) {
-            const j = (await up.json().catch(() => null)) as {
-              error?: string;
-            } | null;
-            setError(
-              typeof j?.error === "string" ? j.error : "Handout upload failed.",
-            );
-            setUploadingHandout(false);
-            return;
-          }
-          const data = (await up.json()) as { url: string };
+          const data = await uploadCourseFileWithProgress(courseId, fd);
           instructionsFileUrl = data.url;
-        } catch {
-          setError("Handout upload failed.");
+        } catch (err) {
+          const message =
+            err && typeof err === "object" && "message" in err
+              ? String((err as { message: string }).message)
+              : "Handout upload failed.";
+          setError(message);
           setUploadingHandout(false);
           return;
         }

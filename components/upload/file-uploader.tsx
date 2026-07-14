@@ -50,7 +50,8 @@ type FileUploaderProps = {
   purpose: UploadPurpose;
   courseId: string;
   accept?: string;
-  maxSizeMb?: number;
+  /** Omit or set null for no client-side size cap (server uses direct R2 upload). */
+  maxSizeMb?: number | null;
   onUploadComplete: (
     url: string,
     fileMeta?: { name: string; sizeBytes: number; mimeType?: string },
@@ -88,7 +89,7 @@ export function FileUploader({
   purpose,
   courseId,
   accept,
-  maxSizeMb = 500,
+  maxSizeMb = null,
   onUploadComplete,
   disabled = false,
   currentUrl,
@@ -190,7 +191,9 @@ export function FileUploader({
       case "congrats-video":
         return "Video shown when students complete the course.";
       default:
-        return `Max size: ${maxSizeMb}MB`;
+        return maxSizeMb
+          ? `Max size: ${maxSizeMb}MB`
+          : "Any common file type.";
     }
   };
 
@@ -211,7 +214,11 @@ export function FileUploader({
   };
 
   const validateFile = (file: File): string | null => {
-    if (file.size > maxSizeMb * 1024 * 1024) {
+    if (
+      typeof maxSizeMb === "number" &&
+      maxSizeMb > 0 &&
+      file.size > maxSizeMb * 1024 * 1024
+    ) {
       return `File is too large. Maximum size is ${maxSizeMb}MB.`;
     }
     if (purpose === "curriculum-resource" && !isDocumentFile(file)) {
@@ -384,7 +391,7 @@ export function FileUploader({
         )}
         <div
           className={cn(
-            "relative flex h-14 min-h-14 items-center gap-3 overflow-hidden border bg-card px-4 py-2 sm:px-5 hover:bg-muted/50",
+            "relative flex min-h-14 items-center gap-3 border bg-card px-4 py-3 sm:px-5 hover:bg-muted/50",
             udemyBorderClass,
             compact ? "shadow-none" : "shadow-sm",
           )}
@@ -392,11 +399,11 @@ export function FileUploader({
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-border bg-muted">
             {getFileIcon()}
           </span>
-          <div className="min-w-0 flex-1 overflow-hidden">
-            <p className="truncate text-sm font-medium text-foreground" title={displayName}>
+          <div className="min-w-0 flex-1">
+            <p className="break-all text-sm font-medium leading-snug text-foreground sm:truncate" title={displayName}>
               {displayName}
             </p>
-            <p className="truncate text-xs text-muted-foreground" title={metaLabel}>
+            <p className="mt-0.5 text-xs leading-snug text-muted-foreground" title={metaLabel}>
               {metaLabel}
             </p>
           </div>
@@ -444,33 +451,33 @@ export function FileUploader({
         )}
         <div
           className={cn(
-            "flex h-14 min-h-14 items-center gap-3 overflow-hidden border bg-card px-4 py-4 sm:px-5",
+            "flex min-h-14 items-start gap-3 border bg-card px-4 py-3 sm:px-5",
             udemyBorderClass,
           )}
         >
-          <div className="flex min-w-0 flex-1 items-start gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-border bg-muted">
-              <Loader2 className="h-4 w-4 animate-spin text-primary" aria-hidden />
-            </span>
-            <div className="min-w-0 flex-1 space-y-2">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <p className="truncate text-sm font-medium text-foreground">
-                  {filePreview.name}
-                </p>
-                <span className="shrink-0 text-xs font-semibold tabular-nums text-primary">
-                  {percent}%
-                </span>
-              </div>
-              <p className="truncate text-xs text-muted-foreground">
-                {formatFileListMeta({
-                  sizeBytes: filePreview.size,
-                  mimeType: filePreview.type,
-                  fileName: filePreview.name,
-                })}
+          <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded border border-border bg-muted">
+            <Loader2 className="h-4 w-4 animate-spin text-primary" aria-hidden />
+          </span>
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <p className="break-all text-sm font-medium leading-snug text-foreground sm:truncate">
+                {filePreview.name}
               </p>
-              <Progress value={percent} disableTransition className="h-2" />
-              <p className="text-xs text-muted-foreground">{statusLabel}</p>
+              <span className="shrink-0 text-xs font-semibold tabular-nums text-primary">
+                {percent}%
+              </span>
             </div>
+            <p className="text-xs leading-snug text-muted-foreground">
+              {formatFileListMeta({
+                sizeBytes: filePreview.size,
+                mimeType: filePreview.type,
+                fileName: filePreview.name,
+              })}
+            </p>
+            <Progress value={percent} disableTransition className="h-2" />
+            <p className="text-xs leading-snug text-muted-foreground">
+              {statusLabel}
+            </p>
           </div>
         </div>
       </div>

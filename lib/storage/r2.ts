@@ -52,14 +52,15 @@ export async function getR2SignedGetUrl(key: string, expiresIn = 3600) {
 export async function getR2SignedPutUrl(
   key: string,
   contentType: string,
-  contentLength: number,
+  _contentLength?: number,
   expiresIn = 3600,
 ) {
+  // Omit ContentLength from the signature so browsers can PUT reliably
+  // (still send Content-Type; CORS must allow PUT from the app origin).
   const command = new PutObjectCommand({
     Bucket: r2Bucket,
     Key: key,
     ContentType: contentType,
-    ContentLength: contentLength,
   });
   return getSignedUrl(r2Client, command, { expiresIn });
 }

@@ -12,24 +12,158 @@ export type CourseFileUploadProgress = {
   phase: "uploading" | "processing" | "complete";
 };
 
-export function uploadCourseFileWithProgress(
+type PresignResponse = {
+  key: string;
+  uploadUrl: string;
+  url: string;
+  contentType?: string;
+  error?: string;
+  code?: string;
+};
+
+function rejectUpload(
+  status: number,
+  message: string,
+): Promise<never> {
+  return Promise.reject({ status, message } satisfies CourseFileUploadError);
+}
+
+function reportProgress(
+  onProgress: ((update: CourseFileUploadProgress) => void) | undefined,
+  update: CourseFileUploadProgress,
+) {
+  onProgress?.(update);
+}
+
+async function requestPresign(
+  courseId: string,
+  purpose: string,
+  file: File,
+): Promise<PresignResponse | null> {
+  const res = await fetch(`/api/tutor/courses/${courseId}/upload/presign`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      purpose,
+      fileName: file.name,
+      contentType: file.type || "application/octet-stream",
+      contentLength: file.size,
+    }),
+  });
+
+  if (res.status === 503) {
+    // R2 not configured — caller may fall back to proxied upload.
+    return null;
+  }
+
+  let data: PresignResponse;
+  try {
+    data = (await res.json()) as PresignResponse;
+  } catch {
+    await rejectUpload(res.status || 502, "Could not start file upload.");
+    return null;
+  }
+
+  if (!res.ok || !data.uploadUrl || !data.key || !data.url) {
+    await rejectUpload(
+      res.status || 502,
+      data.error || "Could not start file upload.",
+    );
+    return null;
+  }
+
+  return data;
+}
+
+function putFileToStorage(
+  uploadUrl: string,
+  file: File,
+  contentType: string,
+  onProgress?: (update: CourseFileUploadProgress) => void,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", uploadUrl);
+    xhr.setRequestHeader("Content-Type", contentType);
+
+    xhr.upload.addEventListener("loadstart", () => {
+      reportProgress(onProgress, {
+        percent: 0,
+        loaded: 0,
+        total: file.size,
+        phase: "uploading",
+      });
+    });
+
+    xhr.upload.addEventListener("progress", (event) => {
+      const total =
+        event.lengthComputable && event.total > 0 ? event.total : file.size;
+      const loaded = event.loaded;
+      if (total <= 0) {
+        reportProgress(onProgress, {
+          percent: 0,
+          loaded,
+          total: file.size,
+          phase: "uploading",
+        });
+        return;
+      }
+
+      const rawPercent = Math.round((loaded / total) * 100);
+      const bytesSent = loaded >= total;
+      reportProgress(onProgress, {
+        percent: bytesSent ? 99 : Math.min(98, rawPercent),
+        loaded: Math.min(loaded, total),
+        total,
+        phase: bytesSent ? "processing" : "uploading",
+      });
+    });
+
+    xhr.addEventListener("load", () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve();
+        return;
+      }
+      reject({
+        status: xhr.status,
+        message:
+          xhr.status === 403
+            ? "Upload was rejected by storage. Check bucket CORS for PUT from this site."
+            : "Storage upload failed. Try again.",
+      } satisfies CourseFileUploadError);
+    });
+
+    xhr.addEventListener("error", () => {
+      reject({
+        status: 0,
+        message:
+          "Network error during upload. If this persists, ensure R2 CORS allows PUT from this domain.",
+      } satisfies CourseFileUploadError);
+    });
+
+    xhr.addEventListener("abort", () => {
+      reject({
+        status: 0,
+        message: "Upload cancelled",
+      } satisfies CourseFileUploadError);
+    });
+
+    xhr.send(file);
+  });
+}
+
+function uploadViaAppProxy(
   courseId: string,
   formData: FormData,
+  fileSize: number,
   onProgress?: (update: CourseFileUploadProgress) => void,
 ): Promise<CourseFileUploadResult> {
-  const file = formData.get("file");
-  const fileSize = file instanceof File ? file.size : 0;
-
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `/api/tutor/courses/${courseId}/upload`);
 
-    const report = (update: CourseFileUploadProgress) => {
-      onProgress?.(update);
-    };
-
     xhr.upload.addEventListener("loadstart", () => {
-      report({
+      reportProgress(onProgress, {
         percent: 0,
         loaded: 0,
         total: fileSize,
@@ -42,7 +176,7 @@ export function uploadCourseFileWithProgress(
         event.lengthComputable && event.total > 0 ? event.total : fileSize;
       const loaded = event.loaded;
       if (total <= 0) {
-        report({
+        reportProgress(onProgress, {
           percent: 0,
           loaded,
           total: fileSize,
@@ -53,7 +187,7 @@ export function uploadCourseFileWithProgress(
 
       const rawPercent = Math.round((loaded / total) * 100);
       const bytesSent = loaded >= total;
-      report({
+      reportProgress(onProgress, {
         percent: bytesSent ? 99 : Math.min(98, rawPercent),
         loaded: Math.min(loaded, total),
         total,
@@ -69,7 +203,7 @@ export function uploadCourseFileWithProgress(
             reject({ status: xhr.status, message: "Upload failed" });
             return;
           }
-          report({
+          reportProgress(onProgress, {
             percent: 100,
             loaded: fileSize,
             total: fileSize,
@@ -91,7 +225,8 @@ export function uploadCourseFileWithProgress(
       }
 
       if (xhr.status === 413) {
-        message = "File is too large for the server. Try a smaller file.";
+        message =
+          "File is too large for the server proxy. Configure R2 storage for large uploads.";
       } else if (xhr.status === 503) {
         message =
           message === "Upload failed"
@@ -122,4 +257,66 @@ export function uploadCourseFileWithProgress(
 
     xhr.send(formData);
   });
+}
+
+/**
+ * Prefer direct-to-R2 upload (no body size limit through Next.js).
+ * Falls back to proxied multipart when R2 is not configured (local disk).
+ */
+export async function uploadCourseFileWithProgress(
+  courseId: string,
+  formData: FormData,
+  onProgress?: (update: CourseFileUploadProgress) => void,
+): Promise<CourseFileUploadResult> {
+  const file = formData.get("file");
+  const purpose = String(formData.get("purpose") ?? "lesson-video");
+
+  if (!(file instanceof File)) {
+    return rejectUpload(400, "Missing file");
+  }
+
+  const presign = await requestPresign(courseId, purpose, file);
+  if (!presign) {
+    return uploadViaAppProxy(courseId, formData, file.size, onProgress);
+  }
+
+  reportProgress(onProgress, {
+    percent: 0,
+    loaded: 0,
+    total: file.size,
+    phase: "uploading",
+  });
+
+  await putFileToStorage(
+    presign.uploadUrl,
+    file,
+    presign.contentType || file.type || "application/octet-stream",
+    onProgress,
+  );
+
+  reportProgress(onProgress, {
+    percent: 99,
+    loaded: file.size,
+    total: file.size,
+    phase: "processing",
+  });
+
+  try {
+    await fetch(`/api/tutor/courses/${courseId}/upload/complete`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key: presign.key, purpose }),
+    });
+  } catch {
+    // Cache revalidation is best-effort; object is already stored.
+  }
+
+  reportProgress(onProgress, {
+    percent: 100,
+    loaded: file.size,
+    total: file.size,
+    phase: "complete",
+  });
+
+  return { url: presign.url };
 }

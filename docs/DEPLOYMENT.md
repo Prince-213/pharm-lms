@@ -124,6 +124,22 @@ Save the output — you will paste it into Amplify as `AUTH_SECRET`.
 | `PG_POOL_MAX` | `5` (recommended on Amplify) |
 | `DEFAULT_DISPLAY_CURRENCY` | `USD` (optional) |
 
+Tutor/mentor curriculum uploads go **directly to R2** (presigned PUT) so large
+videos are not limited by the Next.js request body. Configure bucket **CORS** to
+allow `PUT` (and `GET`/`HEAD`) from your production origin, e.g.:
+
+```json
+[
+  {
+    "AllowedOrigins": ["https://your-production-domain.com", "http://localhost:3000"],
+    "AllowedMethods": ["GET", "PUT", "HEAD"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
 Optional: `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET`, `HUGGINGFACE_API_KEY`, etc.
 
 After the first successful deploy, Amplify shows a default URL like:

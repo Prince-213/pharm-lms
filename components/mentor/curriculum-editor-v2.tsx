@@ -58,6 +58,7 @@ import {
 import { RichTextArea } from "@/components/rich-text-area";
 import { CurriculumFormPanel } from "@/components/mentor/curriculum-form-panel";
 import { FileUploader } from "@/components/upload/file-uploader";
+import { uploadCourseFileWithProgress } from "@/lib/upload/course-file-upload";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -380,11 +381,13 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     const formData = new FormData();
     formData.set("file", file);
     formData.set("purpose", "lesson-video");
-    const res = await runPending(() =>
-      fetch(`/api/tutor/courses/${courseId}/upload`, { method: "POST", body: formData }),
-    );
-    if (!res.ok) return null;
-    return (await res.json()) as { url: string };
+    try {
+      return await runPending(() =>
+        uploadCourseFileWithProgress(courseId, formData),
+      );
+    } catch {
+      return null;
+    }
   }
 
   // ── CRUD Sections ─────────────────────────────────────────────────────────

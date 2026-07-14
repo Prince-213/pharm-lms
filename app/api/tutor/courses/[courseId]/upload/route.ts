@@ -2,38 +2,16 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
 import { jsonError } from "@/lib/api/json-error";
+import { revalidateCourseSurfaces } from "@/lib/cache/revalidate-portals";
 import {
   requireMentorCourse,
   requireMentorCourseEditable,
 } from "@/lib/mentor-course-auth";
-import { DOCUMENT_FILE_MIMES, isDocumentFile } from "@/lib/upload/document-file-types";
+import {
+  buildCourseUploadKey,
+  isCourseUploadFileAllowed,
+} from "@/lib/upload/course-upload-purpose";
 import { isR2Configured, uploadToR2 } from "@/lib/storage/r2";
-import { revalidateCourseSurfaces } from "@/lib/cache/revalidate-portals";
-
-const videoMimes = [
-  "video/mp4",
-  "video/webm",
-  "video/quicktime",
-  "video/x-matroska",
-];
-
-const imageMimes = ["image/jpeg", "image/png", "image/webp"];
-
-const resourceMimes = [
-  "application/pdf",
-  "application/zip",
-  "application/x-zip-compressed",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.ms-excel",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.ms-powerpoint",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "text/plain",
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-];
 
 function isProductionRuntime() {
   return process.env.NODE_ENV === "production";
@@ -61,29 +39,7 @@ export async function POST(
     return NextResponse.json({ error: "Missing file" }, { status: 400 });
   }
 
-  let allowed: string[] = videoMimes;
-  let folder = "videos";
-  if (purpose === "thumbnail" || purpose === "course-image") {
-    allowed = imageMimes;
-    folder = "images";
-  } else if (purpose === "promo-video" || purpose === "congrats-video") {
-    allowed = videoMimes;
-    folder = purpose === "congrats-video" ? "congrats" : "promo";
-  } else if (purpose === "resource-file" || purpose === "assignment-handout") {
-    allowed = resourceMimes;
-    folder =
-      purpose === "assignment-handout" ? "assignment-handouts" : "resources";
-  } else if (purpose === "curriculum-resource") {
-    allowed = [...DOCUMENT_FILE_MIMES];
-    folder = "resources";
-  }
-
-  const typeAllowed =
-    purpose === "curriculum-resource"
-      ? isDocumentFile(file)
-      : allowed.includes(file.type);
-
-  if (!typeAllowed) {
+  if (!isCourseUploadFileAllowed(purpose, file)) {
     return NextResponse.json(
       { error: "Unsupported file type for this upload." },
       { status: 400 },
@@ -91,8 +47,7 @@ export async function POST(
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  const ext = file.name.includes(".") ? file.name.split(".").pop() : "bin";
-  const key = `courses/${courseId}/${folder}/${crypto.randomUUID()}.${ext}`;
+  const key = buildCourseUploadKey(courseId, purpose, file.name);
 
   if (isR2Configured()) {
     try {
