@@ -2,6 +2,7 @@ import {
   DeleteObjectsCommand,
   GetObjectCommand,
   ListObjectsV2Command,
+  PutBucketCorsCommand,
   PutObjectCommand,
   type PutObjectCommandInput,
   S3Client,
@@ -55,14 +56,82 @@ export async function getR2SignedPutUrl(
   _contentLength?: number,
   expiresIn = 3600,
 ) {
-  // Omit ContentLength from the signature so browsers can PUT reliably
-  // (still send Content-Type; CORS must allow PUT from the app origin).
+  // Sign Content-Type so the browser PUT must send the same header.
+  // CORS on the bucket must allow PUT from the app origin.
   const command = new PutObjectCommand({
     Bucket: r2Bucket,
     Key: key,
     ContentType: contentType,
   });
   return getSignedUrl(r2Client, command, { expiresIn });
+}
+
+function normalizeOrigin(raw: string | undefined | null): string | null {
+  if (!raw?.trim()) return null;
+  try {
+    const url = new URL(raw.trim());
+    return url.origin;
+  } catch {
+    return null;
+  }
+}
+
+/** Origins allowed to PUT/GET objects from the browser (presigned uploads). */
+export function getR2UploadCorsOrigins(): string[] {
+  const fromEnv = (process.env.R2_CORS_ORIGINS ?? "")
+    .split(",")
+    .map((s) => normalizeOrigin(s))
+    .filter((v): v is string => Boolean(v));
+
+  const defaults = [
+    normalizeOrigin(process.env.NEXT_PUBLIC_SITE_URL),
+    normalizeOrigin(process.env.AUTH_URL),
+    normalizeOrigin(process.env.NEXTAUTH_URL),
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+  ].filter((v): v is string => Boolean(v));
+
+  return [...new Set([...fromEnv, ...defaults])];
+}
+
+let corsEnsurePromise: Promise<void> | null = null;
+
+/**
+ * Ensure the R2 bucket accepts browser PUTs from this app (and localhost).
+ * Safe to call often — coalesces concurrent callers into one request.
+ */
+export async function ensureR2UploadCors(): Promise<void> {
+  if (!isR2Configured() || !r2Bucket) return;
+
+  if (!corsEnsurePromise) {
+    corsEnsurePromise = (async () => {
+      const origins = getR2UploadCorsOrigins();
+      if (origins.length === 0) return;
+
+      await r2Client.send(
+        new PutBucketCorsCommand({
+          Bucket: r2Bucket,
+          CORSConfiguration: {
+            CORSRules: [
+              {
+                AllowedOrigins: origins,
+                AllowedMethods: ["GET", "PUT", "HEAD"],
+                AllowedHeaders: ["*"],
+                ExposeHeaders: ["ETag", "Content-Type", "Content-Length"],
+                MaxAgeSeconds: 3600,
+              },
+            ],
+          },
+        }),
+      );
+    })().catch((err) => {
+      // Allow a later retry if this attempt failed (e.g. transient network).
+      corsEnsurePromise = null;
+      throw err;
+    });
+  }
+
+  await corsEnsurePromise;
 }
 
 /** List all object keys under a prefix (paginated). */

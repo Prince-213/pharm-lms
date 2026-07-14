@@ -9,7 +9,7 @@ import {
   isCourseUploadFileAllowed,
   resolveUploadContentType,
 } from "@/lib/upload/course-upload-purpose";
-import { getR2SignedPutUrl, isR2Configured } from "@/lib/storage/r2";
+import { getR2SignedPutUrl, ensureR2UploadCors, isR2Configured } from "@/lib/storage/r2";
 
 /**
  * Issue a short-lived R2 PUT URL so the browser can upload large files
@@ -71,6 +71,11 @@ export async function POST(
   const key = buildCourseUploadKey(courseId, purpose, fileName);
 
   try {
+    // Best-effort: allow browser PUT from app origins (incl. localhost).
+    await ensureR2UploadCors().catch((err) => {
+      console.warn("[upload/presign] Could not ensure R2 CORS:", err);
+    });
+
     const uploadUrl = await getR2SignedPutUrl(
       key,
       contentType,

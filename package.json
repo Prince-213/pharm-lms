@@ -31,6 +31,7 @@
     "db:repair-course-authors:apply": "tsx scripts/repair-course-author-roles.ts --apply",
     "db:clear-storage": "tsx scripts/clear-r2-storage.ts",
     "db:clear-storage:apply": "tsx scripts/clear-r2-storage.ts --apply --clear-db",
+    "db:r2-cors": "tsx scripts/configure-r2-cors.ts",
     "db:backfill-course-duration": "tsx scripts/backfill-course-estimated-duration.ts",
     "db:backfill-course-duration:apply": "tsx scripts/backfill-course-estimated-duration.ts --apply",
     "report:pdf": "tsx scripts/generate-project-report-pdf.ts"

@@ -21,10 +21,7 @@ type PresignResponse = {
   code?: string;
 };
 
-function rejectUpload(
-  status: number,
-  message: string,
-): Promise<never> {
+function rejectUpload(status: number, message: string): Promise<never> {
   return Promise.reject({ status, message } satisfies CourseFileUploadError);
 }
 
@@ -33,6 +30,13 @@ function reportProgress(
   update: CourseFileUploadProgress,
 ) {
   onProgress?.(update);
+}
+
+function isDirectUploadFailure(err: unknown): boolean {
+  if (!err || typeof err !== "object") return false;
+  const status = "status" in err ? Number((err as { status: unknown }).status) : NaN;
+  // 0 = network/CORS blocked by the browser; 403 = signed URL / CORS rejection.
+  return status === 0 || status === 403;
 }
 
 async function requestPresign(
@@ -128,7 +132,7 @@ function putFileToStorage(
         status: xhr.status,
         message:
           xhr.status === 403
-            ? "Upload was rejected by storage. Check bucket CORS for PUT from this site."
+            ? "Upload was rejected by storage."
             : "Storage upload failed. Try again.",
       } satisfies CourseFileUploadError);
     });
@@ -136,8 +140,7 @@ function putFileToStorage(
     xhr.addEventListener("error", () => {
       reject({
         status: 0,
-        message:
-          "Network error during upload. If this persists, ensure R2 CORS allows PUT from this domain.",
+        message: "Network error during direct storage upload.",
       } satisfies CourseFileUploadError);
     });
 
@@ -226,7 +229,7 @@ function uploadViaAppProxy(
 
       if (xhr.status === 413) {
         message =
-          "File is too large for the server proxy. Configure R2 storage for large uploads.";
+          "File is too large for this server. Large videos need R2 CORS so they can upload directly to storage.";
       } else if (xhr.status === 503) {
         message =
           message === "Upload failed"
@@ -260,8 +263,10 @@ function uploadViaAppProxy(
 }
 
 /**
- * Prefer direct-to-R2 upload (no body size limit through Next.js).
- * Falls back to proxied multipart when R2 is not configured (local disk).
+ * Upload course media.
+ * - Small files: always through the Next.js → R2 proxy (no browser CORS needed).
+ * - Larger files (>4MB): try direct browser→R2, then fall back to the proxy if
+ *   the PUT fails (almost always missing bucket CORS).
  */
 export async function uploadCourseFileWithProgress(
   courseId: string,
@@ -273,6 +278,12 @@ export async function uploadCourseFileWithProgress(
 
   if (!(file instanceof File)) {
     return rejectUpload(400, "Missing file");
+  }
+
+  const preferDirect = file.size > 4 * 1024 * 1024;
+
+  if (!preferDirect) {
+    return uploadViaAppProxy(courseId, formData, file.size, onProgress);
   }
 
   const presign = await requestPresign(courseId, purpose, file);
@@ -287,12 +298,26 @@ export async function uploadCourseFileWithProgress(
     phase: "uploading",
   });
 
-  await putFileToStorage(
-    presign.uploadUrl,
-    file,
-    presign.contentType || file.type || "application/octet-stream",
-    onProgress,
-  );
+  try {
+    await putFileToStorage(
+      presign.uploadUrl,
+      file,
+      presign.contentType || file.type || "application/octet-stream",
+      onProgress,
+    );
+  } catch (err) {
+    if ((err as { message?: string })?.message === "Upload cancelled") {
+      throw err;
+    }
+    if (!isDirectUploadFailure(err)) {
+      throw err;
+    }
+    console.warn(
+      "[upload] Direct R2 PUT failed; falling back to server proxy.",
+      err,
+    );
+    return uploadViaAppProxy(courseId, formData, file.size, onProgress);
+  }
 
   reportProgress(onProgress, {
     percent: 99,

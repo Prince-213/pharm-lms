@@ -124,21 +124,17 @@ Save the output — you will paste it into Amplify as `AUTH_SECRET`.
 | `PG_POOL_MAX` | `5` (recommended on Amplify) |
 | `DEFAULT_DISPLAY_CURRENCY` | `USD` (optional) |
 
-Tutor/mentor curriculum uploads go **directly to R2** (presigned PUT) so large
-videos are not limited by the Next.js request body. Configure bucket **CORS** to
-allow `PUT` (and `GET`/`HEAD`) from your production origin, e.g.:
+Tutor/mentor curriculum uploads prefer **direct R2 PUT** (presigned URL) so large
+videos bypass Next.js body limits. The app also **auto-applies bucket CORS** on
+presign (origins from `AUTH_URL` / `NEXT_PUBLIC_SITE_URL` / localhost, plus optional
+`R2_CORS_ORIGINS`). You can apply it manually anytime:
 
-```json
-[
-  {
-    "AllowedOrigins": ["https://your-production-domain.com", "http://localhost:3000"],
-    "AllowedMethods": ["GET", "PUT", "HEAD"],
-    "AllowedHeaders": ["*"],
-    "ExposeHeaders": ["ETag"],
-    "MaxAgeSeconds": 3600
-  }
-]
+```bash
+pnpm db:r2-cors
 ```
+
+If a browser PUT still fails, the client **falls back to the app proxy** (works for
+self-hosted Node; Vercel still has a ~4.5MB proxy body limit).
 
 Optional: `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET`, `HUGGINGFACE_API_KEY`, etc.
 
