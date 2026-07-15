@@ -97,8 +97,10 @@ Save the output — you will paste it into Amplify as `AUTH_SECRET`.
 2. Click **Create new app** → **Host web app**.
 3. Choose **GitHub** → authorize AWS Amplify to access your repos.
 4. Select the `pharm-lms` repository and branch (`main`).
-5. Amplify should detect Next.js. Confirm build settings use the repo’s
-   [`amplify.yml`](../amplify.yml) (pnpm + Prisma generate + build).
+5. Amplify should detect Next.js. **Use the repo’s [`amplify.yml`](../amplify.yml)** —
+   do not rely on the wizard’s auto-detected `npm run build` / `dist` (wrong for this app).
+   After the app exists: **App settings → Build settings → Edit → “Use a YML build specification file”**
+   and point at `amplify.yml` in the repo root (or reset to default if it was overridden).
 6. Under **Advanced settings** / **Environment variables**, add the variables
    in the table below.
 7. Click **Save and deploy**.
@@ -218,6 +220,17 @@ pnpm db:seed
 ---
 
 ## Troubleshooting
+
+### `pnpm install` fails: `packages field missing or empty`
+
+Fixed in repo: [`pnpm-workspace.yaml`](../pnpm-workspace.yaml) must include `packages: ["."]`
+for pnpm 9 on Amplify. Pull latest `main`, push to the company repo, redeploy.
+
+### Build uses `npm run build` or output `dist` instead of `amplify.yml`
+
+In Amplify console: **App settings → Build settings → Edit** → enable **YML build specification**
+from the repository (`amplify.yml`). Clear any custom inline build spec that overrides it.
+**Clear cache** and redeploy.
 
 ### Build succeeds but deploy fails with `EEXIST`
 
