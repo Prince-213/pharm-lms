@@ -13,6 +13,9 @@ import HomeHeroSection from "@/components/landing/home-hero-section";
 import { safeAuth } from "@/lib/auth/safe-session";
 import { loadLandingPopularCoursePages } from "@/lib/landing/load-landing-data";
 
+
+/* cc */
+
 export const metadata: Metadata = {
   title: "Clinical Pharmacy Courses & Online Learning",
   description:
