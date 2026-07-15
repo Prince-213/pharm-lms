@@ -4,6 +4,9 @@
   "type": "module",
   "private": true,
   "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=22"
+  },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },

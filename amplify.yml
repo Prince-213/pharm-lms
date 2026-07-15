@@ -1,23 +1,22 @@
 version: 1
-# Amplify Hosting reads this file from the repo root — ignore the wizard’s
-# auto-detected "npm run build" / "dist" fields in the console.
+settings:
+  nodeVersion: "22"
 frontend:
   phases:
     preBuild:
       commands:
-        - nvm install 22
-        - nvm use 22
+        - node -v
         - corepack enable
-        - corepack prepare pnpm@9 --activate
-        # Amplify sometimes runs npm install before amplify.yml; wipe it so pnpm owns node_modules.
+        - corepack prepare pnpm@9.15.9 --activate
+        - pnpm -v
+        # Drop any npm install Amplify may run before this file; we use pnpm-lock.yaml only.
         - rm -rf node_modules
         - rm -f package-lock.json
         - pnpm install --frozen-lockfile
         - pnpm exec prisma generate
     build:
       commands:
-        - pnpm build
-        # Next.js 16: replace Turbopack symlinks Amplify’s bundler cannot deploy
+        - pnpm run build
         - node scripts/resolve-next-symlinks.js
   artifacts:
     baseDirectory: .next

@@ -226,6 +226,11 @@ pnpm db:seed
 Fixed in repo: [`pnpm-workspace.yaml`](../pnpm-workspace.yaml) must include `packages: ["."]`
 for pnpm 9 on Amplify. Pull latest `main`, push to the company repo, redeploy.
 
+### Build hangs or fails downloading Node (`nvm install`)
+
+[`amplify.yml`](../amplify.yml) uses `settings.nodeVersion: "22"` (no `nvm install`).
+Do not add `npm ci` — this app uses **pnpm** and `pnpm-lock.yaml` only.
+
 ### Build uses `npm run build` or output `dist` instead of `amplify.yml`
 
 In Amplify console: **App settings → Build settings → Edit** → enable **YML build specification**
