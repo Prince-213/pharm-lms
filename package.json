@@ -38,7 +38,8 @@
     "db:r2-cors": "tsx scripts/configure-r2-cors.ts",
     "db:backfill-course-duration": "tsx scripts/backfill-course-estimated-duration.ts",
     "db:backfill-course-duration:apply": "tsx scripts/backfill-course-estimated-duration.ts --apply",
-    "report:pdf": "tsx scripts/generate-project-report-pdf.ts"
+    "report:pdf": "tsx scripts/generate-project-report-pdf.ts",
+    "deploy-ec2:pdf": "tsx scripts/generate-ec2-deployment-pdf.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",

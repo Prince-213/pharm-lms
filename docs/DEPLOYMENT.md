@@ -278,6 +278,8 @@ Add your public bucket hostname to `images.remotePatterns` in
 
 ## Fallback: EC2 t3.micro (Free Tier)
 
+**Full step-by-step guide:** [DEPLOYMENT-EC2.md](./DEPLOYMENT-EC2.md) and PDF `docs/EC2_Deployment_Guide.pdf` (generate with `pnpm run deploy-ec2:pdf`).
+
 Use this if Amplify cannot host Next.js 16 for your account.
 
 1. EC2 → Launch instance → Amazon Linux 2023 → **t3.micro**.
