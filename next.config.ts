@@ -64,6 +64,10 @@ const nextConfig: NextConfig = {
   },
 };
 
+const disableSentrySourcemaps =
+  process.env.DISABLE_SENTRY_SOURCEMAP_UPLOAD === "1" ||
+  !process.env.SENTRY_AUTH_TOKEN?.trim();
+
 export default withSentryConfig(nextConfig, {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
@@ -75,11 +79,17 @@ export default withSentryConfig(nextConfig, {
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,
 
+  // Skip sourcemap upload unless SENTRY_AUTH_TOKEN is set (and not explicitly disabled).
+  // Keeps local/EC2 builds from hanging on Sentry network work.
+  sourcemaps: {
+    disable: disableSentrySourcemaps,
+  },
+
   // For all available options, see:
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
   // Upload a larger set of source maps for prettier stack traces (increases build time)
-  widenClientFileUpload: true,
+  widenClientFileUpload: !disableSentrySourcemaps,
 
   // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
   // This can increase your server load as well as your hosting bill.

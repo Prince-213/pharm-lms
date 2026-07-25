@@ -17,7 +17,6 @@
     "build": "next build --webpack",
     "build:prod": "next build --webpack",
     "clean:next": "node -e \"try{require('node:fs').rmSync('.next',{recursive:true,force:true})}catch(e){}\"",
-    "prestart": "pnpm run build:prod",
     "start": "next start",
     "start:prod": "pnpm run clean:next && pnpm run build:prod && next start",
     "lint": "biome check",
