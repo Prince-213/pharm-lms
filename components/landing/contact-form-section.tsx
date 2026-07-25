@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { submitContactFormAction } from "@/lib/marketing/marketing-forms";
 
 export function ContactFormSection() {
   const [formData, setFormData] = useState({
@@ -15,6 +17,7 @@ export function ContactFormSection() {
     subject: "",
     message: "",
   });
+  const [pending, setPending] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -22,16 +25,38 @@ export function ContactFormSection() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+    setPending(true);
+    try {
+      const result = await submitContactFormAction(formData);
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success(
+        result.mocked
+          ? "Message accepted (email is mocked in this environment)."
+          : "Message sent. We'll get back to you soon.",
+      );
+      setFormData({
+        fullName: "",
+        email: "",
+        phone: "",
+        subject: "",
+        message: "",
+      });
+    } catch {
+      toast.error("Could not send your message. Try again.");
+    } finally {
+      setPending(false);
+    }
   };
 
   return (
     <section id="contact-form" className="bg-[#f0f0f0] py-10 lg:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
         <div className="flex flex-col gap-5 lg:flex-row lg:gap-5">
-          {/* Left: Form Card */}
           <div className="w-full rounded-[20px] bg-white p-6 lg:w-1/2 lg:p-8">
             <h2 className="font-display text-2xl font-bold text-[var(--ink-deep)] sm:text-3xl">
               Send us a Message
@@ -52,6 +77,8 @@ export function ContactFormSection() {
                     value={formData.fullName}
                     onChange={handleChange}
                     placeholder="Full Name"
+                    required
+                    minLength={2}
                   />
                 </div>
                 <div className="space-y-2">
@@ -63,6 +90,7 @@ export function ContactFormSection() {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Email"
+                    required
                   />
                 </div>
               </div>
@@ -88,6 +116,8 @@ export function ContactFormSection() {
                     value={formData.subject}
                     onChange={handleChange}
                     placeholder="Subject"
+                    required
+                    minLength={2}
                   />
                 </div>
               </div>
@@ -101,26 +131,25 @@ export function ContactFormSection() {
                   onChange={handleChange}
                   placeholder="Message"
                   rows={5}
+                  required
+                  minLength={10}
                 />
               </div>
 
-              <Button type="submit" className="w-full rounded-full py-6">
-                Submit Now
+              <Button
+                type="submit"
+                className="w-full rounded-full py-6"
+                disabled={pending}
+              >
+                {pending ? "Sending…" : "Submit Now"}
               </Button>
             </form>
           </div>
 
-          {/* Right: Contact Info Cards */}
-          <div className="w-full flex flex-col gap-5 lg:w-1/2">
-            {/* Email Card */}
-            <div className="flex  gap-5 rounded-[20px] bg-white p-6 lg:p-8">
+          <div className="flex w-full flex-col gap-5 lg:w-1/2">
+            <div className="flex gap-5 rounded-[20px] bg-white p-6 lg:p-8">
               <div className="flex h-14 w-14 shrink-0 items-center justify-center text-[var(--emerald)]">
-                <Image
-                  src="/assets/email.png"
-                  width={120}
-                  height={120}
-                  alt=""
-                />
+                <Image src="/assets/email.png" width={120} height={120} alt="" />
               </div>
               <div>
                 <h3 className="font-display text-xl font-bold text-[var(--ink-deep)]">
@@ -135,7 +164,6 @@ export function ContactFormSection() {
               </div>
             </div>
 
-            {/* Visit Office Card */}
             <div className="flex items-center gap-5 rounded-[20px] bg-white p-6 lg:p-8">
               <div className="flex h-14 w-14 shrink-0 items-center justify-center text-[var(--emerald)]">
                 <Image src="/assets/map.png" width={120} height={120} alt="" />
@@ -153,7 +181,6 @@ export function ContactFormSection() {
               </div>
             </div>
 
-            {/* Contact Card */}
             <div className="flex items-center gap-5 rounded-[20px] bg-white p-6 lg:p-8">
               <div className="flex h-14 w-14 shrink-0 items-center justify-center text-[var(--emerald)]">
                 <Image src="/assets/call.png" width={120} height={120} alt="" />

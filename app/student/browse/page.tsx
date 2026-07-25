@@ -47,6 +47,8 @@ export default async function BrowseCoursesPage({
     priceCurrency: item.priceCurrency,
     mentor: { fullName: item.mentorName },
     _count: { enrollments: item.learnerCount },
+    ratingAverage: item.ratingAverage,
+    reviewCount: item.reviewCount,
   }));
 
   const tokens = [query, topic].filter(Boolean);
@@ -166,6 +168,8 @@ export default async function BrowseCoursesPage({
                     learnerCount: course._count.enrollments,
                     priceMinorUnits: course.priceMinorUnits,
                     priceCurrency: course.priceCurrency,
+                    ratingAverage: course.ratingAverage,
+                    reviewCount: course.reviewCount,
                   }}
                   wishlist={
                     isStudent ? { saved: wishlistSet.has(course.id) } : null

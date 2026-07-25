@@ -84,6 +84,7 @@ export const studentPortalConfig: PortalNavConfig = {
     { href: "/student/messages", label: "Messages" },
     { href: "/student/tutors", label: "Tutors" },
     { href: "/student/mentors", label: "Mentors" },
+    { href: "/student/purchases", label: "Purchases" },
   ],
   groups: [
     {
@@ -123,7 +124,10 @@ export const studentPortalConfig: PortalNavConfig = {
     },
     {
       label: "Account",
-      items: [{ href: "/student/profile", label: "Profile", icon: User }],
+      items: [
+        { href: "/student/purchases", label: "Purchases", icon: CreditCard },
+        { href: "/student/profile", label: "Profile", icon: User },
+      ],
     },
   ],
 };

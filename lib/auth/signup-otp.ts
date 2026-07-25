@@ -3,13 +3,15 @@
 import { compare, hash } from "bcryptjs";
 import { z } from "zod";
 import { UserRole } from "@/generated/prisma/enums";
-import { sendEmail } from "@/lib/notifications/email-service";
 import { messageForExistingEmail } from "@/lib/auth/existing-account-message";
+import { sendEmail } from "@/lib/notifications/email-service";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
+import { randomInt } from "node:crypto";
 
 const OTP_TTL_MS = 15 * 60 * 1000;
 const SEND_COOLDOWN_MS = 60 * 1000;
-const BCRYPT_ROUNDS = 4;
+const BCRYPT_ROUNDS = 10;
 
 const emailSchema = z.string().email().toLowerCase();
 
@@ -44,7 +46,7 @@ function prismaErrorCode(err: unknown): string | undefined {
 }
 
 function generateSixDigitCode(): string {
-  return String(Math.floor(100000 + Math.random() * 900000));
+  return String(randomInt(100000, 1000000));
 }
 
 const initiateSchema = z.object({
@@ -101,6 +103,17 @@ export async function sendSignupOtpAction(
   const email = parsed.data;
   const redacted = redactEmail(email);
   console.log(`[signup-otp] send_code start email=${redacted}`);
+
+  const sendLimit = await checkRateLimit(`signup-otp-send:${email}`, {
+    limit: 8,
+    windowMs: 60 * 60 * 1000,
+  });
+  if (!sendLimit.allowed) {
+    return {
+      ok: false,
+      error: "Too many verification emails. Try again later.",
+    };
+  }
 
   let step = "db_user_lookup";
 
@@ -221,6 +234,17 @@ export async function completeSignupWithOtpAction(
     return { ok: false, error: "Please fill in every field correctly." };
   }
   const { fullName, email, password, code, role } = parsed.data;
+
+  const verifyLimit = await checkRateLimit(`signup-otp-verify:${email}`, {
+    limit: 10,
+    windowMs: 15 * 60 * 1000,
+  });
+  if (!verifyLimit.allowed) {
+    return {
+      ok: false,
+      error: "Too many verification attempts. Request a new code later.",
+    };
+  }
 
   const otp = await prisma.signupOtp.findFirst({
     where: {

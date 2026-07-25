@@ -14,6 +14,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { CoursePlayerSkeleton } from "@/components/ui/route-loading-skeleton";
+import { SafeHtml } from "@/components/ui/safe-html";
 import { Separator } from "@/components/ui/separator";
 import {
   CourseStatus,
@@ -479,10 +480,9 @@ export default async function StudentCourseLearningPage({
         {selected.content ? (
           <Card className="border-[#d1d7dc] shadow-none">
             <CardContent className="pt-6">
-              <div
-                className="max-w-none text-base leading-relaxed text-muted-foreground [&_a]:text-primary [&_p]:mb-4 [&_h3]:text-xl [&_h3]:font-bold [&_h3]:mt-8 [&_h3]:mb-4"
-                // biome-ignore lint/security/noDangerouslySetInnerHtml: Lesson HTML from mentor editor.
-                dangerouslySetInnerHTML={{ __html: selected.content }}
+              <SafeHtml
+                html={selected.content}
+                className="max-w-none text-base leading-relaxed text-muted-foreground [&_a]:text-primary [&_p]:mb-4 [&_h3]:mt-8 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:font-bold"
               />
             </CardContent>
           </Card>

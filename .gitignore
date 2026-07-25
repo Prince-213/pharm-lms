@@ -15,6 +15,10 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
 
 # next.js
 /.next/
@@ -47,3 +51,6 @@ next-env.d.ts
 
 # Local mentor uploads (when R2 is not configured)
 /public/courses/
+
+# Sentry Config File
+.env.sentry-build-plugin

@@ -9,7 +9,7 @@ import {
   isCourseUploadFileAllowed,
   resolveUploadContentType,
 } from "@/lib/upload/course-upload-purpose";
-import { getR2SignedPutUrl, ensureR2UploadCors, isR2Configured } from "@/lib/storage/r2";
+import { getR2SignedPutUrl, ensureR2UploadCors, isR2Configured, R2_MAX_UPLOAD_BYTES } from "@/lib/storage/r2";
 
 /**
  * Issue a short-lived R2 PUT URL so the browser can upload large files
@@ -52,6 +52,15 @@ export async function POST(
     return NextResponse.json(
       { error: "fileName and contentLength are required." },
       { status: 400 },
+    );
+  }
+
+  if (contentLength > R2_MAX_UPLOAD_BYTES) {
+    return NextResponse.json(
+      {
+        error: `File exceeds the maximum upload size of ${Math.floor(R2_MAX_UPLOAD_BYTES / (1024 * 1024))} MB.`,
+      },
+      { status: 413 },
     );
   }
 

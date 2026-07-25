@@ -79,6 +79,14 @@ export async function POST(
     return NextResponse.json({ error: "Missing file" }, { status: 400 });
   }
 
+  const maxBytes = 50 * 1024 * 1024;
+  if (file.size > maxBytes) {
+    return NextResponse.json(
+      { error: "File is too large. Maximum size is 50MB." },
+      { status: 413 },
+    );
+  }
+
   if (!submissionMimes.includes(file.type)) {
     return NextResponse.json(
       { error: "Unsupported file type for submission." },
@@ -91,19 +99,24 @@ export async function POST(
   const courseId = assignment.courseId;
   const key = `courses/${courseId}/assignment-submissions/${assignmentId}/${session.user.id}/${crypto.randomUUID()}.${ext}`;
 
-  if (isR2Configured()) {
-    await uploadToR2({
-      Key: key,
-      Body: buffer,
-      ContentType: file.type,
-    });
-    return NextResponse.json({ key, url: `r2://${key}` }, { status: 201 });
+  if (!isR2Configured()) {
+    if (process.env.NODE_ENV === "production") {
+      return NextResponse.json(
+        { error: "File storage is not configured." },
+        { status: 503 },
+      );
+    }
+    const publicRoot = path.join(process.cwd(), "public");
+    const diskPath = path.join(publicRoot, ...key.split("/"));
+    await mkdir(path.dirname(diskPath), { recursive: true });
+    await writeFile(diskPath, buffer);
+    return NextResponse.json({ key, url: `/${key}` }, { status: 201 });
   }
 
-  const publicRoot = path.join(process.cwd(), "public");
-  const diskPath = path.join(publicRoot, ...key.split("/"));
-  await mkdir(path.dirname(diskPath), { recursive: true });
-  await writeFile(diskPath, buffer);
-
-  return NextResponse.json({ key, url: `/${key}` }, { status: 201 });
+  await uploadToR2({
+    Key: key,
+    Body: buffer,
+    ContentType: file.type,
+  });
+  return NextResponse.json({ key, url: `r2://${key}` }, { status: 201 });
 }

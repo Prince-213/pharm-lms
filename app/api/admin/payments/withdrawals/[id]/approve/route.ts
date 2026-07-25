@@ -7,6 +7,10 @@ import {
 } from "@/lib/paystack/client";
 import { NextResponse } from "next/server";
 
+/**
+ * Atomically claim PENDING → APPROVED before calling Paystack, then PAID.
+ * Prevents concurrent admin clicks from initiating multiple transfers.
+ */
 export async function POST(
   _req: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -17,10 +21,23 @@ export async function POST(
   }
 
   const { id } = await params;
-  const wd = await db.withdrawalRequest.findUnique({
-    where: { id },
+
+  const claimed = await db.withdrawalRequest.updateMany({
+    where: { id, status: WithdrawalRequestStatus.PENDING },
+    data: {
+      status: WithdrawalRequestStatus.APPROVED,
+      processedById: session.user.id,
+    },
   });
-  if (!wd || wd.status !== WithdrawalRequestStatus.PENDING) {
+  if (claimed.count !== 1) {
+    return NextResponse.json(
+      { error: "Invalid withdrawal or already processing." },
+      { status: 404 },
+    );
+  }
+
+  const wd = await db.withdrawalRequest.findUnique({ where: { id } });
+  if (!wd) {
     return NextResponse.json({ error: "Invalid withdrawal" }, { status: 404 });
   }
 
@@ -28,6 +45,10 @@ export async function POST(
     where: { userId: wd.mentorId },
   });
   if (!account) {
+    await db.withdrawalRequest.update({
+      where: { id },
+      data: { status: WithdrawalRequestStatus.PENDING, processedById: null },
+    });
     return NextResponse.json(
       { error: "Tutor has no payout account." },
       { status: 400 },
@@ -53,6 +74,10 @@ export async function POST(
     transferCode = transfer.transfer_code;
   } catch (e) {
     console.error("paystack transfer", e);
+    await db.withdrawalRequest.update({
+      where: { id },
+      data: { status: WithdrawalRequestStatus.PENDING, processedById: null },
+    });
     return NextResponse.json(
       {
         error:

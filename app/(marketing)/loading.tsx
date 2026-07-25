@@ -1,5 +1,5 @@
-import { MarketingContentSkeleton } from "@/components/ui/route-loading-skeleton";
+import { LandingPageContentSkeleton } from "@/components/landing/landing-page-skeleton";
 
 export default function MarketingLoading() {
-  return <MarketingContentSkeleton />;
+  return <LandingPageContentSkeleton />;
 }

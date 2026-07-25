@@ -7,7 +7,7 @@ export default function MentorProtectedLoading() {
   return (
     <div className="space-y-6">
       <PageHeaderSkeleton />
-      <CardGridSkeleton cards={4} />
+      <CardGridSkeleton cards={3} />
     </div>
   );
 }

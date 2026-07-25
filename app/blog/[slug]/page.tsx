@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingNavbar } from "@/components/landing/landing-navbar";
+import { SafeHtml } from "@/components/ui/safe-html";
 import { loadBlogPostBySlug } from "@/lib/landing/load-landing-data";
 import { siteConfig } from "@/lib/site-metadata";
 
@@ -73,9 +74,9 @@ export default async function BlogArticlePage({ params }: PageProps) {
             className="mt-8 w-full rounded-2xl object-cover shadow-[var(--shadow-3)]"
           />
 
-          <div
+          <SafeHtml
+            html={post.body}
             className="prose prose-slate mt-10 max-w-none prose-headings:font-display prose-headings:text-[var(--ink-deep)] prose-p:text-[var(--muted-soft)] prose-a:text-[var(--emerald)]"
-            dangerouslySetInnerHTML={{ __html: post.body }}
           />
         </article>
       </main>

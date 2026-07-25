@@ -1,10 +1,17 @@
-import { redirect } from "next/navigation";
+import { FeatureComingSoon } from "@/components/ui/feature-coming-soon";
 
-export default async function MentorCoursePromotionsPage({
+export default async function TutorPromotionsPage({
   params,
 }: {
   params: Promise<{ courseId: string }>;
 }) {
   const { courseId } = await params;
-  redirect(`/tutor/courses/${courseId}/manage/pricing`);
+  return (
+    <FeatureComingSoon
+      title="Promotions"
+      description="Course-level promotional campaigns are not available yet. Platform coupons are managed by admins."
+      backHref={`/tutor/courses/${courseId}/manage`}
+      backLabel="Back to course manage"
+    />
+  );
 }

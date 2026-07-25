@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const limit = checkRateLimit(`ai:quiz:${session.user.id}`, {
+  const limit = await checkRateLimit(`ai:quiz:${session.user.id}`, {
     limit: 20,
     windowMs: 60_000,
   });

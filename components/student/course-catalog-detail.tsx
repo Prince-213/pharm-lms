@@ -29,6 +29,7 @@ import {
   CardDescription,
   CardHeader,
 } from "@/components/ui/card";
+import { SafeHtml } from "@/components/ui/safe-html";
 import type { CatalogCoursePayload } from "@/lib/course-catalog-detail";
 import { formatMinorUnitsToCurrency } from "@/lib/format-currency";
 import { formatTotalDuration } from "@/lib/lesson-duration";
@@ -345,10 +346,9 @@ export function CourseCatalogDetail({
                   "shadow-[0_2px_4px_rgba(0,0,0,0.05)]",
                 )}
               >
-                <div
+                <SafeHtml
+                  html={course.description}
                   className="prose-custom max-w-none text-base leading-relaxed text-muted-foreground [&_a]:font-semibold [&_a]:text-[var(--primary)] [&_a]:underline [&_li]:mb-1 [&_p]:mb-4 [&_strong]:text-[var(--foreground)] [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-5"
-                  // biome-ignore lint/security/noDangerouslySetInnerHtml: Rich text from course editor (mentor-controlled).
-                  dangerouslySetInnerHTML={{ __html: course.description }}
                 />
               </div>
             </section>

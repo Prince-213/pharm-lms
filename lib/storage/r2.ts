@@ -50,18 +50,24 @@ export async function getR2SignedGetUrl(key: string, expiresIn = 3600) {
   return getSignedUrl(r2Client, command, { expiresIn });
 }
 
+/** Hard cap for direct browser uploads (2 GB). Enforced at presign time. */
+export const R2_MAX_UPLOAD_BYTES = 2 * 1024 * 1024 * 1024;
+
 export async function getR2SignedPutUrl(
   key: string,
   contentType: string,
-  _contentLength?: number,
+  contentLength?: number,
   expiresIn = 3600,
 ) {
-  // Sign Content-Type so the browser PUT must send the same header.
-  // CORS on the bucket must allow PUT from the app origin.
+  // Sign Content-Type (and ContentLength when provided) so the browser PUT
+  // must match. Callers must reject oversized contentLength before calling.
   const command = new PutObjectCommand({
     Bucket: r2Bucket,
     Key: key,
     ContentType: contentType,
+    ...(typeof contentLength === "number" && contentLength > 0
+      ? { ContentLength: contentLength }
+      : {}),
   });
   return getSignedUrl(r2Client, command, { expiresIn });
 }

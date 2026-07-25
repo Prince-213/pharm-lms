@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const limit = checkRateLimit(`ai:grade:${session.user.id}`, {
+  const limit = await checkRateLimit(`ai:grade:${session.user.id}`, {
     limit: 30,
     windowMs: 60_000,
   });

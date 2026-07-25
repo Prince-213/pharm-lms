@@ -13,6 +13,7 @@ import { customPrismaAdapter } from "@/lib/auth/custom-prisma-adapter";
 import { isGoogleOAuthEnabled } from "@/lib/auth/google-oauth-enabled";
 import { getAuthSecret } from "@/lib/auth/secret";
 import { SESSION_MAX_AGE_SECONDS } from "@/lib/auth/session-policy";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -70,6 +71,13 @@ const providers: NextAuthConfig["providers"] = [
         return null;
       }
       const email = parsed.data.email.toLowerCase();
+      const loginLimit = await checkRateLimit(`credentials-login:${email}`, {
+        limit: 20,
+        windowMs: 15 * 60 * 1000,
+      });
+      if (!loginLimit.allowed) {
+        return null;
+      }
       const user = await prisma.user.findUnique({
         where: { email },
         include: {

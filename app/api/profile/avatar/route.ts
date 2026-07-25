@@ -54,6 +54,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ url: `r2://${key}` }, { status: 201 });
   }
 
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json(
+      { error: "File storage is not configured." },
+      { status: 503 },
+    );
+  }
+
   const publicRoot = path.join(process.cwd(), "public");
   const diskPath = path.join(publicRoot, ...key.split("/"));
   await mkdir(path.dirname(diskPath), { recursive: true });

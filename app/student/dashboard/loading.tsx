@@ -1,5 +1,5 @@
-import { DashboardHomeSkeleton } from "@/components/ui/route-loading-skeleton";
+import { StudentDashboardSkeleton } from "@/components/ui/route-loading-skeleton";
 
 export default function StudentDashboardLoading() {
-  return <DashboardHomeSkeleton />;
+  return <StudentDashboardSkeleton />;
 }

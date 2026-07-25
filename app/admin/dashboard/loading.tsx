@@ -1,5 +1,5 @@
-import { DashboardHomeSkeleton } from "@/components/ui/route-loading-skeleton";
+import { AdminDashboardSkeleton } from "@/components/ui/route-loading-skeleton";
 
 export default function AdminDashboardLoading() {
-  return <DashboardHomeSkeleton />;
+  return <AdminDashboardSkeleton />;
 }

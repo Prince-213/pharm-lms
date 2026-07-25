@@ -4,6 +4,7 @@ import { Award, CheckCircle2, PartyPopper, Trophy, X } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { completeCourseAction } from "@/app/student/course/[courseId]/actions";
+import { SafeHtml } from "@/components/ui/safe-html";
 import { cn } from "@/lib/utils";
 
 interface CourseCompletionCtaProps {
@@ -102,12 +103,9 @@ export function CourseCompletionCta({
                   </div>
                 ) : congratsKind === "ARTICLE" && congratulatoryArticle ? (
                   <div className="rounded-xl border border-[var(--border)] bg-[#fafafa] p-4 sm:p-6">
-                    <div
+                    <SafeHtml
+                      html={congratulatoryArticle}
                       className="prose prose-sm max-w-none text-[var(--foreground)] sm:prose-base [&_a]:text-[var(--primary)]"
-                      // biome-ignore lint/security/noDangerouslySetInnerHtml: Mentor-authored congratulatory HTML.
-                      dangerouslySetInnerHTML={{
-                        __html: congratulatoryArticle,
-                      }}
                     />
                   </div>
                 ) : (

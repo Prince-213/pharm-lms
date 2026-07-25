@@ -12,6 +12,8 @@ export type CatalogCourseCardData = {
   learnerCount: number;
   priceMinorUnits: number | null;
   priceCurrency: string;
+  ratingAverage?: number | null;
+  reviewCount?: number;
 };
 
 export function CatalogCourseCard({
@@ -66,17 +68,30 @@ export function CatalogCourseCard({
         </p>
 
         <div className="mt-2 flex items-center gap-1 text-xs">
-          <span className="font-bold text-[var(--foreground)]">4.5</span>
-          <div className="flex text-[var(--star-fill)]">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star
-                key={`star-${i}`}
-                className="h-3 w-3 fill-current"
-                strokeWidth={0}
-              />
-            ))}
-          </div>
-          <span className="text-muted-foreground">(placeholder)</span>
+          {course.reviewCount && course.reviewCount > 0 && course.ratingAverage != null ? (
+            <>
+              <span className="font-bold text-[var(--foreground)]">
+                {course.ratingAverage.toFixed(1)}
+              </span>
+              <div className="flex text-[var(--star-fill)]">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={`star-${i}`}
+                    className="h-3 w-3 fill-current"
+                    strokeWidth={0}
+                    style={{
+                      opacity: i < Math.round(course.ratingAverage ?? 0) ? 1 : 0.25,
+                    }}
+                  />
+                ))}
+              </div>
+              <span className="text-muted-foreground">
+                ({course.reviewCount.toLocaleString()})
+              </span>
+            </>
+          ) : (
+            <span className="text-muted-foreground">No reviews yet</span>
+          )}
         </div>
 
         <p className="mt-2 line-clamp-2 min-h-[2.4rem] text-xs leading-relaxed text-muted-foreground">

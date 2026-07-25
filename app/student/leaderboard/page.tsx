@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
@@ -27,35 +28,34 @@ export default async function LeaderboardPage() {
       <LeaderboardBanner />
 
       <div className="grid gap-8 lg:grid-cols-3">
-        {/* Main Leaderboard List */}
         <div className="lg:col-span-2">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-2xl font-black text-slate-900">Rankings</h2>
-            <div className="flex items-center gap-2 rounded-xl bg-slate-100 p-1">
-              <button className="rounded-lg bg-white px-4 py-1.5 text-xs font-bold text-indigo-600 shadow-sm">Global</button>
-              <button className="px-4 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700">This Month</button>
-            </div>
+            <p className="text-xs font-semibold text-slate-500">
+              All-time points
+            </p>
           </div>
           <LeaderboardTable entries={entries} />
         </div>
 
-        {/* User Sidebar Stats */}
         <div className="space-y-6">
           <h2 className="text-2xl font-black text-slate-900">Your Stats</h2>
           <LeaderboardUserCard user={currentUser} />
-          
-          <div className="rounded-3xl bg-linear-to-br from-indigo-600 to-violet-700 p-8 text-white shadow-lg overflow-hidden relative group hover:scale-[1.02] transition-transform cursor-pointer">
+
+          <div className="group relative overflow-hidden rounded-3xl bg-linear-to-br from-indigo-600 to-violet-700 p-8 text-white shadow-lg transition-transform hover:scale-[1.02]">
             <div className="relative z-10">
               <h4 className="text-xl font-bold">Earn points!</h4>
-              <p className="mt-2 text-indigo-100 text-sm">
+              <p className="mt-2 text-sm text-indigo-100">
                 Complete lessons and maintain your streak to climb the ranks.
               </p>
-              <button className="mt-6 rounded-xl bg-white/20 px-6 py-2.5 text-sm font-bold backdrop-blur-md transition hover:bg-white/30">
+              <Link
+                href="/student/dashboard"
+                className="mt-6 inline-flex rounded-xl bg-white/20 px-6 py-2.5 text-sm font-bold backdrop-blur-md transition hover:bg-white/30"
+              >
                 Start Learning
-              </button>
+              </Link>
             </div>
-            {/* Decorative background circle */}
-            <div className="absolute -right-10 -bottom-10 h-40 w-40 rounded-full bg-white/10 blur-3xl group-hover:bg-white/20 transition-colors" />
+            <div className="absolute -right-10 -bottom-10 h-40 w-40 rounded-full bg-white/10 blur-3xl transition-colors group-hover:bg-white/20" />
           </div>
         </div>
       </div>
