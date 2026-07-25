@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { NewMessageDialog } from "@/components/chat/new-message-dialog";
 import { ThreadComposer } from "@/components/chat/thread-composer";
+import { EmptyState } from "@/components/ui/empty-state";
 import { UserRole } from "@/generated/prisma/enums";
 import { listThreadsForUser, loadThreadForUser } from "@/lib/chat";
 import { listStudentChatContacts } from "@/lib/chat-contacts";
@@ -66,18 +67,18 @@ export default async function StudentMessagesPage({
             Conversations · {threads.length}
           </div>
           {threads.length === 0 ? (
-            <div className="flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">
-              <Inbox
-                className="h-9 w-9 text-muted-foreground/40"
-                strokeWidth={1.25}
-              />
-              <p className="mt-3 text-sm font-semibold">No messages yet</p>
-              <p className="mt-2 max-w-[240px] text-xs text-muted-foreground">
-                {contacts.length > 0
+            <EmptyState
+              icon={Inbox}
+              className="m-4 border-0 bg-transparent py-12 shadow-none"
+              title="No messages yet"
+              description={
+                contacts.length > 0
                   ? "Use New message to reach a tutor or mentor."
-                  : "Enroll in a course or browse mentors to find someone you can message."}
-              </p>
-            </div>
+                  : "Enroll in a course or browse mentors to find someone you can message."
+              }
+              actionHref={contacts.length === 0 ? "/student/browse" : undefined}
+              actionLabel={contacts.length === 0 ? "Browse courses" : undefined}
+            />
           ) : (
             <ul className="flex-1 divide-y divide-border overflow-y-auto">
               {threads.map((t) => (

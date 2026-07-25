@@ -4,15 +4,17 @@ import { LoginForm } from "@/auth/login-form";
 import { UserRole } from "@/generated/prisma/enums";
 import { isAppleOAuthEnabled } from "@/lib/auth/apple-oauth-enabled";
 import { isGoogleOAuthEnabled } from "@/lib/auth/google-oauth-enabled";
+import {
+  parseAuthJsError,
+  parsePortalAuthError,
+} from "@/lib/auth/parse-auth-page-params";
 
 export default async function MentorSignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ authError?: string }>;
+  searchParams: Promise<{ authError?: string; error?: string }>;
 }) {
   const sp = await searchParams;
-  const portalAuthError =
-    sp.authError === "wrong_portal" ? ("wrong_portal" as const) : null;
 
   return (
     <AuthPageShell actorType="mentor" mode="signup">
@@ -24,7 +26,8 @@ export default async function MentorSignupPage({
           callbackUrl="/mentor/dashboard"
           googleEnabled={isGoogleOAuthEnabled()}
           appleEnabled={isAppleOAuthEnabled()}
-          portalAuthError={portalAuthError}
+          portalAuthError={parsePortalAuthError(sp.authError)}
+          authJsError={parseAuthJsError(sp.error)}
         />
       </CrossSectorSessionGate>
     </AuthPageShell>

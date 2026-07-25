@@ -1,8 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Receipt } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -168,11 +170,13 @@ export function AdminPaymentsTransactionsClient() {
           <TableBody>
             {rows.length === 0 && !loading ? (
               <TableRow>
-                <TableCell
-                  colSpan={9}
-                  className="text-center text-muted-foreground"
-                >
-                  No transactions match these filters.
+                <TableCell colSpan={9} className="p-4">
+                  <EmptyState
+                    icon={Receipt}
+                    className="border-0 bg-transparent py-10 shadow-none"
+                    title="No transactions match these filters"
+                    description="Adjust date, status, or tutor filters to find checkout records."
+                  />
                 </TableCell>
               </TableRow>
             ) : null}

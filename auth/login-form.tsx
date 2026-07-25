@@ -21,6 +21,10 @@ import {
   initiateSignupAction,
 } from "@/lib/auth/signup-otp";
 import { portalAuthCopy } from "@/lib/auth/portal-auth-copy";
+import {
+  messageForAuthJsError,
+  messageForOauthOnlyLogin,
+} from "@/lib/auth/existing-account-message";
 import { userRoleLabel } from "@/lib/user-role-label";
 
 type LoginFormProps = {
@@ -32,6 +36,8 @@ type LoginFormProps = {
   adminCredentialHints?: { email: string; password: string };
   /** Set when OAuth sign-in was rejected because the account role does not match this portal. */
   portalAuthError?: "wrong_portal" | "account_disabled" | null;
+  /** Auth.js `?error=` query value (OAuthCallback, OAuthAccountNotLinked, etc.). */
+  authJsError?: string | null;
 };
 
 const PORTAL_AUTH_BASE = {
@@ -73,6 +79,7 @@ export function LoginForm({
   appleEnabled = false,
   adminCredentialHints,
   portalAuthError = null,
+  authJsError = null,
 }: LoginFormProps) {
   const isSignup = mode === "signup";
   const isAdmin = actorType === "admin";
@@ -139,13 +146,18 @@ export function LoginForm({
           : "This account is not active. Contact support if you need help."
         : null;
 
+  const authJsBanner = messageForAuthJsError(authJsError ?? undefined);
+  const authBanner = wrongPortalBanner ?? authJsBanner;
+
   useEffect(() => {
     if (portalAuthError === "account_disabled" && wrongPortalBanner) {
       toast.error(wrongPortalBanner);
     } else if (portalAuthError === "wrong_portal" && wrongPortalBanner) {
       toast.error(wrongPortalBanner);
+    } else if (authJsBanner) {
+      toast.error(authJsBanner);
     }
-  }, [portalAuthError, wrongPortalBanner]);
+  }, [portalAuthError, wrongPortalBanner, authJsBanner]);
 
   function clearFieldError(field: keyof FieldErrors) {
     setFieldErrors((prev) => {
@@ -292,6 +304,8 @@ export function LoginForm({
               ? "This mentor account has been deactivated by an admin. Contact support if you need help."
               : "This account is not active. Contact support if you need help.",
           );
+        } else if (signInResult.code === "OAUTH_ONLY_ACCOUNT") {
+          setError(messageForOauthOnlyLogin(["google", "apple"]));
         } else {
           setError("Account created, but sign-in failed. Try logging in.");
         }
@@ -332,6 +346,15 @@ export function LoginForm({
             : "This account is not active. Contact support if you need help.";
         setError(msg);
         toast.error(msg);
+      } else if (result.code === "OAUTH_ONLY_ACCOUNT") {
+        const providers: string[] = [];
+        if (showGoogle) providers.push("google");
+        if (showApple) providers.push("apple");
+        const msg = messageForOauthOnlyLogin(
+          providers.length > 0 ? providers : ["google"],
+        );
+        setError(msg);
+        toast.error(msg);
       } else {
         setError("Invalid credentials.");
         toast.error("Invalid credentials.");
@@ -362,12 +385,12 @@ export function LoginForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-4 text-[var(--auth-text)]">
-      {wrongPortalBanner ? (
+      {authBanner ? (
         <p
           role="alert"
           className="rounded-xl border border-[var(--auth-error)]/40 bg-[var(--auth-error)]/10 px-3 py-2 text-center text-sm text-[var(--auth-error)]"
         >
-          {wrongPortalBanner}
+          {authBanner}
         </p>
       ) : null}
 

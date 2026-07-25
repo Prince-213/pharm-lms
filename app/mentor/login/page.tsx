@@ -4,11 +4,19 @@ import { LoginForm } from "@/auth/login-form";
 import { UserRole } from "@/generated/prisma/enums";
 import { isAppleOAuthEnabled } from "@/lib/auth/apple-oauth-enabled";
 import { isGoogleOAuthEnabled } from "@/lib/auth/google-oauth-enabled";
+import {
+  parseAuthJsError,
+  parsePortalAuthError,
+} from "@/lib/auth/parse-auth-page-params";
 
 export default async function MentorLoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ callbackUrl?: string; authError?: string }>;
+  searchParams: Promise<{
+    callbackUrl?: string;
+    authError?: string;
+    error?: string;
+  }>;
 }) {
   const sp = await searchParams;
   const raw = sp.callbackUrl;
@@ -16,12 +24,6 @@ export default async function MentorLoginPage({
     typeof raw === "string" && raw.startsWith("/mentor")
       ? raw
       : "/mentor/dashboard";
-  const portalAuthError =
-    sp.authError === "wrong_portal"
-      ? ("wrong_portal" as const)
-      : sp.authError === "account_disabled"
-        ? ("account_disabled" as const)
-        : null;
 
   return (
     <AuthPageShell actorType="mentor" mode="login">
@@ -33,7 +35,8 @@ export default async function MentorLoginPage({
           callbackUrl={callbackUrl}
           googleEnabled={isGoogleOAuthEnabled()}
           appleEnabled={isAppleOAuthEnabled()}
-          portalAuthError={portalAuthError}
+          portalAuthError={parsePortalAuthError(sp.authError)}
+          authJsError={parseAuthJsError(sp.error)}
         />
       </CrossSectorSessionGate>
     </AuthPageShell>

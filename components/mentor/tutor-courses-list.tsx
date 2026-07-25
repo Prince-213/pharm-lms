@@ -1,10 +1,11 @@
 "use client";
 
 import { clsx } from "clsx";
-import { Search } from "lucide-react";
+import { BookPlus, Search } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { CourseCardMenu } from "@/components/mentor/course-card-menu";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Progress } from "@/components/ui/progress";
 import { CourseStatus } from "@/generated/prisma/enums";
 import { courseStatusLabel } from "@/lib/course-status-label";
@@ -140,10 +141,13 @@ export function TutorCoursesList({
 
   if (courses.length === 0) {
     return (
-      <div className="border border-[#d1d7dc] bg-white p-10 text-center text-sm text-muted-foreground">
-        You have no courses yet. Use <strong>New Course</strong> to open the
-        studio wizard.
-      </div>
+      <EmptyState
+        icon={BookPlus}
+        title="No courses yet"
+        description="Create your first course with the studio wizard to start teaching on PharmLMS."
+        actionHref="/tutor/courses/new/step-2"
+        actionLabel="New course"
+      />
     );
   }
 

@@ -2,7 +2,7 @@
 
 import { SegmentError } from "@/components/ui/segment-error";
 
-export default function MentorProtectedError({
+export default function AdminError({
   error,
   reset,
 }: {
@@ -13,7 +13,7 @@ export default function MentorProtectedError({
     <SegmentError
       error={error}
       reset={reset}
-      homeHref="/mentor/dashboard"
+      homeHref="/admin/dashboard"
       homeLabel="Back to dashboard"
     />
   );

@@ -33,6 +33,10 @@ class AccountDisabledCredentials extends CredentialsSignin {
   code = "ACCOUNT_DISABLED";
 }
 
+class OauthOnlyAccountCredentials extends CredentialsSignin {
+  code = "OAUTH_ONLY_ACCOUNT";
+}
+
 function loginPathForAccountDisabled(
   intent: string | undefined,
   role: UserRole,
@@ -68,8 +72,20 @@ const providers: NextAuthConfig["providers"] = [
       const email = parsed.data.email.toLowerCase();
       const user = await prisma.user.findUnique({
         where: { email },
+        include: {
+          accounts: { select: { provider: true } },
+        },
       });
-      if (!user?.passwordHash) {
+      if (!user) {
+        return null;
+      }
+      if (!user.passwordHash) {
+        const oauthProviders = user.accounts
+          .map((a) => a.provider)
+          .filter((p) => p === "google" || p === "apple");
+        if (oauthProviders.length > 0) {
+          throw new OauthOnlyAccountCredentials();
+        }
         return null;
       }
       const loginAccess = await ensureMentorCanSignIn({

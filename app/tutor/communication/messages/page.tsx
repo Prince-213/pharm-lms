@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { NewMessageDialog } from "@/components/chat/new-message-dialog";
 import { ThreadComposer } from "@/components/chat/thread-composer";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { UserRole } from "@/generated/prisma/enums";
 import { listThreadsForUser, loadThreadForUser } from "@/lib/chat";
 import { listTutorChatContacts } from "@/lib/chat-contacts";
@@ -73,22 +74,16 @@ export default async function TutorCommunicationMessagesPage({
             Conversations · {threads.length}
           </div>
           {threads.length === 0 ? (
-            <div className="flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-border bg-card">
-                <Inbox
-                  className="h-7 w-7 text-muted-foreground/50"
-                  strokeWidth={1.25}
-                />
-              </div>
-              <p className="text-sm font-semibold text-foreground">
-                No conversations yet
-              </p>
-              <p className="mt-2 max-w-[240px] text-xs leading-relaxed text-muted-foreground">
-                {contacts.length > 0
+            <EmptyState
+              icon={Inbox}
+              className="m-4 border-0 bg-transparent py-12 shadow-none"
+              title="No conversations yet"
+              description={
+                contacts.length > 0
                   ? "Use New message to reach an enrolled student, or post an announcement for a course."
-                  : "When students enroll in your courses, you can message them here."}
-              </p>
-            </div>
+                  : "When students enroll in your courses, you can message them here."
+              }
+            />
           ) : (
             <ul className="flex-1 divide-y divide-border overflow-y-auto">
               {threads.map((t) => (

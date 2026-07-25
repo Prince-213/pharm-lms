@@ -12,12 +12,14 @@ import {
   Search,
   Trash2,
   UserX,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { sendChatMessageAction } from "@/app/actions/chat";
+import { EmptyState } from "@/components/ui/empty-state";
 import { adminDeleteUserAndData, setUserActiveAction } from "@/app/admin/people/actions";
 import { refreshPortalAfterMutation } from "@/lib/client/refresh-portal-data";
 
@@ -494,8 +496,13 @@ export function AdminPeopleCrmTable({
             <tbody className="divide-y divide-[var(--border)]">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-16 text-center text-muted-foreground">
-                    No records match your filters.
+                  <td colSpan={6} className="px-4 py-8">
+                    <EmptyState
+                      icon={Users}
+                      className="border-0 bg-transparent py-8 shadow-none"
+                      title="No records match your filters"
+                      description="Try clearing search or status filters to see more people."
+                    />
                   </td>
                 </tr>
               ) : (

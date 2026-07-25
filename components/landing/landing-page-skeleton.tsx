@@ -1,6 +1,6 @@
 import { clsx } from "clsx";
 
-const pulse = "animate-pulse bg-slate-200/80";
+const pulse = "animate-pulse bg-[var(--surface-muted)]";
 
 function Bone({ className }: { className?: string }) {
   return <div className={clsx(pulse, "rounded-md", className)} aria-hidden />;
@@ -291,20 +291,29 @@ function LandingFooterSkeleton() {
   );
 }
 
+/** Homepage body only — use when marketing layout already mounts header/footer */
+export function LandingPageContentSkeleton() {
+  return (
+    <>
+      <span className="sr-only">Loading homepage</span>
+      <HeroSectionSkeleton />
+      <ServicesSectionSkeleton />
+      <PopularCoursesSectionSkeleton />
+      <TutorsSectionSkeleton />
+      <TutorsSectionSkeleton />
+      <TestimonialSectionSkeleton />
+      <BlogSectionSkeleton />
+    </>
+  );
+}
+
 /** Full homepage loading UI — mirrors hero → services → courses → tutors → testimonial → blog → footer */
 export function LandingPageSkeleton() {
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-      <span className="sr-only">Loading homepage</span>
       <LandingNavbarSkeleton />
       <main>
-        <HeroSectionSkeleton />
-        <ServicesSectionSkeleton />
-        <PopularCoursesSectionSkeleton />
-        <TutorsSectionSkeleton />
-        <TutorsSectionSkeleton />
-        <TestimonialSectionSkeleton />
-        <BlogSectionSkeleton />
+        <LandingPageContentSkeleton />
       </main>
       <LandingFooterSkeleton />
     </div>

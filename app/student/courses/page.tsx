@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { BookOpen } from "lucide-react";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { StudentSecondaryNav } from "@/components/student/student-secondary-nav";
 import { EnrolledCourseCard } from "@/components/student/enrolled-course-card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { CourseStatus, UserRole } from "@/generated/prisma/enums";
 import { roleHomePath } from "@/lib/rbac";
 import { resolveMediaUrl } from "@/lib/media-url";
@@ -75,15 +76,13 @@ export default async function StudentCoursesPage() {
       </div>
 
       {enrollments.length === 0 ? (
-        <div className="rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-12 text-center shadow-[var(--shadow-sm)]">
-          <p className="text-sm text-muted-foreground">You have not enrolled in any courses yet.</p>
-          <Link
-            href="/student/browse"
-            className="mt-4 inline-block text-sm font-bold text-[var(--primary)] hover:underline"
-          >
-            Browse catalog →
-          </Link>
-        </div>
+        <EmptyState
+          icon={BookOpen}
+          title="No courses yet"
+          description="You have not enrolled in any courses. Browse the catalog to start learning."
+          actionHref="/student/browse"
+          actionLabel="Browse catalog"
+        />
       ) : (
         <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {enrollments.map((e, idx) => {

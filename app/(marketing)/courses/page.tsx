@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { AnimatedSection } from "@/components/landing/animated-section";
 import { CoursesCatalogSection } from "@/components/courses/courses-catalog-section";
+import { MarketingCatalogSkeleton } from "@/components/ui/route-loading-skeleton";
 import {
   countPublishedCourses,
   getCatalogFacets,
@@ -67,7 +68,7 @@ export default async function CoursesPage({
   return (
     <div className="min-h-screen bg-background text-foreground">
       <main>
-        <Suspense fallback={null}>
+        <Suspense fallback={<MarketingCatalogSkeleton />}>
           <AnimatedSection>
             <CoursesCatalogSection
               courses={courses}

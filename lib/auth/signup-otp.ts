@@ -4,6 +4,7 @@ import { compare, hash } from "bcryptjs";
 import { z } from "zod";
 import { UserRole } from "@/generated/prisma/enums";
 import { sendEmail } from "@/lib/notifications/email-service";
+import { messageForExistingEmail } from "@/lib/auth/existing-account-message";
 import { prisma } from "@/lib/prisma";
 
 const OTP_TTL_MS = 15 * 60 * 1000;
@@ -106,13 +107,23 @@ export async function sendSignupOtpAction(
   try {
     const existing = await prisma.user.findUnique({
       where: { email },
-      select: { id: true },
+      select: {
+        id: true,
+        passwordHash: true,
+        accounts: { select: { provider: true } },
+      },
     });
     if (existing) {
       console.log(
         `[signup-otp] send_code blocked: user_exists email=${redacted}`,
       );
-      return { ok: false, error: "An account with that email already exists." };
+      return {
+        ok: false,
+        error: messageForExistingEmail({
+          passwordHash: existing.passwordHash,
+          providers: existing.accounts.map((a) => a.provider),
+        }),
+      };
     }
 
     step = "db_otp_cooldown";
@@ -234,10 +245,20 @@ export async function completeSignupWithOtpAction(
 
   const exists = await prisma.user.findUnique({
     where: { email },
-    select: { id: true },
+    select: {
+      id: true,
+      passwordHash: true,
+      accounts: { select: { provider: true } },
+    },
   });
   if (exists) {
-    return { ok: false, error: "An account with that email already exists." };
+    return {
+      ok: false,
+      error: messageForExistingEmail({
+        passwordHash: exists.passwordHash,
+        providers: exists.accounts.map((a) => a.provider),
+      }),
+    };
   }
 
   const passwordHash = await hash(password, 10);

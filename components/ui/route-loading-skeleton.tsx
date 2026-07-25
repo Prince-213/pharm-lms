@@ -263,3 +263,231 @@ export function CoursePlayerSkeleton({ className }: { className?: string }) {
     </div>
   );
 }
+
+/** Auth split layout: quote panel + form fields (mirrors AuthLayoutShell) */
+export function AuthPageSkeleton({ className }: { className?: string }) {
+  return (
+    <div
+      className={clsx(
+        "auth-saas relative md:h-screen md:overflow-hidden lg:grid lg:grid-cols-2",
+        className,
+      )}
+      aria-busy="true"
+      aria-label="Loading sign-in"
+    >
+      <div className="relative hidden h-full flex-col border-r border-[var(--border)] bg-[var(--surface-muted)] p-10 lg:flex">
+        <div className={clsx("h-8 w-40 rounded-[var(--radius-md)]", pulse)} />
+        <div
+          className={clsx("mt-6 h-3 w-24 rounded-[var(--radius-sm)]", pulse)}
+        />
+        <div className="mt-auto space-y-3">
+          <div
+            className={clsx("h-5 w-full max-w-md rounded-[var(--radius-sm)]", pulse)}
+          />
+          <div
+            className={clsx("h-5 w-[90%] max-w-sm rounded-[var(--radius-sm)]", pulse)}
+          />
+          <div
+            className={clsx("h-5 w-[75%] max-w-xs rounded-[var(--radius-sm)]", pulse)}
+          />
+          <div
+            className={clsx("mt-4 h-3 w-40 rounded-[var(--radius-sm)]", pulse)}
+          />
+        </div>
+      </div>
+      <div className="relative flex min-h-screen flex-col justify-center px-6 py-10 sm:px-8">
+        <div className="mx-auto w-full max-w-sm space-y-5">
+          <div
+            className={clsx("h-7 w-32 rounded-[var(--radius-md)] lg:hidden", pulse)}
+          />
+          <div className={clsx("h-8 w-48 rounded-[var(--radius-md)]", pulse)} />
+          <div
+            className={clsx("h-4 w-full max-w-xs rounded-[var(--radius-sm)]", pulse)}
+          />
+          <div className="space-y-3 pt-2">
+            <div className={clsx("h-11 w-full rounded-[var(--radius-md)]", pulse)} />
+            <div className={clsx("h-11 w-full rounded-[var(--radius-md)]", pulse)} />
+            <div className={clsx("h-11 w-full rounded-[var(--radius-md)]", pulse)} />
+          </div>
+          <div className={clsx("h-11 w-full rounded-[var(--radius-md)]", pulse)} />
+          <div
+            className={clsx("mx-auto h-3 w-40 rounded-[var(--radius-sm)]", pulse)}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function AdminAuthPageSkeleton({ className }: { className?: string }) {
+  return <AuthPageSkeleton className={className} />;
+}
+
+/** Marketing page body only — layout already mounts header/footer */
+export function MarketingContentSkeleton({
+  className,
+}: {
+  className?: string;
+}) {
+  return (
+    <div className={clsx("mx-auto w-[90%] space-y-10 py-12 lg:w-[80%]", className)}>
+      <span className="sr-only">Loading page</span>
+      <div className="mx-auto max-w-2xl space-y-4 text-center">
+        <div
+          className={clsx("mx-auto h-3 w-28 rounded-full", pulse)}
+        />
+        <div
+          className={clsx("mx-auto h-10 w-72 max-w-full rounded-[var(--radius-lg)]", pulse)}
+        />
+        <div
+          className={clsx("mx-auto h-4 w-full max-w-lg rounded-[var(--radius-sm)]", pulse)}
+        />
+      </div>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {CARD_KEYS.slice(0, 3).map((key) => (
+          <div
+            key={key}
+            className="rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-sm)]"
+          >
+            <div className={clsx("h-12 w-12 rounded-[var(--radius-lg)]", pulse)} />
+            <div
+              className={clsx("mt-5 h-5 w-3/4 rounded-[var(--radius-sm)]", pulse)}
+            />
+            <div
+              className={clsx("mt-3 h-3 w-full rounded-[var(--radius-sm)]", pulse)}
+            />
+            <div
+              className={clsx("mt-2 h-3 w-[85%] rounded-[var(--radius-sm)]", pulse)}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function MarketingCatalogSkeleton({
+  className,
+}: {
+  className?: string;
+}) {
+  return (
+    <div className={clsx("mx-auto w-[90%] space-y-8 py-10 lg:w-[80%]", className)}>
+      <span className="sr-only">Loading courses</span>
+      <div className="space-y-3">
+        <div className={clsx("h-9 w-56 rounded-[var(--radius-md)]", pulse)} />
+        <div
+          className={clsx("h-4 w-full max-w-md rounded-[var(--radius-sm)]", pulse)}
+        />
+      </div>
+      <div className="flex flex-wrap gap-3">
+        {NAV_KEYS.map((key) => (
+          <div
+            key={key}
+            className={clsx("h-9 w-24 rounded-full", pulse)}
+          />
+        ))}
+      </div>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {CARD_KEYS.slice(0, 6).map((key) => (
+          <div
+            key={key}
+            className="overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-sm)]"
+          >
+            <div className={clsx("h-44 w-full", pulse)} />
+            <div className="space-y-3 p-5">
+              <div className={clsx("h-3 w-20 rounded-full", pulse)} />
+              <div className={clsx("h-5 w-[85%] rounded-[var(--radius-sm)]", pulse)} />
+              <div className={clsx("h-3 w-full rounded-[var(--radius-sm)]", pulse)} />
+              <div className={clsx("h-3 w-[70%] rounded-[var(--radius-sm)]", pulse)} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function MarketingCourseDetailSkeleton({
+  className,
+}: {
+  className?: string;
+}) {
+  return (
+    <div className={clsx("mx-auto w-[90%] space-y-8 py-10 lg:w-[80%]", className)}>
+      <span className="sr-only">Loading course</span>
+      <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
+        <div className="space-y-6">
+          <div className={clsx("aspect-video w-full rounded-[var(--radius-xl)]", pulse)} />
+          <div className={clsx("h-8 w-3/4 max-w-xl rounded-[var(--radius-md)]", pulse)} />
+          <div className="space-y-2">
+            <div className={clsx("h-3 w-full rounded-[var(--radius-sm)]", pulse)} />
+            <div className={clsx("h-3 w-full rounded-[var(--radius-sm)]", pulse)} />
+            <div className={clsx("h-3 w-[80%] rounded-[var(--radius-sm)]", pulse)} />
+          </div>
+          {SECTION_KEYS.map((key) => (
+            <div
+              key={key}
+              className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-4"
+            >
+              <div className={clsx("h-4 w-48 rounded-[var(--radius-sm)]", pulse)} />
+              <div
+                className={clsx("mt-3 h-3 w-full rounded-[var(--radius-sm)]", pulse)}
+              />
+            </div>
+          ))}
+        </div>
+        <aside className="space-y-4">
+          <div className="rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)]">
+            <div className={clsx("h-7 w-24 rounded-[var(--radius-md)]", pulse)} />
+            <div
+              className={clsx("mt-4 h-11 w-full rounded-[var(--radius-md)]", pulse)}
+            />
+            <div className="mt-4 space-y-2">
+              {NAV_KEYS.slice(0, 4).map((key) => (
+                <div
+                  key={key}
+                  className={clsx("h-3 w-full rounded-[var(--radius-sm)]", pulse)}
+                />
+              ))}
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+/** Portal dashboard home: header + stats + content panels */
+export function DashboardHomeSkeleton({ className }: { className?: string }) {
+  return (
+    <div className={clsx("space-y-6 md:space-y-8", className)}>
+      <span className="sr-only">Loading dashboard</span>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="space-y-2">
+          <div className={clsx("h-8 w-64 max-w-full rounded-[var(--radius-md)]", pulse)} />
+          <div className={clsx("h-4 w-48 rounded-[var(--radius-sm)]", pulse)} />
+        </div>
+        <div className={clsx("h-10 w-32 rounded-full", pulse)} />
+      </div>
+      <CardGridSkeleton cards={4} />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)]">
+          <div className={clsx("h-5 w-32 rounded-[var(--radius-sm)]", pulse)} />
+          <div className="mt-4 space-y-3">
+            {LIST_KEYS.slice(0, 4).map((key) => (
+              <div
+                key={key}
+                className={clsx("h-10 w-full rounded-[var(--radius-md)]", pulse)}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)]">
+          <div className={clsx("h-5 w-40 rounded-[var(--radius-sm)]", pulse)} />
+          <div className={clsx("mt-4 h-48 w-full rounded-[var(--radius-lg)]", pulse)} />
+        </div>
+      </div>
+    </div>
+  );
+}

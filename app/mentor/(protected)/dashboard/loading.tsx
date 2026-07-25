@@ -1,5 +1,5 @@
 import { DashboardHomeSkeleton } from "@/components/ui/route-loading-skeleton";
 
-export default function StudentDashboardLoading() {
+export default function MentorDashboardLoading() {
   return <DashboardHomeSkeleton />;
 }

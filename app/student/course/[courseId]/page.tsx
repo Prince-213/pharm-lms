@@ -13,6 +13,7 @@ import { CourseReviewsTab } from "@/components/student/course-reviews-tab";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { CoursePlayerSkeleton } from "@/components/ui/route-loading-skeleton";
 import { Separator } from "@/components/ui/separator";
 import {
   CourseStatus,
@@ -593,7 +594,7 @@ export default async function StudentCourseLearningPage({
 
   return (
     <ProgressProvider courseId={courseId} initialProgress={{ ...progressMap }}>
-      <Suspense fallback={null}>
+      <Suspense fallback={<CoursePlayerSkeleton />}>
         <CoursePlayerWorkspace
           initialTab={tab}
           courseId={courseId}
