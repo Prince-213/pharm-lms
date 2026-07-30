@@ -3,6 +3,10 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
+import {
+  putFileToStorage,
+  requestDirectUploadPresign,
+} from "@/lib/upload/direct-storage-upload";
 import { cn } from "@/lib/utils";
 
 type ProfileAvatarPickerProps = {
@@ -32,6 +36,19 @@ function displayableHref(stored: string): string | null {
     return s;
   }
   return null;
+}
+
+function errorMessage(err: unknown) {
+  if (err instanceof Error) return err.message;
+  if (
+    err &&
+    typeof err === "object" &&
+    "message" in err &&
+    typeof (err as { message?: unknown }).message === "string"
+  ) {
+    return (err as { message: string }).message;
+  }
+  return "Upload failed.";
 }
 
 export function ProfileAvatarPicker({
@@ -78,10 +95,6 @@ export function ProfileAvatarPicker({
       toast.error("Please choose a JPG, PNG, or WebP image.");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image is too large. Maximum size is 5MB.");
-      return;
-    }
 
     const blobUrl = URL.createObjectURL(file);
     revokeTransient();
@@ -90,20 +103,45 @@ export function ProfileAvatarPicker({
     setUploading(true);
     const tid = toast.loading("Uploading photo…");
     try {
-      const fd = new FormData();
-      fd.set("file", file);
-      const res = await fetch("/api/profile/avatar", { method: "POST", body: fd });
-      const body = (await res.json().catch(() => null)) as { error?: string; url?: string } | null;
-      if (!res.ok) {
-        throw new Error(body?.error ?? "Upload failed.");
+      const presign = await requestDirectUploadPresign("/api/profile/avatar/presign", {
+        fileName: file.name,
+        contentType: file.type || "application/octet-stream",
+        contentLength: file.size,
+      });
+
+      if (!presign) {
+        const fd = new FormData();
+        fd.set("file", file);
+        const res = await fetch("/api/profile/avatar", {
+          method: "POST",
+          body: fd,
+        });
+        const body = (await res
+          .json()
+          .catch(() => null)) as { error?: string; url?: string } | null;
+        if (!res.ok) {
+          throw new Error(body?.error ?? "Upload failed.");
+        }
+        const url = body?.url;
+        if (!url) throw new Error("Upload failed.");
+        onChange(url);
+        toast.success(
+          "Photo uploaded. Save your profile to apply it to your account.",
+          { id: tid },
+        );
+        return;
       }
-      const url = body?.url;
-      if (!url) throw new Error("Upload failed.");
-      onChange(url);
+
+      await putFileToStorage(
+        presign.uploadUrl,
+        file,
+        presign.contentType || file.type || "application/octet-stream",
+      );
+      onChange(presign.url);
       toast.success("Photo uploaded. Save your profile to apply it to your account.", { id: tid });
     } catch (e) {
       revokeTransient();
-      toast.error(e instanceof Error ? e.message : "Upload failed.", { id: tid });
+      toast.error(errorMessage(e), { id: tid });
     } finally {
       setUploading(false);
     }

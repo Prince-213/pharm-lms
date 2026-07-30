@@ -1,11 +1,15 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { AssignmentStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { studentMayAccessCourseContent } from "@/lib/payments/student-course-access";
-import { isR2Configured } from "@/lib/storage/r2";
+import {
+  ensureR2UploadCors,
+  getR2SignedPutUrl,
+  isR2Configured,
+  R2_MAX_UPLOAD_BYTES,
+} from "@/lib/storage/r2";
+import { resolveUploadContentType } from "@/lib/upload/course-upload-purpose";
 
 const submissionMimes = [
   "application/pdf",
@@ -32,8 +36,14 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { assignmentId } = await params;
+  if (!isR2Configured()) {
+    return NextResponse.json(
+      { error: "Direct storage upload is not configured.", code: "R2_UNAVAILABLE" },
+      { status: 503 },
+    );
+  }
 
+  const { assignmentId } = await params;
   const assignment = await db.assignment.findUnique({
     where: { id: assignmentId },
     select: { id: true, courseId: true, status: true },
@@ -73,43 +83,73 @@ export async function POST(
     );
   }
 
-  const formData = await request.formData();
-  const file = formData.get("file");
-  if (!(file instanceof File)) {
-    return NextResponse.json({ error: "Missing file" }, { status: 400 });
+  let body: {
+    fileName?: string;
+    contentType?: string;
+    contentLength?: number;
+  };
+  try {
+    body = (await request.json()) as typeof body;
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  if (!submissionMimes.includes(file.type)) {
+  const fileName = String(body.fileName ?? "").trim();
+  const contentType = resolveUploadContentType(
+    fileName,
+    String(body.contentType ?? ""),
+  );
+  const contentLength = Number(body.contentLength ?? 0);
+
+  if (!fileName || !Number.isFinite(contentLength) || contentLength <= 0) {
+    return NextResponse.json(
+      { error: "fileName and contentLength are required." },
+      { status: 400 },
+    );
+  }
+
+  if (contentLength > R2_MAX_UPLOAD_BYTES) {
+    return NextResponse.json(
+      {
+        error: `File exceeds the maximum upload size of ${Math.floor(R2_MAX_UPLOAD_BYTES / (1024 * 1024))} MB.`,
+      },
+      { status: 413 },
+    );
+  }
+
+  if (!submissionMimes.includes(contentType)) {
     return NextResponse.json(
       { error: "Unsupported file type for submission." },
       { status: 400 },
     );
   }
 
-  const ext = file.name.includes(".") ? file.name.split(".").pop() : "bin";
+  const ext = fileName.includes(".") ? fileName.split(".").pop() : "bin";
   const courseId = assignment.courseId;
   const key = `courses/${courseId}/assignment-submissions/${assignmentId}/${session.user.id}/${crypto.randomUUID()}.${ext}`;
 
-  if (!isR2Configured()) {
-    if (process.env.NODE_ENV === "production") {
-      return NextResponse.json(
-        { error: "File storage is not configured." },
-        { status: 503 },
-      );
-    }
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const publicRoot = path.join(process.cwd(), "public");
-    const diskPath = path.join(publicRoot, ...key.split("/"));
-    await mkdir(path.dirname(diskPath), { recursive: true });
-    await writeFile(diskPath, buffer);
-    return NextResponse.json({ key, url: `/${key}` }, { status: 201 });
-  }
+  try {
+    await ensureR2UploadCors().catch((err) => {
+      console.warn("[assignment/upload/presign] Could not ensure R2 CORS:", err);
+    });
 
-  return NextResponse.json(
-    {
-      error:
-        "Direct storage upload is required when R2 is configured. Refresh the page and try again.",
-    },
-    { status: 409 },
-  );
+    const uploadUrl = await getR2SignedPutUrl(
+      key,
+      contentType,
+      contentLength,
+      60 * 60,
+    );
+    return NextResponse.json({
+      key,
+      uploadUrl,
+      contentType,
+      url: `r2://${key}`,
+    });
+  } catch (err) {
+    console.error("[assignment/upload/presign] failed:", err);
+    return NextResponse.json(
+      { error: "Could not start submission upload. Try again." },
+      { status: 502 },
+    );
+  }
 }

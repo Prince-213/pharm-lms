@@ -3,11 +3,9 @@ import path from "node:path";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
-import { isR2Configured, uploadToR2 } from "@/lib/storage/r2";
+import { isR2Configured } from "@/lib/storage/r2";
 
 const imageMimes = ["image/jpeg", "image/png", "image/webp"] as const;
-const maxSizeBytes = 5 * 1024 * 1024;
-
 const allowedRoles: UserRole[] = [
   UserRole.STUDENT,
   UserRole.TUTOR,
@@ -26,13 +24,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing file." }, { status: 400 });
   }
 
-  if (file.size > maxSizeBytes) {
-    return NextResponse.json(
-      { error: "Image is too large. Maximum size is 5MB." },
-      { status: 400 },
-    );
-  }
-
   if (!imageMimes.includes(file.type as (typeof imageMimes)[number])) {
     return NextResponse.json(
       { error: "Use JPG, PNG, or WebP." },
@@ -40,18 +31,18 @@ export async function POST(request: Request) {
     );
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
   const ext = file.name.includes(".") ? file.name.split(".").pop() : "bin";
   const userId = session.user.id;
   const key = `profiles/${userId}/avatars/${crypto.randomUUID()}.${ext}`;
 
   if (isR2Configured()) {
-    await uploadToR2({
-      Key: key,
-      Body: buffer,
-      ContentType: file.type,
-    });
-    return NextResponse.json({ url: `r2://${key}` }, { status: 201 });
+    return NextResponse.json(
+      {
+        error:
+          "Direct storage upload is required when R2 is configured. Refresh the page and try again.",
+      },
+      { status: 409 },
+    );
   }
 
   if (process.env.NODE_ENV === "production") {
@@ -63,6 +54,7 @@ export async function POST(request: Request) {
 
   const publicRoot = path.join(process.cwd(), "public");
   const diskPath = path.join(publicRoot, ...key.split("/"));
+  const buffer = Buffer.from(await file.arrayBuffer());
   await mkdir(path.dirname(diskPath), { recursive: true });
   await writeFile(diskPath, buffer);
 

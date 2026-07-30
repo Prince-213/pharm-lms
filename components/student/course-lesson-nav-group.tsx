@@ -38,7 +38,9 @@ function NavSlot({
   const shared = cn(
     "inline-flex flex-col items-center justify-center transition active:scale-[0.97]",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-1",
-    isBar ? "min-w-[3.25rem] gap-0.5 px-2 py-1.5 sm:min-w-[3.5rem]" : "h-9 min-w-0 flex-1 flex-row gap-1 px-2",
+    isBar
+      ? "min-w-[3.25rem] gap-0.5 px-2 py-1.5 sm:min-w-[3.5rem]"
+      : "h-9 min-w-[7.25rem] flex-1 flex-row gap-1.5 px-3",
     disabled
       ? "pointer-events-none text-slate-300"
       : direction === "next" && !isBar
@@ -151,7 +153,7 @@ export function CourseLessonNavGroup({
   }
 
   return (
-    <div className={cn("space-y-2", className)}>
+    <div className={cn("w-full space-y-2", className)}>
       {showPosition ? (
         <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
           Lesson{" "}
@@ -161,7 +163,7 @@ export function CourseLessonNavGroup({
         </p>
       ) : null}
       <div
-        className="flex overflow-hidden rounded-xl border border-slate-200/90 bg-slate-50/50"
+        className="flex w-full overflow-hidden rounded-xl border border-slate-200/90 bg-slate-50/50"
         role="group"
         aria-label="Lesson navigation"
       >

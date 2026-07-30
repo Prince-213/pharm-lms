@@ -11,7 +11,7 @@ import {
   buildCourseUploadKey,
   isCourseUploadFileAllowed,
 } from "@/lib/upload/course-upload-purpose";
-import { isR2Configured, uploadToR2 } from "@/lib/storage/r2";
+import { isR2Configured } from "@/lib/storage/r2";
 
 function isProductionRuntime() {
   return process.env.NODE_ENV === "production";
@@ -46,22 +46,16 @@ export async function POST(
     );
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
   const key = buildCourseUploadKey(courseId, purpose, file.name);
 
   if (isR2Configured()) {
-    try {
-      await uploadToR2({
-        Key: key,
-        Body: buffer,
-        ContentType: file.type,
-      });
-      revalidateCourseSurfaces(courseId);
-      return NextResponse.json({ key, url: `r2://${key}` }, { status: 201 });
-    } catch (err) {
-      console.error("[upload] R2 upload failed:", err);
-      return jsonError(err, 502, "Upload failed. Please try again.");
-    }
+    return NextResponse.json(
+      {
+        error:
+          "Direct storage upload is required when R2 is configured. Refresh the page and try again.",
+      },
+      { status: 409 },
+    );
   }
 
   if (isProductionRuntime()) {
@@ -73,6 +67,7 @@ export async function POST(
   }
 
   try {
+    const buffer = Buffer.from(await file.arrayBuffer());
     const publicRoot = path.join(process.cwd(), "public");
     const diskPath = path.join(publicRoot, ...key.split("/"));
     await mkdir(path.dirname(diskPath), { recursive: true });

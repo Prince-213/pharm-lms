@@ -5,6 +5,23 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { submitAssignmentAction } from "@/app/student/actions/assignments";
 import { refreshPortalAfterMutation } from "@/lib/client/refresh-portal-data";
+import {
+  putFileToStorage,
+  requestDirectUploadPresign,
+} from "@/lib/upload/direct-storage-upload";
+
+function errorMessage(err: unknown) {
+  if (err instanceof Error) return err.message;
+  if (
+    err &&
+    typeof err === "object" &&
+    "message" in err &&
+    typeof (err as { message?: unknown }).message === "string"
+  ) {
+    return (err as { message: string }).message;
+  }
+  return "Could not upload your file.";
+}
 
 export function AssignmentSubmitForm({
   assignmentId,
@@ -48,30 +65,52 @@ export function AssignmentSubmitForm({
       if (pendingFile) {
         setUploading(true);
         try {
-          const fd = new FormData();
-          fd.set("file", pendingFile);
-          const up = await fetch(
-            `/api/student/assignments/${assignmentId}/upload`,
-            { method: "POST", body: fd },
+          const presign = await requestDirectUploadPresign(
+            `/api/student/assignments/${assignmentId}/upload/presign`,
+            {
+              fileName: pendingFile.name,
+              contentType: pendingFile.type || "application/octet-stream",
+              contentLength: pendingFile.size,
+            },
           );
-          if (!up.ok) {
-            const j = (await up.json().catch(() => null)) as {
-              error?: string;
-            } | null;
-            setError(
-              typeof j?.error === "string"
-                ? j.error
-                : "Could not upload your file.",
+
+          if (!presign) {
+            const fd = new FormData();
+            fd.set("file", pendingFile);
+            const up = await fetch(
+              `/api/student/assignments/${assignmentId}/upload`,
+              { method: "POST", body: fd },
             );
-            setUploading(false);
-            return;
+            if (!up.ok) {
+              const j = (await up.json().catch(() => null)) as {
+                error?: string;
+              } | null;
+              setError(
+                typeof j?.error === "string"
+                  ? j.error
+                  : "Could not upload your file.",
+              );
+              setUploading(false);
+              return;
+            }
+            const data = (await up.json()) as { url: string };
+            url = data.url;
+            setAttachmentUrl(data.url);
+            setPendingFile(null);
+          } else {
+            await putFileToStorage(
+              presign.uploadUrl,
+              pendingFile,
+              presign.contentType ||
+                pendingFile.type ||
+                "application/octet-stream",
+            );
+            url = presign.url;
+            setAttachmentUrl(presign.url);
+            setPendingFile(null);
           }
-          const data = (await up.json()) as { url: string };
-          url = data.url;
-          setAttachmentUrl(data.url);
-          setPendingFile(null);
-        } catch {
-          setError("Could not upload your file.");
+        } catch (err) {
+          setError(errorMessage(err));
           setUploading(false);
           return;
         }

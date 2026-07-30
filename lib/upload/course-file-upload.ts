@@ -1,158 +1,26 @@
+import {
+  isStorageTransportFailure,
+  putFileToStorage,
+  reportDirectUploadProgress,
+  requestDirectUploadPresign,
+  type DirectStorageUploadError,
+  type DirectStorageUploadProgress,
+} from "@/lib/upload/direct-storage-upload";
+
 export type CourseFileUploadResult = { url: string };
+export type CourseFileUploadError = DirectStorageUploadError;
+export type CourseFileUploadProgress = DirectStorageUploadProgress;
 
-export type CourseFileUploadError = {
-  status: number;
-  message: string;
-};
-
-export type CourseFileUploadProgress = {
-  percent: number;
-  loaded: number;
-  total: number;
-  phase: "uploading" | "processing" | "complete";
-};
-
-type PresignResponse = {
-  key: string;
-  uploadUrl: string;
-  url: string;
-  contentType?: string;
-  error?: string;
-  code?: string;
-};
-
-function rejectUpload(status: number, message: string): Promise<never> {
-  return Promise.reject({ status, message } satisfies CourseFileUploadError);
-}
-
-function reportProgress(
-  onProgress: ((update: CourseFileUploadProgress) => void) | undefined,
-  update: CourseFileUploadProgress,
-) {
-  onProgress?.(update);
-}
-
-function isDirectUploadFailure(err: unknown): boolean {
-  if (!err || typeof err !== "object") return false;
-  const status = "status" in err ? Number((err as { status: unknown }).status) : NaN;
-  // 0 = network/CORS blocked by the browser; 403 = signed URL / CORS rejection.
-  return status === 0 || status === 403;
-}
-
-async function requestPresign(
-  courseId: string,
-  purpose: string,
-  file: File,
-): Promise<PresignResponse | null> {
-  const res = await fetch(`/api/tutor/courses/${courseId}/upload/presign`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+async function requestPresign(courseId: string, purpose: string, file: File) {
+  return requestDirectUploadPresign(
+    `/api/tutor/courses/${courseId}/upload/presign`,
+    {
       purpose,
       fileName: file.name,
       contentType: file.type || "application/octet-stream",
       contentLength: file.size,
-    }),
-  });
-
-  if (res.status === 503) {
-    // R2 not configured — caller may fall back to proxied upload.
-    return null;
-  }
-
-  let data: PresignResponse;
-  try {
-    data = (await res.json()) as PresignResponse;
-  } catch {
-    await rejectUpload(res.status || 502, "Could not start file upload.");
-    return null;
-  }
-
-  if (!res.ok || !data.uploadUrl || !data.key || !data.url) {
-    await rejectUpload(
-      res.status || 502,
-      data.error || "Could not start file upload.",
-    );
-    return null;
-  }
-
-  return data;
-}
-
-function putFileToStorage(
-  uploadUrl: string,
-  file: File,
-  contentType: string,
-  onProgress?: (update: CourseFileUploadProgress) => void,
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("PUT", uploadUrl);
-    xhr.setRequestHeader("Content-Type", contentType);
-
-    xhr.upload.addEventListener("loadstart", () => {
-      reportProgress(onProgress, {
-        percent: 0,
-        loaded: 0,
-        total: file.size,
-        phase: "uploading",
-      });
-    });
-
-    xhr.upload.addEventListener("progress", (event) => {
-      const total =
-        event.lengthComputable && event.total > 0 ? event.total : file.size;
-      const loaded = event.loaded;
-      if (total <= 0) {
-        reportProgress(onProgress, {
-          percent: 0,
-          loaded,
-          total: file.size,
-          phase: "uploading",
-        });
-        return;
-      }
-
-      const rawPercent = Math.round((loaded / total) * 100);
-      const bytesSent = loaded >= total;
-      reportProgress(onProgress, {
-        percent: bytesSent ? 99 : Math.min(98, rawPercent),
-        loaded: Math.min(loaded, total),
-        total,
-        phase: bytesSent ? "processing" : "uploading",
-      });
-    });
-
-    xhr.addEventListener("load", () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        resolve();
-        return;
-      }
-      reject({
-        status: xhr.status,
-        message:
-          xhr.status === 403
-            ? "Upload was rejected by storage."
-            : "Storage upload failed. Try again.",
-      } satisfies CourseFileUploadError);
-    });
-
-    xhr.addEventListener("error", () => {
-      reject({
-        status: 0,
-        message: "Network error during direct storage upload.",
-      } satisfies CourseFileUploadError);
-    });
-
-    xhr.addEventListener("abort", () => {
-      reject({
-        status: 0,
-        message: "Upload cancelled",
-      } satisfies CourseFileUploadError);
-    });
-
-    xhr.send(file);
-  });
+    },
+  );
 }
 
 function uploadViaAppProxy(
@@ -166,7 +34,7 @@ function uploadViaAppProxy(
     xhr.open("POST", `/api/tutor/courses/${courseId}/upload`);
 
     xhr.upload.addEventListener("loadstart", () => {
-      reportProgress(onProgress, {
+      reportDirectUploadProgress(onProgress, {
         percent: 0,
         loaded: 0,
         total: fileSize,
@@ -179,7 +47,7 @@ function uploadViaAppProxy(
         event.lengthComputable && event.total > 0 ? event.total : fileSize;
       const loaded = event.loaded;
       if (total <= 0) {
-        reportProgress(onProgress, {
+        reportDirectUploadProgress(onProgress, {
           percent: 0,
           loaded,
           total: fileSize,
@@ -190,7 +58,7 @@ function uploadViaAppProxy(
 
       const rawPercent = Math.round((loaded / total) * 100);
       const bytesSent = loaded >= total;
-      reportProgress(onProgress, {
+      reportDirectUploadProgress(onProgress, {
         percent: bytesSent ? 99 : Math.min(98, rawPercent),
         loaded: Math.min(loaded, total),
         total,
@@ -206,7 +74,7 @@ function uploadViaAppProxy(
             reject({ status: xhr.status, message: "Upload failed" });
             return;
           }
-          reportProgress(onProgress, {
+          reportDirectUploadProgress(onProgress, {
             percent: 100,
             loaded: fileSize,
             total: fileSize,
@@ -229,7 +97,7 @@ function uploadViaAppProxy(
 
       if (xhr.status === 413) {
         message =
-          "File is too large for this server. Large videos need R2 CORS so they can upload directly to storage.";
+          "This upload is being rejected before it reaches storage. Use direct R2 uploads or increase your proxy body-size limit.";
       } else if (xhr.status === 503) {
         message =
           message === "Upload failed"
@@ -264,9 +132,8 @@ function uploadViaAppProxy(
 
 /**
  * Upload course media.
- * - Small files: always through the Next.js → R2 proxy (no browser CORS needed).
- * - Larger files (>4MB): try direct browser→R2, then fall back to the proxy if
- *   the PUT fails (almost always missing bucket CORS).
+ * - Prefer browser → R2 direct uploads whenever storage is configured.
+ * - Fall back to the app proxy only when R2 is unavailable (local/dev).
  */
 export async function uploadCourseFileWithProgress(
   courseId: string,
@@ -277,13 +144,7 @@ export async function uploadCourseFileWithProgress(
   const purpose = String(formData.get("purpose") ?? "lesson-video");
 
   if (!(file instanceof File)) {
-    return rejectUpload(400, "Missing file");
-  }
-
-  const preferDirect = file.size > 4 * 1024 * 1024;
-
-  if (!preferDirect) {
-    return uploadViaAppProxy(courseId, formData, file.size, onProgress);
+    return Promise.reject({ status: 400, message: "Missing file" });
   }
 
   const presign = await requestPresign(courseId, purpose, file);
@@ -291,7 +152,7 @@ export async function uploadCourseFileWithProgress(
     return uploadViaAppProxy(courseId, formData, file.size, onProgress);
   }
 
-  reportProgress(onProgress, {
+  reportDirectUploadProgress(onProgress, {
     percent: 0,
     loaded: 0,
     total: file.size,
@@ -309,17 +170,17 @@ export async function uploadCourseFileWithProgress(
     if ((err as { message?: string })?.message === "Upload cancelled") {
       throw err;
     }
-    if (!isDirectUploadFailure(err)) {
-      throw err;
+    if (isStorageTransportFailure(err)) {
+      return Promise.reject({
+        status: 502,
+        message:
+          "Direct upload to storage failed. Check R2 CORS and the site URL/origin configuration.",
+      } satisfies CourseFileUploadError);
     }
-    console.warn(
-      "[upload] Direct R2 PUT failed; falling back to server proxy.",
-      err,
-    );
-    return uploadViaAppProxy(courseId, formData, file.size, onProgress);
+    throw err;
   }
 
-  reportProgress(onProgress, {
+  reportDirectUploadProgress(onProgress, {
     percent: 99,
     loaded: file.size,
     total: file.size,
@@ -336,7 +197,7 @@ export async function uploadCourseFileWithProgress(
     // Cache revalidation is best-effort; object is already stored.
   }
 
-  reportProgress(onProgress, {
+  reportDirectUploadProgress(onProgress, {
     percent: 100,
     loaded: file.size,
     total: file.size,
