@@ -239,7 +239,7 @@ export function CourseSessionShell({
               >
                 <SheetHeader className="px-5 pt-6 pb-4 border-b border-slate-100">
                   <SheetTitle className="font-display text-base font-bold text-slate-800">
-                    Course Curriculum
+                    Course Content
                   </SheetTitle>
                 </SheetHeader>
                 <ScrollArea className="h-full">
@@ -349,7 +349,7 @@ export function CourseSessionShell({
             >
               <SheetHeader className="px-6 pt-6 pb-2">
                 <SheetTitle className="font-display text-lg font-bold">
-                  Curriculum
+                  Course Content
                 </SheetTitle>
               </SheetHeader>
               <ScrollArea className="h-full px-2">

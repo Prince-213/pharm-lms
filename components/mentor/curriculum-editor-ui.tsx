@@ -151,7 +151,7 @@ const toneToGroupKind: Record<CurriculumSubsectionTone, CurriculumGroupKind> = {
 };
 
 const toneToTitle: Record<CurriculumSubsectionTone, string> = {
-  lectures: "Content",
+  lectures: "Lessons",
   resources: "Resources",
   assessments: "Assessments",
 };
@@ -176,16 +176,20 @@ export function CurriculumSubsection({
 }) {
   const displayTitle = title ?? toneToTitle[tone];
   return (
-    <section className={cn("mb-4 overflow-hidden rounded-lg border border-border", className)}>
+    <section
+      className={cn("mb-5 overflow-hidden rounded-lg border border-border", className)}
+    >
       <CurriculumTreeGroup
         kind={toneToGroupKind[tone]}
         title={displayTitle}
         count={count}
         defaultOpen={defaultOpen}
       >
-        <CurriculumTreeChildren className="space-y-3 px-2 py-3 sm:px-3 sm:py-4">
+        <CurriculumTreeChildren className="space-y-4 px-2 py-3.5 sm:px-3 sm:py-4.5">
           {description ? (
-            <p className="px-1 text-xs text-muted-foreground">{description}</p>
+            <p className="px-1 text-xs leading-relaxed text-muted-foreground">
+              {description}
+            </p>
           ) : null}
           {children}
         </CurriculumTreeChildren>
@@ -234,7 +238,7 @@ export function CurriculumListItem({
   return (
     <div
       className={cn(
-        "border-b border-[#d1d7dc] bg-white px-4 py-4 last:border-b-0 sm:px-5",
+        "border-b border-[#d1d7dc] bg-white px-4 py-4.5 last:border-b-0 sm:px-5",
         "even:bg-[#fafbfc]",
         className,
       )}
@@ -339,7 +343,12 @@ export function formatSectionSummary(section: {
   const parts: string[] = [];
   if (section.lessons.length > 0) {
     parts.push(
-      `${section.lessons.length} lecture${section.lessons.length === 1 ? "" : "s"}`,
+      `${section.lessons.length} lesson${section.lessons.length === 1 ? "" : "s"}`,
+    );
+  }
+  if (section.resources.length > 0) {
+    parts.push(
+      `${section.resources.length} resource${section.resources.length === 1 ? "" : "s"}`,
     );
   }
   const assessments =
@@ -347,11 +356,6 @@ export function formatSectionSummary(section: {
   if (assessments > 0) {
     parts.push(
       `${assessments} assessment${assessments === 1 ? "" : "s"}`,
-    );
-  }
-  if (section.resources.length > 0) {
-    parts.push(
-      `${section.resources.length} resource${section.resources.length === 1 ? "" : "s"}`,
     );
   }
   return parts.join(" · ");

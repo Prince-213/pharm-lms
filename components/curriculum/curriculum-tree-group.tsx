@@ -41,7 +41,7 @@ export function CurriculumTreeGroup({
     <Collapsible defaultOpen={defaultOpen} className={className}>
       <CollapsibleTrigger
         className={cn(
-          "group/trigger flex w-full items-center gap-2 border-b border-border bg-muted/50 px-3 py-2 text-left text-xs font-semibold text-foreground transition-colors hover:bg-muted",
+          "group/trigger flex w-full items-center gap-2 border-b border-border bg-muted/50 px-3.5 py-2.5 text-left text-xs font-semibold text-foreground transition-colors hover:bg-muted",
           "border-l-4",
           groupAccent[kind],
         )}
@@ -71,7 +71,7 @@ export function CurriculumTreeChildren({
   return (
     <div
       className={cn(
-        "border-l border-border/80 bg-background py-0.5 pl-3 ml-3",
+        "ml-2.5 border-l border-border/70 bg-background py-1 pl-2.5",
         className,
       )}
     >

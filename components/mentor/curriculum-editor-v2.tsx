@@ -1010,8 +1010,8 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
               isExpanded={expandedSections.has(section.id)}
               onToggle={() => toggleSection(section.id)}
               titleRow={
-                <div className="flex w-full min-w-0 items-center justify-between gap-3">
-                  <div className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-3">
+                <div className="flex w-full min-w-0 items-start justify-between gap-3">
+                  <div className="flex min-w-0 flex-1 flex-col gap-1">
                     <div className="flex min-w-0 items-center gap-2">
                       <Badge variant="outline" className="shrink-0 font-semibold">
                         Section {sectionIndex + 1}
@@ -1061,11 +1061,14 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                         </p>
                       )}
                     </div>
-                    {!expandedSections.has(section.id) ? (
-                      <span className="truncate text-xs text-muted-foreground">
-                        {formatSectionSummary(section)}
-                      </span>
+                    {parseDescription(section.description).text ? (
+                      <p className="line-clamp-2 pr-4 text-xs leading-relaxed text-muted-foreground">
+                        {parseDescription(section.description).text}
+                      </p>
                     ) : null}
+                    <span className="truncate text-xs text-muted-foreground">
+                        {formatSectionSummary(section)}
+                    </span>
                   </div>
 
                   <div className="flex shrink-0 items-center gap-0.5">
@@ -1134,6 +1137,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                 tone="lectures"
                 description="Video or article content students complete in order."
                 count={section.lessons.length}
+                defaultOpen
               >
                 {section.lessons.length === 0 ? (
                   <CurriculumEmptyState message='No lectures yet. Click "Add lecture" below.' />
@@ -1325,6 +1329,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                 description="Downloadable files and external links for this section."
                 count={section.resources.length}
                 className="mt-5"
+                defaultOpen={false}
               >
                 {section.resources.length === 0 ? (
                   <CurriculumEmptyState message='No resources yet. Click "Resource" below to add a file or link.' />
@@ -1414,6 +1419,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                   description="Quizzes and assignments that check understanding."
                   count={section.quizzes.length + section.assignmentItems.length}
                   className="mt-5"
+                  defaultOpen={false}
                 >
                   <CurriculumList>
                     {section.quizzes.map((quiz) => (
@@ -1449,7 +1455,11 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
               )}
 
               {/* ── Add actions ─────────────────────────────────────────── */}
-              <div className="mt-6 flex flex-wrap gap-2 rounded-lg border border-dashed border-[#d1d7dc] bg-[#f7f9fa] px-4 py-4">
+              <div className="mt-6 rounded-lg border border-dashed border-[#d1d7dc] bg-[#f7f9fa] px-4 py-4">
+                <p className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Add to this section
+                </p>
+                <div className="flex flex-wrap gap-2">
                 <Button
                   type="button"
                   variant="default"
@@ -1479,7 +1489,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                   }}
                 >
                   <Plus className="size-3.5" aria-hidden />
-                  Quiz / assignment
+                  Add assessment
                 </Button>
                 <Button
                   type="button"
@@ -1497,20 +1507,21 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                   }}
                 >
                   <Plus className="size-3.5" aria-hidden />
-                  Resource
+                  Add resource
                 </Button>
+                </div>
               </div>
 
               <CurriculumFormPanel
                 open={panelOpenFor(section.id, "lesson")}
                 onClose={closePanel}
                 closeDisabled={fileUploading}
-                title="Add lecture"
-                description="Choose video or article content for this section."
+                title={`Add lesson to Section ${sectionIndex + 1}`}
+                description={`Choose a video or article lesson for ${section.title}.`}
               >
                 <div className="space-y-4">
                   <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
-                    <CurriculumField label="Lecture title" htmlFor={`lesson-title-${section.id}`}>
+                    <CurriculumField label="Lesson title" htmlFor={`lesson-title-${section.id}`}>
                       <Input
                         id={`lesson-title-${section.id}`}
                         value={newLessonTitle}
@@ -1519,7 +1530,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                         placeholder="e.g. Introduction to the topic"
                       />
                     </CurriculumField>
-                    <CurriculumField label="Content type" htmlFor={`lesson-type-${section.id}`}>
+                    <CurriculumField label="Lesson type" htmlFor={`lesson-type-${section.id}`}>
                       <select
                         id={`lesson-type-${section.id}`}
                         value={newLessonType}
@@ -1564,7 +1575,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                     onCancel={closePanel}
                     cancelDisabled={panelLocked}
                     submitDisabled={panelLocked || !canAddNewLesson}
-                    submitLabel={fileUploading ? "Uploading…" : "Add lecture"}
+                    submitLabel={fileUploading ? "Uploading…" : "Add lesson"}
                     onSubmit={() =>
                       newLessonType === "ARTICLE"
                         ? void addLessonWithContent(section.id)
@@ -1578,8 +1589,8 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                 open={panelOpenFor(section.id, "item")}
                 onClose={closePanel}
                 closeDisabled={fileUploading}
-                title="Add quiz or assignment"
-                description="Quizzes use multiple-choice questions. Assignments include instructions and a due date."
+                title={`Add assessment to Section ${sectionIndex + 1}`}
+                description={`Add a quiz or assignment to ${section.title}. Quizzes use multiple-choice questions; assignments include instructions for students.`}
               >
                 <div className="space-y-4">
                   {itemType === "ASSIGNMENT" ? (
@@ -1753,8 +1764,8 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                 open={panelOpenFor(section.id, "resource")}
                 onClose={closePanel}
                 closeDisabled={fileUploading}
-                title="Add resource"
-                description="Link to an external page or upload a document file (PDF, Word, Excel, PowerPoint, or TXT) for students."
+                title={`Add resource to Section ${sectionIndex + 1}`}
+                description={`Add a link or document for ${section.title}. Students will see it beneath the section lessons.`}
               >
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-2">

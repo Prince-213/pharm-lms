@@ -11,7 +11,7 @@ import {
   Play,
 } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   CurriculumTreeChildren,
   CurriculumTreeGroup,
@@ -72,6 +72,10 @@ function sectionSeconds(lessons: SidebarLesson[]) {
   return lessons.reduce((s, l) => s + (l.durationSec ?? 0), 0);
 }
 
+function pluralize(count: number, singular: string, plural = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
 function flatLessonIndex(sections: SidebarSection[], lessonId: string): number {
   let index = 0;
   for (const section of sections) {
@@ -112,9 +116,18 @@ export function CourseContentSidebar({
   const progressMap = contextMap || initialProgressMap;
 
   const firstId = sections[0]?.id;
+  const initialOpenId = currentSectionId ?? firstId ?? null;
   const [open, setOpen] = useState<Set<string>>(() =>
-    firstId ? new Set(sections.map((s) => s.id)) : new Set(),
+    initialOpenId ? new Set([initialOpenId]) : new Set(),
   );
+
+  useEffect(() => {
+    if (!currentSectionId) return;
+    setOpen((prev) => {
+      if (prev.has(currentSectionId)) return prev;
+      return new Set([currentSectionId]);
+    });
+  }, [currentSectionId]);
 
   const allOpen = sections.length > 0 && sections.every((s) => open.has(s.id));
 
@@ -129,11 +142,11 @@ export function CourseContentSidebar({
 
   const expandCollapseAll = useCallback(() => {
     if (allOpen) {
-      setOpen(firstId ? new Set([firstId]) : new Set());
+      setOpen(initialOpenId ? new Set([initialOpenId]) : new Set());
     } else {
       setOpen(new Set(sections.map((s) => s.id)));
     }
-  }, [allOpen, firstId, sections]);
+  }, [allOpen, initialOpenId, sections]);
 
   const passedQuizSet = useMemo(
     () => new Set(sectionQuizPassedIds),
@@ -161,11 +174,29 @@ export function CourseContentSidebar({
     const q = filterQuery.trim().toLowerCase();
     if (!q) return sections;
     return sections
-      .map((s) => ({
-        ...s,
-        lessons: s.lessons.filter((l) => l.title.toLowerCase().includes(q)),
-      }))
-      .filter((s) => s.lessons.length > 0);
+      .map((s) => {
+        const lessons = s.lessons.filter((l) => l.title.toLowerCase().includes(q));
+        const resources = (s.resources ?? []).filter((r) =>
+          resourceDisplayName(r).toLowerCase().includes(q),
+        );
+        const quizzes = (s.quizzes ?? []).filter((quiz) =>
+          quiz.title.toLowerCase().includes(q),
+        );
+        const sectionMatches = s.title.toLowerCase().includes(q);
+        return {
+          ...s,
+          lessons: sectionMatches ? s.lessons : lessons,
+          resources: sectionMatches ? s.resources : resources,
+          quizzes: sectionMatches ? s.quizzes : quizzes,
+        };
+      })
+      .filter(
+        (s) =>
+          s.title.toLowerCase().includes(q) ||
+          s.lessons.length > 0 ||
+          (s.resources?.length ?? 0) > 0 ||
+          (s.quizzes?.length ?? 0) > 0,
+      );
   }, [sections, filterQuery]);
 
   function renderResourceRow(res: CatalogResourceItem, idx: number) {
@@ -244,7 +275,7 @@ export function CourseContentSidebar({
   }, [sections, progressMap]);
 
   const pct = stats.total > 0 ? Math.round((stats.done / stats.total) * 100) : 0;
-  const contentSummary = `${stats.total} lecture${stats.total === 1 ? "" : "s"} · ${pct}% complete`;
+  const contentSummary = `${pluralize(stats.total, "lesson")} · ${pct}% complete`;
 
   return (
     <div className="flex h-full min-h-0 min-w-0 flex-col overflow-x-hidden bg-card">
@@ -294,7 +325,7 @@ export function CourseContentSidebar({
         aria-label="Course curriculum"
       >
         <div className="border border-border bg-card">
-          {filteredSections.map((section) => {
+          {filteredSections.map((section, sectionIndex) => {
             const secSecs = sectionSeconds(section.lessons);
             const durLabel = secSecs > 0 ? formatTotalDuration(secSecs) : "—";
             const isOpen = open.has(section.id);
@@ -303,7 +334,13 @@ export function CourseContentSidebar({
             ).length;
             const quizCount = section.quizzes?.length ?? 0;
             const resourceCount = section.resources?.length ?? 0;
-            const subLine = `${sectionDone}/${section.lessons.length} · ${durLabel}`;
+            const metaParts = [
+              `${sectionDone}/${section.lessons.length} complete`,
+              durLabel,
+              resourceCount > 0 ? pluralize(resourceCount, "resource") : null,
+              quizCount > 0 ? pluralize(quizCount, "quiz") : null,
+            ].filter(Boolean);
+            const subLine = metaParts.join(" • ");
 
             return (
               <div
@@ -322,11 +359,13 @@ export function CourseContentSidebar({
                     )}
                     aria-hidden
                   />
-                  <span className="min-w-0 flex-1 text-xs font-bold text-foreground">
-                    {section.title}
-                  </span>
-                  <span className="shrink-0 text-[10px] text-muted-foreground">
-                    {subLine}
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-xs font-bold text-foreground">
+                      {`Section ${sectionIndex + 1}: ${section.title}`}
+                    </span>
+                    <span className="mt-0.5 block truncate text-[10px] leading-relaxed text-muted-foreground">
+                      {subLine}
+                    </span>
                   </span>
                 </button>
 
@@ -335,7 +374,7 @@ export function CourseContentSidebar({
                     {section.lessons.length > 0 ? (
                       <CurriculumTreeGroup
                         kind="content"
-                        title="Content"
+                        title="Lessons"
                         count={section.lessons.length}
                         defaultOpen
                       >
@@ -429,12 +468,27 @@ export function CourseContentSidebar({
                       </CurriculumTreeGroup>
                     ) : null}
 
+                    {resourceCount > 0 ? (
+                      <CurriculumTreeGroup
+                        kind="resources"
+                        title="Resources"
+                        count={resourceCount}
+                        defaultOpen={resourceCount <= 2}
+                      >
+                        <CurriculumTreeChildren>
+                          {(section.resources ?? []).map((res, idx) =>
+                            renderResourceRow(res, idx),
+                          )}
+                        </CurriculumTreeChildren>
+                      </CurriculumTreeGroup>
+                    ) : null}
+
                     {quizCount > 0 ? (
                       <CurriculumTreeGroup
                         kind="quiz"
-                        title="Quiz"
+                        title="Section quiz"
                         count={quizCount}
-                        defaultOpen
+                        defaultOpen={false}
                       >
                         <CurriculumTreeChildren>
                           <ul className="list-none">
@@ -455,20 +509,6 @@ export function CourseContentSidebar({
                       </CurriculumTreeGroup>
                     ) : null}
 
-                    {resourceCount > 0 ? (
-                      <CurriculumTreeGroup
-                        kind="resources"
-                        title="Resources"
-                        count={resourceCount}
-                        defaultOpen
-                      >
-                        <CurriculumTreeChildren>
-                          {(section.resources ?? []).map((res, idx) =>
-                            renderResourceRow(res, idx),
-                          )}
-                        </CurriculumTreeChildren>
-                      </CurriculumTreeGroup>
-                    ) : null}
                   </div>
                 ) : null}
               </div>
