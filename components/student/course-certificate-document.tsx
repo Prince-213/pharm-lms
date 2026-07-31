@@ -21,7 +21,7 @@ export function CourseCertificateDocument({
   return (
     <article
       id="course-certificate"
-      className="certificate-sheet relative mx-auto w-full max-w-[1056px] overflow-hidden bg-white text-[#191c1d] max-sm:min-h-[32rem] max-sm:rounded-lg max-sm:shadow-[var(--shadow-md)] sm:aspect-[297/210]"
+      className="certificate-sheet relative mx-auto w-full max-w-[1056px] overflow-hidden bg-white text-[#191c1d] max-sm:aspect-[297/210] max-sm:min-h-[32rem] max-sm:w-[1056px] max-sm:max-w-none sm:aspect-[297/210]"
       aria-label="Certificate of completion"
     >
       {/* Outer frame */}

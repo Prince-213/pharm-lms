@@ -299,7 +299,7 @@ export function CourseSessionShell({
             </div>
 
             {/* ─── Desktop Curriculum Sidebar ─── */}
-            <aside className="hidden lg:flex h-full w-[440px] min-w-[440px] shrink-0 flex-col overflow-x-hidden border-l border-border bg-card xl:w-[460px] xl:min-w-[460px]">
+            <aside className="hidden h-full min-w-0 shrink-0 flex-col overflow-x-hidden border-l border-border bg-card lg:flex lg:w-[400px] xl:w-[440px]">
               <ScrollArea className="min-w-0 flex-1">
                 <div className="min-h-0 min-w-0 overflow-x-hidden">{childrenSidebar}</div>
               </ScrollArea>

@@ -40,7 +40,7 @@ function NavSlot({
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-1",
     isBar
       ? "min-w-[3.25rem] gap-0.5 px-2 py-1.5 sm:min-w-[3.5rem]"
-      : "h-9 min-w-[7.25rem] flex-1 flex-row gap-1.5 px-3",
+      : "h-9 min-w-0 flex-1 flex-row gap-1.5 px-2 sm:px-3",
     disabled
       ? "pointer-events-none text-slate-300"
       : direction === "next" && !isBar

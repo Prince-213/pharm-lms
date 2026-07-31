@@ -50,29 +50,30 @@ export default async function CourseCertificatePage({
       />
 
       {/*
-        Desktop: show preview + download button.
-        Mobile: render the certificate off-screen so html2canvas can capture it,
-        but hide it visually — the toolbar auto-triggers the download on mount.
+        Capture host must keep real layout size (never sr-only).
+        Desktop: visible preview. Mobile: full-size off-screen host for html2canvas.
       */}
-      <div className="sm:block max-sm:sr-only" aria-hidden="true">
+      <div
+        className="max-sm:pointer-events-none max-sm:fixed max-sm:left-[-10000px] max-sm:top-0 max-sm:z-[-1] max-sm:w-[1056px] sm:relative sm:left-auto sm:top-auto sm:z-auto sm:w-auto"
+        aria-hidden="true"
+      >
         <CourseCertificateDocument data={data} />
       </div>
 
-      {/* Mobile-only confirmation card shown after auto-download */}
-      <div className="sm:hidden mt-4 rounded-xl border border-[#00005C]/30 bg-[#00005C]/5 px-5 py-6 text-center">
-        <p className="text-2xl mb-2">🎓</p>
-        <p className="font-semibold text-[#00005C] text-base">
+      {/* Mobile-only confirmation card */}
+      <div className="mt-4 rounded-xl border border-[#00005C]/30 bg-[#00005C]/5 px-5 py-6 text-center sm:hidden">
+        <p className="mb-2 text-2xl" aria-hidden>
+          🎓
+        </p>
+        <p className="text-base font-semibold text-[#00005C]">
           Your certificate is ready!
         </p>
         <p className="mt-1 text-sm text-[#6b7280]">
-          Check your downloads folder for{" "}
+          Download saves a PDF for{" "}
           <span className="font-medium text-[#1A1A2E]">
             {data.courseTitle}
           </span>
-          .
-        </p>
-        <p className="mt-2 text-xs text-[#9ca3af]">
-          Use the button above if you need to download again.
+          . Use Print if download fails.
         </p>
       </div>
 

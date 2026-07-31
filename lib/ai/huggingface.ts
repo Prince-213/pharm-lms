@@ -1,5 +1,5 @@
-import { InferenceClient } from "@huggingface/inference";
 import type { InferenceProvider } from "@huggingface/inference";
+import { InferenceClient } from "@huggingface/inference";
 import {
   AiConfigurationError,
   AiProviderError,
@@ -8,8 +8,7 @@ import {
 const token = process.env.HUGGINGFACE_API_KEY;
 const provider = (process.env.HUGGINGFACE_INFERENCE_PROVIDER ??
   "auto") as InferenceProvider;
-const model =
-  process.env.HUGGINGFACE_QUIZ_MODEL ?? "Qwen/Qwen2.5-7B-Instruct";
+const model = process.env.HUGGINGFACE_QUIZ_MODEL ?? "Qwen/Qwen2.5-7B-Instruct";
 
 function aiLog(action: string, data: unknown) {
   const timestamp = new Date().toISOString();
@@ -51,6 +50,11 @@ function extractJsonArray(raw: string) {
   return "[]";
 }
 
+/** Reject letter-only options like "A"/"B" — answers must be full text. */
+function isLetterOnlyOption(option: string) {
+  return /^[A-Da-d]$/.test(option.trim());
+}
+
 function isQuizQuestion(value: unknown): value is QuizQuestion {
   if (!value || typeof value !== "object") return false;
   const q = value as {
@@ -59,14 +63,33 @@ function isQuizQuestion(value: unknown): value is QuizQuestion {
     answer?: unknown;
     explanation?: unknown;
   };
-  return (
-    typeof q.question === "string" &&
-    Array.isArray(q.options) &&
-    q.options.length >= 2 &&
-    q.options.every((o) => typeof o === "string") &&
-    typeof q.answer === "string" &&
-    typeof q.explanation === "string"
-  );
+  if (
+    typeof q.question !== "string" ||
+    !Array.isArray(q.options) ||
+    q.options.length < 2 ||
+    !q.options.every((o) => typeof o === "string") ||
+    typeof q.answer !== "string" ||
+    typeof q.explanation !== "string"
+  ) {
+    return false;
+  }
+  const options = q.options.map((o) => (o as string).trim()).filter(Boolean);
+  if (options.length < 2) return false;
+  if (options.some(isLetterOnlyOption)) return false;
+  const answer = q.answer.trim();
+  if (!answer || isLetterOnlyOption(answer)) return false;
+  if (!options.includes(answer)) return false;
+  return true;
+}
+
+function normalizeQuizQuestion(q: QuizQuestion): QuizQuestion {
+  const options = q.options.map((o) => o.trim()).filter(Boolean);
+  return {
+    question: q.question.trim(),
+    options,
+    answer: q.answer.trim(),
+    explanation: q.explanation.trim(),
+  };
 }
 
 function assertAiClient() {
@@ -113,16 +136,22 @@ You are a Pharmacy School Professor. Generate challenging multiple-choice questi
 1. Generate ${safeCount} unique MCQs about pharmacy and course subject matter.
 2. Each question must test understanding of concepts in the lesson/resource text — not filenames, uploads, LMS mechanics, or metadata.
 3. Never ask about file names, resource titles as labels, section order, or platform details.
-4. Provide 4 distinct options per question.
-5. Return ONLY a valid JSON array. No markdown fences or commentary.
+4. Provide exactly 4 distinct options per question. Each option MUST be the full answer text (a phrase or sentence), NEVER a single letter like A/B/C/D.
+5. The "answer" field MUST be an exact copy of one of the option strings (full text), not a letter label.
+6. Return ONLY a valid JSON array. No markdown fences or commentary.
 
 [FORMAT]
 [
   {
-    "question": "Question text?",
-    "options": ["A", "B", "C", "D"],
-    "answer": "A",
-    "explanation": "Why A is correct."
+    "question": "Which organ is the primary site of first-pass metabolism for many oral drugs?",
+    "options": [
+      "Liver",
+      "Kidney",
+      "Small intestine lumen only",
+      "Lungs"
+    ],
+    "answer": "Liver",
+    "explanation": "Hepatic first-pass metabolism reduces bioavailability of many oral drugs."
   }
 ]
 
@@ -154,7 +183,10 @@ ${safeContext}
         throw new AiProviderError("AI returned invalid quiz format.");
       }
 
-      const valid = parsed.filter(isQuizQuestion).slice(0, safeCount);
+      const valid = parsed
+        .filter(isQuizQuestion)
+        .map(normalizeQuizQuestion)
+        .slice(0, safeCount);
       if (valid.length >= 2) {
         aiLog("QUIZ_GEN_SUCCESS", { validCount: valid.length, attempt });
         return valid;

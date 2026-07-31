@@ -369,10 +369,10 @@ export function CourseContentSidebar({
                     aria-hidden
                   />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-xs font-bold text-foreground">
+                    <span className="line-clamp-2 block text-xs font-bold leading-snug text-foreground">
                       {sectionLabel(sectionIndex, section.title)}
                     </span>
-                    <span className="mt-0.5 block truncate text-[10px] leading-relaxed text-muted-foreground">
+                    <span className="mt-0.5 block line-clamp-2 text-[10px] leading-relaxed text-muted-foreground">
                       {subLine}
                     </span>
                   </span>
@@ -417,7 +417,7 @@ export function CourseContentSidebar({
                                 lessonFlatIndex > selectedIndex + 1;
 
                               const rowClass = cn(
-                                "flex w-full items-center justify-between gap-2 px-2 py-2.5 text-sm transition-colors hover:bg-muted/60",
+                                "flex w-full items-start justify-between gap-2 px-2 py-2.5 text-sm transition-colors hover:bg-muted/60",
                                 active &&
                                   "border-l-2 border-l-primary bg-muted/80 font-semibold text-primary",
                                 locked && "opacity-50",
@@ -425,14 +425,14 @@ export function CourseContentSidebar({
 
                               const rowBody = (
                                 <>
-                                  <span className="flex min-w-0 items-center gap-2">
+                                  <span className="flex min-w-0 items-start gap-2">
                                     {done ? (
                                       <CheckCircle2
-                                        className="h-4 w-4 shrink-0 text-primary"
+                                        className="mt-0.5 h-4 w-4 shrink-0 text-primary"
                                         aria-hidden
                                       />
                                     ) : (
-                                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded border border-border bg-card">
+                                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border border-border bg-card">
                                         {isVideo ? (
                                           <Play
                                             className="h-2.5 w-2.5"
@@ -447,7 +447,7 @@ export function CourseContentSidebar({
                                         )}
                                       </span>
                                     )}
-                                    <span className="min-w-0 truncate">
+                                    <span className="min-w-0 line-clamp-2 wrap-break-word">
                                       <span className="mr-1.5 font-semibold tabular-nums text-muted-foreground">
                                         {unitLabel}
                                       </span>
@@ -455,7 +455,7 @@ export function CourseContentSidebar({
                                     </span>
                                   </span>
                                   {lesson.durationSec ? (
-                                    <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
+                                    <span className="mt-0.5 shrink-0 text-[10px] tabular-nums text-muted-foreground">
                                       {formatLessonDuration(lesson.durationSec)}
                                     </span>
                                   ) : null}

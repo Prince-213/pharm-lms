@@ -17,7 +17,7 @@ import { useMemo, useState } from "react";
 import type { SectionResource } from "@/components/mentor/curriculum-editor-v2";
 import { AdminCourseStatusBadge } from "@/components/admin/admin-course-status-badge";
 import { AdminPanel } from "@/components/admin/admin-panel";
-import { SafeHtml } from "@/components/ui/safe-html";
+import { ArticleHtml } from "@/components/ui/article-html";
 import type { CourseStatus } from "@/generated/prisma/enums";
 import { formatResourceMetaLine, resourceDownloadFilename } from "@/lib/section-resource-meta";
 
@@ -476,9 +476,9 @@ export function AdminCoursePreviewView({ data }: { data: AdminCoursePreviewPaylo
                                       </button>
                                       {lOpen ? (
                                         <div className="mt-2 max-h-[min(50vh,360px)] overflow-y-auto rounded-lg border border-[var(--border)] bg-[var(--background)] p-3">
-                                          <SafeHtml
+                                          <ArticleHtml
                                             html={lesson.content ?? ""}
-                                            className="prose prose-sm max-w-none text-[var(--foreground)] [&_*]:max-w-none"
+                                            size="sm"
                                           />
                                         </div>
                                       ) : null}
@@ -504,9 +504,10 @@ export function AdminCoursePreviewView({ data }: { data: AdminCoursePreviewPaylo
           <div className="space-y-6 animate-in fade-in duration-200">
             <AdminPanel title="Marketing description" description="Rendered HTML as learners would see in catalog context.">
               {data.description?.trim() ? (
-                <SafeHtml
+                <ArticleHtml
                   html={data.description}
-                  className="prose prose-sm max-w-none rounded-xl border border-[var(--border)] bg-[var(--background)] p-5 text-[var(--foreground)] [&_*]:max-w-none"
+                  size="sm"
+                  className="rounded-xl border border-[var(--border)] bg-[var(--background)] p-5"
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">No description.</p>

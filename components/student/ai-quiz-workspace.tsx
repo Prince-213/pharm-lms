@@ -192,27 +192,36 @@ export function AiQuizWorkspace({
                 {(Array.isArray(q.options) && q.options.length
                   ? q.options
                   : []
-                ).map((option, idx) => (
-                  <label
-                    key={`${q.id}-${idx}`}
-                    className="flex cursor-pointer items-center gap-2 rounded-md border border-[var(--border)] px-3 py-2 text-sm transition hover:border-[var(--primary)]/35 hover:bg-[var(--surface)]"
-                  >
-                    <input
-                      type="radio"
-                      name={`question-${q.id}`}
-                      value={option}
-                      checked={answers[i] === option}
-                      onChange={(e) =>
-                        setAnswers((prev) => {
-                          const next = [...prev];
-                          next[i] = e.target.value;
-                          return next;
-                        })
-                      }
-                    />
-                    <span>{option}</span>
-                  </label>
-                ))}
+                ).map((option, idx) => {
+                  const letter = String.fromCharCode(65 + idx);
+                  return (
+                    <label
+                      key={`${q.id}-${idx}`}
+                      className="flex cursor-pointer items-start gap-2 rounded-md border border-[var(--border)] px-3 py-2 text-sm transition hover:border-[var(--primary)]/35 hover:bg-[var(--surface)]"
+                    >
+                      <input
+                        type="radio"
+                        name={`question-${q.id}`}
+                        value={option}
+                        checked={answers[i] === option}
+                        className="mt-0.5"
+                        onChange={(e) =>
+                          setAnswers((prev) => {
+                            const next = [...prev];
+                            next[i] = e.target.value;
+                            return next;
+                          })
+                        }
+                      />
+                      <span>
+                        <span className="mr-1.5 font-semibold text-[var(--muted-soft)]">
+                          {letter}.
+                        </span>
+                        {option}
+                      </span>
+                    </label>
+                  );
+                })}
               </div>
             </div>
           ))}
