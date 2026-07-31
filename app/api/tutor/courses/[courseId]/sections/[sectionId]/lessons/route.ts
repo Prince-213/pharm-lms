@@ -45,6 +45,7 @@ export async function POST(
       sectionId,
       title: parsed.data.title,
       position: (maxPosition._max.position ?? 0) + 1,
+      contentType: parsed.data.contentType,
       videoUrl: parsed.data.contentType === "VIDEO" ? parsed.data.value : null,
       content: parsed.data.contentType === "ARTICLE" ? parsed.data.value : null,
     },

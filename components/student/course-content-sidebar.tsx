@@ -39,10 +39,15 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { cnUdemyInput } from "@/lib/ui/udemy-surface";
+import {
+  contentUnitNumber,
+  sectionLabel,
+} from "@/lib/curriculum/numbering";
 
 export type SidebarLesson = {
   id: string;
   title: string;
+  contentType?: "VIDEO" | "ARTICLE" | null;
   videoUrl: string | null;
   content: string | null;
   durationSec: number | null;
@@ -275,7 +280,7 @@ export function CourseContentSidebar({
   }, [sections, progressMap]);
 
   const pct = stats.total > 0 ? Math.round((stats.done / stats.total) * 100) : 0;
-  const contentSummary = `${pluralize(stats.total, "lesson")} · ${pct}% complete`;
+  const contentSummary = `${pluralize(stats.total, "content unit")} · ${pct}% complete`;
 
   return (
     <div className="flex h-full min-h-0 min-w-0 flex-col overflow-x-hidden bg-card">
@@ -335,10 +340,14 @@ export function CourseContentSidebar({
             const quizCount = section.quizzes?.length ?? 0;
             const resourceCount = section.resources?.length ?? 0;
             const metaParts = [
-              `${sectionDone}/${section.lessons.length} complete`,
+              `${sectionDone}/${section.lessons.length} content units`,
               durLabel,
-              resourceCount > 0 ? pluralize(resourceCount, "resource") : null,
-              quizCount > 0 ? pluralize(quizCount, "quiz") : null,
+              resourceCount > 0
+                ? `${resourceCount} section resource${resourceCount === 1 ? "" : "s"}`
+                : null,
+              quizCount > 0
+                ? `${quizCount} section quiz${quizCount === 1 ? "" : "zes"}`
+                : null,
             ].filter(Boolean);
             const subLine = metaParts.join(" • ");
 
@@ -361,7 +370,7 @@ export function CourseContentSidebar({
                   />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-xs font-bold text-foreground">
-                      {`Section ${sectionIndex + 1}: ${section.title}`}
+                      {sectionLabel(sectionIndex, section.title)}
                     </span>
                     <span className="mt-0.5 block truncate text-[10px] leading-relaxed text-muted-foreground">
                       {subLine}
@@ -374,23 +383,29 @@ export function CourseContentSidebar({
                     {section.lessons.length > 0 ? (
                       <CurriculumTreeGroup
                         kind="content"
-                        title="Lessons"
+                        title="Content units"
                         count={section.lessons.length}
                         defaultOpen
                       >
                         <CurriculumTreeChildren>
                           <ul className="list-none">
-                            {section.lessons.map((lesson) => {
+                            {section.lessons.map((lesson, lessonIndex) => {
                               const active = lesson.id === selectedLessonId;
                               const done = progressMap[lesson.id];
-                              const isVideo = Boolean(lesson.videoUrl);
+                              const isVideo =
+                                lesson.contentType === "VIDEO" ||
+                                Boolean(lesson.videoUrl);
+                              const unitLabel = contentUnitNumber(
+                                sectionIndex,
+                                lessonIndex,
+                              );
                               const lessonHref = buildLessonHref(
                                 courseId,
                                 lesson.id,
                                 currentTab,
                               );
                               const confirmSkip = shouldConfirmSkip(section.id);
-                              const lessonIndex = flatLessonIndex(
+                              const lessonFlatIndex = flatLessonIndex(
                                 sections,
                                 lesson.id,
                               );
@@ -399,7 +414,7 @@ export function CourseContentSidebar({
                                 : -1;
                               const locked =
                                 selectedIndex >= 0 &&
-                                lessonIndex > selectedIndex + 1;
+                                lessonFlatIndex > selectedIndex + 1;
 
                               const rowClass = cn(
                                 "flex w-full items-center justify-between gap-2 px-2 py-2.5 text-sm transition-colors hover:bg-muted/60",
@@ -432,7 +447,10 @@ export function CourseContentSidebar({
                                         )}
                                       </span>
                                     )}
-                                    <span className="truncate">
+                                    <span className="min-w-0 truncate">
+                                      <span className="mr-1.5 font-semibold tabular-nums text-muted-foreground">
+                                        {unitLabel}
+                                      </span>
                                       {lesson.title}
                                     </span>
                                   </span>
@@ -468,10 +486,18 @@ export function CourseContentSidebar({
                       </CurriculumTreeGroup>
                     ) : null}
 
+                    {resourceCount > 0 || quizCount > 0 ? (
+                      <div className="border-t border-border/60 px-2 pb-1 pt-2">
+                        <p className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          For this section
+                        </p>
+                      </div>
+                    ) : null}
+
                     {resourceCount > 0 ? (
                       <CurriculumTreeGroup
                         kind="resources"
-                        title="Resources"
+                        title="Section resources"
                         count={resourceCount}
                         defaultOpen={resourceCount <= 2}
                       >

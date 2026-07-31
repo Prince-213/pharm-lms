@@ -151,9 +151,9 @@ const toneToGroupKind: Record<CurriculumSubsectionTone, CurriculumGroupKind> = {
 };
 
 const toneToTitle: Record<CurriculumSubsectionTone, string> = {
-  lectures: "Lessons",
-  resources: "Resources",
-  assessments: "Assessments",
+  lectures: "Content units",
+  resources: "Section resources",
+  assessments: "Section assessment",
 };
 
 /** Groups content inside a section with collapsible folder tree UI. */
@@ -229,12 +229,17 @@ export function CurriculumListItem({
   children,
   className,
   index,
+  indexLabel,
 }: {
   children: ReactNode;
   className?: string;
   /** Optional 1-based index shown beside the row (e.g. lecture number). */
   index?: number;
+  /** Prefer over `index` when using section.unit labels like "1.2". */
+  indexLabel?: string;
 }) {
+  const label =
+    indexLabel ?? (index !== undefined ? String(index) : undefined);
   return (
     <div
       className={cn(
@@ -243,10 +248,10 @@ export function CurriculumListItem({
         className,
       )}
     >
-      {index !== undefined ? (
+      {label !== undefined ? (
         <div className="mb-3 flex items-center gap-2">
           <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-[#eceff1] px-1.5 text-[11px] font-bold tabular-nums text-muted-foreground">
-            {index}
+            {label}
           </span>
           <span className="h-px flex-1 bg-[#d1d7dc]" aria-hidden />
         </div>
@@ -309,8 +314,8 @@ export function NewSectionCard({
       <CardHeader className="border-b border-[#d1d7dc] pb-4">
         <CardTitle className="text-base">Add a new section</CardTitle>
         <CardDescription>
-          Organize your course into sections. Each section can include lectures,
-          quizzes, assignments, and downloadable resources.
+          Create Section 1, Section 2, and so on. Each section holds numbered
+          content units (1.1, 1.2) plus shared resources and a section assessment.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4 pt-4">{children}</CardContent>
@@ -343,7 +348,7 @@ export function formatSectionSummary(section: {
   const parts: string[] = [];
   if (section.lessons.length > 0) {
     parts.push(
-      `${section.lessons.length} lesson${section.lessons.length === 1 ? "" : "s"}`,
+      `${section.lessons.length} content unit${section.lessons.length === 1 ? "" : "s"}`,
     );
   }
   if (section.resources.length > 0) {
@@ -355,7 +360,7 @@ export function formatSectionSummary(section: {
     section.quizzes.length + section.assignmentItems.length;
   if (assessments > 0) {
     parts.push(
-      `${assessments} assessment${assessments === 1 ? "" : "s"}`,
+      `${assessments} section assessment${assessments === 1 ? "" : "s"}`,
     );
   }
   return parts.join(" · ");

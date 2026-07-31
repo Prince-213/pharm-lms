@@ -35,6 +35,11 @@ enum AssignmentStatus {
   CLOSED
 }
 
+enum LessonContentType {
+  VIDEO
+  ARTICLE
+}
+
 enum SubmissionStatus {
   SUBMITTED
   GRADED
@@ -337,6 +342,7 @@ model Lesson {
   id              String              @id @default(cuid())
   sectionId       String
   title           String
+  contentType     LessonContentType   @default(ARTICLE)
   content         String?
   videoUrl        String?
   durationSec     Int?

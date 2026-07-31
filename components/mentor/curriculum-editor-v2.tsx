@@ -69,12 +69,17 @@ import { toast } from "sonner";
 import { notifyPortalMutation } from "@/lib/client/notify-portal-mutation";
 import { parseSectionDescription as parseDescription } from "@/lib/curriculum";
 import { deriveQuizTitle } from "@/lib/curriculum/derive-quiz-title";
+import {
+  contentUnitNumber,
+  sectionNumber,
+} from "@/lib/curriculum/numbering";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
 type Lesson = {
   id: string;
   title: string;
+  contentType?: "VIDEO" | "ARTICLE";
   videoUrl: string | null;
   content: string | null;
 };
@@ -481,7 +486,8 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     await runPending(async () => {
       const tempLesson: Lesson = {
         id: tempId,
-        title: newLessonTitle.trim() || "New lecture",
+        title: newLessonTitle.trim() || "New content unit",
+        contentType: "ARTICLE",
         videoUrl: null,
         content: value,
       };
@@ -506,7 +512,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
       );
 
       if (!res.ok) {
-        toast.error("Failed to create lesson.");
+        toast.error("Failed to create content unit.");
         setSections((prev) =>
           prev.map((s) =>
             s.id === sectionId
@@ -525,7 +531,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
             : s,
         ),
       );
-      toast.success("Lesson created.");
+      toast.success("Content unit created.");
     });
   }
 
@@ -537,7 +543,8 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     await runPending(async () => {
       const tempLesson: Lesson = {
         id: tempId,
-        title: newLessonTitle.trim() || "New lecture",
+        title: newLessonTitle.trim() || "New content unit",
+        contentType: "VIDEO",
         videoUrl: videoUrl,
         content: null,
       };
@@ -563,7 +570,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
       );
 
       if (!res.ok) {
-        toast.error("Failed to create lesson.");
+        toast.error("Failed to create content unit.");
         setSections((prev) =>
           prev.map((s) =>
             s.id === sectionId
@@ -582,13 +589,13 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
             : s,
         ),
       );
-      toast.success("Lesson created.");
+      toast.success("Content unit created.");
     });
   }
 
   async function deleteLesson(sectionId: string, lessonId: string) {
     if (readOnly || saving) return;
-    if (!window.confirm("Delete this lesson?")) return;
+    if (!window.confirm("Delete this content unit?")) return;
 
     const prevSections = [...sections];
     setSections((prev) =>
@@ -606,10 +613,10 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     );
 
     if (!res.ok) {
-      toast.error("Failed to delete lesson.");
+      toast.error("Failed to delete content unit.");
       setSections(prevSections);
     } else {
-      toast.success("Lesson deleted.");
+      toast.success("Content unit deleted.");
     }
   }
 
@@ -640,7 +647,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
       section.resources.length;
     if (itemCount === 0) {
       errors.content =
-        "Add at least one lesson, quiz, assignment, or resource.";
+        "Add at least one content unit, section assessment, or resource.";
     }
     if (activePanel?.sectionId === section.id) {
       errors.content = "Finish or cancel the open form before continuing.";
@@ -726,7 +733,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        if (!res.ok) toast.error("Failed to save lesson update.");
+        if (!res.ok) toast.error("Failed to save content unit.");
       });
       lessonUpdateDebounce.current.delete(key);
     }, 350);
@@ -974,8 +981,9 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
       {readOnly ? <CurriculumReadOnlyBanner /> : null}
       <div className="space-y-1">
         <p className="text-sm text-muted-foreground">
-          Build your course outline section by section. Add lectures, assessments,
-          and resources, then use Next to validate each section before moving on.
+          Build sections first. Inside each section, add numbered content units
+          (1.1 video, 1.2 article, …). Resources and assessments are shared across
+          the whole section — not tied to a single content unit.
         </p>
       </div>
       {saving ? <CurriculumSavingIndicator /> : null}
@@ -987,7 +995,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
       ) : null}
 
       {sections.length === 0 ? (
-        <CurriculumEmptyState message="Start by adding your first section below. Each section groups related lectures and assessments." />
+        <CurriculumEmptyState message="Start by adding Section 1 below. Then add content units (1.1, 1.2), plus shared resources and a section assessment." />
       ) : null}
 
       <DndContext
@@ -1014,7 +1022,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                   <div className="flex min-w-0 flex-1 flex-col gap-1">
                     <div className="flex min-w-0 items-center gap-2">
                       <Badge variant="outline" className="shrink-0 font-semibold">
-                        Section {sectionIndex + 1}
+                        Section {sectionNumber(sectionIndex)}
                       </Badge>
                       {editingSectionId === section.id ? (
                         <div
@@ -1132,22 +1140,29 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                   </AlertDescription>
                 </Alert>
               ) : null}
-              {/* ── Lectures ──────────────────────────────────────────────── */}
+              {/* ── Content units (1.1, 1.2, …) ─────────────────────────── */}
               <CurriculumSubsection
                 tone="lectures"
-                description="Video or article content students complete in order."
+                title="Content units"
+                description={`Numbered learning items for Section ${sectionNumber(sectionIndex)} only (video or article).`}
                 count={section.lessons.length}
                 defaultOpen
               >
                 {section.lessons.length === 0 ? (
-                  <CurriculumEmptyState message='No lectures yet. Click "Add lecture" below.' />
+                  <CurriculumEmptyState message='No content units yet. Click "Add content unit" below to create 1.1 (video or article).' />
                 ) : (
                   <CurriculumList>
                 {section.lessons.map((lesson, lessonIndex) => {
+                  const unitLabel = contentUnitNumber(sectionIndex, lessonIndex);
                   const lessonType: "VIDEO" | "ARTICLE" =
-                    lesson.content === null ? "VIDEO" : "ARTICLE";
+                    lesson.contentType ??
+                    (lesson.videoUrl ? "VIDEO" : "ARTICLE");
                   return (
-                    <CurriculumListItem key={lesson.id} className="space-y-4" index={lessonIndex + 1}>
+                    <CurriculumListItem
+                      key={lesson.id}
+                      className="space-y-4"
+                      indexLabel={unitLabel}
+                    >
                       <CurriculumItemMeta
                         icon={
                           lessonType === "VIDEO" ? (
@@ -1172,7 +1187,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                               })
                             }
                             className="h-8 border-transparent bg-transparent px-0 font-medium shadow-none focus-visible:border-input focus-visible:bg-background"
-                            aria-label={`Lecture ${lessonIndex + 1} title`}
+                            aria-label={`Content unit ${unitLabel} title`}
                           />
                         }
                         actions={
@@ -1192,11 +1207,13 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                                         return next === "ARTICLE"
                                           ? {
                                               ...l,
+                                              contentType: "ARTICLE",
                                               videoUrl: null,
                                               content: l.content ?? "",
                                             }
                                           : {
                                               ...l,
+                                              contentType: "VIDEO",
                                               content: null,
                                               videoUrl: l.videoUrl ?? null,
                                             };
@@ -1213,7 +1230,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                                 });
                               }}
                               className={cn(selectClassName, "h-8 w-[110px]")}
-                              aria-label="Lecture type"
+                              aria-label={`Content unit ${unitLabel} type`}
                             >
                               <option value="VIDEO">Video</option>
                               <option value="ARTICLE">Article</option>
@@ -1224,7 +1241,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                               size="icon-sm"
                               disabled={interactionLocked}
                               onClick={() => void deleteLesson(section.id, lesson.id)}
-                              aria-label="Delete lecture"
+                              aria-label={`Delete content unit ${unitLabel}`}
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -1245,6 +1262,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                                     l.id === lesson.id
                                       ? {
                                           ...l,
+                                          contentType: "ARTICLE",
                                           content: html,
                                           videoUrl: null,
                                         }
@@ -1259,7 +1277,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                             });
                           }}
                           disabled={interactionLocked}
-                          placeholder="Write the article content for this lecture."
+                          placeholder={`Write the article for content unit ${unitLabel}.`}
                           minHeightClass="min-h-[120px]"
                         />
                       ) : (
@@ -1280,6 +1298,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                                     l.id === lesson.id
                                       ? {
                                           ...l,
+                                          contentType: "VIDEO",
                                           videoUrl: url,
                                           content: null,
                                         }
@@ -1323,16 +1342,27 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                 )}
               </CurriculumSubsection>
 
-              {/* ── Resources ───────────────────────────────────────────── */}
+              {/* ── Shared for this section ─────────────────────────────── */}
+              <div className="mt-5 rounded-xl border border-border bg-muted/20 p-3 sm:p-4">
+                <div className="mb-4 space-y-1">
+                  <p className="text-sm font-semibold text-foreground">
+                    Shared for Section {sectionNumber(sectionIndex)}
+                  </p>
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    Resources and assessments apply to the whole section — not to
+                    a single content unit like {contentUnitNumber(sectionIndex, 0)}.
+                  </p>
+                </div>
+
               <CurriculumSubsection
                 tone="resources"
-                description="Downloadable files and external links for this section."
+                title="Section resources"
+                description="Files and links available while students work through this section."
                 count={section.resources.length}
-                className="mt-5"
-                defaultOpen={false}
+                defaultOpen={section.resources.length > 0}
               >
                 {section.resources.length === 0 ? (
-                  <CurriculumEmptyState message='No resources yet. Click "Resource" below to add a file or link.' />
+                  <CurriculumEmptyState message='No shared resources yet. Click "Add resource" below.' />
                 ) : (
                   <CurriculumList>
                     {section.resources.map((resource) => (
@@ -1410,17 +1440,20 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                 )}
               </CurriculumSubsection>
 
-              {/* ── Quizzes & assignments ───────────────────────────────── */}
-              {(section.quizzes.length > 0 ||
-                section.assignmentItems.length > 0) && (
-                <CurriculumSubsection
-                  tone="assessments"
-                  title="Assessments"
-                  description="Quizzes and assignments that check understanding."
-                  count={section.quizzes.length + section.assignmentItems.length}
-                  className="mt-5"
-                  defaultOpen={false}
-                >
+              <CurriculumSubsection
+                tone="assessments"
+                title="Section assessment"
+                description="Quiz or assignment that checks understanding of this entire section."
+                count={section.quizzes.length + section.assignmentItems.length}
+                className="mt-4"
+                defaultOpen={
+                  section.quizzes.length > 0 || section.assignmentItems.length > 0
+                }
+              >
+                {section.quizzes.length === 0 &&
+                section.assignmentItems.length === 0 ? (
+                  <CurriculumEmptyState message='No section assessment yet. Click "Add section assessment" below.' />
+                ) : (
                   <CurriculumList>
                     {section.quizzes.map((quiz) => (
                       <CurriculumListItem key={quiz.id}>
@@ -1451,29 +1484,43 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                       </CurriculumListItem>
                     ))}
                   </CurriculumList>
-                </CurriculumSubsection>
-              )}
+                )}
+              </CurriculumSubsection>
+              </div>
 
               {/* ── Add actions ─────────────────────────────────────────── */}
-              <div className="mt-6 rounded-lg border border-dashed border-[#d1d7dc] bg-[#f7f9fa] px-4 py-4">
-                <p className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  Add to this section
-                </p>
-                <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  variant="default"
-                  size="sm"
-                  disabled={panelLocked}
-                  onClick={() => {
-                    if (fileUploading) return;
-                    openPanel({ kind: "lesson", sectionId: section.id });
-                    setNewLessonType(suggestContentType(section.title));
-                  }}
-                >
-                  <Plus className="size-3.5" aria-hidden />
-                  Add lecture
-                </Button>
+              <div className="mt-6 space-y-3">
+                <div className="rounded-lg border border-dashed border-[#d1d7dc] bg-[#f7f9fa] px-4 py-4">
+                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Content units for Section {sectionNumber(sectionIndex)}
+                  </p>
+                  <p className="mb-3 text-xs text-muted-foreground">
+                    Each unit becomes {contentUnitNumber(sectionIndex, section.lessons.length)}{" "}
+                    next (video or article).
+                  </p>
+                  <Button
+                    type="button"
+                    variant="default"
+                    size="sm"
+                    disabled={panelLocked}
+                    onClick={() => {
+                      if (fileUploading) return;
+                      openPanel({ kind: "lesson", sectionId: section.id });
+                      setNewLessonType(suggestContentType(section.title));
+                    }}
+                  >
+                    <Plus className="size-3.5" aria-hidden />
+                    Add content unit
+                  </Button>
+                </div>
+                <div className="rounded-lg border border-dashed border-[#d1d7dc] bg-[#f7f9fa] px-4 py-4">
+                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Shared with this section
+                  </p>
+                  <p className="mb-3 text-xs text-muted-foreground">
+                    Resources and assessments cover every content unit in this section.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
                 <Button
                   type="button"
                   variant="outline"
@@ -1489,7 +1536,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                   }}
                 >
                   <Plus className="size-3.5" aria-hidden />
-                  Add assessment
+                  Add section assessment
                 </Button>
                 <Button
                   type="button"
@@ -1509,6 +1556,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                   <Plus className="size-3.5" aria-hidden />
                   Add resource
                 </Button>
+                  </div>
                 </div>
               </div>
 
@@ -1516,12 +1564,12 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                 open={panelOpenFor(section.id, "lesson")}
                 onClose={closePanel}
                 closeDisabled={fileUploading}
-                title={`Add lesson to Section ${sectionIndex + 1}`}
-                description={`Choose a video or article lesson for ${section.title}.`}
+                title={`Add content unit to Section ${sectionNumber(sectionIndex)}`}
+                description={`This becomes ${contentUnitNumber(sectionIndex, section.lessons.length)} under ${section.title}. Choose video or article.`}
               >
                 <div className="space-y-4">
                   <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
-                    <CurriculumField label="Lesson title" htmlFor={`lesson-title-${section.id}`}>
+                    <CurriculumField label="Content unit title" htmlFor={`lesson-title-${section.id}`}>
                       <Input
                         id={`lesson-title-${section.id}`}
                         value={newLessonTitle}
@@ -1530,7 +1578,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                         placeholder="e.g. Introduction to the topic"
                       />
                     </CurriculumField>
-                    <CurriculumField label="Lesson type" htmlFor={`lesson-type-${section.id}`}>
+                    <CurriculumField label="Content type" htmlFor={`lesson-type-${section.id}`}>
                       <select
                         id={`lesson-type-${section.id}`}
                         value={newLessonType}
@@ -1553,7 +1601,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                         value={newLessonArticleContent}
                         onChange={setNewLessonArticleContent}
                         disabled={interactionLocked}
-                        placeholder="Write the lecture content students will read."
+                        placeholder="Write the article students will read for this content unit."
                         minHeightClass="min-h-[140px]"
                       />
                     </CurriculumField>
@@ -1575,7 +1623,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                     onCancel={closePanel}
                     cancelDisabled={panelLocked}
                     submitDisabled={panelLocked || !canAddNewLesson}
-                    submitLabel={fileUploading ? "Uploading…" : "Add lesson"}
+                    submitLabel={fileUploading ? "Uploading…" : "Add content unit"}
                     onSubmit={() =>
                       newLessonType === "ARTICLE"
                         ? void addLessonWithContent(section.id)
@@ -1589,7 +1637,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                 open={panelOpenFor(section.id, "item")}
                 onClose={closePanel}
                 closeDisabled={fileUploading}
-                title={`Add assessment to Section ${sectionIndex + 1}`}
+                title={`Add section assessment to Section ${sectionNumber(sectionIndex)}`}
                 description={`Add a quiz or assignment to ${section.title}. Quizzes use multiple-choice questions; assignments include instructions for students.`}
               >
                 <div className="space-y-4">
@@ -1764,7 +1812,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                 open={panelOpenFor(section.id, "resource")}
                 onClose={closePanel}
                 closeDisabled={fileUploading}
-                title={`Add resource to Section ${sectionIndex + 1}`}
+                title={`Add resource to Section ${sectionNumber(sectionIndex)}`}
                 description={`Add a link or document for ${section.title}. Students will see it beneath the section lessons.`}
               >
                 <div className="space-y-4">

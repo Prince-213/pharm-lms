@@ -25,9 +25,9 @@ export default async function MentorCourseCurriculumPage({
           Curriculum
         </h1>
         <p className="max-w-2xl text-sm text-muted-foreground">
-          Structure your course into sections and lectures. Drag sections to
-          reorder, expand each section to add content, and use Next when you are
-          ready to validate and continue.
+          Structure the course as Section 1, Section 2, … Each section has
+          numbered content units (1.1 video, 1.2 article) plus resources and an
+          assessment shared by that whole section. Drag sections to reorder.
         </p>
       </div>
       <CurriculumEditorV2Dynamic courseId={courseId} />

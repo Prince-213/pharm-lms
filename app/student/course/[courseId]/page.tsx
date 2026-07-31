@@ -127,6 +127,7 @@ export default async function StudentCourseLearningPage({
               select: {
                 id: true,
                 title: true,
+                contentType: true,
                 videoUrl: true,
                 durationSec: true,
               },
@@ -166,6 +167,7 @@ export default async function StudentCourseLearningPage({
       lessons: s.lessons.map((l) => ({
         id: l.id,
         title: l.title,
+        contentType: l.contentType,
         videoUrl: l.videoUrl,
         content: null,
         durationSec: l.durationSec,
@@ -357,6 +359,7 @@ export default async function StudentCourseLearningPage({
         lessons: s.lessons.map((l) => ({
           id: l.id,
           title: l.title,
+          contentType: l.contentType,
           videoUrl: l.videoUrl,
           content: null,
           durationSec: l.durationSec,

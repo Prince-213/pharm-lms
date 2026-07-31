@@ -333,13 +333,13 @@ export function CourseSessionShell({
               <button
                 type="button"
                 className="-mt-5 flex min-w-[3.5rem] flex-col items-center gap-0.5 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2"
-                aria-label="Open course lessons"
+                aria-label="Open course content"
               >
                 <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--primary)] text-white shadow-lg shadow-[var(--primary)]/30 ring-4 ring-white transition active:scale-95">
                   <ListOrdered className="h-6 w-6" aria-hidden />
                 </span>
                 <span className="text-[10px] font-semibold leading-none text-[var(--primary-strong)]">
-                  Lessons
+                  Content
                 </span>
               </button>
             </SheetTrigger>
@@ -349,7 +349,7 @@ export function CourseSessionShell({
             >
               <SheetHeader className="px-6 pt-6 pb-2">
                 <SheetTitle className="font-display text-lg font-bold">
-                  Course Content
+                  Course content
                 </SheetTitle>
               </SheetHeader>
               <ScrollArea className="h-full px-2">
