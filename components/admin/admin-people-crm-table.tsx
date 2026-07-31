@@ -11,6 +11,7 @@ import {
   MoreHorizontal,
   Search,
   Trash2,
+  UserCheck,
   UserX,
   Users,
 } from "lucide-react";
@@ -21,6 +22,15 @@ import { useRouter } from "next/navigation";
 import { sendChatMessageAction } from "@/app/actions/chat";
 import { EmptyState } from "@/components/ui/empty-state";
 import { adminDeleteUserAndData, setUserActiveAction } from "@/app/admin/people/actions";
+import {
+  mentorAccountDisplayLabel,
+  mentorNeedsAdminActivation,
+  type MentorAccountDisplayStatus,
+} from "@/lib/auth/mentor-account-status";
+import {
+  tutorAccountDisplayLabel,
+  type TutorAccountDisplayStatus,
+} from "@/lib/auth/tutor-profile-completion";
 import { refreshPortalAfterMutation } from "@/lib/client/refresh-portal-data";
 
 export type AdminPersonRow = {
@@ -34,6 +44,12 @@ export type AdminPersonRow = {
   primaryMetricValue: number;
   secondaryMetricLabel?: string;
   secondaryMetricValue?: number;
+  /** Mentor lifecycle status for CRM badges/filters. */
+  mentorAccountStatus?: MentorAccountDisplayStatus;
+  mentorProfileStatus?: string;
+  /** Tutor lifecycle status for CRM badges/filters. */
+  tutorAccountStatus?: TutorAccountDisplayStatus;
+  tutorProfileCompletedAtIso?: string | null;
   mentorProfile?: {
     mentorHeadline: string | null;
     mentorSpecialties: string | null;
@@ -53,7 +69,13 @@ export type AdminPersonRow = {
   };
 };
 
-type StatusFilter = "all" | "active" | "inactive";
+type StatusFilter =
+  | "all"
+  | "active"
+  | "inactive"
+  | "pending_activation"
+  | "incomplete"
+  | "rejected";
 
 type PanelState =
   | null
@@ -68,6 +90,59 @@ function placePopover(anchor: DOMRect) {
   const left = Math.min(vw - POPOVER_W - 8, Math.max(8, anchor.right - POPOVER_W));
   const top = anchor.top - POPOVER_GAP;
   return { left, top };
+}
+
+function personStatusLabel(row: AdminPersonRow): string {
+  if (row.role === "MENTOR" && row.mentorAccountStatus) {
+    return mentorAccountDisplayLabel(row.mentorAccountStatus);
+  }
+  if (row.role === "TUTOR" && row.tutorAccountStatus) {
+    return tutorAccountDisplayLabel(row.tutorAccountStatus);
+  }
+  return row.isActive ? "Active" : "Inactive";
+}
+
+function personStatusBadgeClass(row: AdminPersonRow): string {
+  const status =
+    row.role === "MENTOR"
+      ? row.mentorAccountStatus
+      : row.role === "TUTOR"
+        ? row.tutorAccountStatus
+        : row.isActive
+          ? "active"
+          : "inactive";
+
+  switch (status) {
+    case "pending_activation":
+      return "bg-amber-50 text-amber-950 ring-amber-200";
+    case "incomplete":
+      return "bg-slate-100 text-slate-800 ring-slate-200";
+    case "rejected":
+      return "bg-orange-50 text-orange-900 ring-orange-200";
+    case "inactive":
+      return "bg-rose-50 text-rose-900 ring-rose-200";
+    case "active":
+    default:
+      return "bg-primary/10 text-primary ring-primary/20";
+  }
+}
+
+function matchesStatusFilter(row: AdminPersonRow, status: StatusFilter): boolean {
+  if (status === "all") return true;
+
+  if (row.role === "MENTOR" && row.mentorAccountStatus) {
+    return row.mentorAccountStatus === status;
+  }
+  if (row.role === "TUTOR" && row.tutorAccountStatus) {
+    if (status === "active") return row.tutorAccountStatus === "active";
+    if (status === "inactive") return row.tutorAccountStatus === "inactive";
+    if (status === "incomplete") return row.tutorAccountStatus === "incomplete";
+    return false;
+  }
+
+  if (status === "active") return row.isActive;
+  if (status === "inactive") return !row.isActive;
+  return false;
 }
 
 export function AdminPeopleCrmTable({
@@ -115,8 +190,7 @@ export function AdminPeopleCrmTable({
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     return rows.filter((r) => {
-      if (status === "active" && !r.isActive) return false;
-      if (status === "inactive" && r.isActive) return false;
+      if (!matchesStatusFilter(r, status)) return false;
       if (!term) return true;
       return `${r.fullName} ${r.email} ${r.id}`.toLowerCase().includes(term);
     });
@@ -124,6 +198,10 @@ export function AdminPeopleCrmTable({
 
   const activePerson = panel ? rows.find((r) => r.id === panel.userId) ?? null : null;
   const mentorProfile = activePerson?.role === "MENTOR" ? activePerson.mentorProfile ?? null : null;
+  const needsMentorActivation =
+    activePerson?.role === "MENTOR" &&
+    activePerson.mentorAccountStatus &&
+    mentorNeedsAdminActivation(activePerson.mentorAccountStatus);
 
   function openMenu(userId: string, anchor: HTMLElement) {
     const r = anchor.getBoundingClientRect();
@@ -158,7 +236,13 @@ export function AdminPeopleCrmTable({
       const res = await setUserActiveAction(userId, next, role);
       if ("error" in res) setError(res.error ?? "Could not update user.");
       else {
-        setMessage(next ? "Account activated." : "Account deactivated.");
+        setMessage(
+          next
+            ? role === "MENTOR"
+              ? "Mentor activated and approved for student listing."
+              : "Account activated."
+            : "Account deactivated.",
+        );
         closePanel();
         refreshPortalAfterMutation(router);
       }
@@ -244,6 +328,9 @@ export function AdminPeopleCrmTable({
                           <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                             Mentor profile
                           </p>
+                          <p className="mt-1.5 text-[11px] font-semibold text-[var(--foreground)]">
+                            Status: {personStatusLabel(activePerson)}
+                          </p>
                           <div className="mt-2 grid gap-1 text-xs text-[var(--foreground)]">
                             {mentorProfile.mentorProfileSubmittedAtIso ? (
                               <p className="text-[11px] text-muted-foreground">
@@ -311,6 +398,31 @@ export function AdminPeopleCrmTable({
                               {mentorProfile.bio?.trim() || "No bio provided."}
                             </p>
                           </div>
+                          {needsMentorActivation ? (
+                            <Link
+                              href="/admin/mentor-applications"
+                              onClick={closePanel}
+                              className="mt-2 block text-[11px] font-semibold text-[var(--primary-strong)] hover:underline"
+                            >
+                              Open applications queue
+                            </Link>
+                          ) : null}
+                        </div>
+                      ) : null}
+
+                      {activePerson.role === "TUTOR" ? (
+                        <div className="mb-3 rounded-lg border border-[var(--border)] bg-[var(--background)] p-2.5">
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                            Tutor profile
+                          </p>
+                          <p className="mt-1.5 text-[11px] font-semibold text-[var(--foreground)]">
+                            Status: {personStatusLabel(activePerson)}
+                          </p>
+                          <p className="mt-1 text-[11px] text-muted-foreground">
+                            {activePerson.tutorProfileCompletedAtIso
+                              ? `Completed: ${new Date(activePerson.tutorProfileCompletedAtIso).toLocaleString()}`
+                              : "Required fields not complete yet — tutors auto-activate when the profile is saved complete."}
+                          </p>
                         </div>
                       ) : null}
 
@@ -351,26 +463,58 @@ export function AdminPeopleCrmTable({
 
                     <div className="my-1 border-t border-[var(--border)]" />
 
-                    <button
-                      type="button"
-                      disabled={pending}
-                      onClick={() => toggleActive(activePerson.id, !activePerson.isActive)}
-                      className={clsx(
-                        "flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-medium disabled:opacity-50",
-                        activePerson.isActive
-                          ? "text-rose-800 hover:bg-rose-50"
-                          : "text-primary hover:bg-primary/10",
-                      )}
-                    >
-                      {pending ? (
-                        <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
-                      ) : activePerson.isActive ? (
-                        <UserX className="h-4 w-4 shrink-0" />
-                      ) : (
-                        <Check className="h-4 w-4 shrink-0" />
-                      )}
-                      {activePerson.isActive ? "Deactivate account" : "Activate account"}
-                    </button>
+                    {needsMentorActivation ? (
+                      <button
+                        type="button"
+                        disabled={pending}
+                        onClick={() => toggleActive(activePerson.id, true)}
+                        className="flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-medium text-primary hover:bg-primary/10 disabled:opacity-50"
+                      >
+                        {pending ? (
+                          <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+                        ) : (
+                          <UserCheck className="h-4 w-4 shrink-0" />
+                        )}
+                        Activate mentor
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={pending}
+                        onClick={() => toggleActive(activePerson.id, !activePerson.isActive)}
+                        className={clsx(
+                          "flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-medium disabled:opacity-50",
+                          activePerson.isActive
+                            ? "text-rose-800 hover:bg-rose-50"
+                            : "text-primary hover:bg-primary/10",
+                        )}
+                      >
+                        {pending ? (
+                          <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+                        ) : activePerson.isActive ? (
+                          <UserX className="h-4 w-4 shrink-0" />
+                        ) : (
+                          <Check className="h-4 w-4 shrink-0" />
+                        )}
+                        {activePerson.isActive ? "Deactivate account" : "Activate account"}
+                      </button>
+                    )}
+
+                    {needsMentorActivation ? (
+                      <button
+                        type="button"
+                        disabled={pending}
+                        onClick={() => toggleActive(activePerson.id, false)}
+                        className="flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm font-medium text-rose-800 hover:bg-rose-50 disabled:opacity-50"
+                      >
+                        {pending ? (
+                          <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+                        ) : (
+                          <UserX className="h-4 w-4 shrink-0" />
+                        )}
+                        Deactivate account
+                      </button>
+                    ) : null}
 
                     <a
                       href={`mailto:${encodeURIComponent(activePerson.email)}?subject=${encodeURIComponent(`${title.slice(0, -1)} account`)}`}
@@ -468,8 +612,26 @@ export function AdminPeopleCrmTable({
           className="h-10 rounded-md border border-[var(--border)] bg-[var(--background)] px-3 text-sm"
         >
           <option value="all">All statuses</option>
-          <option value="active">Active only</option>
-          <option value="inactive">Inactive only</option>
+          {role === "MENTOR" ? (
+            <>
+              <option value="pending_activation">Pending activation</option>
+              <option value="incomplete">Setup incomplete</option>
+              <option value="active">Active</option>
+              <option value="rejected">Rejected</option>
+              <option value="inactive">Inactive</option>
+            </>
+          ) : role === "TUTOR" ? (
+            <>
+              <option value="incomplete">Setup incomplete</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </>
+          ) : (
+            <>
+              <option value="active">Active only</option>
+              <option value="inactive">Inactive only</option>
+            </>
+          )}
         </select>
       </div>
 
@@ -517,12 +679,10 @@ export function AdminPeopleCrmTable({
                       <span
                         className={clsx(
                           "rounded-full px-2 py-0.5 text-xs font-semibold ring-1",
-                          u.isActive
-                            ? "bg-primary/10 text-primary ring-primary/20"
-                            : "bg-rose-50 text-rose-900 ring-rose-200",
+                          personStatusBadgeClass(u),
                         )}
                       >
-                        {u.isActive ? "Active" : "Inactive"}
+                        {personStatusLabel(u)}
                       </span>
                     </td>
                     <td className="px-4 py-3">

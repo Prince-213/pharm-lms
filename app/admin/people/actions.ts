@@ -42,6 +42,7 @@ export async function setUserActiveAction(
           mentorReviewedAt: new Date(),
         },
       });
+      void notifyMentorAccountActivated(userId, true);
       revalidatePath("/admin/mentors");
       revalidatePath("/admin/mentor-applications");
       revalidatePath("/student/mentors");

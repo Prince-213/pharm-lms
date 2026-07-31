@@ -93,10 +93,15 @@ export async function submitMentorProfileAction(): Promise<ActionResult> {
       city: true,
       addressLine1: true,
       mentorProfileSubmittedAt: true,
+      mentorProfileStatus: true,
     },
   });
   if (!user) return { ok: false, message: "Account not found." };
-  if (user.mentorProfileSubmittedAt) {
+
+  const canResubmit =
+    !user.mentorProfileSubmittedAt ||
+    user.mentorProfileStatus === MentorProfileStatus.REJECTED;
+  if (!canResubmit) {
     return { ok: false, message: "Profile already submitted." };
   }
 
@@ -118,6 +123,7 @@ export async function submitMentorProfileAction(): Promise<ActionResult> {
       mentorProfileSubmittedAt: new Date(),
       mentorProfileStatus: MentorProfileStatus.PENDING_REVIEW,
       mentorReviewRequestedAt: new Date(),
+      mentorReviewNote: null,
     },
     select: { id: true },
   });

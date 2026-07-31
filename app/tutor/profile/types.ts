@@ -22,4 +22,5 @@ export type TutorProfileRow = {
   postalCode: string | null;
   websiteUrl: string | null;
   linkedinUrl: string | null;
+  tutorProfileCompletedAt: string | null;
 };

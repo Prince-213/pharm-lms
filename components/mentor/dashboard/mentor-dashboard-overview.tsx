@@ -7,7 +7,6 @@ import {
 } from "@/lib/icons/server";
 import Link from "next/link";
 import { MeetingRequestStatus, MeetingStatus, MentorProfileStatus } from "@/generated/prisma/enums";
-import { mentorVisibleToStudents } from "@/lib/auth/mentor-profile-visibility";
 import {
   formatMeetingCrmDate,
   formatMeetingRelativeSchedule,
@@ -55,8 +54,6 @@ export function MentorDashboardOverview({
     activity,
   } = snapshot;
 
-  const visibleToStudents = mentorVisibleToStudents(mentorProfileStatus);
-
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 text-[var(--foreground)] sm:px-6 sm:py-10">
       <header className="space-y-1">
@@ -76,41 +73,7 @@ export function MentorDashboardOverview({
         </p>
       </header>
 
-      {!visibleToStudents ? (
-        <section className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
-          <p className="text-xs font-semibold uppercase tracking-wider text-amber-800">
-            Profile verification
-          </p>
-          <p className="mt-1 font-semibold">
-            {mentorProfileStatus === MentorProfileStatus.PENDING_REVIEW
-              ? "Pending admin review"
-              : mentorProfileStatus === MentorProfileStatus.REJECTED
-                ? "Profile needs updates"
-                : "Not visible to students yet"}
-          </p>
-          <p className="mt-1 text-xs leading-relaxed text-amber-900/90">
-            {mentorProfileStatus === MentorProfileStatus.PENDING_REVIEW
-              ? "Your profile is under review. You can use your dashboard while an admin verifies your listing."
-              : mentorProfileStatus === MentorProfileStatus.REJECTED
-                ? "An admin asked for changes. Update your profile and submit again for student listing."
-                : "Complete and submit your mentor profile so students can find you in the directory."}
-          </p>
-          <p className="mt-3 text-xs">
-            <Link href="/mentor/profile" className="font-semibold underline">
-              Go to profile
-            </Link>
-          </p>
-        </section>
-      ) : (
-        <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--shadow-sm)] sm:p-5">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Profile verification
-          </p>
-          <p className="mt-1 text-sm font-semibold text-[var(--foreground)]">
-            Approved — visible to students
-          </p>
-        </section>
-      )}
+      <MentorActivationStatusStrip status={mentorProfileStatus} />
 
       <section aria-label="Key metrics">
         <div className="grid gap-3 sm:grid-cols-3">
@@ -359,6 +322,133 @@ export function MentorDashboardOverview({
         </div>
       </section>
     </div>
+  );
+}
+
+function MentorActivationStatusStrip({
+  status,
+}: {
+  status: MentorProfileStatus;
+}) {
+  const step =
+    status === MentorProfileStatus.APPROVED
+      ? 3
+      : status === MentorProfileStatus.PENDING_REVIEW
+        ? 2
+        : 1;
+
+  const headline =
+    status === MentorProfileStatus.APPROVED
+      ? "You’re live — visible to students"
+      : status === MentorProfileStatus.PENDING_REVIEW
+        ? "Pending activation"
+        : status === MentorProfileStatus.REJECTED
+          ? "Updates required before activation"
+          : "Complete your profile to get listed";
+
+  const detail =
+    status === MentorProfileStatus.APPROVED
+      ? "Students can find and book you in the mentor directory."
+      : status === MentorProfileStatus.PENDING_REVIEW
+        ? "An admin will activate your listing. You can keep using your dashboard in the meantime."
+        : status === MentorProfileStatus.REJECTED
+          ? "Review the feedback, update your profile, and resubmit for activation."
+          : "Fill in required details and submit for admin activation.";
+
+  const steps = [
+    { n: 1, label: "Complete profile" },
+    { n: 2, label: "Under review" },
+    { n: 3, label: "Visible to students" },
+  ] as const;
+
+  return (
+    <section
+      className={cn(
+        "rounded-xl border p-4 sm:p-5",
+        status === MentorProfileStatus.APPROVED
+          ? "border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-sm)]"
+          : "border-amber-200 bg-amber-50 text-amber-950",
+      )}
+    >
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 space-y-1">
+          <p
+            className={cn(
+              "text-xs font-semibold uppercase tracking-wider",
+              status === MentorProfileStatus.APPROVED
+                ? "text-muted-foreground"
+                : "text-amber-800",
+            )}
+          >
+            Listing status
+          </p>
+          <p className="text-sm font-semibold">{headline}</p>
+          <p
+            className={cn(
+              "text-xs leading-relaxed",
+              status === MentorProfileStatus.APPROVED
+                ? "text-muted-foreground"
+                : "text-amber-900/90",
+            )}
+          >
+            {detail}
+          </p>
+          {status !== MentorProfileStatus.APPROVED ? (
+            <p className="pt-1 text-xs">
+              <Link href="/mentor/profile" className="font-semibold underline">
+                {status === MentorProfileStatus.PENDING_REVIEW
+                  ? "View profile"
+                  : status === MentorProfileStatus.REJECTED
+                    ? "Update and resubmit"
+                    : "Go to profile"}
+              </Link>
+            </p>
+          ) : null}
+        </div>
+
+        <ol className="flex shrink-0 items-center gap-1 sm:gap-2" aria-label="Activation steps">
+          {steps.map((s, i) => {
+            const done =
+              step > s.n ||
+              (status === MentorProfileStatus.APPROVED && step >= s.n);
+            const current =
+              step === s.n && status !== MentorProfileStatus.APPROVED;
+            return (
+              <li key={s.n} className="flex items-center gap-1 sm:gap-2">
+                {i > 0 ? (
+                  <span
+                    className={cn(
+                      "hidden h-px w-4 sm:block sm:w-6",
+                      step > s.n - 1 || status === MentorProfileStatus.APPROVED
+                        ? "bg-[var(--primary)]"
+                        : "bg-amber-300",
+                    )}
+                    aria-hidden
+                  />
+                ) : null}
+                <div className="flex flex-col items-center gap-1">
+                  <span
+                    className={cn(
+                      "flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold ring-1",
+                      done
+                        ? "bg-[var(--primary)] text-white ring-[var(--primary)]"
+                        : current
+                          ? "bg-white text-amber-950 ring-amber-400"
+                          : "bg-white/70 text-amber-800/70 ring-amber-200",
+                    )}
+                  >
+                    {done ? "✓" : s.n}
+                  </span>
+                  <span className="max-w-[4.5rem] text-center text-[10px] font-medium leading-tight sm:max-w-none">
+                    {s.label}
+                  </span>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    </section>
   );
 }
 

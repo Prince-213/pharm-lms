@@ -19,6 +19,7 @@ export default async function StudentTutorsPage() {
     where: {
       role: UserRole.TUTOR,
       isActive: true,
+      tutorProfileCompletedAt: { not: null },
     },
     orderBy: { updatedAt: "desc" },
     select: {

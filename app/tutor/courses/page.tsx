@@ -4,32 +4,43 @@ import { auth } from "@/auth";
 import { TutorCoursesList } from "@/components/mentor/tutor-courses-list";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CoursePurchaseStatus } from "@/generated/prisma/enums";
+import { CoursePurchaseStatus, UserRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { resolveMediaUrl } from "@/lib/media-url";
 
 export default async function MentorCoursesPage() {
   const session = await auth();
-  const courses = session?.user?.id
-    ? await db.course.findMany({
-        where: { mentorId: session.user.id },
-        orderBy: { updatedAt: "desc" },
-        select: {
-          id: true,
-          title: true,
-          status: true,
-          thumbnailUrl: true,
-          updatedAt: true,
-          _count: {
-            select: {
-              purchases: {
-                where: { status: CoursePurchaseStatus.SUCCESS },
+  const tutorId = session?.user?.id;
+  const isTutor = session?.user?.role === UserRole.TUTOR;
+
+  const [courses, tutorProfile] = await Promise.all([
+    tutorId
+      ? db.course.findMany({
+          where: { mentorId: tutorId },
+          orderBy: { updatedAt: "desc" },
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            thumbnailUrl: true,
+            updatedAt: true,
+            _count: {
+              select: {
+                purchases: {
+                  where: { status: CoursePurchaseStatus.SUCCESS },
+                },
               },
             },
           },
-        },
-      })
-    : [];
+        })
+      : Promise.resolve([]),
+    isTutor && tutorId
+      ? db.user.findUnique({
+          where: { id: tutorId },
+          select: { tutorProfileCompletedAt: true },
+        })
+      : Promise.resolve(null),
+  ]);
 
   const rows = await Promise.all(
     courses.map(async (c) => ({
@@ -43,9 +54,29 @@ export default async function MentorCoursesPage() {
   );
 
   const firstCourseTitle = rows[0]?.title ?? null;
+  const profileIncomplete = isTutor && !tutorProfile?.tutorProfileCompletedAt;
 
   return (
     <div className="w-full px-6 py-10 sm:px-8 lg:px-10">
+      {profileIncomplete ? (
+        <section className="mb-8 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+          <p className="text-xs font-semibold uppercase tracking-wider text-amber-800">
+            Profile setup
+          </p>
+          <p className="mt-1 font-semibold">Finish your instructor profile</p>
+          <p className="mt-1 text-xs leading-relaxed text-amber-900/90">
+            Complete required profile fields to appear in the student tutor
+            directory. Activation happens automatically when you save a complete
+            profile — no admin approval needed.
+          </p>
+          <p className="mt-3 text-xs">
+            <Link href="/tutor/profile" className="font-semibold underline">
+              Complete profile
+            </Link>
+          </p>
+        </section>
+      ) : null}
+
       <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
         <h1 className="font-display text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
           Courses

@@ -60,7 +60,7 @@ export function MentorProfileClient({
         toast.error(res.message, { id: tid });
         return;
       }
-      toast.success("Profile submitted for admin review.", {
+      toast.success("Profile submitted for admin activation.", {
         id: tid,
       });
       refreshPortalAfterMutation(router);
@@ -68,44 +68,76 @@ export function MentorProfileClient({
   }
 
   const submitted = Boolean(user.mentorProfileSubmittedAt);
+  const isRejected =
+    user.mentorProfileStatus === MentorProfileStatus.REJECTED;
+  const isPending =
+    user.mentorProfileStatus === MentorProfileStatus.PENDING_REVIEW;
+  const isApproved =
+    user.mentorProfileStatus === MentorProfileStatus.APPROVED;
+  const canSubmit = !submitted || isRejected;
   const visibleToStudents = mentorVisibleToStudents(
     user.mentorProfileStatus as MentorProfileStatus,
   );
-  const statusLabel =
-    user.mentorProfileStatus === MentorProfileStatus.APPROVED
-      ? "Approved"
-      : user.mentorProfileStatus === MentorProfileStatus.PENDING_REVIEW
-        ? "Pending review"
-        : user.mentorProfileStatus === MentorProfileStatus.REJECTED
-          ? "Needs updates"
-          : submitted
-            ? "Submitted"
-            : "Not submitted";
+  const statusLabel = isApproved
+    ? "Active — listed for students"
+    : isPending
+      ? "Pending activation"
+      : isRejected
+        ? "Needs updates — resubmit"
+        : submitted
+          ? "Submitted"
+          : "Setup incomplete";
 
   return (
     <ProfileEditorRoot className="max-w-3xl">
       <ProfileEditorHeader
         title="Settings"
-        description="Complete your profile and submit it for review. Student directory listing requires admin approval — your dashboard is always available."
+        description="Complete your profile and submit it for admin activation. Students only see you after an admin approves — your dashboard stays available while you wait."
       />
 
       <div className="sticky top-0 z-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-4 shadow-[var(--shadow-sm)] sm:px-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0 space-y-1">
             <p className="text-sm font-semibold text-[var(--foreground)]">
-              Submit for review
+              {isApproved
+                ? "Listing active"
+                : isPending
+                  ? "Awaiting admin activation"
+                  : isRejected
+                    ? "Resubmit after updates"
+                    : "Submit for activation"}
             </p>
             <p className="text-xs leading-relaxed text-muted-foreground">
-              Save your changes, then submit once all requirements are met. An
-              admin will activate your profile for student booking.
+              {isApproved
+                ? "Your profile is approved. Keep details current so students know how you can help."
+                : isPending
+                  ? "An admin will review and activate your listing. You can still edit and save profile details."
+                  : isRejected
+                    ? "Address the admin feedback, save your changes, then submit again for activation."
+                    : "Save your changes, then submit once all requirements are met. An admin activates your profile for student booking."}
             </p>
             <p className="text-xs font-medium text-[var(--foreground)]">
-              Status: {statusLabel}
+              Status:{" "}
+              <span
+                className={
+                  isApproved
+                    ? "text-primary"
+                    : isPending
+                      ? "text-amber-800"
+                      : isRejected
+                        ? "text-orange-800"
+                        : undefined
+                }
+              >
+                {statusLabel}
+              </span>
             </p>
           </div>
           <ButtonRow
             pending={pending}
-            submitted={submitted}
+            canSubmit={canSubmit}
+            isPendingReview={isPending}
+            isApproved={isApproved}
             onSubmit={submitProfile}
           />
         </div>
@@ -128,14 +160,14 @@ export function MentorProfileClient({
                     description={
                       visibleToStudents
                         ? "Your mentor profile is approved and listed for students."
-                        : "Students cannot find you in the directory until your profile is approved."
+                        : "Students cannot find you until an admin activates your profile."
                     }
                     on={visibleToStudents}
                   />
                   <p className="text-sm font-medium text-[var(--foreground)]">
                     {statusLabel}
                   </p>
-                  {submitted ? (
+                  {submitted && !isRejected ? (
                     <p className="text-xs text-muted-foreground">
                       Submitted:{" "}
                       {new Date(
@@ -323,24 +355,36 @@ export function MentorProfileClient({
 
 function ButtonRow({
   pending,
-  submitted,
+  canSubmit,
+  isPendingReview,
+  isApproved,
   onSubmit,
 }: {
   pending: boolean;
-  submitted: boolean;
+  canSubmit: boolean;
+  isPendingReview: boolean;
+  isApproved: boolean;
   onSubmit: () => void;
 }) {
+  const label = isApproved
+    ? "Activated"
+    : isPendingReview
+      ? "Pending activation"
+      : canSubmit
+        ? "Submit for activation"
+        : "Profile submitted";
+
   return (
     <div className="flex shrink-0 flex-wrap items-center gap-3 sm:justify-end">
       <button
         type="button"
-        disabled={pending || submitted}
+        disabled={pending || !canSubmit || isApproved}
         onClick={() => onSubmit()}
         className="inline-flex h-12 items-center justify-center rounded-xl bg-[var(--primary)] px-5 text-sm font-semibold text-[var(--primary-foreground)] transition-opacity disabled:opacity-50"
       >
-        {submitted ? "Profile submitted" : "Submit profile"}
+        {label}
       </button>
-      {!submitted ? (
+      {canSubmit && !isApproved ? (
         <span className="text-xs text-muted-foreground sm:max-w-[12rem]">
           Admin activation is required before students can book you.
         </span>

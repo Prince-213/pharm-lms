@@ -170,6 +170,7 @@ async function loadLandingPeople(
       : {
           role: UserRole.TUTOR,
           isActive: true,
+          tutorProfileCompletedAt: { not: null },
         };
 
   try {

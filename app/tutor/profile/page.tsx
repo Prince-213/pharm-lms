@@ -37,6 +37,7 @@ export default async function TutorProfilePage({
       postalCode: true,
       websiteUrl: true,
       linkedinUrl: true,
+      tutorProfileCompletedAt: true,
     },
   });
   if (!user) redirect("/tutor/login");
@@ -67,7 +68,12 @@ export default async function TutorProfilePage({
 
   return (
     <TutorProfileClient
-      user={user}
+      user={{
+        ...user,
+        tutorProfileCompletedAt: user.tutorProfileCompletedAt
+          ? user.tutorProfileCompletedAt.toISOString()
+          : null,
+      }}
       avatarPreviewSrc={avatarPreviewSrc}
       payoutSummary={payoutSummary}
       initialSettingsTab={initialSettingsTab}

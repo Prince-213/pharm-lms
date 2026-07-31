@@ -2,9 +2,15 @@
 
 import { auth } from "@/auth";
 import { UserRole } from "@/generated/prisma/enums";
+import {
+  isTutorProfileComplete,
+  TUTOR_BIO_MIN_LENGTH,
+} from "@/lib/auth/tutor-profile-completion";
 import { db } from "@/lib/db";
 
-type ActionResult = { ok: true } | { ok: false; message: string };
+type ActionResult =
+  | { ok: true; profileComplete: boolean }
+  | { ok: false; message: string };
 
 function asOptionalString(v: FormDataEntryValue | null): string | null {
   const s = String(v ?? "").trim();
@@ -46,13 +52,32 @@ export async function updateTutorProfileAction(
 
   if (fullName.length < 2)
     return { ok: false, message: "Full name is too short." };
-  if (bio.length < 30) {
+  if (bio.length < TUTOR_BIO_MIN_LENGTH) {
     return {
       ok: false,
-      message:
-        "Bio must be at least 30 characters so students know what to expect when booking.",
+      message: `Bio must be at least ${TUTOR_BIO_MIN_LENGTH} characters so students know what to expect.`,
     };
   }
+
+  const complete = isTutorProfileComplete({
+    fullName,
+    bio,
+    avatarUrl,
+    phoneNumber,
+    country,
+    state,
+    city,
+    addressLine1,
+  });
+
+  const existing = await db.user.findUnique({
+    where: { id: session.user.id },
+    select: { tutorProfileCompletedAt: true, isActive: true },
+  });
+  if (!existing) return { ok: false, message: "Account not found." };
+
+  const now = new Date();
+  const newlyComplete = complete && !existing.tutorProfileCompletedAt;
 
   await db.user.update({
     where: { id: session.user.id },
@@ -72,9 +97,15 @@ export async function updateTutorProfileAction(
       postalCode,
       websiteUrl,
       linkedinUrl,
+      tutorProfileCompletedAt: complete
+        ? (existing.tutorProfileCompletedAt ?? now)
+        : null,
+      ...(newlyComplete || (complete && !existing.isActive)
+        ? { isActive: true }
+        : {}),
     },
     select: { id: true },
   });
 
-  return { ok: true };
+  return { ok: true, profileComplete: complete };
 }

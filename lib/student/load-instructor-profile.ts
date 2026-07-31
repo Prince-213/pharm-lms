@@ -81,7 +81,12 @@ export async function loadTutorProfileForStudent(
   studentId: string,
 ): Promise<TutorProfileData | null> {
   const tutor = await db.user.findFirst({
-    where: { id: tutorId, role: UserRole.TUTOR, isActive: true },
+    where: {
+      id: tutorId,
+      role: UserRole.TUTOR,
+      isActive: true,
+      tutorProfileCompletedAt: { not: null },
+    },
     select: {
       id: true,
       fullName: true,

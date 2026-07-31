@@ -44,6 +44,8 @@ export async function rejectMentorApplicationAction(
       mentorReviewNote: trimmed.length
         ? trimmed
         : "Please update your profile and resubmit.",
+      // Unlock resubmit after rejection.
+      mentorProfileSubmittedAt: null,
     },
     select: { id: true },
   });

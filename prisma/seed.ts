@@ -207,12 +207,32 @@ async function main() {
       fullName: "Sample Tutor",
       role: UserRole.TUTOR,
       passwordHash: tutorPasswordHash,
+      bio: "I teach clinical calculations, case discussions, and exam-ready pharmacy practice for learners.",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=256&h=256&fit=crop",
+      phoneNumber: "+2348000000001",
+      country: "Nigeria",
+      state: "Lagos",
+      city: "Lagos",
+      addressLine1: "1 Sample Tutor Street",
+      tutorProfileCompletedAt: new Date(),
+      isActive: true,
     },
     create: {
       email: tutorEmail,
       fullName: "Sample Tutor",
       role: UserRole.TUTOR,
       passwordHash: tutorPasswordHash,
+      bio: "I teach clinical calculations, case discussions, and exam-ready pharmacy practice for learners.",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=256&h=256&fit=crop",
+      phoneNumber: "+2348000000001",
+      country: "Nigeria",
+      state: "Lagos",
+      city: "Lagos",
+      addressLine1: "1 Sample Tutor Street",
+      tutorProfileCompletedAt: new Date(),
+      isActive: true,
     },
   });
 
