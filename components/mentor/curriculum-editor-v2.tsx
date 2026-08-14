@@ -69,6 +69,7 @@ import { toast } from "sonner";
 import { notifyPortalMutation } from "@/lib/client/notify-portal-mutation";
 import { parseSectionDescription as parseDescription } from "@/lib/curriculum";
 import { deriveQuizTitle } from "@/lib/curriculum/derive-quiz-title";
+import { hydrateTutorMcqQuestions } from "@/lib/curriculum/mcq-question-schema";
 import {
   contentUnitNumber,
   sectionNumber,
@@ -84,7 +85,7 @@ type Lesson = {
   content: string | null;
 };
 
-type SectionQuiz = { id: string; title: string };
+type SectionQuiz = { id: string; title: string; questions?: unknown };
 type SectionAssignment = {
   id: string;
   title: string;
@@ -162,6 +163,23 @@ function mcqRowsToPayload(rows: McqFormRow[]) {
   }));
 }
 
+function questionsToMcqRows(
+  questions: {
+    prompt: string;
+    correctAnswer: string;
+    incorrectOptions: [string, string, string];
+  }[],
+): McqFormRow[] {
+  return questions.map((q) => ({
+    ...createEmptyMcqRow(),
+    prompt: q.prompt,
+    correctAnswer: q.correctAnswer,
+    wrong1: q.incorrectOptions[0],
+    wrong2: q.incorrectOptions[1],
+    wrong3: q.incorrectOptions[2],
+  }));
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 /**
@@ -189,7 +207,7 @@ function patchSectionDescription(
 
 type CurriculumPanel =
   | { kind: "lesson"; sectionId: string }
-  | { kind: "item"; sectionId: string }
+  | { kind: "item"; sectionId: string; quizId?: string }
   | { kind: "resource"; sectionId: string };
 
 // ── Main Component ────────────────────────────────────────────────────────────
@@ -294,6 +312,31 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     setResourceUrl("");
     setResourceFileUrl(null);
     setResourceFileMeta(null);
+  }
+
+  function openAddItemPanel(sectionId: string) {
+    if (fileUploading) return;
+    setItemType("QUIZ");
+    setItemTitle("");
+    setQuizMcqRows([createEmptyMcqRow()]);
+    setAssignmentDescription("");
+    openPanel({ kind: "item", sectionId });
+  }
+
+  function openEditQuiz(sectionId: string, quiz: SectionQuiz) {
+    if (fileUploading) return;
+    const hydrated = hydrateTutorMcqQuestions(quiz.questions);
+    if (!hydrated) {
+      toast.error(
+        "This quiz uses a format that can't be edited here. Delete it and add a new quiz to change the questions.",
+      );
+      return;
+    }
+    setItemType("QUIZ");
+    setItemTitle("");
+    setAssignmentDescription("");
+    setQuizMcqRows(questionsToMcqRows(hydrated));
+    openPanel({ kind: "item", sectionId, quizId: quiz.id });
   }
 
   function panelOpenFor(sectionId: string, kind: CurriculumPanel["kind"]) {
@@ -769,7 +812,12 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
     setSections((prev) =>
       prev.map((s) => {
         if (s.id !== sectionId) return s;
-        if (submittedType === "QUIZ") return { ...s, quizzes: [...s.quizzes, { id: tempId, title: tempItem.title }] };
+        if (submittedType === "QUIZ") {
+          return {
+            ...s,
+            quizzes: [...s.quizzes, { id: tempId, title: tempItem.title, questions: quizQuestions }],
+          };
+        }
         return { ...s, assignmentItems: [...s.assignmentItems, tempItem as SectionAssignment] };
       })
     );
@@ -816,6 +864,78 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
       }),
     );
     toast.success(created.itemType === "QUIZ" ? "Quiz added to section." : "Assignment added to section.");
+  }
+
+  async function updateQuiz(sectionId: string, quizId: string) {
+    if (readOnly || saving) return;
+    if (!mcqRowsValid(quizMcqRows)) {
+      toast.error(
+        "Each question needs a prompt, correct answer, three distractors, and four distinct options.",
+      );
+      return;
+    }
+    const quizQuestions = mcqRowsToPayload(quizMcqRows);
+    const res = await runPending(() =>
+      fetch(
+        `/api/tutor/courses/${courseId}/sections/${sectionId}/items/${quizId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ quizQuestions }),
+        },
+      ),
+    );
+    if (!res.ok) {
+      const j = (await res.json().catch(() => null)) as unknown;
+      toast.error(
+        formatApiErrorBody(j) ||
+          "Could not save quiz. Check that each question has four distinct options.",
+      );
+      return;
+    }
+    const updated = (await res.json()) as SectionQuiz;
+    setSections((prev) =>
+      prev.map((s) => {
+        if (s.id !== sectionId) return s;
+        return {
+          ...s,
+          quizzes: s.quizzes.map((q) => (q.id === quizId ? { ...q, ...updated } : q)),
+        };
+      }),
+    );
+    closePanel();
+    toast.success("Quiz updated.");
+  }
+
+  async function deleteQuiz(sectionId: string, quizId: string) {
+    if (readOnly || saving) return;
+    if (!window.confirm("Delete this quiz and all of its questions?")) return;
+
+    const prevSections = [...sections];
+    setSections((prev) =>
+      prev.map((s) =>
+        s.id === sectionId
+          ? { ...s, quizzes: s.quizzes.filter((q) => q.id !== quizId) }
+          : s,
+      ),
+    );
+    if (activePanel?.kind === "item" && activePanel.quizId === quizId) {
+      closePanel();
+    }
+
+    const res = await runPending(() =>
+      fetch(
+        `/api/tutor/courses/${courseId}/sections/${sectionId}/items/${quizId}`,
+        { method: "DELETE" },
+      ),
+    );
+
+    if (!res.ok) {
+      toast.error("Failed to delete quiz.");
+      setSections(prevSections);
+    } else {
+      toast.success("Quiz deleted.");
+    }
   }
 
   // ── CRUD Resources ────────────────────────────────────────────────────────
@@ -965,6 +1085,9 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
+
+  const editingQuizId =
+    activePanel?.kind === "item" ? activePanel.quizId : undefined;
 
   if (loading) return <CurriculumEditorSkeleton />;
   if (error) {
@@ -1466,6 +1589,32 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                               {quiz.title}
                             </span>
                           }
+                          actions={
+                            !interactionLocked ? (
+                              <>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openEditQuiz(section.id, quiz)}
+                                >
+                                  <Pencil className="size-3.5" aria-hidden />
+                                  Edit
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="icon-sm"
+                                  onClick={() =>
+                                    void deleteQuiz(section.id, quiz.id)
+                                  }
+                                  aria-label="Delete quiz"
+                                >
+                                  <Trash2 className="size-4" />
+                                </Button>
+                              </>
+                            ) : undefined
+                          }
                         />
                       </CurriculumListItem>
                     ))}
@@ -1526,14 +1675,7 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                   variant="outline"
                   size="sm"
                   disabled={panelLocked}
-                  onClick={() => {
-                    if (fileUploading) return;
-                    openPanel({ kind: "item", sectionId: section.id });
-                    setItemTitle("");
-                    setItemType("QUIZ");
-                    setQuizMcqRows([createEmptyMcqRow()]);
-                    setAssignmentDescription("");
-                  }}
+                  onClick={() => openAddItemPanel(section.id)}
                 >
                   <Plus className="size-3.5" aria-hidden />
                   Add section assessment
@@ -1637,11 +1779,19 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                 open={panelOpenFor(section.id, "item")}
                 onClose={closePanel}
                 closeDisabled={fileUploading}
-                title={`Add section assessment to Section ${sectionNumber(sectionIndex)}`}
-                description={`Add a quiz or assignment to ${section.title}. Quizzes use multiple-choice questions; assignments include instructions for students.`}
+                title={
+                  editingQuizId
+                    ? `Edit quiz in Section ${sectionNumber(sectionIndex)}`
+                    : `Add section assessment to Section ${sectionNumber(sectionIndex)}`
+                }
+                description={
+                  editingQuizId
+                    ? `Update questions and answers for this section quiz. The first question becomes the quiz label for students.`
+                    : `Add a quiz or assignment to ${section.title}. Quizzes use multiple-choice questions; assignments include instructions for students.`
+                }
               >
                 <div className="space-y-4">
-                  {itemType === "ASSIGNMENT" ? (
+                  {editingQuizId ? null : itemType === "ASSIGNMENT" ? (
                     <div className="grid gap-4 sm:grid-cols-2">
                       <CurriculumField label="Type" htmlFor={`item-type-${section.id}`}>
                         <select
@@ -1801,9 +1951,17 @@ export function CurriculumEditorV2({ courseId }: { courseId: string }) {
                     cancelDisabled={panelLocked}
                     submitDisabled={panelLocked || !canAddItem}
                     submitLabel={
-                      itemType === "QUIZ" ? "Add quiz" : "Add assignment"
+                      editingQuizId
+                        ? "Save quiz"
+                        : itemType === "QUIZ"
+                          ? "Add quiz"
+                          : "Add assignment"
                     }
-                    onSubmit={() => void addItem(section.id)}
+                    onSubmit={() =>
+                      editingQuizId
+                        ? void updateQuiz(section.id, editingQuizId)
+                        : void addItem(section.id)
+                    }
                   />
                 </div>
               </CurriculumFormPanel>

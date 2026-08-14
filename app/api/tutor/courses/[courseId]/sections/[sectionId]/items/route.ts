@@ -1,32 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { AssignmentStatus } from "@/generated/prisma/enums";
-import { db } from "@/lib/db";
 import { revalidateCourseSurfaces } from "@/lib/cache/revalidate-portals";
 import { deriveQuizTitle } from "@/lib/curriculum/derive-quiz-title";
+import { mcqQuestionSchema } from "@/lib/curriculum/mcq-question-schema";
+import { db } from "@/lib/db";
 import { requireMentorCourseEditable } from "@/lib/mentor-course-auth";
-
-const mcqQuestionSchema = z
-  .object({
-    kind: z.literal("multiple_choice"),
-    prompt: z.string().min(1).max(500),
-    correctAnswer: z.string().min(1).max(300),
-    incorrectOptions: z.tuple([
-      z.string().min(1).max(300),
-      z.string().min(1).max(300),
-      z.string().min(1).max(300),
-    ]),
-  })
-  .superRefine((q, ctx) => {
-    const all = [q.correctAnswer, ...q.incorrectOptions];
-    if (new Set(all.map((s) => s.trim().toLowerCase())).size !== 4) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message:
-          "Each question needs four distinct options (correct answer plus three different distractors).",
-      });
-    }
-  });
 
 const DEFAULT_MCQ_QUESTIONS = [
   {
@@ -42,7 +21,8 @@ const DEFAULT_MCQ_QUESTIONS = [
   {
     kind: "multiple_choice" as const,
     prompt: "Which statement best reflects the material above?",
-    correctAnswer: "It aligns with the skills and outcomes described in this section.",
+    correctAnswer:
+      "It aligns with the skills and outcomes described in this section.",
     incorrectOptions: [
       "It contradicts every lesson in this section.",
       "It applies only to unrelated regulatory paperwork.",
