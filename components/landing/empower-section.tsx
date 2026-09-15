@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { AnimatedCounter } from "@/components/landing/motion-primitives";
+import { MarketingAuthCtas } from "@/components/landing/marketing-auth-ctas";
+import { studentAuthCtas } from "@/lib/audience-landing-content";
 
 export function EmpowerSection() {
   return (
@@ -72,13 +74,16 @@ export function EmpowerSection() {
               </p>
             </div>
 
-            <Link
-              href="/about"
-              className="mt-10 inline-flex items-center gap-2 rounded-xl bg-black px-8 py-4 text-[15px] font-semibold text-white transition-all duration-300 hover:bg-[#111111] hover:-translate-y-0.5 active:scale-[0.98]"
-            >
-              Learn More About Us
-              <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
-            </Link>
+            <div className="mt-10 flex flex-col gap-4">
+              <Link
+                href="/about"
+                className="inline-flex w-fit items-center gap-2 rounded-xl bg-black px-8 py-4 text-[15px] font-semibold text-white transition-all duration-300 hover:bg-[#111111] hover:-translate-y-0.5 active:scale-[0.98]"
+              >
+                Learn More About Us
+                <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
+              </Link>
+              <MarketingAuthCtas {...studentAuthCtas} variant="onDark" />
+            </div>
           </div>
 
           <Image

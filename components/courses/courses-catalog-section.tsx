@@ -31,6 +31,8 @@ import type { PopularCourseCardView } from "@/components/landing/popular-course-
 import type { CatalogSort } from "@/lib/courses/public-catalog";
 import { cnUdemyInput, udemyBorderClass } from "@/lib/ui/udemy-surface";
 import { cn } from "@/lib/utils";
+import { MarketingAuthCtas } from "@/components/landing/marketing-auth-ctas";
+import { studentAuthCtas } from "@/lib/audience-landing-content";
 
 type Props = {
   courses: PopularCourseCardView[];
@@ -44,6 +46,7 @@ type Props = {
   currentPage: number;
   totalPages: number;
   totalResults: number;
+  showGuestAuth?: boolean;
 };
 
 function buildHref(params: Record<string, string | undefined>) {
@@ -88,6 +91,7 @@ export function CoursesCatalogSection({
   currentPage,
   totalPages,
   totalResults,
+  showGuestAuth = true,
 }: Props) {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState(activeQ);
@@ -124,6 +128,19 @@ export function CoursesCatalogSection({
   return (
     <section id="courses-catalogue" className="bg-background py-8 lg:py-10">
       <div className="mx-auto w-[96%] max-w-[1600px] px-1 sm:w-[94%] sm:px-2 lg:w-[92%]">
+        {showGuestAuth ? (
+          <div className="mb-6 flex flex-col gap-3 rounded-lg border border-border bg-card px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-muted-foreground">
+              Log in to enroll in courses, or create a free student account to get started.
+            </p>
+            <MarketingAuthCtas
+              loginHref={studentAuthCtas.loginHref}
+              loginLabel="Log in to enroll"
+              signupHref={studentAuthCtas.signupHref}
+              signupLabel="Create a free account"
+            />
+          </div>
+        ) : null}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-base text-foreground">
             {activeQ ? (

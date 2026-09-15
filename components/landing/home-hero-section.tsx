@@ -11,6 +11,8 @@ import {
   MOTION_EASE,
   usePrefersReducedMotion,
 } from "@/components/landing/motion-primitives";
+import { MarketingAuthCtas } from "@/components/landing/marketing-auth-ctas";
+import { studentAuthCtas } from "@/lib/audience-landing-content";
 
 type SearchResult = {
   id: string;
@@ -305,6 +307,10 @@ const HomeHeroSection = () => {
             </motion.div>
           )}
         </AnimatePresence>
+      </motion.div>
+
+      <motion.div variants={heroItem} className="mt-6">
+        <MarketingAuthCtas {...studentAuthCtas} className="justify-center" />
       </motion.div>
 
       <motion.div variants={heroItem} className="flex items-center gap-2 mt-4">

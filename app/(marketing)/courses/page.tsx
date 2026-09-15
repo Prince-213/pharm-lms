@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { AnimatedSection } from "@/components/landing/animated-section";
 import { CoursesCatalogSection } from "@/components/courses/courses-catalog-section";
 import { MarketingCatalogSkeleton } from "@/components/ui/route-loading-skeleton";
+import { safeAuth } from "@/lib/auth/safe-session";
 import {
   countPublishedCourses,
   getCatalogFacets,
@@ -57,7 +58,8 @@ export default async function CoursesPage({
     sort,
   };
 
-  const [courses, facets, totalResults] = await Promise.all([
+  const [session, courses, facets, totalResults] = await Promise.all([
+    safeAuth(),
     searchPublishedCourseCards({ ...searchBase, take, skip }),
     getCatalogFacets(),
     countPublishedCourses(searchBase),
@@ -82,6 +84,7 @@ export default async function CoursesPage({
               currentPage={page}
               totalPages={totalPages}
               totalResults={totalResults}
+              showGuestAuth={!session?.user}
             />
           </AnimatedSection>
         </Suspense>

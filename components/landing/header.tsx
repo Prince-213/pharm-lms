@@ -8,7 +8,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { MOTION_EASE } from "@/components/landing/motion-primitives";
-import { getHeaderLoginHref } from "@/lib/audience-landing-content";
+import { getHeaderAuthCtas } from "@/lib/audience-landing-content";
 
 const audienceCtaLinks = [
   { label: "Teach on PharmLMS", href: "/teach" },
@@ -24,7 +24,8 @@ const navLinks = [
 
 const LandingHeader = () => {
   const pathname = usePathname();
-  const loginHref = getHeaderLoginHref(pathname);
+  const { loginHref, loginLabel, signupHref, signupLabel } =
+    getHeaderAuthCtas(pathname);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -83,17 +84,25 @@ const LandingHeader = () => {
               variant="outline"
               className="cursor-pointer border-accent bg-white px-4 text-sm text-accent transition-all duration-300 hover:scale-[1.02] hover:bg-accent hover:text-accent-foreground active:scale-[0.98] xl:px-5 xl:text-[15px]"
             >
-              <span>Login</span>
+              <span>{loginLabel}</span>
+              <ArrowRightIcon className="ml-1" />
+            </Button>
+          </Link>
+          <Link href={signupHref}>
+            <Button
+              variant="outline"
+              className="cursor-pointer border-[var(--primary)] bg-[var(--primary)] px-4 text-sm text-white transition-all duration-300 hover:scale-[1.02] hover:bg-[var(--primary-strong)] active:scale-[0.98] xl:px-5 xl:text-[15px]"
+            >
+              <span>{signupLabel}</span>
               <ArrowRightIcon className="ml-1" />
             </Button>
           </Link>
           <Link href="/contact">
             <Button
               variant="outline"
-              className="px-4 text-sm bg-[var(--primary)] text-white border-[var(--primary)] hover:bg-[var(--primary-strong)] cursor-pointer transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] xl:px-5 xl:text-[15px]"
+              className="hidden cursor-pointer border-border bg-white px-4 text-sm text-[var(--ink-deep)] transition-all duration-300 hover:scale-[1.02] hover:bg-muted active:scale-[0.98] xl:inline-flex xl:px-5 xl:text-[15px]"
             >
               <span>Contact Us</span>
-              <ArrowRightIcon className="ml-1" />
             </Button>
           </Link>
         </span>
@@ -143,18 +152,27 @@ const LandingHeader = () => {
                   </Link>
                 ))}
               </nav>
-              <div className="mt-4 flex gap-3">
-                <Link
-                  href={loginHref}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex-1 rounded-lg border border-[var(--accent)] py-3 text-center text-sm font-semibold text-[var(--accent)] transition-colors hover:bg-[var(--accent)] hover:text-white"
-                >
-                  Login
-                </Link>
+              <div className="mt-4 flex flex-col gap-3">
+                <div className="flex gap-3">
+                  <Link
+                    href={loginHref}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex-1 rounded-lg border border-[var(--accent)] py-3 text-center text-sm font-semibold text-[var(--accent)] transition-colors hover:bg-[var(--accent)] hover:text-white"
+                  >
+                    {loginLabel}
+                  </Link>
+                  <Link
+                    href={signupHref}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex-1 rounded-lg bg-[var(--primary)] py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-[var(--primary-strong)]"
+                  >
+                    {signupLabel}
+                  </Link>
+                </div>
                 <Link
                   href="/contact"
                   onClick={() => setMobileOpen(false)}
-                  className="flex-1 rounded-lg bg-[var(--primary)] py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-[var(--primary-strong)]"
+                  className="rounded-lg border border-border py-3 text-center text-sm font-semibold text-[var(--ink-deep)] transition-colors hover:bg-muted"
                 >
                   Contact Us
                 </Link>

@@ -47,6 +47,13 @@ const pageLinks = [
   { label: "Terms & Conditions", href: "/legal/terms" },
 ];
 
+const accountLinks = [
+  { label: "Student login", href: "/student/login" },
+  { label: "Tutor login", href: "/tutor/login" },
+  { label: "Mentor login", href: "/mentor/login" },
+  { label: "Create an account", href: "/student/signup" },
+];
+
 export function LandingFooter() {
   return (
     <footer id="footer" className="bg-[var(--primary)] text-white">
@@ -55,7 +62,7 @@ export function LandingFooter() {
 
       {/* Main grid */}
       <div className="mx-auto max-w-7xl px-4 pb-10 pt-14 sm:px-6 lg:px-10">
-        <div className="grid gap-6 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4 lg:gap-10">
+        <div className="grid gap-6 sm:grid-cols-2 sm:gap-10 lg:grid-cols-5 lg:gap-8">
           {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
             <Link href="/" className="inline-block">
@@ -113,6 +120,25 @@ export function LandingFooter() {
             </p>
             <ul className="flex flex-col gap-3">
               {pageLinks.map((l) => (
+                <li key={l.label}>
+                  <Link
+                    href={l.href}
+                    className="text-sm text-white hover:text-[var(--accent)] transition-colors"
+                  >
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Account */}
+          <div>
+            <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-white">
+              Account
+            </p>
+            <ul className="flex flex-col gap-3">
+              {accountLinks.map((l) => (
                 <li key={l.label}>
                   <Link
                     href={l.href}

@@ -3,6 +3,7 @@
 import { CertificateIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import type { AudiencePageContent } from "@/lib/audience-landing-content";
+import { MarketingAuthCtas } from "@/components/landing/marketing-auth-ctas";
 
 export function AudienceHeroSection({
   content,
@@ -24,20 +25,29 @@ export function AudienceHeroSection({
         </nav>
 
         <div className="flex items-start justify-between">
-          <h1 className="font-display text-3xl font-bold leading-tight text-[var(--ink-deep)] sm:text-4xl lg:text-[3.2rem] lg:leading-[1.15]">
-            {content.heroTitleLine1}
-            <br />
-            {content.heroTitleLine2}{" "}
-            <span className="relative inline-block">
-              {content.heroHighlight}
-              <img
-                src="/assets/underline.png"
-                alt=""
-                className="absolute -bottom-10 left-0 h-16 w-full object-contain"
-                aria-hidden="true"
-              />
-            </span>
-          </h1>
+          <div>
+            <h1 className="font-display text-3xl font-bold leading-tight text-[var(--ink-deep)] sm:text-4xl lg:text-[3.2rem] lg:leading-[1.15]">
+              {content.heroTitleLine1}
+              <br />
+              {content.heroTitleLine2}{" "}
+              <span className="relative inline-block">
+                {content.heroHighlight}
+                <img
+                  src="/assets/underline.png"
+                  alt=""
+                  className="absolute -bottom-10 left-0 h-16 w-full object-contain"
+                  aria-hidden="true"
+                />
+              </span>
+            </h1>
+            <MarketingAuthCtas
+              loginHref={content.loginHref}
+              loginLabel={content.loginLabel}
+              signupHref={content.signupHref}
+              signupLabel={content.signupLabel}
+              className="mt-8"
+            />
+          </div>
 
           <img
             src="/assets/shape22.png"

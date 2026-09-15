@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { Clock, GraduationCap, Briefcase } from "lucide-react";
 import Image from "next/image";
+import { MarketingAuthCtas } from "@/components/landing/marketing-auth-ctas";
+import { studentAuthCtas } from "@/lib/audience-landing-content";
 
 export function AboutFreshSection() {
   return (
@@ -115,14 +117,19 @@ export function AboutFreshSection() {
               </div>
             </div>
 
-            {/* Know More button */}
-            <div className="mt-8">
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
               <Link
                 href="/courses"
                 className="inline-flex items-center justify-center rounded-full bg-[var(--emerald)] px-8 py-4.5 text-sm font-semibold text-white  transition-all hover:bg-[var(--primary-strong)] hover:shadow-[0_12px_32px_rgba(30,64,175,0.45)]"
               >
                 Know More
               </Link>
+              <MarketingAuthCtas
+                loginHref={studentAuthCtas.loginHref}
+                loginLabel="Log in"
+                signupHref={studentAuthCtas.signupHref}
+                signupLabel={studentAuthCtas.signupLabel}
+              />
             </div>
           </div>
         </div>

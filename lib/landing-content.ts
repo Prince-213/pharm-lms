@@ -901,7 +901,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
       subcopy:
         "Publish pharmacy courses on PharmLMS, reach practitioners across Africa, and grow your teaching brand on the continent's first pharmacy-specific platform.",
       primaryCta: { label: "Start teaching", href: "/tutor/signup" },
-      secondaryCta: { label: "Browse courses", href: "/courses" },
+      secondaryCta: { label: "Tutor login", href: "/tutor/login" },
       demoVideoUrl: DEFAULT_HERO_DEMO_VIDEO_URL,
       badges: [
         { icon: "Video", label: "Course Builder" },

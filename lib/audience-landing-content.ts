@@ -122,11 +122,44 @@ export function getAudiencePageContent(
   return slug === "teach" ? teachPageContent : mentorPageContent;
 }
 
-const audienceLoginByPath: Record<string, string> = {
-  "/teach": teachPageContent.loginHref,
-  "/become-a-mentor": mentorPageContent.loginHref,
+export type MarketingAuthCta = {
+  loginHref: string;
+  loginLabel: string;
+  signupHref: string;
+  signupLabel: string;
 };
 
+export const studentAuthCtas: MarketingAuthCta = {
+  loginHref: "/student/login",
+  loginLabel: "Log in",
+  signupHref: "/student/signup",
+  signupLabel: "Sign up",
+};
+
+const audienceAuthByPath: Record<string, MarketingAuthCta> = {
+  "/teach": {
+    loginHref: teachPageContent.loginHref,
+    loginLabel: "Tutor login",
+    signupHref: teachPageContent.signupHref,
+    signupLabel: "Create tutor account",
+  },
+  "/become-a-mentor": {
+    loginHref: mentorPageContent.loginHref,
+    loginLabel: "Mentor login",
+    signupHref: mentorPageContent.signupHref,
+    signupLabel: "Apply to mentor",
+  },
+};
+
+export function getHeaderAuthCtas(pathname: string): MarketingAuthCta {
+  return audienceAuthByPath[pathname] ?? {
+    loginHref: studentAuthCtas.loginHref,
+    loginLabel: "Login",
+    signupHref: studentAuthCtas.signupHref,
+    signupLabel: "Sign up",
+  };
+}
+
 export function getHeaderLoginHref(pathname: string): string {
-  return audienceLoginByPath[pathname] ?? "/student/login";
+  return getHeaderAuthCtas(pathname).loginHref;
 }

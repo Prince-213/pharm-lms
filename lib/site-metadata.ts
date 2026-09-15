@@ -24,8 +24,8 @@ export const siteUrl = resolveSiteUrl();
 
 /**
  * Open Graph images — add files under `public/og/`:
- * - `default.png` (1200×630) — site-wide fallback
- * - `home.png` (optional) — homepage / marketing
+ * - `default.jpg` (1200×630) — site-wide fallback
+ * - `home.jpg` (optional) — homepage / marketing
  */
 export const ogImagePaths = {
   default: "/og/default.jpg",
@@ -71,13 +71,13 @@ export const rootMetadata: Metadata = {
         url: ogImagePaths.home,
         width: 1200,
         height: 630,
-        alt: `${SITE_NAME} — clinical pharmacy courses online`,
+        alt: `${SITE_NAME} — learn skills with expert-led courses`,
       },
       {
         url: ogImagePaths.default,
         width: 1200,
         height: 630,
-        alt: `${SITE_NAME}`,
+        alt: `${SITE_NAME} — knowledge and skill learning for students, tutors, and mentors`,
       },
     ],
   },

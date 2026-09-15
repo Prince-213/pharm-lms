@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import type { AudiencePageContent } from "@/lib/audience-landing-content";
+import { MarketingAuthCtas } from "@/components/landing/marketing-auth-ctas";
 
 export function AudienceValueSection({
   content,
@@ -68,14 +68,13 @@ export function AudienceValueSection({
               ))}
             </div>
 
-            <div className="mt-8">
-              <Link
-                href={content.loginHref}
-                className="inline-flex items-center justify-center rounded-full bg-[var(--emerald)] px-8 py-4.5 text-sm font-semibold text-white transition-all hover:bg-[var(--primary-strong)] hover:shadow-[0_12px_32px_rgba(30,64,175,0.45)]"
-              >
-                {content.loginLabel}
-              </Link>
-            </div>
+            <MarketingAuthCtas
+              loginHref={content.loginHref}
+              loginLabel={content.loginLabel}
+              signupHref={content.signupHref}
+              signupLabel={content.signupLabel}
+              className="mt-8"
+            />
           </div>
         </div>
       </div>
