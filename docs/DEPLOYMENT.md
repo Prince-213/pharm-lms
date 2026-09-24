@@ -1,4 +1,4 @@
-# Deploy Pharm LMS to AWS Amplify (Free Tier)
+# Deploy PharmEdge to AWS Amplify (Free Tier)
 
 This guide walks you through creating a free AWS account, setting up a Neon
 PostgreSQL database, and deploying this Next.js app with **AWS Amplify Hosting**.
@@ -117,7 +117,7 @@ Save the output — you will paste it into Amplify as `AUTH_SECRET`.
 | `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | `pk_test_...` or `pk_live_...` |
 | `PAYSTACK_SECRET_KEY` | `sk_test_...` or `sk_live_...` |
 | `RESEND_API_KEY` | Resend API key (required for signup OTP email) |
-| `EMAIL_FROM` | e.g. `Pharm LMS <noreply@yourdomain.com>` |
+| `EMAIL_FROM` | e.g. `PharmEdge <noreply@yourdomain.com>` |
 | `R2_ENDPOINT` | Your R2/S3 endpoint |
 | `R2_REGION` | `auto` or AWS region |
 | `R2_ACCESS_KEY_ID` | Storage access key |

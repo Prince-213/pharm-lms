@@ -1,10 +1,10 @@
 ---
-description: PharmLMS brand colors and design token mapping
+description: PharmEdge brand colors and design token mapping
 globs: "**/*.{tsx,css}"
 alwaysApply: false
 ---
 
-# PharmLMS Design Tokens
+# PharmEdge Design Tokens
 
 Brand colors (preserve in UI work):
 

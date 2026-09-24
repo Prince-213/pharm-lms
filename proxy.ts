@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import type { UserRole } from "@/generated/prisma/enums";
 import { getAuthSecret } from "@/lib/auth/secret";
+import { SESSION_COOKIE_NAMES } from "@/lib/auth/session-cookies";
 import { canAccessRolePath, roleHomePath } from "@/lib/rbac";
 
 const protectedPrefixes = ["/mentor", "/tutor", "/student", "/admin"];
@@ -33,6 +34,17 @@ function loginPathForPathname(pathname: string): string {
   return "/student/login";
 }
 
+function hasSessionCookie(req: NextRequest): boolean {
+  return SESSION_COOKIE_NAMES.some((name) => req.cookies.has(name));
+}
+
+function expireSessionCookies(res: NextResponse): NextResponse {
+  for (const name of SESSION_COOKIE_NAMES) {
+    res.cookies.delete(name);
+  }
+  return res;
+}
+
 export async function proxy(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
 
@@ -49,17 +61,24 @@ export async function proxy(req: NextRequest) {
   );
   const isAuthPage = isPublicAuthPath(pathname);
 
-  const token = await getToken({
-    req,
-    secret: getAuthSecret(),
-    secureCookie: req.nextUrl.protocol === "https:",
-  });
+  let token = null;
+  try {
+    token = await getToken({
+      req,
+      secret: getAuthSecret(),
+      secureCookie: req.nextUrl.protocol === "https:",
+    });
+  } catch {
+    token = null;
+  }
 
+  const staleSession = hasSessionCookie(req) && !token?.sub;
   const userRole = (token?.role as UserRole | undefined) ?? null;
 
   if (!token?.sub && needsAuth && !isAuthPage) {
     const loginPath = loginPathForPathname(pathname);
-    return NextResponse.redirect(new URL(loginPath, req.url));
+    const redirect = NextResponse.redirect(new URL(loginPath, req.url));
+    return staleSession ? expireSessionCookies(redirect) : redirect;
   }
 
   if (userRole && token?.sub && needsAuth && !canAccessRolePath(userRole, pathname)) {
@@ -78,11 +97,21 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(signOutUrl);
   }
 
-  return NextResponse.next();
+  const next = NextResponse.next();
+  return staleSession ? expireSessionCookies(next) : next;
 }
 
 export const config = {
   matcher: [
+    "/",
+    "/about",
+    "/teach",
+    "/become-a-mentor",
+    "/contact",
+    "/validate",
+    "/courses/:path*",
+    "/blog/:path*",
+    "/legal/:path*",
     "/mentor/:path*",
     "/tutor/:path*",
     "/student/:path*",

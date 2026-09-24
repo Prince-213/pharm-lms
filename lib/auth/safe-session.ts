@@ -1,13 +1,23 @@
 import { cookies } from "next/headers";
+import { getToken } from "next-auth/jwt";
 import type { Session } from "next-auth";
 import { auth } from "@/auth";
+import { getAuthSecret } from "@/lib/auth/secret";
+import { SESSION_COOKIE_NAMES } from "@/lib/auth/session-cookies";
 
-const SESSION_COOKIE_NAMES = [
-  "authjs.session-token",
-  "__Secure-authjs.session-token",
-  "next-auth.session-token",
-  "__Secure-next-auth.session-token",
-] as const;
+async function cookieHeader(): Promise<string> {
+  const jar = await cookies();
+  return jar
+    .getAll()
+    .filter((cookie) => cookie.value)
+    .map((cookie) => `${cookie.name}=${cookie.value}`)
+    .join("; ");
+}
+
+async function hasSessionCookie(): Promise<boolean> {
+  const jar = await cookies();
+  return SESSION_COOKIE_NAMES.some((name) => Boolean(jar.get(name)?.value));
+}
 
 async function clearStaleSessionCookies() {
   try {
@@ -22,11 +32,20 @@ async function clearStaleSessionCookies() {
 
 /**
  * Returns the current session, or null when unauthenticated.
- * Stale cookies (e.g. after AUTH_SECRET rotation) are cleared instead of
- * throwing JWTSessionError on public/marketing pages.
+ * Skips Auth.js when no session cookie is present. If a cookie exists but
+ * cannot be decrypted (AUTH_SECRET rotation), returns null without calling
+ * auth() so JWTSessionError is not logged on public pages.
  */
 export async function safeAuth(): Promise<Session | null> {
   try {
+    if (!(await hasSessionCookie())) return null;
+
+    const token = await getToken({
+      req: { headers: { cookie: await cookieHeader() } },
+      secret: getAuthSecret(),
+    });
+    if (!token?.sub) return null;
+
     const session = await auth();
     if (!session?.user?.id) return null;
     return session;

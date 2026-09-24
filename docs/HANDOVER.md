@@ -1,4 +1,4 @@
-# Pharm LMS — Developer Handover Guide
+# PharmEdge — Developer Handover Guide
 
 **Audience:** PharmAnalytics engineers taking ownership of this codebase  
 **Company repo:** https://github.com/PharmAnalytics/PharmAnalytics-LMS-  
@@ -10,7 +10,7 @@ This document is the single walkthrough for access transfer, architecture, local
 
 ## 1. What you are receiving
 
-Pharm LMS is a pharmacy learning platform with four role portals plus a public marketing/catalog surface:
+PharmEdge is a pharmacy learning platform with four role portals plus a public marketing/catalog surface:
 
 | Role | Portal | Purpose |
 |------|--------|---------|

@@ -1,4 +1,4 @@
-# Pharm LMS
+# PharmEdge
 
 Pharmacy learning platform built with Next.js (App Router), Prisma, PostgreSQL, and Paystack. Roles: **student**, **tutor**, **mentor**, and **admin**.
 

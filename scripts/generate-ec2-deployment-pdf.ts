@@ -137,7 +137,7 @@ async function main() {
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Pharm LMS — EC2 Deployment Guide</title>
+  <title>PharmEdge — EC2 Deployment Guide</title>
   <style>
     @page { margin: 16mm 14mm; size: A4; }
     body {

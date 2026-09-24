@@ -1,6 +1,6 @@
-# Pharm LMS — Project Report
+# PharmEdge — Project Report
 
-**Product:** Pharm LMS (PharmLMS)  
+**Product:** PharmEdge  
 **Type:** Web-based Learning Management System for pharmacy and clinical training  
 **Stack:** Next.js 16 · React 19 · PostgreSQL · Prisma · NextAuth · Paystack · Cloudflare R2  
 **Report date:** May 2026  
@@ -9,7 +9,7 @@
 
 ## 1. Executive summary
 
-Pharm LMS is a company-owned learning platform that connects **students**, **tutors (course authors)**, **mentors (1:1 coaching)**, and **administrators** in a single product. Learners discover courses, pay where required, progress through structured curriculum, complete assessments, book meetings, and earn badges and **digital certificates**. Tutors build and submit courses for approval; admins govern quality, users, payments, and platform settings.
+PharmEdge is a company-owned learning platform that connects **students**, **tutors (course authors)**, **mentors (1:1 coaching)**, and **administrators** in a single product. Learners discover courses, pay where required, progress through structured curriculum, complete assessments, book meetings, and earn badges and **digital certificates**. Tutors build and submit courses for approval; admins govern quality, users, payments, and platform settings.
 
 The platform is production-oriented: role-based portals, Paystack checkout and tutor payouts, media on object storage, and a modern maintainable codebase suitable for ongoing feature work and deployment on Vercel.
 
@@ -48,7 +48,7 @@ The platform is production-oriented: role-based portals, Paystack checkout and t
 
 - **Badges** — Rule-based achievements (enrollment, lessons, quizzes, streaks, meetings); toast on earn; dedicated achievements page.
 - **Leaderboard** — Rankings from lessons, quiz scores, badges, and streaks.
-- **Digital certificates (new)** — On course completion, the system issues a **Pharm LMS certificate** with:
+- **Digital certificates (new)** — On course completion, the system issues a **PharmEdge certificate** with:
   - Student name, course title, hours completed, instructor name, completion date, unique ID (`PHARM-YYYY-XXXXXXXX`).
   - Landscape printable template (company green branding).
   - **View & print certificate** from the completion area and celebration modal.
@@ -166,7 +166,7 @@ Tutor withdrawals: request → admin approve → Paystack transfer.
 1. Student completes all required lessons and clicks **Complete course**.
 2. `Enrollment.status` → `COMPLETED`; `CourseCertificate` row created with stable certificate number.
 3. Student sees **View & print certificate** under completion CTA and in celebration modal.
-4. Certificate page renders Pharm LMS template; **Print certificate** uses browser print (landscape PDF).
+4. Certificate page renders PharmEdge template; **Print certificate** uses browser print (landscape PDF).
 
 Backfill script for legacy completions: `pnpm dlx tsx scripts/backfill-course-certificates.ts --apply`
 
@@ -220,8 +220,8 @@ Recommended host: **Vercel** (geo headers for currency). Package manager: **pnpm
 
 ## 13. Conclusion
 
-Pharm LMS delivers a complete pharmacy-training platform: governed course publishing, paid and free enrollment, structured learning with AI aids, mentor meetings, gamification, **Paystack commerce**, **multi-currency pricing display**, and **printable completion certificates** under the Pharm LMS brand. The codebase is structured for continued delivery on security, analytics, and accreditation-focused features.
+PharmEdge delivers a complete pharmacy-training platform: governed course publishing, paid and free enrollment, structured learning with AI aids, mentor meetings, gamification, **Paystack commerce**, **multi-currency pricing display**, and **printable completion certificates** under the PharmEdge brand. The codebase is structured for continued delivery on security, analytics, and accreditation-focused features.
 
 ---
 
-*Pharm LMS © 2026 — Company-owned learning platform.*
+*PharmEdge © 2026 — Company-owned learning platform.*

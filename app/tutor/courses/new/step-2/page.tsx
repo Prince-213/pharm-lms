@@ -6,6 +6,7 @@ import {
   mergeMentorNewCourseDraft,
   readMentorNewCourseDraft,
 } from "@/lib/mentor-new-course-draft";
+import { PharmLogo } from "@/components/brand/pharm-logo";
 
 export default function NewCourseStep2Page() {
   const [title, setTitle] = useState("");
@@ -20,7 +21,7 @@ export default function NewCourseStep2Page() {
     <div className="min-h-screen bg-[var(--surface-muted)] text-[var(--foreground)]">
       <header className="border-b border-[var(--border)] bg-[var(--surface)]">
         <div className="mx-auto flex h-12 w-full max-w-5xl items-center justify-between px-4 text-xs">
-          <span className="text-sm font-bold tracking-tight">PharmLms</span>
+          <PharmLogo markClassName="h-6 w-6" wordmarkClassName="text-sm" />
           <span className="rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
             Step 1 of 3
           </span>

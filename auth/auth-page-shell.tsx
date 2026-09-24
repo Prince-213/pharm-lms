@@ -13,17 +13,17 @@ const portalCopy: Record<
 > = {
   student: {
     quote:
-      "PharmLMS helped me move from dispensing to clinical decision-making — courses built for real African pharmacy practice.",
+      "PharmEdge helped me move from dispensing to clinical decision-making — courses built for real African pharmacy practice.",
     author: "Adaeze O., Clinical Pharmacist",
   },
   tutor: {
     quote:
-      "Publishing courses on PharmLMS let me reach pharmacy professionals across Africa with a professional builder and analytics.",
+      "Publishing courses on PharmEdge let me reach pharmacy professionals across Africa with a professional builder and analytics.",
     author: "Dr. Kwame A., Course Author",
   },
   mentor: {
     quote:
-      "Mentoring on PharmLMS gives me flexible scheduling and a trusted way to guide the next generation of pharmacists.",
+      "Mentoring on PharmEdge gives me flexible scheduling and a trusted way to guide the next generation of pharmacists.",
     author: "Chidi M., Mentor",
   },
 };

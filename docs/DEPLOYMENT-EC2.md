@@ -1,8 +1,9 @@
-# Pharm LMS — EC2 Deployment Guide
+# PharmEdge — EC2 Deployment Guide
 
-**Audience:** Developer deploying Pharm LMS on AWS EC2  
+**Audience:** Developer deploying PharmEdge on AWS EC2  
 **Strategy:** Clone from your personal repo; push updates to **both** your repo and the company repo  
-**Last updated:** March 2026
+**Live domain:** `https://edge.pharmanalytics.org`  
+**Last updated:** September 2026
 
 ---
 
@@ -222,7 +223,7 @@ R2_BUCKET_NAME=pharm-lms-files
 R2_CORS_ORIGINS=http://YOUR_IP,http://localhost:3000
 
 RESEND_API_KEY=...
-EMAIL_FROM=Pharm LMS <noreply@yourdomain.com>
+EMAIL_FROM=PharmEdge <noreply@yourdomain.com>
 PAYSTACK_SECRET_KEY=...
 NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=...
 AUTH_GOOGLE_ID=...
@@ -235,7 +236,7 @@ Save: `Ctrl+O`, Enter, `Ctrl+X`.
 
 **Never commit `.env` to GitHub.**
 
-When you add a domain and HTTPS, change the three URL variables to `https://yourdomain.com` and run `pm2 restart pharm-lms`.
+When you cut over to the live domain, change the URL variables to `https://edge.pharmanalytics.org` (see Part 11) and run `pm2 restart pharm-lms`.
 
 ---
 
@@ -364,40 +365,105 @@ No need to pull or build.
 
 ---
 
-## Part 11 — HTTPS and custom domain (optional)
+## Part 11 — Live domain: https://edge.pharmanalytics.org
 
-1. Point DNS **A record** → YOUR_IP
-2. On server:
+DNS already points `edge.pharmanalytics.org` at this server's IP. The work on the box is Nginx, TLS, and app env — not a new machine. Auth cookies are host-only, so users sign in again on the new host.
+
+### 1. Confirm DNS
+
+```bash
+dig +short edge.pharmanalytics.org
+```
+
+The A record should match the Elastic IP of this instance.
+
+### 2. Nginx `server_name`
+
+Edit `/etc/nginx/conf.d/pharm-lms.conf`. Set the public host and keep the existing proxy to Next.js:
+
+```nginx
+server {
+    listen 80;
+    server_name edge.pharmanalytics.org;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+Optional: keep the old hostname as a second server that redirects:
+
+```nginx
+server {
+    listen 80;
+    server_name old.example.com;  # previous public hostname, if any
+    return 301 https://edge.pharmanalytics.org$request_uri;
+}
+```
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+### 3. TLS with Certbot
 
 ```bash
 sudo dnf install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d app.yourdomain.com
+sudo certbot --nginx -d edge.pharmanalytics.org
 ```
 
-3. Update `.env`:
+Certbot will add the 443 server block and HTTP→HTTPS redirect.
+
+### 4. App env (no trailing slash)
+
+In `~/pharm-lms/.env`:
 
 ```env
-AUTH_URL=https://app.yourdomain.com
-NEXTAUTH_URL=https://app.yourdomain.com
-NEXT_PUBLIC_SITE_URL=https://app.yourdomain.com
-R2_CORS_ORIGINS=https://app.yourdomain.com,http://localhost:3000
+AUTH_URL=https://edge.pharmanalytics.org
+NEXTAUTH_URL=https://edge.pharmanalytics.org
+NEXT_PUBLIC_SITE_URL=https://edge.pharmanalytics.org
+R2_CORS_ORIGINS=https://edge.pharmanalytics.org,http://localhost:3000
 ```
 
-4. `pm2 restart pharm-lms`
+### 5. Restart (rebuild if this rebrand is being deployed)
+
+```bash
+cd ~/pharm-lms
+git pull
+pnpm install
+pnpm build
+pm2 restart pharm-lms
+```
+
+If the code on the server is already current and you only changed env or Nginx:
+
+```bash
+pm2 restart pharm-lms
+```
 
 ---
 
 ## Part 12 — External services to update
 
-Replace `YOUR_URL` with your IP or domain.
+Use `https://edge.pharmanalytics.org` as the public origin (no trailing slash).
 
 | Service | What to configure |
 |---------|-------------------|
-| **Google OAuth** | Authorized origin: `YOUR_URL` |
-| | Redirect: `YOUR_URL/api/auth/callback/google` |
-| **R2 CORS** | Allow `GET`, `PUT`, `HEAD` from `YOUR_URL` |
-| **Paystack** | Webhook: `YOUR_URL/api/paystack/webhook` |
-| **Resend** | Verified domain for `EMAIL_FROM` |
+| **Google OAuth** | Authorized origin: `https://edge.pharmanalytics.org` |
+| | Redirect: `https://edge.pharmanalytics.org/api/auth/callback/google` |
+| **Apple Sign in** | Redirect: `https://edge.pharmanalytics.org/api/auth/callback/apple` |
+| **R2 CORS** | Allow `GET`, `PUT`, `HEAD` from `https://edge.pharmanalytics.org` |
+| **Paystack** | Webhook: `https://edge.pharmanalytics.org/api/paystack/webhook` |
+| **Resend** | Verified domain for `EMAIL_FROM` (update the from-name to `PharmEdge <...>`) |
 
 ---
 
@@ -443,4 +509,4 @@ Replace `YOUR_URL` with your IP or domain.
 
 ---
 
-*Pharm LMS — EC2 deployment guide*
+*PharmEdge — EC2 deployment guide*

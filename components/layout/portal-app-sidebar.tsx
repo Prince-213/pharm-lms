@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { GraduationCap } from "@/lib/icons/client";
+import { PharmLogo } from "@/components/brand/pharm-logo";
 import {
   isNavItemActive,
   type PortalNavConfig,
@@ -37,16 +38,19 @@ export function PortalAppSidebar({
       <SidebarHeader className="border-b border-sidebar-border px-4 py-4">
         <Link
           href={config.homeHref}
-          className="font-display text-lg font-bold uppercase tracking-wider text-sidebar-foreground group-data-[collapsible=icon]:hidden"
+          className="group-data-[collapsible=icon]:hidden"
         >
-          PharmLMS
+          <PharmLogo
+            markClassName="h-7 w-7"
+            wordmarkClassName="text-base text-sidebar-foreground"
+          />
         </Link>
         <Link
           href={config.homeHref}
-          className="hidden font-display text-sm font-bold text-sidebar-foreground group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center"
-          aria-label="PharmLMS home"
+          className="hidden group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center"
+          aria-label="PharmEdge home"
         >
-          P
+          <PharmLogo wordmark={false} markClassName="h-7 w-7" />
         </Link>
       </SidebarHeader>
 

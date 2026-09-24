@@ -1,7 +1,7 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ChevronLeft } from "lucide-react";
 import { FloatingPaths } from "@/components/auth/floating-paths";
+import { PharmLogo } from "@/components/brand/pharm-logo";
 
 type AuthLayoutShellProps = {
   children: React.ReactNode;
@@ -23,15 +23,7 @@ export function AuthLayoutShell({
       <div className="relative hidden h-full flex-col border-r border-[var(--border)] bg-[var(--surface-muted)] p-10 lg:flex">
         <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-[var(--background)]" />
         <Link href="/" className="relative z-10 inline-block">
-          <Image
-            src="/assets/pharmlms-logo.png"
-            alt="PharmLMS"
-            width={160}
-            height={40}
-            className="h-8 w-auto"
-            style={{ height: "auto" }}
-            priority
-          />
+          <PharmLogo priority markClassName="h-8 w-8" wordmarkClassName="text-lg" />
         </Link>
         {portalLabel ? (
           <p className="relative z-10 mt-6 text-sm font-semibold uppercase tracking-wider text-[var(--accent)]">
@@ -76,14 +68,10 @@ export function AuthLayoutShell({
 
         <div className="mx-auto w-full max-w-sm space-y-5">
           <Link href="/" className="inline-block lg:hidden">
-            <Image
-              src="/assets/pharmlms-logo.png"
-              alt="PharmLMS"
-              width={140}
-              height={36}
-              className="h-7 w-auto"
-              style={{ height: "auto" }}
+            <PharmLogo
               priority
+              markClassName="h-7 w-7"
+              wordmarkClassName="text-base"
             />
           </Link>
           {children}

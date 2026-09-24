@@ -11,7 +11,6 @@ import {
   Menu,
   X,
   ChevronRight,
-  GraduationCap,
   ListOrdered,
 } from "lucide-react";
 import { LogoutButton } from "@/auth/logout-button";
@@ -31,6 +30,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { LabeledIconButton } from "@/components/student/labeled-icon-button";
+import { PharmLogo } from "@/components/brand/pharm-logo";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -195,10 +195,10 @@ export function CourseSessionShell({
               href="/student/dashboard"
               className="flex shrink-0 items-center gap-2 font-display text-xs font-black uppercase tracking-[0.05em] text-[var(--header-fg)] transition-opacity hover:opacity-80 sm:text-sm"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white p-1.5 shadow-sm">
-                <GraduationCap className="h-full w-full text-[var(--primary)]" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white p-1 shadow-sm">
+                <PharmLogo wordmark={false} markClassName="h-6 w-6" />
               </div>
-              <span className="hidden sm:inline">PharmLMS</span>
+              <span className="hidden sm:inline">PharmEdge</span>
             </Link>
 
             <span

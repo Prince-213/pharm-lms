@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { ArrowRightIcon, List, X } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -9,10 +8,11 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { MOTION_EASE } from "@/components/landing/motion-primitives";
 import { getHeaderAuthCtas } from "@/lib/audience-landing-content";
+import { PharmLogo } from "@/components/brand/pharm-logo";
 
 const audienceCtaLinks = [
-  { label: "Teach on PharmLMS", href: "/teach" },
-  { label: "Mentor on PharmLMS", href: "/become-a-mentor" },
+  { label: "Teach on PharmEdge", href: "/teach" },
+  { label: "Mentor on PharmEdge", href: "/become-a-mentor" },
 ];
 
 const navLinks = [
@@ -45,13 +45,10 @@ const LandingHeader = () => {
       <div className="mx-auto flex h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-10 xl:w-[90%]">
         {/* Logo */}
           <Link href="/" className="flex shrink-0 items-center hover:scale-[1.02] transition-transform">
-            <Image
-              src="/assets/pharmlms-logo.png"
-              alt="PharmLMS"
-              width={160}
-              height={40}
-              className="h-8 w-auto sm:h-10"
+            <PharmLogo
               priority
+              markClassName="h-8 w-8 sm:h-10 sm:w-10"
+              wordmarkClassName="text-base sm:text-lg"
             />
           </Link>
 

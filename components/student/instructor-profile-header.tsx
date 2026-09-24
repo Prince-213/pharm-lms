@@ -78,7 +78,7 @@ export function InstructorProfileHeader({
                     <Globe className="h-4 w-4 text-primary" strokeWidth={1.75} />
                     Platform
                   </dt>
-                  <dd className="text-muted-foreground">PharmLMS · Live sessions</dd>
+                  <dd className="text-muted-foreground">PharmEdge · Live sessions</dd>
                 </div>
               </dl>
             </div>

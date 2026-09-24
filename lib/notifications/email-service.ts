@@ -34,7 +34,7 @@ export async function sendEmail({
 
   try {
     const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || "Pharm LMS <onboarding@resend.dev>",
+      from: process.env.EMAIL_FROM || "PharmEdge <onboarding@resend.dev>",
       to,
       subject,
       html,

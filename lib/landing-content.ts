@@ -482,11 +482,11 @@ const instructorPrograms: LandingProgramCard[][] = [
       category: "Creator",
       title: "Launch Your First Pharmacy Course",
       description:
-        "Step-by-step playbook for outlining modules, recording lessons, and publishing on PharmLMS.",
+        "Step-by-step playbook for outlining modules, recording lessons, and publishing on PharmEdge.",
       rating: 4.9,
       reviewCount: 184,
       instructor: {
-        name: "PharmLMS Team",
+        name: "PharmEdge Team",
         avatar: "https://i.pravatar.cc/40?u=pharmlms",
         enrolled: 1200,
       },
@@ -518,7 +518,7 @@ const instructorPrograms: LandingProgramCard[][] = [
       category: "Platform",
       title: "Course Quality Checklist",
       description:
-        "Standards for evidence-based content, assessments, and learner outcomes on PharmLMS.",
+        "Standards for evidence-based content, assessments, and learner outcomes on PharmEdge.",
       rating: 4.8,
       reviewCount: 203,
       instructor: {
@@ -551,7 +551,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
         "https://images.pexels.com/photos/8199174/pexels-photo-8199174.jpeg?auto=compress&cs=tinysrgb&w=600",
 
       subcopy:
-        "Learn clinical and digital health skills with PharmLMS. Africa's first pharmacy-specific education platform designed to equip you for the roles defining healthcare.",
+        "Learn clinical and digital health skills with PharmEdge. Africa's first pharmacy-specific education platform designed to equip you for the roles defining healthcare.",
       primaryCta: { label: "Get Started", href: "/student/signup" },
       secondaryCta: { label: "Watch Demo", href: "/student/browse" },
       demoVideoUrl: DEFAULT_HERO_DEMO_VIDEO_URL,
@@ -586,7 +586,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
       eyebrow: "Tutors",
       title: "Meet the Heroes",
       description:
-        "On PharmLMS, leading African and global experts equip pharmacists to move beyond dispensing and into digital health roles.",
+        "On PharmEdge, leading African and global experts equip pharmacists to move beyond dispensing and into digital health roles.",
       members: [
         {
           name: "Theresa Webb",
@@ -617,14 +617,14 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
     testimonials: [
       {
         quote:
-          "PharmLMS was fantastic! It is a master platform for those looking to start a new career, or need a refresher.",
+          "PharmEdge was fantastic! It is a master platform for those looking to start a new career, or need a refresher.",
         name: "Jacob Jones",
         role: "Student, National University",
         avatar: "https://i.pravatar.cc/56?u=jacobjones",
       },
       {
         quote:
-          "The clinical pharmacy modules are world-class. I passed my board exams on the first attempt thanks to PharmLMS.",
+          "The clinical pharmacy modules are world-class. I passed my board exams on the first attempt thanks to PharmEdge.",
         name: "Sarah Mitchell",
         role: "PharmD Graduate, State University",
         avatar: "https://i.pravatar.cc/56?u=sarahmitchell",
@@ -732,7 +732,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
       ],
       image: "/assets/mentor.jpg",
       subcopy:
-        "Mentor Africa's next generation of pharmacists on PharmLMS. Offer 1:1 guidance, digital health coaching, and career roadmaps on your schedule.",
+        "Mentor Africa's next generation of pharmacists on PharmEdge. Offer 1:1 guidance, digital health coaching, and career roadmaps on your schedule.",
       primaryCta: { label: "Become a mentor", href: "/mentor/signup" },
       secondaryCta: { label: "Mentor login", href: "/mentor/login" },
       demoVideoUrl: DEFAULT_HERO_DEMO_VIDEO_URL,
@@ -759,7 +759,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
       eyebrow: "Mentors",
       title: "Meet Our Mentors",
       description:
-        "Experienced practitioners on PharmLMS help students navigate clinical rotations, digital health pathways, and major career transitions.",
+        "Experienced practitioners on PharmEdge help students navigate clinical rotations, digital health pathways, and major career transitions.",
       members: [
         {
           name: "Dr. Sarah Chen",
@@ -790,9 +790,9 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
     testimonials: [
       {
         quote:
-          "Mentoring on PharmLMS let me give back while earning on a flexible schedule. The booking tools just work.",
+          "Mentoring on PharmEdge let me give back while earning on a flexible schedule. The booking tools just work.",
         name: "Dr. Sarah Chen",
-        role: "Clinical Mentor, PharmLMS",
+        role: "Clinical Mentor, PharmEdge",
         avatar: "https://i.pravatar.cc/56?u=sarahchen",
       },
       {
@@ -806,7 +806,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
         quote:
           "The platform makes it easy to share resources, track mentee progress, and stay organized between sessions.",
         name: "Maria Lopez",
-        role: "Licensure Coach, PharmLMS",
+        role: "Licensure Coach, PharmEdge",
         avatar: "https://i.pravatar.cc/56?u=marialopez",
       },
     ],
@@ -858,7 +858,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
           date: "June 14, 2024",
           title: "Building a Mentorship Profile Students Trust",
           excerpt:
-            "Credentials, specialties, and availability tips that help the right mentees find you on PharmLMS.",
+            "Credentials, specialties, and availability tips that help the right mentees find you on PharmEdge.",
           tags: [
             {
               label: "Growth",
@@ -899,7 +899,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
       ],
       image: "/assets/tutor.jpg",
       subcopy:
-        "Publish pharmacy courses on PharmLMS, reach practitioners across Africa, and grow your teaching brand on the continent's first pharmacy-specific platform.",
+        "Publish pharmacy courses on PharmEdge, reach practitioners across Africa, and grow your teaching brand on the continent's first pharmacy-specific platform.",
       primaryCta: { label: "Start teaching", href: "/tutor/signup" },
       secondaryCta: { label: "Tutor login", href: "/tutor/login" },
       demoVideoUrl: DEFAULT_HERO_DEMO_VIDEO_URL,
@@ -924,7 +924,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
     },
     people: {
       eyebrow: "Instructors",
-      title: "Top Educators on PharmLMS",
+      title: "Top Educators on PharmEdge",
       description:
         "Pharmacists and digital health leaders publish clinical content that thousands of practitioners across Africa rely on every day.",
       members: [
@@ -957,16 +957,16 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
     testimonials: [
       {
         quote:
-          "I launched my first clinical course in a weekend. PharmLMS handles enrollments, payments, and student messages.",
+          "I launched my first clinical course in a weekend. PharmEdge handles enrollments, payments, and student messages.",
         name: "Theresa Webb",
-        role: "Instructor, PharmLMS",
+        role: "Instructor, PharmEdge",
         avatar: "https://i.pravatar.cc/56?u=theresawebb",
       },
       {
         quote:
           "Analytics showed me which modules students struggled with. I improved retention and doubled enrollments.",
         name: "Albert Flores",
-        role: "Course Creator, PharmLMS",
+        role: "Course Creator, PharmEdge",
         avatar: "https://i.pravatar.cc/56?u=albertflores",
       },
       {
@@ -1006,7 +1006,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
           date: "September 18, 2024",
           title: "Pricing Your First Clinical Course",
           excerpt:
-            "How instructors balance accessibility, value, and sustainable revenue on PharmLMS...",
+            "How instructors balance accessibility, value, and sustainable revenue on PharmEdge...",
           tags: [
             {
               label: "Monetization",

@@ -9,7 +9,7 @@ import { LeaderboardTable } from "@/components/student/leaderboard-table";
 import { LeaderboardUserCard } from "@/components/student/leaderboard-user-card";
 
 export const metadata = {
-  title: "Leaderboard | Pharm LMS",
+  title: "Leaderboard | PharmEdge",
 };
 
 export default async function LeaderboardPage() {

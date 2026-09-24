@@ -159,7 +159,7 @@ export function ContactFormSection() {
                   Email us for scheduling
                 </p>
                 <p className="mt-2 text-sm font-medium text-[var(--ink-deep)]">
-                  hello@pharmlms.com
+                  pharmanalyticsteam@gmail.com
                 </p>
               </div>
             </div>

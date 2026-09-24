@@ -69,7 +69,7 @@ export async function notifyHostNewMeetingRequest(
     }</p>
 ${req.course?.title ? `<p>Course: ${req.course.title}</p>` : ""}
 ${req.preferredTime && !isInstant ? `<p>Preferred time: ${new Date(req.preferredTime).toLocaleString()}</p>` : ""}
-<p><a href="${link}">Open meetings in Pharm LMS</a></p>`,
+<p><a href="${link}">Open meetings in PharmEdge</a></p>`,
   });
 }
 
@@ -106,7 +106,7 @@ export async function notifyStudentMeetingAccepted(
     html: `<p>Hi ${req.student.fullName.split(/\s+/)[0] || req.student.fullName},</p>
 <p><strong>${req.mentor.fullName}</strong> accepted your meeting request.</p>
 <p>Scheduled for: <strong>${when}</strong></p>
-<p><a href="${joinUrl}">Join from Pharm LMS</a> (when the session is open)</p>
+<p><a href="${joinUrl}">Join from PharmEdge</a> (when the session is open)</p>
 <p><a href="${base}${href}">View your meetings</a></p>`,
   });
 }

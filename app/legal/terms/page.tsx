@@ -8,7 +8,7 @@ export default function LegalTermsPage() {
           Terms of use
         </h1>
         <p className="text-sm text-muted-foreground">
-          Last updated: July 2026. By using PharmLMS you agree to these terms.
+          Last updated: July 2026. By using PharmEdge you agree to these terms.
         </p>
         <section className="space-y-2 text-sm leading-relaxed">
           <h2 className="text-lg font-semibold">Accounts</h2>
@@ -36,7 +36,7 @@ export default function LegalTermsPage() {
         <section className="space-y-2 text-sm leading-relaxed">
           <h2 className="text-lg font-semibold">Limitation of liability</h2>
           <p>
-            PharmLMS is provided as-is for educational purposes. To the extent
+            PharmEdge is provided as-is for educational purposes. To the extent
             permitted by law, we are not liable for indirect or consequential
             damages arising from platform use.
           </p>

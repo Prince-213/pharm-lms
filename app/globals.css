@@ -29,7 +29,7 @@
 }
 
 /**
- * PharmLMS Professional Color Scheme
+ * PharmEdge Professional Color Scheme
  * Primary Navy: #00005C  |  Accent Cyan: #00BFFF  |  Illustrations: #7A4DFC
  */
 :root {
@@ -313,6 +313,13 @@ h6 {
   }
   html {
     @apply font-sans;
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
   }
 }
 

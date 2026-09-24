@@ -144,7 +144,7 @@ export function TutorCoursesList({
       <EmptyState
         icon={BookPlus}
         title="No courses yet"
-        description="Create your first course with the studio wizard to start teaching on PharmLMS."
+        description="Create your first course with the studio wizard to start teaching on PharmEdge."
         actionHref="/tutor/courses/new/step-2"
         actionLabel="New course"
       />

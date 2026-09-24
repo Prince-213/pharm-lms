@@ -54,10 +54,16 @@ export function CourseCertificateDocument({
       {/* Content — padded inside border; min-h-0 prevents flex overflow */}
       <div className="relative box-border flex min-h-[32rem] flex-col px-4 py-5 sm:min-h-0 sm:h-full sm:px-12 sm:py-10">
         <header className="shrink-0 pr-[6.5rem] sm:pr-[180px]">
-          <p className="text-lg font-bold tracking-tight sm:text-3xl">
-            <span className="text-[#1A1A2E]">Pharm</span>
-            <span className="text-[#3D5AFE]">LMS</span>
-          </p>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <img
+              src="/pharm_logo.webp"
+              alt=""
+              className="h-8 w-8 object-contain sm:h-12 sm:w-12"
+            />
+            <p className="text-lg font-bold tracking-tight text-[#1A1A2E] sm:text-3xl">
+              PharmEdge
+            </p>
+          </div>
           <p className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.15em] text-[#6b7280] sm:mt-1 sm:text-xs sm:tracking-[0.2em]">
             Certificate of completion
           </p>

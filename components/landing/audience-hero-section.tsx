@@ -3,7 +3,6 @@
 import { CertificateIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import type { AudiencePageContent } from "@/lib/audience-landing-content";
-import { MarketingAuthCtas } from "@/components/landing/marketing-auth-ctas";
 
 export function AudienceHeroSection({
   content,
@@ -40,13 +39,6 @@ export function AudienceHeroSection({
                 />
               </span>
             </h1>
-            <MarketingAuthCtas
-              loginHref={content.loginHref}
-              loginLabel={content.loginLabel}
-              signupHref={content.signupHref}
-              signupLabel={content.signupLabel}
-              className="mt-8"
-            />
           </div>
 
           <img

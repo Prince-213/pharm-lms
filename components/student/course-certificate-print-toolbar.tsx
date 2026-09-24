@@ -104,7 +104,7 @@ export function CourseCertificatePrintToolbar({
   const [mobileDownloaded, setMobileDownloaded] = useState(false);
   const hasAutoDownloaded = useRef(false);
 
-  const filename = `PharmLMS_Certificate${studentName ? `_${studentName.replace(/\s+/g, "_")}` : ""}.pdf`;
+  const filename = `PharmEdge_Certificate${studentName ? `_${studentName.replace(/\s+/g, "_")}` : ""}.pdf`;
 
   async function handleDownload() {
     setIsDownloading(true);

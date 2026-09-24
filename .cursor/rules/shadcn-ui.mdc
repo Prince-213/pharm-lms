@@ -4,7 +4,7 @@ globs: "{app,components,auth}/**/*.{tsx,ts}"
 alwaysApply: false
 ---
 
-# shadcn/ui (PharmLMS)
+# shadcn/ui (PharmEdge)
 
 ## Components
 

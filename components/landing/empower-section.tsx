@@ -4,8 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { AnimatedCounter } from "@/components/landing/motion-primitives";
-import { MarketingAuthCtas } from "@/components/landing/marketing-auth-ctas";
-import { studentAuthCtas } from "@/lib/audience-landing-content";
 
 export function EmpowerSection() {
   return (
@@ -63,7 +61,7 @@ export function EmpowerSection() {
 
             <div className="mt-8 space-y-5 text-sm leading-[1.75] text-white/95 font-medium">
               <p>
-                PharmLMS is dedicated to equipping African pharmacists with the
+                PharmEdge is dedicated to equipping African pharmacists with the
                 data, technology, and health innovation skills needed to compete
                 for digital health roles.
               </p>
@@ -74,7 +72,7 @@ export function EmpowerSection() {
               </p>
             </div>
 
-            <div className="mt-10 flex flex-col gap-4">
+            <div className="mt-10">
               <Link
                 href="/about"
                 className="inline-flex w-fit items-center gap-2 rounded-xl bg-black px-8 py-4 text-[15px] font-semibold text-white transition-all duration-300 hover:bg-[#111111] hover:-translate-y-0.5 active:scale-[0.98]"
@@ -82,7 +80,6 @@ export function EmpowerSection() {
                 Learn More About Us
                 <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
               </Link>
-              <MarketingAuthCtas {...studentAuthCtas} variant="onDark" />
             </div>
           </div>
 

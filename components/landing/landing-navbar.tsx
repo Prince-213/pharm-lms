@@ -6,10 +6,11 @@ import { Menu, Search, X } from "@/lib/icons/client";
 import { VerifyCertificateDialog } from "@/components/courses/verify-certificate-dialog";
 import { LandingSearchForm } from "@/components/landing/landing-search-form";
 import { getLandingContent, type LandingAudience } from "@/lib/landing-content";
+import { PharmLogo } from "@/components/brand/pharm-logo";
 
 const navLinks = [
-  { label: "Teach on PharmLMS", href: "/teach" },
-  { label: "Mentor on PharmLMS", href: "/become-a-mentor" },
+  { label: "Teach on PharmEdge", href: "/teach" },
+  { label: "Mentor on PharmEdge", href: "/become-a-mentor" },
 ];
 
 type LandingNavbarProps = {
@@ -29,10 +30,9 @@ export function LandingNavbar({ audience = "student" }: LandingNavbarProps) {
               href="/"
               className="flex shrink-0 items-center"
             >
-              <img
-                src="/assets/pharmlms-logo.png"
-                alt="PharmLMS"
-                className="h-7 w-auto"
+              <PharmLogo
+                markClassName="h-7 w-7"
+                wordmarkClassName="text-base"
               />
             </Link>
 

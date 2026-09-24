@@ -12,7 +12,7 @@ import { loadLandingPopularCoursePages } from "@/lib/landing/load-landing-data";
 export const metadata: Metadata = {
   title: "Validate Certificate",
   description:
-    "Verify the authenticity of your PharmLMS certificate. Enter your certificate ID to confirm your course completion credentials.",
+    "Verify the authenticity of your PharmEdge certificate. Enter your certificate ID to confirm your course completion credentials.",
   alternates: { canonical: "/validate" },
 };
 

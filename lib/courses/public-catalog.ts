@@ -236,7 +236,7 @@ export async function mapCoursesToPopularCardViews(
         description:
           course.subtitle?.trim() ||
           stripHtml(course.description) ||
-          "Explore this published course on PharmLMS.",
+          "Explore this published course on PharmEdge.",
         rating,
         reviewCount,
         instructor: {

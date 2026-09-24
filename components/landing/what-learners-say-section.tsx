@@ -45,7 +45,7 @@ export function WhatLearnersSaySection() {
                   />
                 </span>
               </span>{" "}
-               Learner's are saying about PharmLms
+               Learner's are saying about PharmEdge
             </h2>
           </div>
         </div>

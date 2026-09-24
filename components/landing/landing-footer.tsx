@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Phone, Mail, MapPin } from "lucide-react";
+import { PharmLogo } from "@/components/brand/pharm-logo";
 
 function TwitterIcon({ className }: { className?: string }) {
   return (
@@ -66,10 +67,10 @@ export function LandingFooter() {
           {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
             <Link href="/" className="inline-block">
-              <img
-                src="/assets/pharmlms-logo.png"
-                alt="PharmLMS"
-                className="h-8 w-auto sm:h-9 brightness-0 invert"
+              <PharmLogo
+                inverted
+                markClassName="h-8 w-8 sm:h-9 sm:w-9"
+                wordmarkClassName="text-base sm:text-lg"
               />
             </Link>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-white">

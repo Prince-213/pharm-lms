@@ -214,7 +214,7 @@ export function InstructorProfilePage({
     });
   }
   stats.push({
-    label: "On PharmLMS since",
+    label: "On PharmEdge since",
     value: String(memberYear),
   });
   if (stats.length < 3) {

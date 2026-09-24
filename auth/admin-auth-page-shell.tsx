@@ -6,7 +6,7 @@ export function AdminAuthPageShell({ children }: { children: React.ReactNode }) 
   return (
     <AuthLayoutShell
       quote="Secure admin access keeps course quality high and mentor applications reviewed — everything in one platform workspace."
-      author="PharmLMS Admin"
+      author="PharmEdge Admin"
       portalLabel={portalAuthCopy.admin.sidebarTitle}
       sidebarFooter={
         <Link

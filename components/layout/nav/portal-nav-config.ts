@@ -135,7 +135,7 @@ export const studentPortalConfig: PortalNavConfig = {
 export const adminPortalConfig: PortalNavConfig = {
   portalTitle: "Admin",
   homeHref: "/admin/dashboard",
-  footerLabel: "Pharm LMS Admin Console",
+  footerLabel: "PharmEdge Admin Console",
   maxContentWidth: "max-w-[1600px]",
   groups: [
     {

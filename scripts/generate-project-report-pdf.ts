@@ -126,7 +126,7 @@ async function main() {
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Pharm LMS — Project Report</title>
+  <title>PharmEdge — Project Report</title>
   <style>
     @page { margin: 18mm 16mm; size: A4; }
     body {

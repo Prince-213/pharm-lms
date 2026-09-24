@@ -12,6 +12,7 @@ import {
   readMentorNewCourseDraft,
 } from "@/lib/mentor-new-course-draft";
 import { toUserFacingError } from "@/lib/user-facing-error";
+import { PharmLogo } from "@/components/brand/pharm-logo";
 
 export default function NewCourseStep4Page() {
   const router = useRouter();
@@ -115,7 +116,7 @@ export default function NewCourseStep4Page() {
     <div className="min-h-screen bg-[var(--surface-muted)]">
       <header className="border-b border-[var(--border)] bg-[var(--surface)]">
         <div className="flex h-10 items-center justify-between px-4 text-xs">
-          <span className="text-lg font-bold">PharmLms</span>
+          <PharmLogo markClassName="h-6 w-6" wordmarkClassName="text-sm" />
           <span>Step 3 of 3</span>
           <Link href="/tutor/courses" className="text-[var(--primary)]">
             Exit

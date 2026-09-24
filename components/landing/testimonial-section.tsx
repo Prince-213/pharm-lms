@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { getLandingContent, type LandingAudience } from "@/lib/landing-content";
+import { PharmLogo } from "@/components/brand/pharm-logo";
 
 type TestimonialSectionProps = {
   audience?: LandingAudience;
@@ -16,10 +17,9 @@ export function TestimonialSection({ audience = "student" }: TestimonialSectionP
     <section className="bg-emerald-50/50 py-16 lg:py-24">
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-10">
         <div className="mb-8 flex justify-center">
-          <img
-            src="/assets/pharmlms-logo.png"
-            alt="PharmLMS"
-            className="h-8 w-auto sm:h-9"
+          <PharmLogo
+            markClassName="h-8 w-8 sm:h-9 sm:w-9"
+            wordmarkClassName="text-lg sm:text-xl"
           />
         </div>
 

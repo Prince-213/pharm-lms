@@ -7,9 +7,9 @@ import { MOTION_EASE } from "@/components/landing/motion-primitives";
 
 const faqs = [
   {
-    question: "What is PharmLMS and how does it work?",
+    question: "What is PharmEdge and how does it work?",
     answer:
-      "PharmLMS is Africa's first pharmacy-specific digital health education platform by PharmAnalytics. It offers structured courses, expert-led tutorials, and personalized learning paths built around real African clinical contexts — helping pharmacists move from dispensing to decision-making.",
+      "PharmEdge is Africa's first pharmacy-specific digital health education platform by PharmAnalytics. It offers structured courses, expert-led tutorials, and personalized learning paths built around real African clinical contexts — helping pharmacists move from dispensing to decision-making.",
   },
   {
     question: "How can I communicate with my instructor?",
@@ -19,7 +19,7 @@ const faqs = [
   {
     question: "Are there interactive features for students?",
     answer:
-      "Yes! PharmLMS includes interactive quizzes, hands-on assignments, AI-powered quiz assistance, discussion forums, and live mentorship sessions to ensure an engaging, clinically grounded learning experience.",
+      "Yes! PharmEdge includes interactive quizzes, hands-on assignments, AI-powered quiz assistance, discussion forums, and live mentorship sessions to ensure an engaging, clinically grounded learning experience.",
   },
   {
     question: "How can I pay for courses?",

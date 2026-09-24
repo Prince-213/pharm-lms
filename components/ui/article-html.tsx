@@ -19,7 +19,7 @@ const proseBase =
   "[&_*]:max-w-none";
 
 /**
- * Sanitized HTML with Tailwind Typography + PharmLMS brand prose tokens.
+ * Sanitized HTML with Tailwind Typography + PharmEdge brand prose tokens.
  * Prefer this over bare SafeHtml for lesson articles and rich body copy.
  */
 export function ArticleHtml({

@@ -7,7 +7,7 @@
 1) EXECUTIVE SUMMARY
 --------------------------------------------------------------------------------
 
-What is PharmLMS?
+What is PharmEdge?
   A web-based learning management system for pharmacy and clinical training.
   It connects three audiences in one platform:
     • Students — discover courses, learn with progress and assessments, and
@@ -64,7 +64,7 @@ If you have only 20 minutes, shorten role journeys to 4 minutes and demo to
   Beyond lessons
     • Book or join mentor meetings (where availability and workflow allow).
     • View achievements and badges on a dedicated page as milestones are met.
-  • Complete a course and download a Pharm LMS digital certificate (print to
+  • Complete a course and download a PharmEdge digital certificate (print to
     PDF from the browser).
 
   What to say
@@ -188,7 +188,7 @@ Why clients care
     charges in NGN (MVP).
 
 5.7 Digital certificates
-  • On course completion, students receive a branded Pharm LMS certificate
+  • On course completion, students receive a branded PharmEdge certificate
     (student name, course, hours, instructor, date, certificate ID).
   • View and print from the course player completion area.
 
@@ -213,7 +213,7 @@ Demo A — The story order (12–15 minutes)
   4. Student — achievements
      Say: "Recognition is visible and program-driven."
   4b. Student — complete course + certificate (if demo account is complete)
-     Say: "Completion unlocks a printable Pharm LMS certificate."
+     Say: "Completion unlocks a printable PharmEdge certificate."
   5. Mentor — new course (short)
      Say: "We create a draft, then the studio opens."
   6. Mentor — curriculum

@@ -7,7 +7,7 @@ export function getSubmissionTemplate(courseTitle: string, mentorName: string) {
       <p>Our admin team will review your content against our quality standards. You will receive an email once the review is complete.</p>
       <p>In the meantime, you can continue to preview your course as a student.</p>
       <br />
-      <p>Best regards,<br />The Pharm LMS Team</p>
+      <p>Best regards,<br />The PharmEdge Team</p>
     </div>
   `;
 }
@@ -21,7 +21,7 @@ export function getApprovalTemplate(courseTitle: string, mentorName: string, cou
       <p>Students can now enroll and start learning from your content.</p>
       <a href="${courseUrl}" style="display: inline-block; background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">View Live Course</a>
       <br /><br />
-      <p>Best regards,<br />The Pharm LMS Team</p>
+      <p>Best regards,<br />The PharmEdge Team</p>
     </div>
   `;
 }
@@ -41,7 +41,7 @@ export function getNewAssignmentEmailTemplate(opts: {
       <p>Complete it at your own pace from your assignments page.</p>
       <a href="${assignmentsUrl}" style="display: inline-block; background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">View assignments</a>
       <br /><br />
-      <p>Best regards,<br />Pharm LMS</p>
+      <p>Best regards,<br />PharmEdge</p>
     </div>
   `;
 }
@@ -61,7 +61,7 @@ export function getAssignmentSubmittedEmailTemplate(opts: {
       <p><strong>${studentName}</strong> submitted work for <strong>${assignmentTitle}</strong> in <strong>${courseTitle}</strong>.</p>
       <a href="${reviewUrl}" style="display: inline-block; background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">Review submission</a>
       <br /><br />
-      <p>Pharm LMS</p>
+      <p>PharmEdge</p>
     </div>
   `;
 }
@@ -93,7 +93,7 @@ export function getCourseReviewReceivedEmailTemplate(opts: {
       ${commentBlock}
       <a href="${reviewsUrl}" style="display: inline-block; background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">View reviews</a>
       <br /><br />
-      <p>Pharm LMS</p>
+      <p>PharmEdge</p>
     </div>
   `;
 }
@@ -111,7 +111,7 @@ export function getRejectionTemplate(courseTitle: string, mentorName: string, re
       <p>You can edit your course and resubmit it for review once you've addressed the feedback.</p>
       <a href="${editUrl}" style="display: inline-block; background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">Return to Studio</a>
       <br /><br />
-      <p>Best regards,<br />The Pharm LMS Team</p>
+      <p>Best regards,<br />The PharmEdge Team</p>
     </div>
   `;
 }

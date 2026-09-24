@@ -8,7 +8,7 @@ export default function LegalPrivacyPage() {
           Privacy policy
         </h1>
         <p className="text-sm text-muted-foreground">
-          Last updated: July 2026. This policy describes how PharmLMS processes
+          Last updated: July 2026. This policy describes how PharmEdge processes
           account, learning, and payment-related data.
         </p>
         <section className="space-y-2 text-sm leading-relaxed">

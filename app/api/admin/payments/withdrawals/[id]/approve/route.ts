@@ -68,7 +68,7 @@ export async function POST(
       source: "balance",
       amountMinorUnits: wd.amountMinorUnits,
       recipient: recipient.recipient_code,
-      reason: `PharmLMS payout ${wd.id}`,
+      reason: `PharmEdge payout ${wd.id}`,
       reference: `wd_${wd.id.replace(/[^a-z0-9]/gi, "").slice(0, 10)}_${Date.now().toString(36)}`,
     });
     transferCode = transfer.transfer_code;

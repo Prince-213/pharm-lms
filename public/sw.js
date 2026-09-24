@@ -1,5 +1,5 @@
 self.addEventListener("push", (event) => {
-  let data = { title: "Pharm LMS", body: "", href: "/" };
+  let data = { title: "PharmEdge", body: "", href: "/" };
   try {
     data = { ...data, ...JSON.parse(event.data?.text() ?? "{}") };
   } catch {

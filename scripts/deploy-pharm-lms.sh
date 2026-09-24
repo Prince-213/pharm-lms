@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Deploy Pharm LMS on EC2 after pulling latest code.
+# Deploy PharmEdge on EC2 after pulling latest code.
 # Install once on the server:
 #   cp ~/pharm-lms/scripts/deploy-pharm-lms.sh ~/deploy-pharm-lms.sh
 #   chmod +x ~/deploy-pharm-lms.sh
@@ -17,7 +17,7 @@ BRANCH="${PHARM_LMS_BRANCH:-main}"
 
 cd "$APP_DIR"
 
-echo "==> Pharm LMS deploy"
+echo "==> PharmEdge deploy"
 echo "    Directory: $APP_DIR"
 echo "    Branch:    $BRANCH"
 echo "    NODE_OPTIONS: $NODE_OPTIONS"

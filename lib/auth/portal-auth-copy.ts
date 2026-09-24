@@ -21,7 +21,7 @@ export const portalAuthCopy: Record<
     badge: "Tutor portal",
     sidebarTitle: "Tutor authentication",
     loginSubtitle: "Sign in to manage courses, curriculum, and your instructor workspace.",
-    signupSubtitle: "Create your tutor account to start teaching on PharmLMS.",
+    signupSubtitle: "Create your tutor account to start teaching on PharmEdge.",
     verifySubtitle: "Verify your email to finish creating your tutor account.",
   },
   mentor: {

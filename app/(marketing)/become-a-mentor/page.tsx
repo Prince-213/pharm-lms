@@ -6,9 +6,9 @@ import { AnimatedSection } from "@/components/landing/animated-section";
 import { mentorPageContent } from "@/lib/audience-landing-content";
 
 export const metadata: Metadata = {
-  title: "Mentor on PharmLMS",
+  title: "Mentor on PharmEdge",
   description:
-    "Guide pharmacy students and professionals on PharmLMS. Offer mentorship sessions, career guidance, and flexible 1:1 support across Africa.",
+    "Guide pharmacy students and professionals on PharmEdge. Offer mentorship sessions, career guidance, and flexible 1:1 support across Africa.",
   alternates: { canonical: "/become-a-mentor" },
 };
 

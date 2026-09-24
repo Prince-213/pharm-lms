@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
-const SITE_NAME = "PharmLMS";
+const SITE_NAME = "PharmEdge";
 const SITE_TAGLINE = "From dispensing to decision-making";
 const SITE_DESCRIPTION =
-  "PharmLMS is Africa's first pharmacy-specific digital health education platform — equipping pharmacists with the clinical, data, and technology skills to thrive in the digital health economy.";
+  "PharmEdge is Africa's first pharmacy-specific digital health education platform — equipping pharmacists with the clinical, data, and technology skills to thrive in the digital health economy.";
 
 function resolveSiteUrl(): string {
   const fromEnv =

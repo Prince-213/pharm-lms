@@ -181,7 +181,7 @@ export async function sendSignupOtpAction(
     );
 
     const html = `
-    <p>Your PharmLMS verification code is:</p>
+    <p>Your PharmEdge verification code is:</p>
     <p style="font-size:24px;font-weight:bold;letter-spacing:0.2em;">${code}</p>
     <p>This code expires in 15 minutes. If you did not request it, you can ignore this email.</p>
   `;
@@ -189,7 +189,7 @@ export async function sendSignupOtpAction(
     step = "email_send";
     const sendResult = await sendEmail({
       to: email,
-      subject: "Your PharmLMS sign-up code",
+      subject: "Your PharmEdge sign-up code",
       html,
     });
 

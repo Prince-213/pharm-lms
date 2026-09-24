@@ -8,9 +8,9 @@ import { NewsletterSection } from "@/components/landing/newsletter-section";
 import { WhatLearnersSaySection } from "@/components/landing/what-learners-say-section";
 
 export const metadata: Metadata = {
-  title: "About PharmLMS",
+  title: "About PharmEdge",
   description:
-    "Learn about PharmLMS — Africa's clinical pharmacy learning platform. Delivering exceptional online education for pharmacy students and professionals.",
+    "Learn about PharmEdge — Africa's clinical pharmacy learning platform. Delivering exceptional online education for pharmacy students and professionals.",
   alternates: { canonical: "/about" },
 };
 

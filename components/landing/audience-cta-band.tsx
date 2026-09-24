@@ -1,7 +1,7 @@
 "use client";
 
+import Link from "next/link";
 import type { AudiencePageContent } from "@/lib/audience-landing-content";
-import { MarketingAuthCtas } from "@/components/landing/marketing-auth-ctas";
 
 export function AudienceCtaBand({
   content,
@@ -17,14 +17,12 @@ export function AudienceCtaBand({
         <p className="mt-4 text-sm leading-relaxed text-white/80 sm:text-base">
           {content.ctaSubtext}
         </p>
-        <MarketingAuthCtas
-          loginHref={content.loginHref}
-          loginLabel={content.loginLabel}
-          signupHref={content.signupHref}
-          signupLabel={content.signupLabel}
-          variant="onPrimary"
-          className="mt-8 justify-center"
-        />
+        <Link
+          href={content.signupHref}
+          className="mt-8 inline-flex min-w-[200px] items-center justify-center rounded-full bg-white px-8 py-4 text-sm font-semibold text-primary transition-all hover:bg-white/90"
+        >
+          {content.signupLabel}
+        </Link>
       </div>
     </section>
   );

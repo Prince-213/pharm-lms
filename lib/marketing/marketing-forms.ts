@@ -24,7 +24,7 @@ function inboxTo(): string {
   return (
     process.env.CONTACT_INBOX_EMAIL?.trim() ||
     process.env.EMAIL_FROM?.replace(/.*<([^>]+)>.*/, "$1").trim() ||
-    "hello@pharmlms.com"
+    "pharmanalyticsteam@gmail.com"
   );
 }
 
@@ -57,7 +57,7 @@ export async function submitContactFormAction(
 
   const result = await sendEmail({
     to: inboxTo(),
-    subject: `[PharmLMS Contact] ${subject}`,
+    subject: `[PharmEdge Contact] ${subject}`,
     html,
   });
 
@@ -90,7 +90,7 @@ export async function subscribeNewsletterAction(
 
   const result = await sendEmail({
     to: inboxTo(),
-    subject: "[PharmLMS] Newsletter subscription",
+    subject: "[PharmEdge] Newsletter subscription",
     html: `<p>New newsletter subscriber: <strong>${escapeHtml(email)}</strong></p>`,
   });
 
@@ -101,7 +101,7 @@ export async function subscribeNewsletterAction(
   // Confirmation to the subscriber (best-effort)
   await sendEmail({
     to: email,
-    subject: "You're subscribed to PharmLMS updates",
+    subject: "You're subscribed to PharmEdge updates",
     html: `<p>Thanks for subscribing. We'll send course updates and learning tips to this address.</p>`,
   });
 

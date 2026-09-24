@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import type { AudiencePageContent } from "@/lib/audience-landing-content";
-import { MarketingAuthCtas } from "@/components/landing/marketing-auth-ctas";
 
 export function AudienceValueSection({
   content,
@@ -67,14 +66,6 @@ export function AudienceValueSection({
                 </div>
               ))}
             </div>
-
-            <MarketingAuthCtas
-              loginHref={content.loginHref}
-              loginLabel={content.loginLabel}
-              signupHref={content.signupHref}
-              signupLabel={content.signupLabel}
-              className="mt-8"
-            />
           </div>
         </div>
       </div>

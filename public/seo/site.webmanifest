@@ -1,6 +1,6 @@
 {
-  "name": "PharmLMS — Clinical Pharmacy Learning",
-  "short_name": "PharmLMS",
+  "name": "PharmEdge — Clinical Pharmacy Learning",
+  "short_name": "PharmEdge",
   "icons": [
     {
       "src": "/seo/android-chrome-192x192.png",
@@ -13,7 +13,7 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#00005C",
+  "theme_color": "#1e40af",
   "background_color": "#F5F7FA",
   "display": "standalone",
   "start_url": "/"

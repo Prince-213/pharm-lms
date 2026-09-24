@@ -161,7 +161,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     updateAge: 24 * 60 * 60,
   },
   trustHost: true,
-  debug: process.env.NODE_ENV === "development",
+  debug: process.env.AUTH_DEBUG === "1",
   pages: {
     signIn: "/student/login",
   },

@@ -27,7 +27,7 @@ const posts = [
       <p>Patients remember what you <em>did</em>: counseling on a new medication, checking for interactions, or coordinating with a prescriber. Document these actions so the care team stays aligned.</p>
       <h2>3. Reflective delight</h2>
       <p>After the visit, patients ask: “Did this help me?” Follow-up messages, refill reminders, and clear written instructions reinforce that the pharmacy is part of their health journey—not just a pickup counter.</p>
-      <p>On PharmLMS, we teach these pillars through case-based modules so students practice communication before they enter high-volume settings.</p>
+      <p>On PharmEdge, we teach these pillars through case-based modules so students practice communication before they enter high-volume settings.</p>
     `,
   },
   {
@@ -83,7 +83,7 @@ const posts = [
       <h2>Sprints with learning objectives</h2>
       <p>Each sprint should ship measurable competency gains, not just content volume. Define what learners must <em>do</em> after the sprint, then author assessments backward from that outcome.</p>
       <h2>Usability testing with real students</h2>
-      <p>Five moderated sessions often reveal navigation issues that teams miss in staging. PharmLMS course analytics complement qualitative feedback by showing where learners stall or replay videos.</p>
+      <p>Five moderated sessions often reveal navigation issues that teams miss in staging. PharmEdge course analytics complement qualitative feedback by showing where learners stall or replay videos.</p>
       <h2>Definition of done</h2>
       <p>A module is not “done” until accessibility checks, citation review, and remediation paths exist. Skipping these steps creates debt that shows up as support tickets and lower completion rates.</p>
     `,

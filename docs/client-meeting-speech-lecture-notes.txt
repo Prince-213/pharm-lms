@@ -10,7 +10,7 @@ Use this as presentation notes (not a read-out script).
 - Goal of meeting:
   - Show product value, role workflows, architecture confidence, and next steps.
 - Product definition:
-  - PharmLMS is a web-based pharmacy/clinical learning platform.
+  - PharmEdge is a web-based pharmacy/clinical learning platform.
   - Three role lanes in one system: Student, Mentor, Admin.
 - Value proposition:
   - One place for curriculum, engagement, and governance.

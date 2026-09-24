@@ -130,7 +130,7 @@ export async function loadLandingPopularCoursePages(
           description:
             course.subtitle?.trim() ||
             stripHtml(course.description) ||
-            "Explore this published course on PharmLMS.",
+            "Explore this published course on PharmEdge.",
           rating,
           reviewCount,
           instructor: {
@@ -208,8 +208,8 @@ async function loadLandingPeople(
           person.bio?.trim() ||
           person.mentorSpecialties?.trim() ||
           (role === UserRole.TUTOR
-            ? "Teaches clinical pharmacy courses on PharmLMS."
-            : "Offers 1-on-1 mentoring on PharmLMS.");
+            ? "Teaches clinical pharmacy courses on PharmEdge."
+            : "Offers 1-on-1 mentoring on PharmEdge.");
 
         return {
           id: person.id,

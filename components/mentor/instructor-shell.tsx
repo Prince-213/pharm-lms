@@ -45,7 +45,7 @@ export function InstructorFooter() {
   return (
     <footer className="mt-10 bg-[var(--surface)] text-[var(--foreground)]">
       <div className="border-b border-[var(--border)] px-6 py-6 text-sm">
-        Top institutions choose PharmLms to build in-demand clinical skills.
+        Top institutions choose PharmEdge to build in-demand clinical skills.
       </div>
       <div className="grid grid-cols-2 gap-6 px-6 py-8 text-xs md:grid-cols-4">
         <div>
@@ -82,7 +82,7 @@ export function InstructorFooter() {
         </div>
       </div>
       <div className="border-t border-[var(--border)] px-6 py-4 text-xs text-muted-foreground">
-        PharmLms © 2026 PharmLms.
+        PharmEdge © 2026 PharmEdge.
       </div>
     </footer>
   );

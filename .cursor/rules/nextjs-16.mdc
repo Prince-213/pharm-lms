@@ -1,9 +1,9 @@
 ---
-description: Next.js 16 App Router conventions for PharmLMS
+description: Next.js 16 App Router conventions for PharmEdge
 alwaysApply: true
 ---
 
-# Next.js 16 (PharmLMS)
+# Next.js 16 (PharmEdge)
 
 This project uses **Next.js 16** with breaking changes vs older versions. Before writing Next.js code, read the relevant guide in `node_modules/next/dist/docs/`.
 

@@ -7,7 +7,7 @@ import { NewsletterSection } from "@/components/landing/newsletter-section";
 export const metadata: Metadata = {
   title: "Contact Us",
   description:
-    "Get in touch with PharmLMS. Send us a message, visit our office, or call us. We're here to help with your pharmacy education journey.",
+    "Get in touch with PharmEdge. Send us a message, visit our office, or call us. We're here to help with your pharmacy education journey.",
   alternates: { canonical: "/contact" },
 };
 

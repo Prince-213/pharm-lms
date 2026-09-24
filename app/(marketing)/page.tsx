@@ -19,7 +19,7 @@ import { loadLandingPopularCoursePages } from "@/lib/landing/load-landing-data";
 export const metadata: Metadata = {
   title: "Clinical Pharmacy Courses & Online Learning",
   description:
-    "Discover top online pharmacy courses on PharmLMS. Learn clinical skills, patient safety, drug interactions, and more with expert instructors. Start learning today.",
+    "Discover top online pharmacy courses on PharmEdge. Learn clinical skills, patient safety, drug interactions, and more with expert instructors. Start learning today.",
   alternates: { canonical: "/" },
 };
 
