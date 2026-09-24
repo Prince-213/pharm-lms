@@ -33,36 +33,6 @@ async function markOnCanvas(
     .toBuffer();
 }
 
-async function whiteMark(size: number) {
-  const resized = await sharp(logoPath)
-    .resize(size, size, {
-      fit: "contain",
-      background: { r: 0, g: 0, b: 0, alpha: 0 },
-    })
-    .ensureAlpha()
-    .raw()
-    .toBuffer({ resolveWithObject: true });
-
-  const out = Buffer.from(resized.data);
-  for (let i = 0; i < out.length; i += 4) {
-    if (out[i + 3] > 0) {
-      out[i] = 255;
-      out[i + 1] = 255;
-      out[i + 2] = 255;
-    }
-  }
-
-  return sharp(out, {
-    raw: {
-      width: resized.info.width,
-      height: resized.info.height,
-      channels: 4,
-    },
-  })
-    .png()
-    .toBuffer();
-}
-
 function pngsToIco(
   images: { png: Buffer; width: number; height: number }[],
 ): Buffer {
@@ -106,34 +76,12 @@ function pngsToIco(
   return buf;
 }
 
-async function writeOgCard(opts: {
-  file: string;
-  headline: string;
-  subline: string;
-  cta: string;
-}) {
-  const width = 1200;
-  const height = 630;
-  const mark = await whiteMark(168);
-  const overlay = Buffer.from(`<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <radialGradient id="glow" cx="78%" cy="40%" r="55%">
-      <stop offset="0%" stop-color="#7a4dfc" stop-opacity="0.38"/>
-      <stop offset="100%" stop-color="#0b1228" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
-  <rect width="100%" height="100%" fill="#0b1228"/>
-  <rect width="100%" height="100%" fill="url(#glow)"/>
-  <text x="300" y="268" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="700" fill="#ffffff">${opts.headline}</text>
-  <text x="300" y="328" font-family="Arial, Helvetica, sans-serif" font-size="30" fill="#c4b5fd">${opts.subline}</text>
-  <rect x="300" y="368" width="280" height="64" rx="32" fill="#7a4dfc"/>
-  <text x="440" y="410" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#ffffff">${opts.cta}</text>
-</svg>`);
-
-  await sharp(overlay)
-    .composite([{ input: mark, left: 92, top: 206 }])
+/** Resize an AI-authored source to the Open Graph 1200×630 JPEG. */
+async function writeOgJpeg(sourceName: string, dest: string) {
+  await sharp(join(root, "scripts/og-sources", sourceName))
+    .resize(1200, 630, { fit: "cover", position: "centre" })
     .jpeg({ quality: 90 })
-    .toFile(join(ogDir, opts.file));
+    .toFile(dest);
 }
 
 async function main() {
@@ -161,20 +109,14 @@ async function main() {
   writeFileSync(join(seoDir, "favicon.ico"), ico);
   writeFileSync(join(root, "public/favicon.ico"), ico);
 
-  await writeOgCard({
-    file: "home-v2.jpg",
-    headline: "PharmEdge",
-    subline: "Learn skills with expert-led courses",
-    cta: "Start learning",
-  });
-  await writeOgCard({
-    file: "default-v2.jpg",
-    headline: "PharmEdge",
-    subline: "Courses for students, tutors, and mentors",
-    cta: "Start learning",
-  });
+  const homeOg = join(ogDir, "home-v3.jpg");
+  const defaultOg = join(ogDir, "default-v3.jpg");
+  await writeOgJpeg("home.png", homeOg);
+  await writeOgJpeg("default.png", defaultOg);
+  await writeOgJpeg("home.png", join(root, "app/opengraph-image.jpg"));
+  await writeOgJpeg("default.png", join(root, "app/twitter-image.jpg"));
 
-  console.log("Wrote favicons to public/seo and OG cards to public/og");
+  console.log("Wrote favicons to public/seo and OG cards to public/og + app/");
 }
 
 main().catch((error) => {

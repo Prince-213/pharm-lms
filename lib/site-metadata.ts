@@ -24,12 +24,13 @@ export const siteUrl = resolveSiteUrl();
 
 /**
  * Open Graph images — add files under `public/og/`:
- * - `default-v2.jpg` (1200×630) — site-wide fallback
- * - `home-v2.jpg` — homepage / marketing
+ * - `default-v3.jpg` (1200×630) — site-wide fallback
+ * - `home-v3.jpg` — homepage / marketing
+ * Next.js also serves `app/opengraph-image.jpg` and `app/twitter-image.jpg`.
  */
 export const ogImagePaths = {
-  default: "/og/default-v2.jpg",
-  home: "/og/home-v2.jpg",
+  default: "/og/default-v3.jpg",
+  home: "/og/home-v3.jpg",
 } as const;
 
 export const siteConfig = {
