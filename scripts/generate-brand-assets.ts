@@ -110,6 +110,7 @@ async function writeOgCard(opts: {
   file: string;
   headline: string;
   subline: string;
+  cta: string;
 }) {
   const width = 1200;
   const height = 630;
@@ -123,12 +124,14 @@ async function writeOgCard(opts: {
   </defs>
   <rect width="100%" height="100%" fill="#0b1228"/>
   <rect width="100%" height="100%" fill="url(#glow)"/>
-  <text x="300" y="292" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="700" fill="#ffffff">${opts.headline}</text>
-  <text x="300" y="360" font-family="Arial, Helvetica, sans-serif" font-size="32" fill="#c4b5fd">${opts.subline}</text>
+  <text x="300" y="268" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="700" fill="#ffffff">${opts.headline}</text>
+  <text x="300" y="328" font-family="Arial, Helvetica, sans-serif" font-size="30" fill="#c4b5fd">${opts.subline}</text>
+  <rect x="300" y="368" width="280" height="64" rx="32" fill="#7a4dfc"/>
+  <text x="440" y="410" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#ffffff">${opts.cta}</text>
 </svg>`);
 
   await sharp(overlay)
-    .composite([{ input: mark, left: 92, top: 231 }])
+    .composite([{ input: mark, left: 92, top: 206 }])
     .jpeg({ quality: 90 })
     .toFile(join(ogDir, opts.file));
 }
@@ -159,14 +162,16 @@ async function main() {
   writeFileSync(join(root, "public/favicon.ico"), ico);
 
   await writeOgCard({
-    file: "home.jpg",
+    file: "home-v2.jpg",
     headline: "PharmEdge",
     subline: "Learn skills with expert-led courses",
+    cta: "Start learning",
   });
   await writeOgCard({
-    file: "default.jpg",
+    file: "default-v2.jpg",
     headline: "PharmEdge",
-    subline: "Knowledge and skill learning for students, tutors, and mentors",
+    subline: "Courses for students, tutors, and mentors",
+    cta: "Start learning",
   });
 
   console.log("Wrote favicons to public/seo and OG cards to public/og");

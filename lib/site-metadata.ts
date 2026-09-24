@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 const SITE_NAME = "PharmEdge";
 const SITE_TAGLINE = "From dispensing to decision-making";
 const SITE_DESCRIPTION =
-  "PharmEdge is Africa's first pharmacy-specific digital health education platform — equipping pharmacists with the clinical, data, and technology skills to thrive in the digital health economy.";
+  "Expert-led courses for students, tutors, and mentors. Learn skills and grow your career on PharmEdge.";
 
 function resolveSiteUrl(): string {
   const fromEnv =
@@ -24,12 +24,12 @@ export const siteUrl = resolveSiteUrl();
 
 /**
  * Open Graph images — add files under `public/og/`:
- * - `default.jpg` (1200×630) — site-wide fallback
- * - `home.jpg` (optional) — homepage / marketing
+ * - `default-v2.jpg` (1200×630) — site-wide fallback
+ * - `home-v2.jpg` — homepage / marketing
  */
 export const ogImagePaths = {
-  default: "/og/default.jpg",
-  home: "/og/home.jpg",
+  default: "/og/default-v2.jpg",
+  home: "/og/home-v2.jpg",
 } as const;
 
 export const siteConfig = {
