@@ -1,0 +1,24 @@
+{
+  "leadingProfessionals": {
+    "highlight": "Master",
+    "title": "Your Skills with Leading Professionals",
+    "ctaLabel": "View All Courses",
+    "ctaHref": "/courses"
+  },
+  "tutors": [
+    {
+      "id": "ibrahim-aremu",
+      "name": "Ibrahim Aremu",
+      "image": "/tutors/Ibrahim Aremu.png",
+      "title": "Pharmacy tutor",
+      "objectPosition": "50% 22%"
+    },
+    {
+      "id": "jennifer-okeke",
+      "name": "Jennifer Okeke",
+      "image": "/tutors/JENNIFER OKEKE.jpg",
+      "title": "Pharmacy tutor",
+      "objectPosition": "50% 32%"
+    }
+  ]
+}

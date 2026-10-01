@@ -1,3 +1,5 @@
+import { getCmsTutors } from "@/lib/cms/tutors";
+
 export type LandingAudience = "student" | "mentor" | "instructor";
 
 /**
@@ -78,6 +80,13 @@ export type LandingPersonCard = {
   bio: string;
   avatar: string;
 };
+
+const cmsPeopleMembers: LandingPersonCard[] = getCmsTutors().map((tutor) => ({
+  name: tutor.name,
+  title: tutor.title?.trim() || "Pharmacy tutor",
+  bio: tutor.bio?.trim() || "",
+  avatar: tutor.image,
+}));
 
 export type LandingTestimonial = {
   quote: string;
@@ -587,32 +596,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
       title: "Meet the Heroes",
       description:
         "On PharmEdge, leading African and global experts equip pharmacists to move beyond dispensing and into digital health roles.",
-      members: [
-        {
-          name: "Theresa Webb",
-          title: "Clinical Pharmacy Specialist",
-          bio: "Former co-founder of ClinicalEdge. Early staff at MedRx and ClearScript.",
-          avatar: "https://i.pravatar.cc/80?u=theresawebb",
-        },
-        {
-          name: "Courtney Henry",
-          title: "Director, PharmD Programme",
-          bio: "Lead faculty teams at ASHP, NovaClin, and Protocol Labs.",
-          avatar: "https://i.pravatar.cc/80?u=courtneyhenry",
-        },
-        {
-          name: "Albert Flores",
-          title: "Pharmacokinetics Educator",
-          bio: "Former PM for PharmaLearn, Lambda School, and On Deck.",
-          avatar: "https://i.pravatar.cc/80?u=albertflores",
-        },
-        {
-          name: "Marvin McKinney",
-          title: "Drug Safety & PV Instructor",
-          bio: "Former clinical dev for GeneriCo, MedBase, and PostRx.",
-          avatar: "https://i.pravatar.cc/80?u=marvinmckinney",
-        },
-      ],
+      members: cmsPeopleMembers,
     },
     testimonials: [
       {
@@ -760,32 +744,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
       title: "Meet Our Mentors",
       description:
         "Experienced practitioners on PharmEdge help students navigate clinical rotations, digital health pathways, and major career transitions.",
-      members: [
-        {
-          name: "Dr. Sarah Chen",
-          title: "Residency Program Advisor",
-          bio: "15 years in academic pharmacy. Mentored 200+ students into top residency programs.",
-          avatar: "https://i.pravatar.cc/80?u=sarahchen",
-        },
-        {
-          name: "James Okonkwo",
-          title: "Clinical Pharmacy Mentor",
-          bio: "Hospital pharmacist specializing in internal medicine and student precepting.",
-          avatar: "https://i.pravatar.cc/80?u=jamesokonkwo",
-        },
-        {
-          name: "Maria Lopez",
-          title: "Licensure & Exam Coach",
-          bio: "NAPLEX pass-rate coach with a structured study framework for PharmD candidates.",
-          avatar: "https://i.pravatar.cc/80?u=marialopez",
-        },
-        {
-          name: "Daniel Okafor",
-          title: "Industry Career Mentor",
-          bio: "Former retail lead now guiding transitions into clinical and industry roles.",
-          avatar: "https://i.pravatar.cc/80?u=danielokafor",
-        },
-      ],
+      members: cmsPeopleMembers,
     },
     testimonials: [
       {
@@ -927,32 +886,7 @@ export const landingContent: Record<LandingAudience, LandingPageContent> = {
       title: "Top Educators on PharmEdge",
       description:
         "Pharmacists and digital health leaders publish clinical content that thousands of practitioners across Africa rely on every day.",
-      members: [
-        {
-          name: "Theresa Webb",
-          title: "Clinical Pharmacy Educator",
-          bio: "12 published courses on therapeutics and patient counseling. 8K+ enrollments.",
-          avatar: "https://i.pravatar.cc/80?u=theresawebb",
-        },
-        {
-          name: "Albert Flores",
-          title: "Pharmacokinetics Instructor",
-          bio: "Known for clear, visual lessons on ADME and dosing across care settings.",
-          avatar: "https://i.pravatar.cc/80?u=albertflores",
-        },
-        {
-          name: "Courtney Henry",
-          title: "Regulatory & Law Instructor",
-          bio: "Former compliance lead teaching pharmacy law for new graduates.",
-          avatar: "https://i.pravatar.cc/80?u=courtneyhenry",
-        },
-        {
-          name: "Marvin McKinney",
-          title: "Drug Safety Instructor",
-          bio: "Pharmacovigilance specialist with industry and academic teaching experience.",
-          avatar: "https://i.pravatar.cc/80?u=marvinmckinney",
-        },
-      ],
+      members: cmsPeopleMembers,
     },
     testimonials: [
       {

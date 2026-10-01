@@ -45,7 +45,7 @@ export function LandingPeopleSection({
                   alt={person.name}
                   width={80}
                   height={80}
-                  className="mb-4 h-20 w-20 rounded-full object-cover ring-4 ring-white shadow-md"
+                  className="mb-4 h-20 w-20 rounded-full object-cover shadow-md ring-4 ring-white"
                   unoptimized={person.avatar.startsWith("http")}
                 />
                 <h3 className="font-display text-base font-bold text-[var(--ink-deep)]">

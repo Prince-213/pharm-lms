@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "./pharm-brand.css";
 @plugin "@tailwindcss/typography";
 /*---break---
  */
@@ -71,7 +72,7 @@
 
   --header-blur: 12px;
 
-  --font-title-active: var(--font-outfit), "Outfit", system-ui, sans-serif;
+  --font-title-active: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
 
   --chart-1: oklch(0.809 0.105 251.813);
 
@@ -89,9 +90,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-montserrat), "Montserrat", system-ui, sans-serif;
-  --font-display: var(--font-title-active);
-  --font-mono: var(--font-roboto-mono);
+  --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-roboto-mono), ui-monospace, monospace;
   --shadow-1: var(--shadow-1);
   --shadow-2: var(--shadow-2);
   --shadow-3: var(--shadow-3);
@@ -112,7 +113,7 @@
     }
   }
 
-  --font-heading: var(--font-heading);
+  --font-heading: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
 
   --color-sidebar-ring: var(--sidebar-ring);
 
@@ -369,6 +370,6 @@ h6 {
   --live: var(--destructive);
   --success: #1e40af;
   --success-soft: #dbeafe;
-  --font-sans: var(--font-montserrat), "Montserrat", system-ui, sans-serif;
-  --font-title-active: var(--font-outfit), "Outfit", system-ui, sans-serif;
+  --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  --font-title-active: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
 }
