@@ -8,11 +8,11 @@ export default function MarketingLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
+    <div className="overflow-x-clip">
       <LandingHeader />
       {children}
       <LandingFooter />
       <ScrollToTopButton />
-    </>
+    </div>
   );
 }

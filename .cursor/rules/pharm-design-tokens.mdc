@@ -10,10 +10,12 @@ Brand colors (preserve in UI work):
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--primary` | `#1e40af` | Navy — buttons, links, sidebar |
-| `--accent` | `#7a4dfc` | Purple — auth CTAs, illustrations |
-| `--background` | `#f5f7fa` | Page background |
-| `--foreground` | `#1a1a2e` | Body text |
+| `--primary` | `#000080` | Navy — buttons, links, sidebar |
+| `--primary-strong` | `#00005C` | Deep navy — hero gradient, hover |
+| `--accent` / `--secondary` | `#00BFFF` | Cyan — highlights, key CTAs |
+| `--accent-deep` | `#00799C` | Tertiary teal — links, hover |
+| `--background` | `#FAFAFB` | Page background |
+| `--foreground` | `#0A0A14` | Body text |
 | `--destructive` / `--live` | `#ef4444` | Errors, destructive actions |
 
 ## Token bridge

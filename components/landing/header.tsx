@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowRightIcon, List, X } from "@phosphor-icons/react";
+import { List, X } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { MOTION_EASE } from "@/components/landing/motion-primitives";
 import { getHeaderAuthCtas } from "@/lib/audience-landing-content";
 import { PharmLogo } from "@/components/brand/pharm-logo";
+import { cn } from "@/lib/utils";
 
 const audienceCtaLinks = [
   { label: "Teach on PharmEdge", href: "/teach" },
@@ -21,6 +22,11 @@ const navLinks = [
   { label: "Courses", href: "/courses" },
   { label: "Verify Certification", href: "/validate" },
 ];
+
+function isActivePath(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 const LandingHeader = () => {
   const pathname = usePathname();
@@ -36,79 +42,95 @@ const LandingHeader = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
   return (
     <header
-      className={`sticky top-0 z-50 w-full border-b border-[var(--border)] bg-white/90 backdrop-blur-md transition-shadow duration-300 ${
-        scrolled ? "shadow-md" : ""
-      }`}
+      className={cn(
+        "sticky top-0 z-50 w-full overflow-x-clip border-b border-white/12 bg-primary text-primary-foreground transition-shadow duration-300",
+        scrolled && "shadow-[0_10px_28px_rgba(0,0,40,0.28)]",
+      )}
     >
-      <div className="mx-auto flex h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-10 xl:w-[90%]">
-        {/* Logo */}
-          <Link href="/" className="flex shrink-0 items-center hover:scale-[1.02] transition-transform">
-            <PharmLogo
-              priority
-              markClassName="h-8 w-8 sm:h-10 sm:w-10"
-              wordmarkClassName="text-base sm:text-lg"
-            />
-          </Link>
+      <div className="mx-auto flex h-14 min-w-0 max-w-[96rem] items-center justify-between gap-3 px-5 sm:px-8 lg:h-16 lg:px-12 xl:px-16">
+        <Link
+          href="/"
+          className="flex shrink-0 items-center transition-opacity hover:opacity-90"
+        >
+          <PharmLogo
+            inverted
+            priority
+            markClassName="h-8 w-8 sm:h-10 sm:w-10"
+            wordmarkClassName="text-base text-white sm:text-lg"
+          />
+        </Link>
 
-        {/* Desktop Nav */}
-        <nav className="hidden items-center gap-5 font-semibold text-[var(--ink-deep)] lg:flex xl:gap-8">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="relative text-sm transition-colors duration-300 hover:text-[var(--accent)] xl:text-[15px] after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-[var(--accent)] after:transition-all after:duration-300 hover:after:w-full"
-            >
-              {link.label}
-            </Link>
-          ))}
-          {audienceCtaLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-sm font-bold text-accent transition-colors hover:text-[var(--accent-deep)] xl:text-[15px]"
-            >
-              {link.label}
-            </Link>
-          ))}
+        <nav className="hidden min-w-0 items-center gap-5 font-medium lg:flex xl:gap-7">
+          {navLinks.map((link) => {
+            const active = isActivePath(pathname, link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "relative shrink-0 py-1 text-[13px] transition-colors duration-200 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-accent after:transition-all after:duration-200 xl:text-[15px]",
+                  active
+                    ? "text-white after:w-full"
+                    : "text-white/72 after:w-0 hover:text-white hover:after:w-full",
+                )}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+          {audienceCtaLinks.map((link) => {
+            const active = isActivePath(pathname, link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "hidden shrink-0 text-[13px] transition-colors duration-200 xl:inline xl:text-[15px]",
+                  active
+                    ? "text-accent"
+                    : "text-white/55 hover:text-accent",
+                )}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
-        {/* Desktop Buttons */}
         <span className="hidden items-center gap-2 lg:flex">
-          <Link href={loginHref}>
-            <Button
-              variant="outline"
-              className="cursor-pointer border-accent bg-white px-4 text-sm text-accent transition-all duration-300 hover:scale-[1.02] hover:bg-accent hover:text-accent-foreground active:scale-[0.98] xl:px-5 xl:text-[15px]"
-            >
-              <span>{loginLabel}</span>
-              <ArrowRightIcon className="ml-1" />
-            </Button>
-          </Link>
-          <Link href={signupHref}>
-            <Button
-              variant="outline"
-              className="cursor-pointer border-[var(--primary)] bg-[var(--primary)] px-4 text-sm text-white transition-all duration-300 hover:scale-[1.02] hover:bg-[var(--primary-strong)] active:scale-[0.98] xl:px-5 xl:text-[15px]"
-            >
-              <span>{signupLabel}</span>
-              <ArrowRightIcon className="ml-1" />
-            </Button>
-          </Link>
-          <Link href="/contact">
-            <Button
-              variant="outline"
-              className="hidden cursor-pointer border-border bg-white px-4 text-sm text-[var(--ink-deep)] transition-all duration-300 hover:scale-[1.02] hover:bg-muted active:scale-[0.98] xl:inline-flex xl:px-5 xl:text-[15px]"
-            >
-              <span>Contact Us</span>
-            </Button>
+          <Button
+            asChild
+            variant="ghost"
+            className="h-10 rounded-full px-4 text-sm text-white/80 hover:bg-white/10 hover:text-white xl:px-5 xl:text-[15px]"
+          >
+            <Link href={loginHref}>{loginLabel}</Link>
+          </Button>
+          <Button
+            asChild
+            className="h-10 rounded-full bg-accent px-5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 xl:text-[15px]"
+          >
+            <Link href={signupHref}>{signupLabel}</Link>
+          </Button>
+          <Link
+            href="/contact"
+            className="hidden px-2 text-sm text-white/55 transition-colors hover:text-white xl:inline"
+          >
+            Contact
           </Link>
         </span>
 
-        {/* Mobile Menu Toggle */}
         <button
           type="button"
           onClick={() => setMobileOpen((v) => !v)}
-          className="flex items-center justify-center rounded-lg p-2 text-[var(--ink-deep)] hover:bg-slate-100 lg:hidden"
+          className="flex items-center justify-center rounded-lg p-2 text-white hover:bg-white/10 lg:hidden"
           aria-label="Toggle navigation"
           aria-expanded={mobileOpen}
         >
@@ -116,52 +138,69 @@ const LandingHeader = () => {
         </button>
       </div>
 
-      {/* Mobile Slide-out Menu */}
       <AnimatePresence>
-        {mobileOpen && (
+        {mobileOpen ? (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: MOTION_EASE }}
-            className="overflow-hidden border-t border-[var(--border)] bg-white lg:hidden"
+            className="overflow-hidden border-t border-white/12 bg-primary-strong lg:hidden"
           >
-            <div className="px-4 pb-6 pt-3">
+            <div className="px-5 pb-6 pt-3">
               <nav className="flex flex-col gap-1">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setMobileOpen(false)}
-                    className="rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--ink-deep)] transition-colors hover:bg-accent-soft hover:text-[var(--accent)]"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-                {audienceCtaLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setMobileOpen(false)}
-                    className="rounded-lg px-3 py-2.5 text-sm font-bold text-[var(--accent)] transition-colors hover:bg-accent-soft"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
+                {navLinks.map((link) => {
+                  const active = isActivePath(pathname, link.href);
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMobileOpen(false)}
+                      aria-current={active ? "page" : undefined}
+                      className={cn(
+                        "rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                        active
+                          ? "bg-white/10 text-white"
+                          : "text-white/80 hover:bg-white/8 hover:text-white",
+                      )}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
+                {audienceCtaLinks.map((link) => {
+                  const active = isActivePath(pathname, link.href);
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMobileOpen(false)}
+                      aria-current={active ? "page" : undefined}
+                      className={cn(
+                        "rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                        active
+                          ? "text-accent"
+                          : "text-white/60 hover:bg-white/8 hover:text-accent",
+                      )}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
               </nav>
               <div className="mt-4 flex flex-col gap-3">
                 <div className="flex gap-3">
                   <Link
                     href={loginHref}
                     onClick={() => setMobileOpen(false)}
-                    className="flex-1 rounded-lg border border-[var(--accent)] py-3 text-center text-sm font-semibold text-[var(--accent)] transition-colors hover:bg-[var(--accent)] hover:text-white"
+                    className="flex-1 rounded-full border border-white/25 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-white/10"
                   >
                     {loginLabel}
                   </Link>
                   <Link
                     href={signupHref}
                     onClick={() => setMobileOpen(false)}
-                    className="flex-1 rounded-lg bg-[var(--primary)] py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-[var(--primary-strong)]"
+                    className="flex-1 rounded-full bg-accent py-3 text-center text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/90"
                   >
                     {signupLabel}
                   </Link>
@@ -169,14 +208,14 @@ const LandingHeader = () => {
                 <Link
                   href="/contact"
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-lg border border-border py-3 text-center text-sm font-semibold text-[var(--ink-deep)] transition-colors hover:bg-muted"
+                  className="py-2 text-center text-sm font-medium text-white/60 transition-colors hover:text-white"
                 >
-                  Contact Us
+                  Contact
                 </Link>
               </div>
             </div>
           </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
     </header>
   );

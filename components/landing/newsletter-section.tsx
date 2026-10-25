@@ -37,7 +37,7 @@ export function NewsletterSection() {
   return (
     <section
       id="newsletter"
-      className="relative overflow-hidden bg-[#f0f0f0] pb-16 lg:pb-24"
+      className="relative overflow-hidden bg-[#f0f0f0] pb-14 md:pb-16 lg:pb-16 xl:pb-24"
     >
       <div className="relative mx-auto w-[90%] px-4 sm:px-6 lg:w-[70%] lg:px-10">
         <div className="relative flex flex-col border-b border-gray-400 pb-20 lg:flex-row lg:items-end lg:gap-8 xl:gap-12">
@@ -48,7 +48,7 @@ export function NewsletterSection() {
               className="absolute -top-8 left-2 h-8 w-auto"
               aria-hidden="true"
             />
-            <h2 className="text-[34px] font-bold leading-[1.15] tracking-[-0.02em] text-black sm:text-[40px] lg:text-[52px]">
+            <h2 className="text-[26px] font-bold leading-[1.15] tracking-[-0.02em] text-black sm:text-[30px] md:text-[34px] lg:text-[40px] xl:text-[52px]">
               <span className="relative inline-block">
                 <span className="relative inline-block px-1">
                   <span className="relative z-[1]">Keep</span>
@@ -81,8 +81,8 @@ export function NewsletterSection() {
           />
 
           <div className="w-full lg:shrink-0 xl:max-w-[40%]">
-            <div className="rounded-b-[24px] bg-white p-8 lg:p-14">
-              <h3 className="mb-3 font-display text-2xl font-bold text-[var(--ink-deep)]">
+            <div className="rounded-b-[24px] bg-white p-6 lg:p-8 xl:p-14">
+              <h3 className="mb-3 font-display text-xl font-bold text-[var(--ink-deep)] xl:text-2xl">
                 Subscribe Our Newsletter
               </h3>
               <p className="mb-6 text-sm font-medium leading-relaxed text-gray-800">

@@ -38,13 +38,13 @@ export function FAQSection() {
   return (
     <section
       id="faq"
-      className="relative bg-white py-16 lg:py-24 overflow-hidden"
+      className="relative overflow-hidden bg-white py-14 md:py-16 lg:py-16 xl:py-24"
     >
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
         <div className="flex flex-col lg:flex-row lg:items-start lg:gap-12 xl:gap-16">
           {/* Left image */}
           <div className="relative mx-auto mb-10 w-full max-w-sm shrink-0 lg:mx-0 lg:mb-0 lg:max-w-md xl:max-w-lg">
-            <div className="overflow-hidden rounded-[24px] h-[50vh] lg:h-[65vh] bg-red-400 relative">
+            <div className="relative h-[40vh] overflow-hidden rounded-[24px] bg-red-400 md:h-[44vh] lg:h-[50vh] xl:h-[65vh]">
               <Image
                 src="/assets/linkedin-sales-solutions-6ie6OjshvWg-unsplash.jpg"
                 alt="Student learning"
@@ -56,7 +56,7 @@ export function FAQSection() {
 
           {/* Right content */}
           <div className="flex-1">
-            <h2 className="mb-8 font-display text-3xl font-bold text-[var(--ink-deep)] sm:text-4xl lg:text-[2.5rem] leading-tight">
+            <h2 className="mb-6 font-display text-[26px] font-bold leading-tight text-[var(--ink-deep)] sm:text-[30px] md:text-[32px] lg:mb-8 lg:text-[34px] xl:text-[2.5rem]">
               Frequently <span className="text-[var(--emerald)]">Asked</span>
               <br />
               Questions
@@ -77,7 +77,7 @@ export function FAQSection() {
                     <button
                       type="button"
                       onClick={() => toggle(index)}
-                      className="flex w-full items-center justify-between px-6 py-5 text-left font-semibold text-lg lg:text-xl"
+                      className="flex w-full items-center justify-between px-5 py-4 text-left text-base font-semibold lg:px-6 lg:py-5 lg:text-lg xl:text-xl"
                     >
                       <span>{faq.question}</span>
                       <motion.span

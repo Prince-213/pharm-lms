@@ -16,7 +16,7 @@ export function EnrollmentTrendChart({ data }: EnrollmentTrendChartProps) {
     legend: {
       show: false,
     },
-    colors: ["#1e40af", "#3b82f6"],
+    colors: ["#000080", "#00BFFF"],
     chart: {
       fontFamily: "inherit",
       height: 335,
@@ -72,7 +72,7 @@ export function EnrollmentTrendChart({ data }: EnrollmentTrendChartProps) {
     markers: {
       size: 4,
       colors: "#fff",
-      strokeColors: ["#1e40af", "#3b82f6"],
+      strokeColors: ["#000080", "#00BFFF"],
       strokeWidth: 3,
       strokeOpacity: 0.9,
       strokeDashArray: 0,

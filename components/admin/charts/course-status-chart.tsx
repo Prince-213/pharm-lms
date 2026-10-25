@@ -12,7 +12,7 @@ const STATUS_COLORS: Record<string, string> = {
   Submitted: "#ca8a04",
   Approved: "#3b82f6",
   Rejected: "#ef4444",
-  Published: "#1e40af",
+  Published: "#000080",
 };
 
 type CourseStatusChartProps = {
@@ -21,7 +21,7 @@ type CourseStatusChartProps = {
 
 export function CourseStatusChart({ data }: CourseStatusChartProps) {
   const colors = data.map(
-    (d) => STATUS_COLORS[d.label] ?? "#1e40af",
+    (d) => STATUS_COLORS[d.label] ?? "#000080",
   );
 
   const options: ApexOptions = {

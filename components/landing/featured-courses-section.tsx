@@ -1,7 +1,8 @@
 "use client";
 
-import Image from "next/image";
+import Link from "next/link";
 import {
+  AnimatedSection,
   AnimatedStagger,
   AnimatedStaggerItem,
 } from "@/components/landing/motion-primitives";
@@ -9,6 +10,12 @@ import {
   FeaturedCourseCard,
   type FeaturedCourseCardView,
 } from "@/components/landing/featured-course-card";
+import {
+  LandingContainer,
+  LandingEyebrow,
+  LandingHeading,
+} from "@/components/landing/landing-container";
+import { Button } from "@/components/ui/button";
 
 const fallbackCourses: FeaturedCourseCardView[] = [
   {
@@ -51,36 +58,30 @@ export function FeaturedCoursesSection({ courses }: FeaturedCoursesSectionProps)
   const displayCourses = (courses?.length ?? 0) > 0 ? courses! : fallbackCourses;
 
   return (
-    <section
-      id="featured-courses"
-      className="w-full bg-[#EFEFEF] py-20 lg:py-28"
-    >
-      <div className="mx-auto w-[90%] sm:w-[85%] lg:w-[70%]">
-        <h2 className="text-center text-[28px] font-bold leading-[1.2] tracking-[-0.02em] text-black sm:text-[34px] lg:text-[44px]">
-          <span className="relative inline-block">
-            <span className="relative inline-block px-1">
-              <span className="relative z-[1]">Our</span>
-              <Image
-                src="/assets/hightlight-crown.svg"
-                alt=""
-                width={92}
-                height={56}
-                className="pointer-events-none absolute bottom-[2px] left-1/2 z-0 h-auto w-[108%] max-w-none -translate-x-1/2"
-                aria-hidden
-              />
-            </span>
-          </span>{" "}
-          Featured Top-Rated Courses
-        </h2>
+    <section id="featured-courses" className="w-full bg-muted py-16 md:py-20 xl:py-24">
+      <LandingContainer>
+        <AnimatedSection className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-xl space-y-3">
+            <LandingEyebrow>Featured courses</LandingEyebrow>
+            <LandingHeading>Start with one course today.</LandingHeading>
+          </div>
+          <Button
+            asChild
+            variant="outline"
+            className="h-11 rounded-full border-primary px-6 font-medium text-primary transition-transform hover:-translate-y-0.5 hover:bg-primary hover:text-primary-foreground"
+          >
+            <Link href="/courses">Browse all courses</Link>
+          </Button>
+        </AnimatedSection>
 
-        <AnimatedStagger className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-7 lg:mt-16 xl:grid-cols-3">
+        <AnimatedStagger className="mt-8 grid grid-cols-1 gap-5 sm:mt-10 md:grid-cols-2 lg:grid-cols-3 xl:mt-12">
           {displayCourses.map((course) => (
             <AnimatedStaggerItem key={course.id}>
-              <FeaturedCourseCard course={course} ctaLabel="View Courses" />
+              <FeaturedCourseCard course={course} ctaLabel="View course" />
             </AnimatedStaggerItem>
           ))}
         </AnimatedStagger>
-      </div>
+      </LandingContainer>
     </section>
   );
 }

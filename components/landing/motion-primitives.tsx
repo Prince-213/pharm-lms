@@ -63,7 +63,7 @@ export function AnimatedSection({
         delay,
         ease: MOTION_EASE,
       }}
-      className={className}
+      className={["overflow-x-clip", className].filter(Boolean).join(" ")}
     >
       {children}
     </motion.div>
@@ -110,13 +110,16 @@ export function AnimatedStagger({
 type AnimatedStaggerItemProps = {
   children: ReactNode;
   className?: string;
+  direction?: Direction;
 };
 
 export function AnimatedStaggerItem({
   children,
   className,
+  direction = "up",
 }: AnimatedStaggerItemProps) {
   const reduced = usePrefersReducedMotion();
+  const offset = getDirectionOffset(direction);
 
   if (reduced) {
     return <div className={className}>{children}</div>;
@@ -125,9 +128,10 @@ export function AnimatedStaggerItem({
   return (
     <motion.div
       variants={{
-        hidden: { opacity: 0, y: 24 },
+        hidden: { opacity: 0, x: offset.x, y: offset.y },
         visible: {
           opacity: 1,
+          x: 0,
           y: 0,
           transition: { duration: 0.5, ease: MOTION_EASE },
         },
@@ -144,29 +148,29 @@ function parseStatValue(value: string): {
   format: (n: number) => string;
 } {
   const trimmed = value.trim();
-  const hasPlus = trimmed.endsWith("+");
-  const core = hasPlus ? trimmed.slice(0, -1) : trimmed;
-
-  if (core.endsWith("M")) {
-    const num = Number.parseFloat(core.slice(0, -1));
-    return {
-      target: num,
-      format: (n) => `${n.toFixed(1)}M${hasPlus ? "+" : ""}`,
-    };
+  const match = trimmed.match(/^(.*?)(\d+(?:\.\d+)?)(.*)$/);
+  if (!match) {
+    return { target: 0, format: () => trimmed };
   }
 
-  if (core.endsWith("K")) {
-    const num = Number.parseFloat(core.slice(0, -1));
-    return {
-      target: num,
-      format: (n) => `${Math.round(n)}K${hasPlus ? "+" : ""}`,
-    };
+  const prefix = match[1] ?? "";
+  const raw = match[2] ?? "0";
+  let rest = match[3] ?? "";
+  let unit = "";
+  if (rest.startsWith("M") || rest.startsWith("K")) {
+    unit = rest[0] ?? "";
+    rest = rest.slice(1);
   }
+  const hasPlus = rest.startsWith("+");
+  const suffix = hasPlus ? rest.slice(1) : rest;
+  const target = Number.parseFloat(raw);
 
-  const num = Number.parseFloat(core);
   return {
-    target: num,
-    format: (n) => `${Math.round(n)}${hasPlus ? "+" : ""}`,
+    target: Number.isFinite(target) ? target : 0,
+    format: (n) => {
+      const amount = unit === "M" ? n.toFixed(1) : `${Math.round(n)}`;
+      return `${prefix}${amount}${unit}${hasPlus ? "+" : ""}${suffix}`;
+    },
   };
 }
 

@@ -6,7 +6,7 @@ import { BadgeEarnedToast } from "./badge-earned-toast";
 
 type Badge = { id: string; name: string; iconUrl: string | null };
 
-const CONFETTI_COLORS = ["#1e40af", "#dbeafe", "#1e3a8a", "#eff6ff", "#facc15"];
+const CONFETTI_COLORS = ["#000080", "#00BFFF", "#00799C", "#e6f8ff", "#facc15"];
 
 export function BadgeToastTrigger({ newBadges }: { newBadges: Badge[] }) {
   const fired = useRef(false);

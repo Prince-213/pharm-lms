@@ -34,11 +34,11 @@ const stats = [
 
 export function JourneySection() {
   return (
-    <section id="journey" className="w-full  py-20 lg:py-28">
+    <section id="journey" className="w-full py-14 md:py-16 lg:py-20 xl:py-28">
       <div className="mx-auto w-full max-w-[1328px] px-4 sm:w-[92%] sm:px-0">
         <div className="relative grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,660px)] lg:gap-10 xl:gap-14">
           <div className="relative z-10 max-w-[560px]">
-            <h2 className="text-[34px] font-bold leading-[1.15] tracking-[-0.02em] text-black sm:text-[40px] lg:text-[44px]">
+            <h2 className="text-[26px] font-bold leading-[1.15] tracking-[-0.02em] text-black sm:text-[30px] md:text-[32px] lg:text-[36px] xl:text-[44px]">
               <span className="relative inline-block">
                 <span className="relative inline-block px-1">
                   <span className="relative z-[1]">Your</span>
@@ -98,7 +98,7 @@ export function JourneySection() {
           </div>
         </div>
 
-        <AnimatedStagger className="mt-16 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:mt-20 xl:grid-cols-4">
+        <AnimatedStagger className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:mt-14 xl:mt-20 xl:grid-cols-4">
           {stats.map((stat) => (
             <AnimatedStaggerItem key={stat.label}>
               <div className="flex items-center gap-4 rounded-[14px] bg-white px-6 py-6 shadow-[0_4px_24px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(15,23,42,0.1)]">
@@ -113,7 +113,7 @@ export function JourneySection() {
                 <div>
                   <AnimatedCounter
                     value={stat.value}
-                    className="text-xl font-bold leading-none text-black sm:text-2xl lg:text-[28px]"
+                    className="text-xl font-bold leading-none text-black sm:text-2xl lg:text-[24px] xl:text-[28px]"
                   />
                   <p className="mt-2 text-sm font-bold text-black">
                     {stat.label}

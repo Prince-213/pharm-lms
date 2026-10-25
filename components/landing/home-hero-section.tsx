@@ -114,7 +114,7 @@ const HomeHeroSection = () => {
 
   return (
     <motion.div
-      className="gap-y-8 lg:w-[79%] xl:w-[60%] w-[90%] mx-auto py-12 lg:py-[6rem] flex flex-col items-center justify-center px-4"
+      className="mx-auto flex w-[90%] flex-col items-center justify-center gap-y-6 px-4 py-10 sm:gap-y-7 md:py-12 lg:w-[86%] lg:gap-y-8 lg:py-16 xl:w-[60%] xl:py-[6rem]"
       initial={reducedMotion ? "visible" : "hidden"}
       animate="visible"
       variants={{
@@ -134,7 +134,7 @@ const HomeHeroSection = () => {
       </motion.div>
       <motion.h1
         variants={heroItem}
-        className="text-center font-display text-[30px] font-bold leading-[1.15] text-[var(--ink-deep)] sm:text-[48px] lg:text-[64px]"
+        className="text-center font-display text-[28px] font-bold leading-[1.15] text-[var(--ink-deep)] sm:text-[34px] md:text-[38px] lg:text-[46px] xl:text-[64px]"
       >
         <span className="inline-flex items-center gap-3 flex-wrap justify-center">
           Discover Top
@@ -144,7 +144,7 @@ const HomeHeroSection = () => {
               alt=""
               width={80}
               height={80}
-              className="inline-block h-10 w-auto sm:h-14 lg:h-20 absolute left-0 -z-0"
+              className="absolute left-0 -z-0 inline-block h-8 w-auto sm:h-11 lg:h-14 xl:h-20"
               aria-hidden="true"
             />
             <p className="z-50 relative text-white">online</p>
@@ -154,7 +154,7 @@ const HomeHeroSection = () => {
             alt=""
             width={48}
             height={48}
-            className="inline-block h-10 w-auto sm:h-14 lg:h-20"
+            className="inline-block h-8 w-auto sm:h-11 lg:h-14 xl:h-20"
             aria-hidden="true"
           />
           <span className="relative inline-block">
@@ -181,7 +181,7 @@ const HomeHeroSection = () => {
       >
         <form onSubmit={handleSubmit}>
           <div className="w-full h-fit flex items-center gap-3 sm:gap-5 justify-between">
-            <div className="w-full flex items-center overflow-hidden rounded-[18px] border border-[var(--border)] h-14 sm:h-20 bg-white">
+            <div className="flex h-12 w-full items-center overflow-hidden rounded-[18px] border border-[var(--border)] bg-white sm:h-14 lg:h-16 xl:h-20">
               {/* Category Select */}
               <div className="relative border-r border-[var(--border)] h-full">
                 <select

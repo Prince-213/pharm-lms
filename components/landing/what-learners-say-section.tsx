@@ -21,7 +21,7 @@ export function WhatLearnersSaySection() {
       <img
         src="/assets/shape14.png"
         alt=""
-        className="absolute top-4 right-10 lg:top-8 lg:right-22 w-32 h-32 lg:w-48 lg:h-48 object-contain opacity-60 pointer-events-none"
+        className="pointer-events-none absolute top-4 right-6 h-24 w-24 object-contain opacity-60 md:right-10 lg:top-8 lg:h-32 lg:w-32 xl:right-[5.5rem] xl:h-48 xl:w-48"
         aria-hidden="true"
       />
 
@@ -31,7 +31,7 @@ export function WhatLearnersSaySection() {
           <div className="relative inline-block">
             {/* Crown icon */}
           
-            <h2 className="text-[34px] w-[80%] font-bold leading-[1.15] tracking-[-0.02em] text-black sm:text-[40px] lg:text-[48px]">
+            <h2 className="w-[90%] text-[26px] font-bold leading-[1.15] tracking-[-0.02em] text-black sm:text-[30px] md:w-[80%] md:text-[32px] lg:text-[36px] xl:text-[48px]">
               <span className="relative inline-block">
                 <span className="relative inline-block px-1">
                   <span className="relative z-[1]">What</span>
@@ -58,7 +58,7 @@ export function WhatLearnersSaySection() {
               <img
                 src="/assets/testimonial.png"
                 alt="Testimonial"
-                className="w-64 h-64 lg:w-80 lg:h-80 object-contain"
+                className="h-52 w-52 object-contain md:h-60 md:w-60 lg:h-64 lg:w-64 xl:h-80 xl:w-80"
               />
             </div>
 
@@ -83,7 +83,7 @@ export function WhatLearnersSaySection() {
                   </div>
 
                   {/* Quote */}
-                  <blockquote className="mb-6 text-lg font-medium leading-relaxed text-[var(--ink-deep)] lg:text-xl">
+                  <blockquote className="mb-6 text-base font-medium leading-relaxed text-[var(--ink-deep)] md:text-lg xl:text-xl">
                     &ldquo;{t.quote}&rdquo;
                   </blockquote>
 

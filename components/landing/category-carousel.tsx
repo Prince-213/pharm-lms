@@ -7,7 +7,8 @@ import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 
 const getVisibleCount = (): number => {
   if (typeof window === "undefined") return 2;
-  if (window.innerWidth >= 1024) return 4;
+  if (window.innerWidth >= 1280) return 4;
+  if (window.innerWidth >= 1024) return 3;
   if (window.innerWidth >= 640) return 2;
   return 1;
 };
@@ -131,7 +132,7 @@ export function CategoryCarousel() {
                   key={category.label}
                   href={category.href}
                   data-category-card
-                  className="group min-w-0 shrink-0 basis-[calc(100%+26px)] sm:basis-[calc((100%-26px)/2)] lg:basis-[calc((100%-78px)/4)]"
+                  className="group min-w-0 shrink-0 basis-full sm:basis-[calc((100%-26px)/2)] lg:basis-[calc((100%-52px)/3)] xl:basis-[calc((100%-78px)/4)]"
                 >
                   <div
                     className={`relative aspect-[282/215] overflow-hidden rounded-[14px] transition-transform duration-500 ${
@@ -142,11 +143,11 @@ export function CategoryCarousel() {
                       src={category.image}
                       alt={category.imageAlt}
                       fill
-                      sizes="(max-width: 1024px) 50vw, 25vw"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                       className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                     />
                   </div>
-                  <p className="mt-[14px] text-left text-sm font-bold leading-[1.2] text-black sm:text-base lg:text-[18px]">
+                  <p className="mt-[14px] text-left text-sm font-bold leading-[1.2] text-black sm:text-[15px] xl:text-[18px]">
                     {category.label}
                   </p>
                 </Link>
@@ -163,7 +164,7 @@ export function CategoryCarousel() {
                 type="button"
                 aria-label="Previous categories"
                 onClick={() => slideBy(-1)}
-                className="pointer-events-auto absolute left-0 top-1/2 z-10 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-black/[0.06] bg-white text-[#111111] shadow-[0_2px_10px_rgba(0,0,0,0.08)] transition hover:shadow-[0_4px_14px_rgba(0,0,0,0.12)]"
+                className="pointer-events-auto absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/[0.06] bg-white text-[#111111] shadow-[0_2px_10px_rgba(0,0,0,0.08)] transition hover:shadow-[0_4px_14px_rgba(0,0,0,0.12)] xl:left-0 xl:h-11 xl:w-11 xl:-translate-x-1/2"
               >
                 <CaretLeft className="h-[18px] w-[18px]" weight="bold" />
               </button>
@@ -172,7 +173,7 @@ export function CategoryCarousel() {
                 type="button"
                 aria-label="Next categories"
                 onClick={() => slideBy(1)}
-                className="pointer-events-auto absolute right-0 top-1/2 z-10 flex h-11 w-11 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-black/[0.06] bg-white text-[#111111] shadow-[0_2px_10px_rgba(0,0,0,0.08)] transition hover:shadow-[0_4px_14px_rgba(0,0,0,0.12)]"
+                className="pointer-events-auto absolute right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/[0.06] bg-white text-[#111111] shadow-[0_2px_10px_rgba(0,0,0,0.08)] transition hover:shadow-[0_4px_14px_rgba(0,0,0,0.12)] xl:right-0 xl:h-11 xl:w-11 xl:translate-x-1/2"
               >
                 <CaretRight className="h-[18px] w-[18px]" weight="bold" />
               </button>

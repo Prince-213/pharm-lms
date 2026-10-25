@@ -43,7 +43,7 @@ export function CourseCompletionCta({
             particleCount: 120,
             spread: 68,
             origin: { y: 0.58 },
-            colors: ["#1e40af", "#3b82f6", "#3b82f6"],
+            colors: ["#000080", "#00BFFF", "#00799C"],
           });
         });
       }
@@ -140,7 +140,7 @@ export function CourseCompletionCta({
                         particleCount: 64,
                         spread: 56,
                         origin: { y: 0.52 },
-                        colors: ["#1e40af", "#3b82f6"],
+                        colors: ["#000080", "#00BFFF"],
                       });
                     });
                   }}
@@ -181,7 +181,7 @@ export function CourseCompletionCta({
           ) : null}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-[var(--primary)]/20 bg-linear-to-r from-[var(--primary)] to-[#3b82f6] p-[1px] shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-[var(--primary)]/20 bg-linear-to-r from-[var(--primary)] to-[var(--accent)] p-[1px] shadow-sm">
           <div className="relative flex flex-col items-stretch justify-between gap-5 rounded-[calc(var(--radius-xl)-1px)] bg-[var(--surface)] p-5 sm:flex-row sm:items-center sm:gap-6 sm:p-6">
             <div className="flex items-start gap-4 text-left sm:items-center">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--primary-soft)] text-[var(--primary-strong)] ring-1 ring-[var(--primary)]/15">

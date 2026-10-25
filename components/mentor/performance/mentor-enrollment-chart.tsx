@@ -20,7 +20,7 @@ export function MentorEnrollmentChart({ data }: MentorEnrollmentChartProps) {
       background: "transparent",
       animations: { enabled: true, speed: 500 },
     },
-    colors: ["var(--primary)", "#1e40af"],
+    colors: ["var(--primary)", "#00BFFF"],
     fill: {
       type: "gradient",
       gradient: {

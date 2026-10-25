@@ -8,7 +8,7 @@ import { AnimatedCounter } from "@/components/landing/motion-primitives";
 export function EmpowerSection() {
   return (
     <section id="empower" className="w-full">
-      <div className="grid min-h-0 sm:min-h-[480px] lg:min-h-[640px] lg:grid-cols-2">
+      <div className="grid min-h-0 sm:min-h-[420px] lg:min-h-[520px] lg:grid-cols-2 xl:min-h-[640px]">
         <div className="relative min-h-[360px] lg:min-h-full">
           <Image
             src="/assets/kevin-ku-w7ZyuGYNpRQ-unsplash.jpg"
@@ -19,18 +19,19 @@ export function EmpowerSection() {
             className="object-cover object-center"
           />
 
-          <div className="animate-float absolute bottom-8 left-38 z-10 flex items-center gap-4 rounded-[16px] bg-white p-8 shadow-[0_12px_40px_rgba(15,23,42,0.12)]">
+          <div className="animate-float absolute bottom-6 left-[8%] z-10 flex items-center gap-3 rounded-[16px] bg-white p-4 shadow-[0_12px_40px_rgba(15,23,42,0.12)] sm:bottom-8 sm:p-6 lg:p-5 xl:p-8">
             <div className="min-w-0">
-              <div className=" flex items-center gap-3">
+              <div className="flex items-center gap-3">
                 <Image
                   src={"/assets/satisfied.png"}
                   alt={"satisfied"}
                   width={70}
                   height={70}
+                  className="h-10 w-10 sm:h-12 sm:w-12 xl:h-[70px] xl:w-[70px]"
                 />
                 <AnimatedCounter
                   value="45K+"
-                  className="text-5xl font-bold leading-none text-black"
+                  className="text-3xl font-bold leading-none text-black sm:text-4xl xl:text-5xl"
                 />
               </div>
               <p className="mt-3 text-sm leading-[1.2] font-medium text-[#5A536C]">
@@ -40,9 +41,9 @@ export function EmpowerSection() {
           </div>
         </div>
 
-        <div className="relative flex items-center bg-[var(--emerald)] px-8 py-16 sm:px-12 lg:px-[72px] lg:py-[88px]">
-          <div className="relative z-10 w-[80%]">
-            <h2 className="text-4xl font-bold leading-[1.15] tracking-[-0.02em] text-white sm:text-[48px] lg:text-5xl">
+        <div className="relative flex items-center bg-[var(--emerald)] px-6 py-12 sm:px-10 sm:py-14 lg:px-10 lg:py-14 xl:px-[72px] xl:py-[88px]">
+          <div className="relative z-10 w-[90%] lg:w-[86%] xl:w-[80%]">
+            <h2 className="text-[28px] font-bold leading-[1.15] tracking-[-0.02em] text-white sm:text-[34px] md:text-[36px] lg:text-[38px] xl:text-5xl">
               <span className="relative inline-block">
                 <span className="relative inline-block">
                   <span className="relative z-[1]">Empower</span>
@@ -88,7 +89,7 @@ export function EmpowerSection() {
             alt=""
             width={76}
             height={76}
-            className="animate-float pointer-events-none absolute md:bottom-8 md:right-38 z-0 h-[76px] w-[76px] object-contain bottom-10 right-10 sm:h-[76px] sm:w-[76px]"
+            className="animate-float pointer-events-none absolute bottom-8 right-[8%] z-0 h-12 w-12 object-contain sm:h-14 sm:w-14 xl:h-[76px] xl:w-[76px]"
             aria-hidden
           />
         </div>

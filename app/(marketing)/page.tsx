@@ -1,20 +1,15 @@
 import type { Metadata } from "next";
-import { CategoryCarousel } from "@/components/landing/category-carousel";
-import { CourseCategorySection } from "@/components/landing/course-category-section";
-import { EmpowerSection } from "@/components/landing/empower-section";
-import { FAQSection } from "@/components/landing/faq-section";
+import { CareersLeadSection } from "@/components/landing/careers-lead-section";
 import { FeaturedCoursesSection } from "@/components/landing/featured-courses-section";
-import { JourneySection } from "@/components/landing/journey-section";
-import { NewsletterSection } from "@/components/landing/newsletter-section";
-import { LeadingProfessionalsSection } from "@/components/landing/leading-professionals-section";
-import { WhatLearnersSaySection } from "@/components/landing/what-learners-say-section";
-import { AnimatedSection } from "@/components/landing/animated-section";
-import HomeHeroSection from "@/components/landing/home-hero-section";
+import { InstructorsStripSection } from "@/components/landing/instructors-strip-section";
+import { PathwayFaqSection } from "@/components/landing/pathway-faq-section";
+import { PathwayFinalCtaSection } from "@/components/landing/pathway-final-cta-section";
+import { PathwayHeroSection } from "@/components/landing/pathway-hero-section";
+import { PathwayLevelsSection } from "@/components/landing/pathway-levels-section";
+import { VerifyBandSection } from "@/components/landing/verify-band-section";
+import { WhoItsForSection } from "@/components/landing/who-its-for-section";
 import { safeAuth } from "@/lib/auth/safe-session";
 import { loadLandingPopularCoursePages } from "@/lib/landing/load-landing-data";
-
-
-/* cc */
 
 export const metadata: Metadata = {
   title: "Clinical Pharmacy Courses & Online Learning",
@@ -28,56 +23,38 @@ export default async function Home() {
   const studentId = session?.user?.role === "STUDENT" ? session.user.id : undefined;
   const pages = await loadLandingPopularCoursePages(studentId, 3, 3);
 
-  const dbCourses = (pages[0]?.length ?? 0) > 0
-    ? pages[0]!.map((c) => ({
-        id: c.id,
-        href: `/courses/${c.id}`,
-        title: c.title,
-        priceLabel: c.priceLabel,
-        instructor: c.instructor,
-        lessons: "Lessons",
-        duration: c.duration ?? "5 Hour",
-        image: c.image || "/assets/featured-courses/course-1.jpg",
-      }))
-    : undefined;
+  const dbCourses =
+    (pages[0]?.length ?? 0) > 0
+      ? pages[0]!.map((c) => {
+          const count = c.lessonCount ?? 0;
+          return {
+            id: c.id,
+            href: c.href,
+            title: c.title,
+            priceLabel: c.priceLabel,
+            instructor: { name: c.instructor.name },
+            lessons:
+              count > 0
+                ? `${count} ${count === 1 ? "Lesson" : "Lessons"}`
+                : "Lessons",
+            duration: c.duration ?? "5 Hour",
+            image: c.image || "/assets/featured-courses/course-1.jpg",
+            imageAlt: c.imageAlt,
+          };
+        })
+      : undefined;
 
   return (
-    <main className="flex w-full min-h-screen flex-col">
-      <HomeHeroSection />
-
-      <AnimatedSection delay={0.1}>
-        <CategoryCarousel />
-      </AnimatedSection>
-
-      <AnimatedSection delay={0.1}>
-        <EmpowerSection />
-      </AnimatedSection>
-
-     
-
-      <AnimatedSection delay={0.1}>
-        <FeaturedCoursesSection courses={dbCourses} />
-      </AnimatedSection>
-
-      <AnimatedSection delay={0.1}>
-        <JourneySection />
-      </AnimatedSection>
-
-      <AnimatedSection delay={0.1}>
-        <WhatLearnersSaySection />
-      </AnimatedSection>
-
-      <AnimatedSection delay={0.1}>
-        <LeadingProfessionalsSection />
-      </AnimatedSection>
-
-      <AnimatedSection delay={0.1}>
-        <FAQSection />
-      </AnimatedSection>
-
-      <AnimatedSection delay={0.1}>
-        <NewsletterSection />
-      </AnimatedSection>
+    <main className="flex min-h-screen w-full flex-col">
+      <PathwayHeroSection />
+      <WhoItsForSection />
+      <FeaturedCoursesSection courses={dbCourses} />
+      <PathwayLevelsSection />
+      <CareersLeadSection />
+      <VerifyBandSection />
+      <InstructorsStripSection />
+      <PathwayFaqSection />
+      <PathwayFinalCtaSection />
     </main>
   );
 }

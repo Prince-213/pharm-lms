@@ -11,12 +11,12 @@ export function LeadingProfessionalsSection() {
   return (
     <section
       id="leading-professionals"
-      className="relative overflow-hidden bg-[var(--background)] py-16 lg:py-24"
+      className="relative overflow-hidden bg-[var(--background)] py-14 md:py-16 lg:py-16 xl:py-24"
     >
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
         <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between lg:mb-14">
           <div className="relative inline-block">
-            <h2 className="font-display w-[80%] text-[34px] font-bold leading-[1.15] tracking-[-0.02em] text-black sm:text-[40px] lg:text-[48px]">
+            <h2 className="font-display w-[90%] text-[26px] font-bold leading-[1.15] tracking-[-0.02em] text-black sm:text-[30px] md:w-[80%] md:text-[32px] lg:text-[36px] xl:text-[48px]">
               <span className="relative inline-block">
                 <span className="relative inline-block px-1">
                   <span className="relative z-[1]">{leadingProfessionals.highlight}</span>
@@ -36,7 +36,7 @@ export function LeadingProfessionalsSection() {
 
           <Link
             href={leadingProfessionals.ctaHref}
-            className="inline-flex shrink-0 items-center justify-center rounded-[10px] bg-[var(--emerald)] px-7 py-4.5 text-sm font-semibold text-white transition-all hover:bg-[var(--primary-strong)] hover:shadow-[0_12px_32px_rgba(30,64,175,0.45)]"
+            className="inline-flex shrink-0 items-center justify-center rounded-[10px] bg-[var(--emerald)] px-7 py-4.5 text-sm font-semibold text-white transition-all hover:bg-[var(--primary-strong)] hover:shadow-[0_12px_32px_rgba(0,0,128,0.35)]"
           >
             {leadingProfessionals.ctaLabel}
           </Link>
@@ -46,7 +46,7 @@ export function LeadingProfessionalsSection() {
           {tutors.map((person) => (
             <figure
               key={person.id}
-              className="relative w-[78%] shrink-0 overflow-hidden rounded-full bg-slate-100 shadow-lg sm:w-[38%]"
+              className="relative w-[70%] shrink-0 overflow-hidden rounded-full bg-slate-100 shadow-lg sm:w-[42%] md:w-[40%] lg:w-[34%] xl:w-[38%]"
               style={{ aspectRatio: "1 / 1.85" }}
             >
               <Image
