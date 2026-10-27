@@ -1,11 +1,22 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { ChevronDown, Search, X } from "lucide-react";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValue,
+  useSpring,
+} from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, ChevronDown, Search, X } from "lucide-react";
-import { AnimatePresence, motion, useMotionValue, useSpring } from "motion/react";
-import { Button } from "@/components/ui/button";
+import {
+  type ReactNode,
+  type PointerEvent as ReactPointerEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   AnimatedCounter,
   AnimatedStagger,
@@ -14,6 +25,13 @@ import {
   MOTION_VIEWPORT,
   usePrefersReducedMotion,
 } from "@/components/landing/motion-primitives";
+import { Button } from "@/components/ui/button";
+import {
+  AnimatedSpan,
+  Terminal,
+  TypingAnimation,
+} from "@/components/ui/terminal";
+import { cn } from "@/lib/utils";
 
 type SearchResult = {
   id: string;
@@ -46,30 +64,36 @@ const stats = [
   { value: "7+", label: "African countries in the community" },
 ];
 
-const pathwaySteps = [
+const stockoutsTable = [
+  "drug_name".padEnd(26) + "units".padStart(6),
+  "Amoxicillin 500mg".padEnd(26) + "1,240".padStart(6),
+  "Paracetamol 500mg".padEnd(26) + "1,105".padStart(6),
+  "Artemether-lumefantrine".padEnd(26) + "892".padStart(6),
+].join("\n");
+
+const codeScenes = [
   {
-    state: "done" as const,
-    title: "Foundations of Data in Pharmacy",
-    meta: "Level 1 · Excel · Badge earned",
+    label: "Stockouts",
+    file: "top_sellers.sql",
+    question: "Which drugs sold the most last month?",
+    code: "SELECT drug_name, SUM(quantity) AS units\nFROM dispensing\nWHERE month = '2026-09'\nGROUP BY drug_name\nORDER BY units DESC\nLIMIT 3;",
+    out: stockoutsTable,
   },
   {
-    state: "done" as const,
-    title: "Data Analysis, Visualisation and Power BI",
-    meta: "Level 2 · Power BI · Badge earned",
+    label: "Safety signals",
+    file: "signal_detection.R",
+    question: "Is this drug reported with a reaction more often than expected?",
+    code: "a <- 18    # drug X, reaction Y\nb <- 142   # drug X, other reactions\nc <- 90    # other drugs, reaction Y\nd <- 3750  # other drugs, other reactions\n\nprr <- (a / (a + b)) / (c / (c + d))\nror <- (a / b) / (c / d)",
+    out: "PRR  4.80\nROR  5.28\nReported more often than expected. Review the cases.",
   },
   {
-    state: "progress" as const,
-    title: "SQL, Digital Health Systems",
-    meta: "Level 3 · SQL · In progress",
-    progress: 60,
+    label: "Adherence",
+    file: "adherence_model.py",
+    question: "Which patient is likely to stop taking their medicine?",
+    code: 'from sklearn.linear_model import LogisticRegression\n\nmodel = LogisticRegression()\nmodel.fit(X_train, y_train)\n\nrisk = model.predict_proba(patient)[0][1]\nprint(f"Non-adherence risk: {risk:.2f}")',
+    out: "Non-adherence risk: 0.72\nNext step: schedule a refill reminder.",
   },
-  { state: "upcoming" as const, title: "Statistical Analysis with R" },
-  {
-    state: "upcoming" as const,
-    title: "Python for Analysis and Machine Learning",
-  },
-  { state: "upcoming" as const, title: "Portfolio, Career and Capstone" },
-];
+] as const;
 
 const heroItem = {
   hidden: { opacity: 0, y: 20 },
@@ -87,19 +111,11 @@ const heroStagger = {
   },
 };
 
-const CARD_ROW_DELAY = 0.22;
-const CARD_ROW_STAGGER = 0.1;
-
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 function PlusMark({ className }: { className?: string }) {
   return (
-    <svg
-      aria-hidden
-      viewBox="0 0 26 26"
-      className={className}
-      fill="none"
-    >
+    <svg aria-hidden viewBox="0 0 26 26" className={className} fill="none">
       <path
         d="M13 2v22M2 13h22"
         stroke="currentColor"
@@ -131,7 +147,7 @@ function PathwayFloatCard({
   const rotateXSpring = useSpring(rotateX, FLOAT_SPRING);
   const rotateYSpring = useSpring(rotateY, FLOAT_SPRING);
 
-  const onPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+  const onPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (reducedMotion) return;
     const rect = wrapRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -177,22 +193,109 @@ function PathwayFloatCard({
   );
 }
 
-function CheckMark({
-  reducedMotion,
-  delay,
-}: {
-  reducedMotion: boolean;
-  delay: number;
-}) {
+function HeroCodePanel({ reducedMotion }: { reducedMotion: boolean }) {
+  const [active, setActive] = useState(0);
+  const [playId, setPlayId] = useState(0);
+  const scene = codeScenes[active] ?? codeScenes[0];
+
+  const selectScene = (index: number) => {
+    setActive(index);
+    setPlayId((id) => id + 1);
+  };
+
   return (
-    <motion.span
-      initial={reducedMotion ? false : { scale: 0.55, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.35, delay, ease: MOTION_EASE }}
-      className="flex size-[26px] shrink-0 items-center justify-center rounded-full bg-accent"
-    >
-      <Check className="size-3 stroke-[2.5] text-accent-foreground" />
-    </motion.span>
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap gap-2">
+        {codeScenes.map((item, index) => {
+          const selected = index === active;
+          return (
+            <button
+              key={item.label}
+              type="button"
+              aria-pressed={selected}
+              onClick={() => selectScene(index)}
+              className={cn(
+                "min-h-11 rounded-full border px-[18px] text-sm transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]",
+                selected
+                  ? "border-accent bg-accent font-bold text-accent-foreground"
+                  : "border-white/25 bg-transparent font-medium text-white hover:border-white/50",
+              )}
+            >
+              {item.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <PathwayFloatCard
+        reducedMotion={reducedMotion}
+        className="will-change-transform [transform-style:preserve-3d]"
+      >
+        {reducedMotion ? (
+          <div className="overflow-hidden rounded-2xl border border-white/14 bg-[#0B0B1C] shadow-[0_24px_60px_rgba(0,0,60,0.5)]">
+            <div className="flex items-center justify-between gap-3 border-b border-white/10 px-[18px] py-3">
+              <div className="flex gap-1.5" aria-hidden>
+                <span className="size-2.5 rounded-full bg-white/20" />
+                <span className="size-2.5 rounded-full bg-white/20" />
+                <span className="size-2.5 rounded-full bg-white/20" />
+              </div>
+              <span className="font-mono text-[12px] text-[#8F8FA8]">
+                {scene.file}
+              </span>
+            </div>
+            <div className="flex flex-col gap-2.5 p-[18px]">
+              <p className="text-sm font-medium text-accent">
+                {scene.question}
+              </p>
+              <pre className="overflow-x-auto font-mono text-[13px] leading-[1.7] whitespace-pre text-white">
+                {scene.code}
+              </pre>
+              <div className="mt-1 flex flex-col gap-2 rounded-[10px] border border-accent/25 bg-primary/35 px-4 py-3.5">
+                <span className="font-mono text-[11px] tracking-[0.1em] text-accent uppercase">
+                  Output · mock data
+                </span>
+                <pre className="overflow-x-auto font-mono text-[13px] leading-[1.7] whitespace-pre text-white">
+                  {scene.out}
+                </pre>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <Terminal
+            key={playId}
+            filename={scene.file}
+            startOnView={false}
+            className="max-w-none"
+          >
+            <TypingAnimation
+              className="font-sans text-sm font-medium text-accent"
+              duration={26}
+            >
+              {scene.question}
+            </TypingAnimation>
+            <TypingAnimation
+              className="font-mono text-[13px] leading-[1.7] whitespace-pre text-white"
+              duration={12}
+            >
+              {scene.code}
+            </TypingAnimation>
+            <AnimatedSpan className="mt-1 rounded-t-[10px] border border-b-0 border-accent/25 bg-primary/35 px-4 pt-3.5">
+              <span className="block font-mono text-[11px] tracking-[0.1em] text-accent uppercase">
+                Output · mock data
+              </span>
+            </AnimatedSpan>
+            <TypingAnimation
+              as="div"
+              hideUntilStart
+              duration={8}
+              className="-mt-2.5 rounded-b-[10px] border border-t-0 border-accent/25 bg-primary/35 px-4 pb-3.5 font-mono text-[13px] leading-[1.7] whitespace-pre text-white"
+            >
+              {scene.out}
+            </TypingAnimation>
+          </Terminal>
+        )}
+      </PathwayFloatCard>
+    </div>
   );
 }
 
@@ -274,7 +377,7 @@ export function PathwayHeroSection() {
         className={`pointer-events-none absolute right-[4%] bottom-[26%] size-10 text-accent opacity-20 ${reducedMotion ? "" : "animate-float"}`}
       />
 
-      <div className="relative mx-auto w-full max-w-[96rem] px-5 pt-12 sm:px-8 md:pt-16 lg:px-12 xl:px-16 xl:pt-[88px]">
+      <div className="relative mx-auto w-full max-w-[90rem] px-6 pt-16 sm:px-10 md:pt-20 lg:px-16 xl:px-20 xl:pt-[88px]">
         <motion.div
           className="flex flex-wrap items-center gap-10 xl:gap-12"
           initial={reducedMotion ? "visible" : "hidden"}
@@ -321,7 +424,10 @@ export function PathwayHeroSection() {
               pharmacists, at your own pace, alongside your job.
             </motion.p>
 
-            <motion.div variants={heroItem} className="flex max-w-[600px] flex-col gap-3">
+            <motion.div
+              variants={heroItem}
+              className="flex max-w-[600px] flex-col gap-3"
+            >
               <div ref={searchRef} className="relative">
                 <form
                   onSubmit={handleSubmit}
@@ -455,7 +561,10 @@ export function PathwayHeroSection() {
             </motion.div>
 
             <motion.div variants={heroItem}>
-              <AnimatedStagger stagger={0.06} className="flex flex-wrap items-center gap-2">
+              <AnimatedStagger
+                stagger={0.06}
+                className="flex flex-wrap items-center gap-2"
+              >
                 <AnimatedStaggerItem>
                   <span className="text-[13px] text-white/70">Popular:</span>
                 </AnimatedStaggerItem>
@@ -475,14 +584,14 @@ export function PathwayHeroSection() {
             <motion.div variants={heroItem} className="flex flex-wrap gap-3">
               <Button
                 asChild
-                className="h-12 rounded-full bg-accent px-6 text-base font-bold text-accent-foreground transition-transform hover:-translate-y-0.5 hover:bg-accent/90"
+                className="h-12 rounded-full bg-accent px-6 text-base font-bold text-accent-foreground transition-transform duration-200 hover:-translate-y-0.5 hover:bg-accent/90 active:scale-[0.98]"
               >
                 <Link href="/student/signup">Start learning free</Link>
               </Button>
               <Button
                 asChild
                 variant="outline"
-                className="h-12 rounded-full border-white/40 bg-transparent px-6 text-base font-medium text-white shadow-none transition-transform hover:-translate-y-0.5 hover:border-white hover:bg-white/5 hover:text-white"
+                className="h-12 rounded-full border-white/40 bg-transparent px-6 text-base font-medium text-white shadow-none transition-transform duration-200 hover:-translate-y-0.5 hover:border-white hover:bg-white/5 hover:text-white active:scale-[0.98]"
               >
                 <Link href="#pathway">See the pathway</Link>
               </Button>
@@ -493,88 +602,9 @@ export function PathwayHeroSection() {
             initial={reducedMotion ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.12, ease: MOTION_EASE }}
-            className="mx-auto min-w-0 w-full max-w-[520px] flex-1 basis-[380px] [perspective:1000px]"
+            className="mx-auto min-w-0 w-full max-w-[560px] flex-1 basis-[440px]"
           >
-          <PathwayFloatCard
-            reducedMotion={reducedMotion}
-            className="flex h-full flex-col gap-[18px] rounded-[20px] border border-white/20 bg-white/8 p-6 will-change-transform [transform-style:preserve-3d] backdrop-blur-[2px]"
-          >
-              <motion.div
-                initial={reducedMotion ? false : { opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.45,
-                  delay: CARD_ROW_DELAY,
-                  ease: MOTION_EASE,
-                }}
-                className="flex flex-col gap-1"
-              >
-                <span className="font-mono text-[11px] tracking-[0.1em] text-white/70 uppercase">
-                  Learner view · example
-                </span>
-                <p className="font-display text-xl font-bold">
-                  Certified Digital Health Pharmacist
-                </p>
-              </motion.div>
-
-              {pathwaySteps.map((step, index) => {
-                const rowDelay = CARD_ROW_DELAY + (index + 1) * CARD_ROW_STAGGER;
-                return (
-                <motion.div
-                  key={step.title}
-                  initial={reducedMotion ? false : { opacity: 0, y: 14 }}
-                  animate={{
-                    opacity: step.state === "upcoming" ? 0.7 : 1,
-                    y: 0,
-                  }}
-                  transition={{
-                    duration: 0.45,
-                    delay: rowDelay,
-                    ease: MOTION_EASE,
-                  }}
-                  className="flex items-center gap-3"
-                >
-                  {step.state === "done" ? (
-                    <CheckMark reducedMotion={reducedMotion} delay={rowDelay + 0.06} />
-                  ) : step.state === "progress" ? (
-                    <span className="flex size-[26px] shrink-0 items-center justify-center rounded-full border-2 border-accent text-[12px] font-bold text-accent">
-                      {index + 1}
-                    </span>
-                  ) : (
-                    <span className="flex size-[26px] shrink-0 items-center justify-center rounded-full border border-dashed border-white/60 text-[12px]">
-                      {index + 1}
-                    </span>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-col gap-1.5">
-                      <div>
-                        <div className="text-sm font-medium">{step.title}</div>
-                        {"meta" in step && step.meta ? (
-                          <div className="font-mono text-[11px] tracking-[0.06em] text-white/65 uppercase">
-                            {step.meta}
-                          </div>
-                        ) : null}
-                      </div>
-                      {step.state === "progress" ? (
-                        <div className="h-1.5 overflow-hidden rounded-full bg-white/18">
-                          <motion.div
-                            className="h-full rounded-full bg-accent"
-                            initial={reducedMotion ? false : { width: 0 }}
-                            animate={{ width: `${step.progress}%` }}
-                            transition={{
-                              duration: 0.9,
-                              delay: rowDelay + 0.18,
-                              ease: MOTION_EASE,
-                            }}
-                          />
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-                </motion.div>
-                );
-              })}
-          </PathwayFloatCard>
+            <HeroCodePanel reducedMotion={reducedMotion} />
           </motion.div>
         </motion.div>
 

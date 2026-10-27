@@ -73,13 +73,10 @@ export function ServicesSection({ audience = "student" }: ServicesSectionProps) 
                 <div
                   className={[
                     "mb-5 flex h-12 w-12 items-center justify-center rounded-xl",
-                    svc.highlighted ? "bg-white/20" : "bg-emerald-50",
+                    svc.highlighted ? "bg-white text-primary" : "bg-primary-soft text-primary",
                   ].join(" ")}
                 >
-                  <Icon
-                    className={["h-6 w-6", svc.highlighted ? "text-white" : "text-[var(--emerald)]"].join(" ")}
-                    strokeWidth={1.75}
-                  />
+                  <Icon className="h-6 w-6" weight="duotone" />
                 </div>
 
                 <h3

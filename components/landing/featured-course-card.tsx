@@ -1,9 +1,9 @@
 "use client";
 
+import { BookOpen, Clock } from "@phosphor-icons/react";
 import Image from "next/image";
 import Link from "next/link";
-import { Clock3 } from "lucide-react";
-import { BookIcon } from "@phosphor-icons/react";
+import { cn } from "@/lib/utils";
 
 /** Signed R2 URLs must not go through `/_next/image` — the optimizer fetch times out. */
 function isRemoteSignedMediaUrl(src: string): boolean {
@@ -39,14 +39,21 @@ export function FeaturedCourseCard({
 }: FeaturedCourseCardProps) {
   return (
     <article
-      className={`group flex h-full flex-col rounded-[14px] bg-white p-5 shadow-sm transition-all duration-300 sm:p-6 sm:hover:-translate-y-1 sm:hover:shadow-md ${className ?? ""}`}
+      className={cn(
+        "group flex h-full flex-col overflow-hidden rounded-md border border-border bg-card",
+        className,
+      )}
     >
-      <div className="relative aspect-[412/248] w-full overflow-hidden rounded-[10px]">
+      <Link
+        href={course.href}
+        className="relative block aspect-[16/10] overflow-hidden"
+      >
         {isRemoteSignedMediaUrl(course.image) ? (
+          // biome-ignore lint/performance/noImgElement: signed R2 URLs
           <img
             src={course.image}
             alt={course.imageAlt ?? course.title}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="h-full w-full object-cover"
           />
         ) : (
           <Image
@@ -54,65 +61,43 @@ export function FeaturedCourseCard({
             alt={course.imageAlt ?? course.title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            className="object-cover"
           />
         )}
-      </div>
+      </Link>
 
-      <div className="mt-5 flex items-start justify-between gap-3">
-        <h3 className="text-[16px] font-bold leading-[1.35] text-black sm:text-[18px]">
-          {course.title}
-        </h3>
-        <p className="shrink-0 text-[16px] font-bold text-[var(--accent)] sm:text-[18px]">
+      <div className="flex flex-1 flex-col gap-3 p-5 sm:p-6">
+        <Link href={course.href}>
+          <h3 className="font-display text-[17px] leading-snug font-bold text-foreground sm:text-lg">
+            {course.title}
+          </h3>
+        </Link>
+        <p className="text-sm font-medium text-primary">
+          {course.instructor.name}
+        </p>
+
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <BookOpen className="size-4 text-primary" weight="duotone" />
+            {course.lessons}
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <Clock className="size-4 text-primary" weight="duotone" />
+            {course.duration}
+          </span>
+        </div>
+
+        <p className="mt-auto pt-2 font-display text-lg font-bold text-foreground">
           {course.priceLabel}
         </p>
+
+        <Link
+          href={course.href}
+          className="inline-flex h-11 w-full items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+        >
+          {ctaLabel}
+        </Link>
       </div>
-
-      <p className="mt-2 text-[13px] font-medium text-[#555555] sm:text-[14px]">
-        by {course.instructor.name}
-      </p>
-
-      <div className="mt-5 flex overflow-hidden rounded-[10px] bg-[#F3F4F6]">
-        <div className="flex flex-1 items-center gap-3 px-4 py-4">
-          <BookIcon
-            className="h-6 w-6 shrink-0 text-[var(--accent)] sm:h-7 sm:w-7"
-            strokeWidth={1.75}
-          />
-          <div>
-            <p className="text-[11px] font-medium text-[#777777] sm:text-[12px]">
-              Lessons
-            </p>
-            <p className="text-[13px] font-bold text-black sm:text-[14px]">
-              {course.lessons}
-            </p>
-          </div>
-        </div>
-
-        <div className="w-px self-stretch bg-[#E5E7EB]" aria-hidden />
-
-        <div className="flex flex-1 items-center gap-3 px-4 py-4">
-          <Clock3
-            className="h-6 w-6 shrink-0 text-[var(--accent)] sm:h-7 sm:w-7"
-            strokeWidth={1.75}
-          />
-          <div>
-            <p className="text-[11px] font-medium text-[#777777] sm:text-[12px]">
-              Duration
-            </p>
-            <p className="text-[13px] font-bold text-black sm:text-[14px]">
-              {course.duration}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <Link
-        href={course.href}
-        className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-[10px] border border-[#E5E7EB] bg-white px-5 py-3.5 text-[14px] font-semibold text-black transition-all duration-300 hover:border-[var(--accent)] hover:text-[var(--accent)] hover:-translate-y-0.5 active:scale-[0.98] sm:text-[15px]"
-      >
-        {ctaLabel}
-        <span aria-hidden>→</span>
-      </Link>
     </article>
   );
 }
@@ -130,9 +115,7 @@ export function toFeaturedCourseCardView(course: {
 }): FeaturedCourseCardView {
   const count = course.lessonCount ?? 0;
   const lessons =
-    count > 0
-      ? `${count} ${count === 1 ? "Lesson" : "Lessons"}`
-      : "Lessons";
+    count > 0 ? `${count} ${count === 1 ? "Lesson" : "Lessons"}` : "Lessons";
 
   return {
     id: course.id,

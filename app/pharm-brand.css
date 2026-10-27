@@ -64,7 +64,92 @@
 }
 
 .auth-saas {
-  --auth-accent: var(--accent);
-  --auth-accent-hover: var(--accent-deep);
+  /* Cyan is a fill color, not body text — it fails contrast on white. */
+  --auth-accent: var(--primary);
+  --auth-accent-hover: var(--primary-strong);
   --auth-link: var(--primary);
+}
+
+/*
+ * OS dark — marketing + auth only.
+ * Tailwind `dark:` needs a `.dark` class; dashboards stay light unless they opt in.
+ * Do not remap --primary to cyan: it is used as navy fills (tiles, bands, header fallback).
+ */
+@media (prefers-color-scheme: dark) {
+  html:has([data-marketing]),
+  html:has(.auth-saas) {
+    color-scheme: dark;
+
+    --background: #06060f;
+    --foreground: #f4f4ff;
+
+    --card: #0b0b1c;
+    --card-foreground: #f4f4ff;
+    --popover: #0b0b1c;
+    --popover-foreground: #f4f4ff;
+
+    --primary: #000080;
+    --primary-foreground: #f4f4ff;
+    --primary-strong: #00005c;
+    --primary-soft: rgb(0 191 255 / 0.14);
+    --primary-soft-text: #7dd9ff;
+
+    --secondary: #00bfff;
+    --secondary-foreground: #00005c;
+
+    --muted: #12122a;
+    --muted-foreground: #b8b8d0;
+    --muted-soft: #8f8fa8;
+
+    --accent: #00bfff;
+    --accent-foreground: #00005c;
+    --accent-soft: rgb(0 191 255 / 0.14);
+    --accent-deep: #7dd9ff;
+
+    --destructive: #f87171;
+    --border: rgb(255 255 255 / 0.1);
+    --input: rgb(255 255 255 / 0.16);
+    --ring: #00bfff;
+
+    --sidebar: #06060f;
+    --sidebar-foreground: #f4f4ff;
+    --sidebar-primary: #00bfff;
+    --sidebar-primary-foreground: #00005c;
+    --sidebar-accent: rgb(255 255 255 / 0.08);
+    --sidebar-accent-foreground: #f4f4ff;
+    --sidebar-border: rgb(255 255 255 / 0.1);
+    --sidebar-ring: #00bfff;
+
+    --surface: #0b0b1c;
+    --surface-muted: #0b0b1c;
+    --header: var(--sidebar);
+    --header-accent: var(--accent);
+    --header-fg: var(--sidebar-foreground);
+    --header-fg-muted: rgb(244 244 255 / 0.72);
+    --ink-deep: #f4f4ff;
+    --ink-mid: #b8b8d0;
+    --emerald: var(--primary);
+    --live: var(--destructive);
+    --success: #00bfff;
+    --success-soft: rgb(0 191 255 / 0.14);
+
+    --border-subtle: rgb(255 255 255 / 0.08);
+    --shadow-1: 0px 1px 2px 0px rgb(0 0 0 / 0.45);
+    --shadow-2: 0px 2px 8px 0px rgb(0 0 0 / 0.4);
+    --shadow-3: 0px 8px 24px rgb(0 0 0 / 0.45), 0px 18px 40px rgb(0 0 0 / 0.35);
+    --shadow-card: 0px 1px 2px 0px rgb(0 0 0 / 0.45);
+  }
+
+  html:has(.auth-saas) .auth-saas {
+    color-scheme: dark;
+    --auth-bg: var(--background);
+    --auth-surface: var(--surface);
+    --auth-border: var(--border);
+    --auth-text: var(--foreground);
+    --auth-muted: var(--muted-soft);
+    --auth-link: var(--accent);
+    --auth-accent: var(--accent);
+    --auth-accent-hover: var(--accent-deep);
+    --auth-input-bg: var(--surface);
+  }
 }

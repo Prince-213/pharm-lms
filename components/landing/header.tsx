@@ -1,26 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { List, X } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
+import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AnimatePresence, motion } from "motion/react";
-import { MOTION_EASE } from "@/components/landing/motion-primitives";
-import { getHeaderAuthCtas } from "@/lib/audience-landing-content";
+import { useEffect, useState } from "react";
 import { PharmLogo } from "@/components/brand/pharm-logo";
+import { MOTION_EASE } from "@/components/landing/motion-primitives";
+import { Button } from "@/components/ui/button";
+import { getHeaderAuthCtas } from "@/lib/audience-landing-content";
 import { cn } from "@/lib/utils";
 
 const audienceCtaLinks = [
-  { label: "Teach on PharmEdge", href: "/teach" },
-  { label: "Mentor on PharmEdge", href: "/become-a-mentor" },
+  { label: "Teach", href: "/teach" },
+  { label: "Mentor", href: "/become-a-mentor" },
 ];
 
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
   { label: "Courses", href: "/courses" },
-  { label: "Verify Certification", href: "/validate" },
+  { label: "Verify", href: "/validate" },
 ];
 
 function isActivePath(pathname: string, href: string) {
@@ -42,6 +42,7 @@ const LandingHeader = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: close the drawer after navigation
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
@@ -49,11 +50,11 @@ const LandingHeader = () => {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full overflow-x-clip border-b border-white/12 bg-primary text-primary-foreground transition-shadow duration-300",
-        scrolled && "shadow-[0_10px_28px_rgba(0,0,40,0.28)]",
+        "sticky top-0 z-50 w-full overflow-x-clip border-b border-white/12 bg-sidebar text-sidebar-foreground",
+        scrolled && "border-white/20",
       )}
     >
-      <div className="mx-auto flex h-14 min-w-0 max-w-[96rem] items-center justify-between gap-3 px-5 sm:px-8 lg:h-16 lg:px-12 xl:px-16">
+      <div className="mx-auto flex h-14 min-w-0 max-w-[90rem] items-center justify-between gap-3 px-4 sm:px-6 md:gap-4 md:px-10 lg:h-16 lg:px-16 xl:px-20">
         <Link
           href="/"
           className="flex shrink-0 items-center transition-opacity hover:opacity-90"
@@ -94,9 +95,7 @@ const LandingHeader = () => {
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "hidden shrink-0 text-[13px] transition-colors duration-200 xl:inline xl:text-[15px]",
-                  active
-                    ? "text-accent"
-                    : "text-white/55 hover:text-accent",
+                  active ? "text-accent" : "text-white/55 hover:text-accent",
                 )}
               >
                 {link.label}
@@ -109,19 +108,19 @@ const LandingHeader = () => {
           <Button
             asChild
             variant="ghost"
-            className="h-10 rounded-full px-4 text-sm text-white/80 hover:bg-white/10 hover:text-white xl:px-5 xl:text-[15px]"
+            className="h-10 rounded-md px-4 text-sm text-white/80 hover:bg-white/10 hover:text-white xl:px-5 xl:text-[15px]"
           >
             <Link href={loginHref}>{loginLabel}</Link>
           </Button>
           <Button
             asChild
-            className="h-10 rounded-full bg-accent px-5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 xl:text-[15px]"
+            className="h-10 rounded-md bg-accent px-5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 xl:text-[15px]"
           >
             <Link href={signupHref}>{signupLabel}</Link>
           </Button>
           <Link
             href="/contact"
-            className="hidden px-2 text-sm text-white/55 transition-colors hover:text-white xl:inline"
+            className="hidden px-2 text-sm text-white/55 hover:text-white xl:inline"
           >
             Contact
           </Link>
@@ -134,7 +133,11 @@ const LandingHeader = () => {
           aria-label="Toggle navigation"
           aria-expanded={mobileOpen}
         >
-          {mobileOpen ? <X className="h-5 w-5" /> : <List className="h-5 w-5" />}
+          {mobileOpen ? (
+            <X className="h-5 w-5" />
+          ) : (
+            <List className="h-5 w-5" />
+          )}
         </button>
       </div>
 
@@ -145,9 +148,9 @@ const LandingHeader = () => {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: MOTION_EASE }}
-            className="overflow-hidden border-t border-white/12 bg-primary-strong lg:hidden"
+            className="overflow-hidden border-t border-white/12 bg-sidebar lg:hidden"
           >
-            <div className="px-5 pb-6 pt-3">
+            <div className="px-4 pt-3 pb-6 sm:px-6">
               <nav className="flex flex-col gap-1">
                 {navLinks.map((link) => {
                   const active = isActivePath(pathname, link.href);
@@ -193,14 +196,14 @@ const LandingHeader = () => {
                   <Link
                     href={loginHref}
                     onClick={() => setMobileOpen(false)}
-                    className="flex-1 rounded-full border border-white/25 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                    className="flex-1 rounded-md border border-white/25 py-3 text-center text-sm font-semibold text-white hover:bg-white/10"
                   >
                     {loginLabel}
                   </Link>
                   <Link
                     href={signupHref}
                     onClick={() => setMobileOpen(false)}
-                    className="flex-1 rounded-full bg-accent py-3 text-center text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/90"
+                    className="flex-1 rounded-md bg-accent py-3 text-center text-sm font-semibold text-accent-foreground hover:bg-accent/90"
                   >
                     {signupLabel}
                   </Link>

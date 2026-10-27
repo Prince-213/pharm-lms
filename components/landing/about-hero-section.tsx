@@ -1,84 +1,67 @@
-"use client";
+import Image from "next/image";
+import {
+  LandingContainer,
+  LandingEyebrow,
+  landingDisplayTitleClass,
+} from "@/components/landing/landing-container";
+import {
+  AnimatedCounter,
+  AnimatedSection,
+  AnimatedStagger,
+  AnimatedStaggerItem,
+} from "@/components/landing/motion-primitives";
 
-import { CertificateIcon } from "@phosphor-icons/react";
-import Link from "next/link";
+const stats = [
+  { value: "~130", label: "Guided learning hours" },
+  { value: "6", label: "Pathway levels" },
+  { value: "7+", label: "African countries" },
+];
 
 export function AboutHeroSection() {
   return (
-    <section id="about-hero-section" className="bg-[#f0f0f0]">
-      {/* Top heading area */}
-      <div className="relative mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-10 lg:pb-26 lg:pt-14">
-        {/* Breadcrumb */}
-        <nav className="mb-6 flex items-center gap-2 text-sm">
-          <Link
-            href="/"
-            className="text-[var(--ink-deep)] hover:text-[var(--emerald)] transition-colors"
-          >
-            Home
-          </Link>
-          <span className="text-[var(--muted-soft)]">/</span>
-          <span className="text-[var(--emerald)]">About Us</span>
-        </nav>
-
-        {/* Heading row */}
-        <div className="flex items-start justify-between">
-          <h1 className="font-display text-3xl font-bold leading-tight text-[var(--ink-deep)] sm:text-4xl lg:text-[3.2rem] lg:leading-[1.15]">
-            Delivering Exceptional
-            <br />
-            Excellence in Online{" "}
-            <span className="relative inline-block">
-              Learning
-              {/* Purple underline image */}
-              <img
-                src="/assets/underline.png"
-                alt=""
-                className="absolute -bottom-10 left-0 w-full h-16 object-contain"
-                aria-hidden="true"
-              />
-            </span>
-          </h1>
-
-          {/* Decorative arrow */}
-          <img
-            src="/assets/shape22.png"
-            alt=""
-            className="hidden lg:block h-16 w-auto mt-2"
-            aria-hidden="true"
-          />
-        </div>
-      </div>
-
-      {/* Full-width image section with floating card */}
-      <div className="relative w-full">
-        <img
-          src="/assets/conny-schneider-xuTJZ7uD7PI-unsplash.jpg"
-          alt="Online learning experience"
-          className="h-72 w-full object-cover sm:h-80 lg:h-[60vh]"
-        />
-
-        {/* Floating white card */}
-        <div className="absolute bottom-6 right-4 sm:right-6 lg:top-20 lg:right-[40%] xl:right-[20%]">
-          <div className="rounded-[20px] bg-white p-6 lg:px-8 lg:py-12 w-64 sm:w-72 lg:w-80">
-            <div className="flex items-start justify-between mb-4">
-              <span className="font-display text-4xl font-bold text-[var(--ink-deep)] lg:text-6xl">
-                7+
-              </span>
-              {/* Award badge icon */}
-              <div className="">
-                <CertificateIcon className="w-12 h-12" />
-              </div>
-            </div>
-            <h3 className="mb-2 font-display text-base font-bold text-[var(--ink-deep)] lg:text-lg">
-              African Countries
-            </h3>
-            <p className="text-xs font-semibold leading-relaxed text-[var(--muted-soft)] lg:text-xs">
-              Africa&apos;s first pharmacy-specific digital health education
-              platform — built by pharmacists for pharmacists, with reach
-              spanning 7+ countries across the continent.
-            </p>
+    <section className="bg-background py-20 md:py-24 lg:py-28">
+      <LandingContainer className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
+        <AnimatedSection>
+          <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-primary-soft sm:aspect-[5/4] lg:aspect-[4/5]">
+            <Image
+              src="/assets/marketing/about-hero.jpg"
+              alt="Clinician in a one-to-one consult — the work pharmacists already do"
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover object-[20%_center]"
+              priority
+            />
           </div>
-        </div>
-      </div>
+        </AnimatedSection>
+
+        <AnimatedSection delay={0.08} className="flex flex-col gap-7">
+          <LandingEyebrow>About</LandingEyebrow>
+          <h1 className={landingDisplayTitleClass}>
+            From dispensing to decision-making.
+          </h1>
+          <p className="max-w-xl text-[15px] leading-relaxed text-muted-foreground sm:text-base md:text-lg">
+            Africa&apos;s digital health economy is growing rapidly, yet few
+            platforms offer pharmacists a structured entry point. PharmEdge
+            equips you to move beyond dispensing and into the roles defining
+            African healthcare.
+          </p>
+          <AnimatedStagger className="mt-2 grid grid-cols-3 gap-3 border-t border-border pt-6 sm:gap-6 sm:pt-8">
+            {stats.map((stat) => (
+              <AnimatedStaggerItem key={stat.label}>
+                <div className="flex flex-col gap-1">
+                  <AnimatedCounter
+                    value={stat.value}
+                    className="font-display text-xl font-semibold text-primary sm:text-2xl md:text-3xl"
+                  />
+                  <span className="font-mono text-[9px] leading-snug tracking-[0.08em] text-muted-soft uppercase sm:text-[11px] sm:tracking-[0.1em]">
+                    {stat.label}
+                  </span>
+                </div>
+              </AnimatedStaggerItem>
+            ))}
+          </AnimatedStagger>
+        </AnimatedSection>
+      </LandingContainer>
     </section>
   );
 }

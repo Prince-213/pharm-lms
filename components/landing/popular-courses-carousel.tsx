@@ -1,7 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
+import { useState } from "react";
+import {
+  AnimatedStagger,
+  AnimatedStaggerItem,
+} from "@/components/landing/motion-primitives";
 import {
   PopularCourseCard,
   type PopularCourseCardView,
@@ -35,14 +39,18 @@ export function PopularCoursesCarousel({
           <h2 className="font-display text-3xl font-bold text-[var(--ink-deep)] sm:text-4xl">
             {title}
           </h2>
-          <p className="mt-3 max-w-lg text-[var(--muted-soft)]">{description}</p>
+          <p className="mt-3 max-w-lg text-[var(--muted-soft)]">
+            {description}
+          </p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <AnimatedStagger className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {courses.map((course) => (
-            <PopularCourseCard key={course.id} course={course} />
+            <AnimatedStaggerItem key={course.id}>
+              <PopularCourseCard course={course} />
+            </AnimatedStaggerItem>
           ))}
-        </div>
+        </AnimatedStagger>
 
         {pages.length > 1 && (
           <div className="mt-8 flex justify-center gap-2">

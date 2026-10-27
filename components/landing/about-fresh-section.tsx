@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Clock, GraduationCap, Briefcase } from "lucide-react";
+import { Briefcase, Clock, GraduationCap } from "@phosphor-icons/react";
 import Image from "next/image";
+import { IconBadge } from "@/components/landing/icon-badge";
 
 export function AboutFreshSection() {
   return (
@@ -53,14 +54,7 @@ export function AboutFreshSection() {
             <div className="space-y-6">
               {/* Flexible Study Hours */}
               <div className="flex items-start gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[var(--emerald)] text-[var(--emerald)]">
-                  <Image
-                    src={"/assets/call.svg"}
-                    alt="calls"
-                    width={24}
-                    height={24}
-                  />
-                </div>
+                <IconBadge icon={Clock} className="size-14 rounded-full" iconClassName="size-7" />
                 <div>
                   <h3 className="font-display text-base font-bold text-[var(--ink-deep)] lg:text-lg">
                     Flexible Study Hours
@@ -74,14 +68,11 @@ export function AboutFreshSection() {
 
               {/* Qualified Instructors */}
               <div className="flex items-start gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[var(--emerald)] text-[var(--emerald)]">
-                  <Image
-                    src={"/assets/instructors.svg"}
-                    alt="calls"
-                    width={24}
-                    height={24}
-                  />
-                </div>
+                <IconBadge
+                  icon={GraduationCap}
+                  className="size-14 rounded-full"
+                  iconClassName="size-7"
+                />
                 <div>
                   <h3 className="font-display text-base font-bold text-[var(--ink-deep)] lg:text-lg">
                     Qualified Instructors
@@ -95,14 +86,11 @@ export function AboutFreshSection() {
 
               {/* Advance Your Career */}
               <div className="flex items-start gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[var(--emerald)] text-[var(--emerald)]">
-                  <Image
-                    src={"/assets/career.svg"}
-                    alt="calls"
-                    width={24}
-                    height={24}
-                  />
-                </div>
+                <IconBadge
+                  icon={Briefcase}
+                  className="size-14 rounded-full"
+                  iconClassName="size-7"
+                />
                 <div>
                   <h3 className="font-display text-base font-bold text-[var(--ink-deep)] lg:text-lg">
                     Advance Your Career

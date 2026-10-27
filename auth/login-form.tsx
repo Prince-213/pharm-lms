@@ -395,7 +395,7 @@ export function LoginForm({
       ) : null}
 
       <div className="flex flex-col space-y-2">
-        <p className="inline-flex w-fit items-center rounded-full border border-[var(--accent)]/30 bg-[var(--accent-soft)] px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--accent)]">
+        <p className="inline-flex w-fit items-center rounded-md border border-primary/20 bg-primary-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary">
           {portalCopy.badge}
         </p>
         <div className="space-y-1">
@@ -411,7 +411,7 @@ export function LoginForm({
           {isSignup ? "Already have an account?" : "No account yet?"}{" "}
           <Link
             href={`${PORTAL_AUTH_BASE[actorType as NonAdminPortalActor]}/${isSignup ? "login" : "signup"}`}
-            className="font-semibold text-[var(--accent)] underline-offset-4 hover:underline"
+            className="font-semibold text-[var(--auth-link)] underline-offset-4 hover:underline hover:text-[var(--auth-accent-hover)]"
           >
             {isSignup ? "Sign in" : "Sign up"}
           </Link>
@@ -423,7 +423,7 @@ export function LoginForm({
           <span
             className={
               signupStep === "details"
-                ? "text-[var(--accent)]"
+                ? "text-[var(--auth-accent)]"
                 : "text-muted-foreground"
             }
           >
@@ -433,7 +433,7 @@ export function LoginForm({
           <span
             className={
               signupStep === "verify"
-                ? "text-[var(--accent)]"
+                ? "text-[var(--auth-accent)]"
                 : "text-muted-foreground"
             }
           >
@@ -710,7 +710,7 @@ export function LoginForm({
       <Button
         type="submit"
         disabled={isPending || otpSending}
-        className="h-12 w-full bg-[var(--accent)] font-semibold text-white hover:bg-[var(--accent-deep)]"
+        className="h-12 w-full bg-accent font-semibold text-accent-foreground hover:bg-accent/90"
       >
         {isPending || oauthPending !== null || otpSending
           ? "Please wait…"
@@ -725,7 +725,7 @@ export function LoginForm({
         <div className="flex justify-end">
           <Link
             href="/contact-admin"
-            className="text-sm font-semibold text-[var(--accent)] underline-offset-4 hover:underline"
+            className="text-sm font-semibold text-[var(--auth-link)] underline-offset-4 hover:underline hover:text-[var(--auth-accent-hover)]"
           >
             Forgot password?
           </Link>
@@ -736,14 +736,14 @@ export function LoginForm({
         By clicking continue, you agree to our{" "}
         <Link
           href="/legal/terms"
-          className="underline underline-offset-4 hover:text-[var(--accent)]"
+          className="underline underline-offset-4 hover:text-[var(--auth-link)]"
         >
           Terms of Service
         </Link>{" "}
         and{" "}
         <Link
           href="/legal/privacy"
-          className="underline underline-offset-4 hover:text-[var(--accent)]"
+          className="underline underline-offset-4 hover:text-[var(--auth-link)]"
         >
           Privacy Policy
         </Link>

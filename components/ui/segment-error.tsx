@@ -17,21 +17,28 @@ export function SegmentError({
   homeLabel,
 }: SegmentErrorProps) {
   return (
-    <div className="mx-auto flex min-h-[50vh] max-w-lg flex-col items-center justify-center gap-4 px-6 py-16 text-center text-[var(--foreground)]">
-      <h1 className="font-display text-2xl font-bold tracking-tight">
+    <div className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center gap-5 px-6 py-20 text-center">
+      <p className="font-mono text-[11px] tracking-[0.08em] text-muted-soft uppercase">
+        Error
+      </p>
+      <h1 className="font-display text-balance text-3xl font-semibold tracking-[-0.02em] sm:text-4xl">
         Something went wrong
       </h1>
-      <p className="text-sm text-muted-foreground">
+      <p className="max-w-md text-[15px] leading-relaxed text-muted-foreground">
         {error.message || "Could not load this page. Please try again."}
       </p>
       {error.digest ? (
         <p className="text-xs text-muted-foreground">Ref: {error.digest}</p>
       ) : null}
       <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-        <Button type="button" onClick={() => reset()}>
+        <Button
+          type="button"
+          className="h-11 rounded-md bg-accent px-6 font-semibold text-accent-foreground hover:bg-accent/90"
+          onClick={() => reset()}
+        >
           Try again
         </Button>
-        <Button type="button" variant="outline" asChild>
+        <Button type="button" variant="outline" className="h-11 rounded-md px-6" asChild>
           <Link href={homeHref}>{homeLabel}</Link>
         </Button>
       </div>

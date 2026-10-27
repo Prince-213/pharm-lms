@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
-import { AboutFreshSection } from "@/components/landing/about-fresh-section";
+import { AboutCauseSection } from "@/components/landing/about-cause-section";
+import { AboutClosingBand } from "@/components/landing/about-closing-band";
 import { AboutHeroSection } from "@/components/landing/about-hero-section";
-import { AnimatedSection } from "@/components/landing/animated-section";
+import { AboutHowWeWork } from "@/components/landing/about-how-we-work";
+import { AboutLearnersFirstSection } from "@/components/landing/about-learners-first-section";
+import { AboutPathwaySection } from "@/components/landing/about-pathway-section";
+import { AboutStandardsSection } from "@/components/landing/about-standards-section";
+import { AboutStorySection } from "@/components/landing/about-story-section";
+import { AboutWhoWeServe } from "@/components/landing/about-who-we-serve";
 import { FAQSection } from "@/components/landing/faq-section";
 import { LeadingProfessionalsSection } from "@/components/landing/leading-professionals-section";
-import { NewsletterSection } from "@/components/landing/newsletter-section";
-import { WhatLearnersSaySection } from "@/components/landing/what-learners-say-section";
 
 export const metadata: Metadata = {
   title: "About PharmEdge",
@@ -16,29 +20,18 @@ export const metadata: Metadata = {
 
 export default function AboutUsPage() {
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-      <main>
-        <AnimatedSection>
-          <AboutHeroSection />
-        </AnimatedSection>
-        <AnimatedSection delay={0.1}>
-          <AboutFreshSection />
-        </AnimatedSection>
-        <div className="flex flex-col gap-y-20">
-          <AnimatedSection delay={0.1}>
-            <WhatLearnersSaySection />
-          </AnimatedSection>
-          <AnimatedSection delay={0.1}>
-            <LeadingProfessionalsSection />
-          </AnimatedSection>
-          <AnimatedSection delay={0.1}>
-            <FAQSection />
-          </AnimatedSection>
-          <AnimatedSection delay={0.1}>
-            <NewsletterSection />
-          </AnimatedSection>
-        </div>
-      </main>
-    </div>
+    <main className="flex min-h-screen w-full flex-col">
+      <AboutHeroSection />
+      <AboutCauseSection />
+      <AboutWhoWeServe />
+      <AboutStorySection />
+      <AboutStandardsSection />
+      <AboutHowWeWork />
+      <AboutPathwaySection />
+      <LeadingProfessionalsSection />
+      <AboutLearnersFirstSection />
+      <FAQSection />
+      <AboutClosingBand />
+    </main>
   );
 }

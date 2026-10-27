@@ -1,10 +1,6 @@
+import { Star } from "@phosphor-icons/react/ssr";
 import Image from "next/image";
 import Link from "next/link";
-import { Star } from "lucide-react";
-import {
-  udemyBorderClass,
-  udemyCardShadow,
-} from "@/lib/ui/udemy-surface";
 import { cn } from "@/lib/utils";
 
 function isRemoteSignedMediaUrl(src: string): boolean {
@@ -26,6 +22,7 @@ export type CatalogResultCardView = {
   rating?: number;
   reviewCount?: number;
   category?: string;
+  duration?: string;
 };
 
 function StarRow({
@@ -44,16 +41,15 @@ function StarRow({
   const filled = Math.round(rating);
   return (
     <span className="flex flex-wrap items-center gap-1.5">
-      <span className="text-sm font-bold tabular-nums text-[#b4690e]">
+      <span className="text-sm font-bold tabular-nums text-primary">
         {rating.toFixed(1)}
       </span>
-      <span className="flex text-[#b4690e]" aria-hidden>
-        {Array.from({ length: 5 }).map((_, i) => (
+      <span className="flex text-accent" aria-hidden>
+        {[1, 2, 3, 4, 5].map((star) => (
           <Star
-            key={i}
-            className="h-3 w-3"
-            fill={i < filled ? "currentColor" : "none"}
-            strokeWidth={1.5}
+            key={star}
+            className="size-3.5"
+            weight={star <= filled ? "fill" : "regular"}
           />
         ))}
       </span>
@@ -64,7 +60,6 @@ function StarRow({
   );
 }
 
-/** Udemy-style catalog card — image, title, instructor, rating, price. Whole card is the link. */
 export function CatalogResultCard({
   course,
   className,
@@ -73,23 +68,22 @@ export function CatalogResultCard({
   className?: string;
 }) {
   return (
-    <Link
-      href={course.href}
+    <article
       className={cn(
-        "group flex h-full flex-col overflow-hidden rounded-md border bg-white transition duration-200",
-        "hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99]",
-        udemyBorderClass,
-        udemyCardShadow,
+        "group flex h-full flex-col overflow-hidden rounded-md border border-border bg-card",
         className,
       )}
     >
-      <div className="relative aspect-video w-full overflow-hidden bg-[#f7f9fa]">
+      <Link
+        href={course.href}
+        className="relative block aspect-video overflow-hidden bg-primary-soft"
+      >
         {isRemoteSignedMediaUrl(course.image) ? (
           // biome-ignore lint/performance/noImgElement: signed R2 URLs
           <img
             src={course.image}
             alt={course.imageAlt ?? course.title}
-            className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+            className="h-full w-full object-cover"
           />
         ) : (
           <Image
@@ -97,38 +91,45 @@ export function CatalogResultCard({
             alt={course.imageAlt ?? course.title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-            className="object-cover transition duration-300 group-hover:scale-[1.03]"
+            className="object-cover"
           />
         )}
-      </div>
+      </Link>
 
-      <div className="flex flex-1 flex-col gap-1.5 p-3 sm:p-3.5">
+      <div className="flex flex-1 flex-col gap-2 p-5">
         {course.category ? (
-          <p className="truncate text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+          <p className="text-[11px] font-bold tracking-[0.12em] text-primary uppercase">
             {course.category}
           </p>
         ) : null}
 
-        <h3 className="line-clamp-2 min-h-10 text-sm font-bold leading-snug text-foreground group-hover:text-primary">
-          {course.title}
-        </h3>
+        <Link href={course.href}>
+          <h3 className="line-clamp-2 font-display text-[16px] leading-snug font-bold text-foreground">
+            {course.title}
+          </h3>
+        </Link>
 
-        <p className="truncate text-xs text-muted-foreground">
+        <p className="truncate text-sm font-medium text-primary">
           {course.instructor.name}
         </p>
 
-        <div className="mt-0.5">
-          <StarRow
-            rating={course.rating ?? 0}
-            reviewCount={course.reviewCount ?? 0}
-          />
-        </div>
+        <StarRow
+          rating={course.rating ?? 0}
+          reviewCount={course.reviewCount ?? 0}
+        />
 
-        <p className="mt-auto pt-2 text-base font-bold tabular-nums text-foreground">
+        <p className="mt-auto pt-2 font-display text-lg font-bold tabular-nums">
           {course.priceLabel}
         </p>
+
+        <Link
+          href={course.href}
+          className="inline-flex h-11 w-full items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+        >
+          View course
+        </Link>
       </div>
-    </Link>
+    </article>
   );
 }
 
@@ -158,5 +159,6 @@ export function toCatalogResultCardView(course: {
     rating: course.rating,
     reviewCount: course.reviewCount,
     category: course.category,
+    duration: course.duration ?? undefined,
   };
 }

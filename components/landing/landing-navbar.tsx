@@ -1,16 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { Menu, Search, X } from "@/lib/icons/client";
+import { useState } from "react";
+import { PharmLogo } from "@/components/brand/pharm-logo";
 import { VerifyCertificateDialog } from "@/components/courses/verify-certificate-dialog";
 import { LandingSearchForm } from "@/components/landing/landing-search-form";
+import { Menu, Search, X } from "@/lib/icons/client";
 import { getLandingContent, type LandingAudience } from "@/lib/landing-content";
-import { PharmLogo } from "@/components/brand/pharm-logo";
 
 const navLinks = [
-  { label: "Teach on PharmEdge", href: "/teach" },
-  { label: "Mentor on PharmEdge", href: "/become-a-mentor" },
+  { label: "Teach", href: "/teach" },
+  { label: "Mentor", href: "/become-a-mentor" },
 ];
 
 type LandingNavbarProps = {
@@ -26,10 +26,7 @@ export function LandingNavbar({ audience = "student" }: LandingNavbarProps) {
       <div className="mx-auto flex h-[72px] w-[99%] items-center justify-between gap-4 px-4 sm:px-6 lg:gap-8 lg:px-10">
         <div className="flex w-[65%] items-center gap-4">
           <div className="flex items-center gap-4">
-            <Link
-              href="/"
-              className="flex shrink-0 items-center"
-            >
+            <Link href="/" className="flex shrink-0 items-center">
               <PharmLogo
                 markClassName="h-7 w-7"
                 wordmarkClassName="text-base"

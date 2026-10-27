@@ -1,7 +1,27 @@
 "use client";
 
 import Image from "next/image";
+import {
+  Briefcase,
+  Clock,
+  GraduationCap,
+  Presentation,
+  SealCheck,
+  Users,
+  Wallet,
+  type Icon,
+} from "@phosphor-icons/react";
 import type { AudiencePageContent } from "@/lib/audience-landing-content";
+import { IconBadge } from "@/components/landing/icon-badge";
+
+const featureIcons: Record<string, Icon> = {
+  "Course builder & curriculum": Presentation,
+  "Reach pharmacy professionals": Users,
+  "Earn on your terms": Wallet,
+  "Flexible scheduling": Clock,
+  "Career & exam guidance": GraduationCap,
+  "Verified mentor profile": SealCheck,
+};
 
 export function AudienceValueSection({
   content,
@@ -46,15 +66,11 @@ export function AudienceValueSection({
             <div className="space-y-6">
               {content.features.map((feature) => (
                 <div key={feature.title} className="flex items-start gap-4">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[var(--emerald)] text-[var(--emerald)]">
-                    <Image
-                      src={feature.icon}
-                      alt=""
-                      width={24}
-                      height={24}
-                      aria-hidden
-                    />
-                  </div>
+                  <IconBadge
+                    icon={featureIcons[feature.title] ?? Briefcase}
+                    className="size-14 rounded-full"
+                    iconClassName="size-7"
+                  />
                   <div>
                     <h3 className="font-display text-base font-bold text-[var(--ink-deep)] lg:text-lg">
                       {feature.title}

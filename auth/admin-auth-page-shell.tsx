@@ -11,7 +11,7 @@ export function AdminAuthPageShell({ children }: { children: React.ReactNode }) 
       sidebarFooter={
         <Link
           href="/student/login"
-          className="text-sm font-medium text-[var(--accent)] underline-offset-2 hover:underline"
+          className="text-sm font-medium text-[var(--auth-link)] underline-offset-2 hover:underline"
         >
           ← Back to student login
         </Link>

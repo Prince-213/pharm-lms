@@ -2,17 +2,17 @@
 
 import Link from "next/link";
 import {
+  LandingContainer,
+  LandingEyebrow,
+  LandingHeading,
+} from "@/components/landing/landing-container";
+import { AnimatedSection } from "@/components/landing/motion-primitives";
+import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { AnimatedSection } from "@/components/landing/motion-primitives";
-import {
-  LandingContainer,
-  LandingEyebrow,
-  LandingHeading,
-} from "@/components/landing/landing-container";
 
 const faqs = [
   {
@@ -43,14 +43,19 @@ const faqs = [
 
 export function PathwayFaqSection() {
   return (
-    <section className="bg-muted py-16 md:py-20 xl:py-24">
-      <LandingContainer className="grid items-start gap-10 lg:grid-cols-12 lg:gap-16">
-        <AnimatedSection className="space-y-3 lg:sticky lg:top-24 lg:col-span-5">
+    <section className="bg-muted py-20 md:py-24 lg:py-28">
+      <LandingContainer className="grid items-start gap-12 lg:grid-cols-12 lg:gap-16">
+        <AnimatedSection className="space-y-4 lg:sticky lg:top-28 lg:col-span-5">
           <LandingEyebrow>Questions</LandingEyebrow>
-          <LandingHeading>What pharmacists ask before they start.</LandingHeading>
+          <LandingHeading>
+            What pharmacists ask before they start.
+          </LandingHeading>
           <p className="text-[16px] text-muted-foreground">
             Something else?{" "}
-            <Link href="/contact" className="font-semibold text-primary hover:underline">
+            <Link
+              href="/contact"
+              className="font-semibold text-primary hover:underline"
+            >
               Contact the team
             </Link>
             .
@@ -58,27 +63,27 @@ export function PathwayFaqSection() {
         </AnimatedSection>
 
         <AnimatedSection delay={0.08} className="lg:col-span-7">
-        <Accordion
-          type="single"
-          collapsible
-          defaultValue="item-0"
-          className="gap-3"
-        >
-          {faqs.map((faq, index) => (
-            <AccordionItem
-              key={faq.q}
-              value={`item-${index}`}
-              className="rounded-2xl border border-border/80 bg-card px-5 not-last:border-b-0 data-open:border-primary/30"
-            >
-              <AccordionTrigger className="py-5 text-left text-[16px] font-semibold hover:no-underline md:text-[17px]">
-                {faq.q}
-              </AccordionTrigger>
-              <AccordionContent className="max-w-2xl pb-5 text-[15px] leading-relaxed text-muted-foreground">
-                {faq.a}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+          <Accordion
+            type="single"
+            collapsible
+            defaultValue="item-0"
+            className="gap-4"
+          >
+            {faqs.map((faq, index) => (
+              <AccordionItem
+                key={faq.q}
+                value={`item-${index}`}
+                className="rounded-md border border-border/80 bg-card px-4 not-last:border-b-0 data-open:border-primary/30 sm:px-6"
+              >
+                <AccordionTrigger className="py-5 text-left text-[15px] leading-snug font-semibold hover:no-underline sm:py-6 sm:text-[16px] md:text-[17px]">
+                  {faq.q}
+                </AccordionTrigger>
+                <AccordionContent className="max-w-2xl pb-6 text-[15px] leading-relaxed text-muted-foreground">
+                  {faq.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </AnimatedSection>
       </LandingContainer>
     </section>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Award } from "lucide-react";
+import { Medal } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -119,9 +119,9 @@ export function PathwayLevelsSection() {
   const reducedMotion = usePrefersReducedMotion();
 
   return (
-    <section id="pathway" className="bg-background py-16 md:py-20 xl:py-24">
-      <LandingContainer className="flex flex-col gap-9 xl:gap-12">
-        <AnimatedSection className="max-w-3xl space-y-3">
+    <section id="pathway" className="bg-background py-20 md:py-24 lg:py-28">
+      <LandingContainer className="flex flex-col gap-12 lg:gap-16">
+        <AnimatedSection className="max-w-3xl space-y-4">
           <LandingEyebrow>The pathway · 4 to 6 months, self-paced</LandingEyebrow>
           <LandingHeading>
             From your first spreadsheet to a capstone project.
@@ -215,7 +215,9 @@ export function PathwayLevelsSection() {
               {level.project}
             </p>
             <div className="mt-2 flex items-center gap-3 border-t border-white/18 pt-4">
-              <Award className="size-5 shrink-0 text-accent" strokeWidth={1.75} />
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+                <Medal className="size-5" weight="duotone" aria-hidden />
+              </span>
               <span className="text-sm font-medium">{level.badge}</span>
             </div>
           </div>

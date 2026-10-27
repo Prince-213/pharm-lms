@@ -1,18 +1,18 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { AnimatedSection } from "@/components/landing/motion-primitives";
 import {
   LandingContainer,
   LandingEyebrow,
   LandingHeading,
 } from "@/components/landing/landing-container";
+import { AnimatedSection } from "@/components/landing/motion-primitives";
 import {
   VerifyCertificateModal,
   type VerifyResult,
 } from "@/components/landing/verify-certificate-modal";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { verifyCertificate } from "@/lib/certificates/verify-certificate";
 
 function formatIssueDate(iso: string) {
@@ -25,7 +25,9 @@ function formatIssueDate(iso: string) {
 export function VerifyBandSection() {
   const [certId, setCertId] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
-  const [verifyStatus, setVerifyStatus] = useState<"loading" | "done">("loading");
+  const [verifyStatus, setVerifyStatus] = useState<"loading" | "done">(
+    "loading",
+  );
   const [result, setResult] = useState<VerifyResult>({ status: null });
   const [pending, startTransition] = useTransition();
 
@@ -60,10 +62,10 @@ export function VerifyBandSection() {
   };
 
   return (
-    <section id="verify" className="bg-background py-16 md:py-20 xl:py-24">
+    <section id="verify" className="bg-background py-20 md:py-24 lg:py-28">
       <LandingContainer>
-        <AnimatedSection className="grid items-center gap-8 rounded-3xl bg-muted px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-2 lg:gap-14 lg:px-12 lg:py-14">
-          <div className="space-y-3">
+        <AnimatedSection className="grid items-center gap-10 rounded-md bg-muted px-7 py-10 sm:px-10 sm:py-12 lg:grid-cols-2 lg:gap-16 lg:px-14 lg:py-16">
+          <div className="space-y-4">
             <LandingEyebrow>Certificates employers can check</LandingEyebrow>
             <LandingHeading className="text-[1.7rem] sm:text-[2rem] xl:text-[2.35rem]">
               Every certificate has a public verification page.
@@ -76,7 +78,7 @@ export function VerifyBandSection() {
             </p>
           </div>
 
-          <form onSubmit={handleVerify} className="space-y-3">
+          <form onSubmit={handleVerify} className="space-y-4">
             <label htmlFor="landing-cert-id" className="text-sm font-medium">
               Certificate ID
             </label>

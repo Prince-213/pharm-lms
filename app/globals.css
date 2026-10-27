@@ -249,9 +249,9 @@ h6 {
   --auth-border: var(--border);
   --auth-text: var(--foreground);
   --auth-muted: var(--muted-soft);
-  --auth-link: var(--accent);
-  --auth-accent: var(--accent);
-  --auth-accent-hover: var(--accent-deep);
+  --auth-link: var(--primary);
+  --auth-accent: var(--primary);
+  --auth-accent-hover: var(--primary-strong);
   --auth-input-bg: var(--surface);
   --auth-error: var(--live);
   --auth-primary-foreground: var(--primary-foreground);
@@ -382,4 +382,140 @@ h6 {
   --success-soft: #e8e8f4;
   --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
   --font-title-active: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Marketing CTAs and buttons: lift on hover, press in on click. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-marketing] :is(
+    [data-slot="button"],
+    a.inline-flex,
+    button.inline-flex,
+    a.rounded-full,
+    button.rounded-full,
+    button.rounded-lg,
+    button.rounded-xl
+  ):not([data-slot="accordion-trigger"]) {
+    transition-property: transform, background-color, color, border-color, box-shadow, opacity;
+    transition-duration: 200ms;
+    transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+
+  [data-marketing] :is(
+    [data-slot="button"],
+    a.inline-flex,
+    button.inline-flex,
+    a.rounded-full,
+    button.rounded-full,
+    button.rounded-lg,
+    button.rounded-xl
+  ):not([data-slot="accordion-trigger"]):hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  [data-marketing] :is(
+    [data-slot="button"],
+    a.inline-flex,
+    button.inline-flex,
+    a.rounded-full,
+    button.rounded-full,
+    button.rounded-lg,
+    button.rounded-xl
+  ):not([data-slot="accordion-trigger"]):active:not(:disabled) {
+    transform: scale(0.98);
+  }
+}
+
+.terminal-caret {
+  display: inline-block;
+  width: 7px;
+  height: 0.95em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: #00bfff;
+  animation: terminal-caret 1s steps(1) infinite;
+}
+
+@keyframes terminal-caret {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .terminal-caret {
+    animation: none;
+  }
+}
+
+/*
+ * Marketing + auth OS dark: usage patches on top of pharm-brand tokens.
+ * Keep navy slabs (`bg-primary` on sections); cyan is for links, highlights, and solid CTAs.
+ */
+@media (prefers-color-scheme: dark) {
+  html:has([data-marketing]) header.bg-sidebar {
+    background-color: rgb(6 6 15 / 0.92);
+    backdrop-filter: blur(10px);
+  }
+
+  html:has([data-marketing]) .text-primary,
+  html:has(.auth-saas) .text-primary {
+    color: #7eb6ff;
+  }
+
+  html:has([data-marketing]) .bg-primary-soft,
+  html:has(.auth-saas) .bg-primary-soft {
+    background-color: rgb(0 191 255 / 0.14);
+  }
+
+  html:has([data-marketing]) :is(
+    .bg-white,
+    .bg-\[\#f0f0f0\],
+    .bg-\[\#F8F9FA\],
+    .bg-\[\#F5F5F4\]
+  ) {
+    background-color: var(--card);
+  }
+
+  html:has([data-marketing]) :is(
+    .border-slate-100,
+    .border-slate-200,
+    .border-slate-300
+  ) {
+    border-color: var(--border);
+  }
+
+  html:has([data-marketing]) :is(.text-\[\#111111\], .text-\[\#5A536C\]) {
+    color: var(--muted-foreground);
+  }
+
+  /* Paper controls sitting on navy bands stay white with dark type. */
+  html:has([data-marketing]) :is(header, .bg-\[var\(--primary\)\], .text-white)
+    .bg-white {
+    background-color: #ffffff;
+    color: #0a0a14;
+  }
+
+  html:has([data-marketing]) :is(header, .bg-\[var\(--primary\)\], .text-white)
+    .text-primary {
+    color: #000080;
+  }
+
+  html:has([data-marketing]) :is(a, button).bg-primary {
+    background-color: #00bfff;
+    color: #00005c;
+  }
+
+  html:has([data-marketing]) :is(a, button).bg-primary:hover {
+    background-color: #7dd9ff;
+    color: #00005c;
+  }
+
+  html:has([data-marketing]) :is(a, button).bg-primary .text-primary-foreground {
+    color: #00005c;
+  }
+
+  html:has(.auth-saas) [data-slot="input-group"] {
+    background-color: var(--surface);
+    border-color: var(--border);
+  }
 }

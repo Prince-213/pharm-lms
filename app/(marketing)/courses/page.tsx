@@ -1,12 +1,13 @@
 import { Suspense } from "react";
-import { AnimatedSection } from "@/components/landing/animated-section";
 import { CoursesCatalogSection } from "@/components/courses/courses-catalog-section";
+import { AnimatedSection } from "@/components/landing/animated-section";
+import { CoursesIntroSection } from "@/components/landing/courses-intro-section";
 import { MarketingCatalogSkeleton } from "@/components/ui/route-loading-skeleton";
 import {
+  type CatalogSort,
   countPublishedCourses,
   getCatalogFacets,
   searchPublishedCourseCards,
-  type CatalogSort,
 } from "@/lib/courses/public-catalog";
 
 type SearchParams = {
@@ -68,6 +69,7 @@ export default async function CoursesPage({
   return (
     <div className="min-h-screen bg-background text-foreground">
       <main>
+        <CoursesIntroSection />
         <Suspense fallback={<MarketingCatalogSkeleton />}>
           <AnimatedSection>
             <CoursesCatalogSection

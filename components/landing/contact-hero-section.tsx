@@ -1,64 +1,38 @@
-"use client";
-
-import { CertificateIcon } from "@phosphor-icons/react";
-import Link from "next/link";
+import Image from "next/image";
+import {
+  LandingContainer,
+  LandingEyebrow,
+  landingDisplayTitleClass,
+} from "@/components/landing/landing-container";
+import { AnimatedSection } from "@/components/landing/motion-primitives";
 
 export function ContactHeroSection() {
   return (
-    <section id="about-hero-section" className="bg-[#f0f0f0]">
-      {/* Top heading area */}
-      <div className="relative mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-10 lg:pb-26 lg:pt-14">
-        {/* Breadcrumb */}
-        <nav className="mb-6 flex items-center gap-2 text-sm">
-          <Link
-            href="/"
-            className="text-[var(--ink-deep)] hover:text-[var(--emerald)] transition-colors"
-          >
-            Home
-          </Link>
-          <span className="text-[var(--muted-soft)]">/</span>
-          <span className="text-[var(--emerald)]">Contact Us</span>
-        </nav>
-
-        {/* Heading row */}
-        <div className="flex items-start justify-between">
-          <h1 className="font-display text-3xl font-bold leading-tight text-[var(--ink-deep)] sm:text-4xl lg:text-[3.2rem] lg:leading-[1.15]">
-            Ready to assist
-            <br />
-            whenever you need{" "}
-            <span className="relative inline-block">
-              Us
-              {/* Purple underline image */}
-              <img
-                src="/assets/underline.png"
-                alt=""
-                className="absolute -bottom-10 left-0 w-full h-18 object-contain"
-                aria-hidden="true"
-              />
-            </span>
+    <section className="bg-background pt-16 md:pt-20 lg:pt-24">
+      <LandingContainer className="grid items-end gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-20">
+        <AnimatedSection className="max-w-xl space-y-5 pb-4 lg:pb-20">
+          <LandingEyebrow>Contact</LandingEyebrow>
+          <h1 className={landingDisplayTitleClass}>
+            Write to the team that{" "}
+            <span className="text-primary">runs PharmEdge</span>
           </h1>
+          <p className="max-w-md text-[15px] leading-relaxed text-muted-foreground sm:text-base md:text-lg">
+            Courses, teaching, mentorship, certificates, or a partnership — send
+            the context. We read every message.
+          </p>
+        </AnimatedSection>
 
-          {/* Decorative arrow */}
-          <img
-            src="/assets/shape22.png"
-            alt=""
-            className="hidden lg:block h-16 w-auto mt-2"
-            aria-hidden="true"
+        <div className="relative aspect-[4/5] overflow-hidden sm:aspect-[5/4] lg:aspect-auto lg:min-h-[440px] xl:min-h-[520px]">
+          <Image
+            src="/assets/marketing/contact-team.jpg"
+            alt="PharmEdge team in a working discussion"
+            fill
+            sizes="(max-width: 1024px) 100vw, 55vw"
+            className="object-cover"
+            priority
           />
         </div>
-      </div>
-
-      {/* Full-width image section with floating card */}
-      <div className="relative w-full">
-        <img
-          src="/assets/mentor.jpg"
-          alt="Online learning experience"
-          className="h-72 w-full object-cover sm:h-80 lg:h-[60vh]"
-        />
-
-        {/* Floating white card */}
-        <div className="absolute bottom-6 right-4 sm:right-6 lg:top-20 lg:right-[40%] xl:right-[20%]"></div>
-      </div>
+      </LandingContainer>
     </section>
   );
 }

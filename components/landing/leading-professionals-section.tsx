@@ -1,76 +1,73 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
-  cmsTutorImageSrc,
-  getTutorsCms,
-} from "@/lib/cms/tutors";
+  LandingContainer,
+  LandingEyebrow,
+  LandingHeading,
+} from "@/components/landing/landing-container";
+import {
+  AnimatedSection,
+  AnimatedStagger,
+  AnimatedStaggerItem,
+} from "@/components/landing/motion-primitives";
+import { Button } from "@/components/ui/button";
+import { cmsTutorImageSrc, getTutorsCms } from "@/lib/cms/tutors";
+import { ArrowRight } from "@/lib/icons/server";
 
 export function LeadingProfessionalsSection() {
-  const { leadingProfessionals, tutors } = getTutorsCms();
+  const { tutors } = getTutorsCms();
 
   return (
-    <section
-      id="leading-professionals"
-      className="relative overflow-hidden bg-[var(--background)] py-14 md:py-16 lg:py-16 xl:py-24"
-    >
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
-        <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between lg:mb-14">
-          <div className="relative inline-block">
-            <h2 className="font-display w-[90%] text-[26px] font-bold leading-[1.15] tracking-[-0.02em] text-black sm:text-[30px] md:w-[80%] md:text-[32px] lg:text-[36px] xl:text-[48px]">
-              <span className="relative inline-block">
-                <span className="relative inline-block px-1">
-                  <span className="relative z-[1]">{leadingProfessionals.highlight}</span>
-                  <Image
-                    src="/assets/hightlight-crown.svg"
-                    alt=""
-                    width={92}
-                    height={56}
-                    className="pointer-events-none absolute -bottom-[8px] left-1/2 z-0 h-auto w-[118%] max-w-none -translate-x-1/2"
-                    aria-hidden
-                  />
-                </span>
-              </span>{" "}
-              {leadingProfessionals.title}
-            </h2>
+    <section className="bg-background py-20 md:py-24 lg:py-28">
+      <LandingContainer className="flex flex-col gap-12 lg:gap-16">
+        <AnimatedSection className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-2xl space-y-4">
+            <LandingEyebrow>Instructors</LandingEyebrow>
+            <LandingHeading>
+              Taught by pharmacists who made the move.
+            </LandingHeading>
           </div>
-
-          <Link
-            href={leadingProfessionals.ctaHref}
-            className="inline-flex shrink-0 items-center justify-center rounded-[10px] bg-[var(--emerald)] px-7 py-4.5 text-sm font-semibold text-white transition-all hover:bg-[var(--primary-strong)] hover:shadow-[0_12px_32px_rgba(0,0,128,0.35)]"
+          <Button
+            asChild
+            variant="link"
+            className="h-auto justify-start px-0 text-base font-semibold text-primary"
           >
-            {leadingProfessionals.ctaLabel}
-          </Link>
-        </div>
+            <Link href="/courses">
+              Meet all instructors
+              <ArrowRight className="size-4" />
+            </Link>
+          </Button>
+        </AnimatedSection>
 
-        <div className="mx-auto flex w-full flex-col items-center gap-[6%] sm:flex-row sm:items-start sm:justify-center sm:gap-[5%]">
+        <AnimatedStagger className="grid gap-4 sm:grid-cols-2 lg:max-w-4xl lg:grid-cols-2">
           {tutors.map((person) => (
-            <figure
-              key={person.id}
-              className="relative w-[70%] shrink-0 overflow-hidden rounded-full bg-slate-100 shadow-lg sm:w-[42%] md:w-[40%] lg:w-[34%] xl:w-[38%]"
-              style={{ aspectRatio: "1 / 1.85" }}
-            >
-              <Image
-                src={cmsTutorImageSrc(person.image)}
-                alt={person.name}
-                fill
-                sizes="38vw"
-                className="h-full w-full object-cover"
-                style={{ objectPosition: person.objectPosition ?? "50% 22%" }}
-              />
-              <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/35 to-transparent px-[8%] pb-[10%] pt-[22%] text-center">
-                <p className="font-display text-[clamp(0.95rem,2.2vw,1.25rem)] font-bold text-white">
-                  {person.name}
-                </p>
-                {person.title ? (
-                  <p className="mt-[2%] text-[clamp(0.75rem,1.6vw,0.9rem)] font-medium text-white/80">
-                    {person.title}
+            <AnimatedStaggerItem key={person.id}>
+              <figure className="group relative aspect-[3/4] overflow-hidden rounded-md bg-primary-soft">
+                <Image
+                  src={cmsTutorImageSrc(person.image)}
+                  alt={person.name}
+                  fill
+                  sizes="(max-width: 640px) 100vw, 40vw"
+                  className="object-cover"
+                  style={
+                    person.objectPosition
+                      ? { objectPosition: person.objectPosition }
+                      : undefined
+                  }
+                />
+                <figcaption className="absolute inset-x-0 bottom-0 bg-primary px-5 py-4 text-primary-foreground">
+                  <p className="font-display text-lg font-bold">
+                    {person.name}
                   </p>
-                ) : null}
-              </figcaption>
-            </figure>
+                  <p className="text-sm text-white/75">
+                    {person.title ?? "Pharmacy tutor"}
+                  </p>
+                </figcaption>
+              </figure>
+            </AnimatedStaggerItem>
           ))}
-        </div>
-      </div>
+        </AnimatedStagger>
+      </LandingContainer>
     </section>
   );
 }

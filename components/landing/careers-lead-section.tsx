@@ -30,8 +30,8 @@ const roles = [
 
 export function CareersLeadSection() {
   return (
-    <section className="bg-primary py-16 text-primary-foreground md:py-20 xl:py-24">
-      <LandingContainer className="grid items-start gap-12 lg:grid-cols-12 lg:gap-16">
+    <section className="bg-primary py-20 text-primary-foreground md:py-24 lg:py-28">
+      <LandingContainer className="grid items-start gap-12 lg:grid-cols-12 lg:gap-20">
         <AnimatedSection className="space-y-5 lg:col-span-5">
           <LandingEyebrow className="text-accent">Where it leads</LandingEyebrow>
           <LandingHeading className="text-white">
@@ -57,7 +57,7 @@ export function CareersLeadSection() {
             <AnimatedStaggerItem
               key={role.title}
               direction="right"
-              className="grid grid-cols-[auto_1fr] gap-5 py-6 sm:gap-8"
+              className="grid grid-cols-[auto_1fr] gap-5 py-7 sm:gap-8 md:py-8"
             >
               <span className="font-mono text-sm tracking-[0.12em] text-accent">
                 {String(index + 1).padStart(2, "0")}

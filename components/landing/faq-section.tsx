@@ -1,9 +1,17 @@
 "use client";
 
-import Image from "next/image";
-import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { MOTION_EASE } from "@/components/landing/motion-primitives";
+import { useState } from "react";
+import {
+  LandingContainer,
+  LandingEyebrow,
+  LandingHeading,
+} from "@/components/landing/landing-container";
+import {
+  AnimatedSection,
+  MOTION_EASE,
+} from "@/components/landing/motion-primitives";
+import { cn } from "@/lib/utils";
 
 const faqs = [
   {
@@ -19,77 +27,79 @@ const faqs = [
   {
     question: "Are there interactive features for students?",
     answer:
-      "Yes! PharmEdge includes interactive quizzes, hands-on assignments, AI-powered quiz assistance, discussion forums, and live mentorship sessions to ensure an engaging, clinically grounded learning experience.",
+      "Yes. PharmEdge includes interactive quizzes, hands-on assignments, AI-powered quiz assistance, discussion forums, and live mentorship sessions to keep learning clinically grounded.",
   },
   {
     question: "How can I pay for courses?",
     answer:
-      "We accept multiple payment methods including credit/debit cards, bank transfers, and mobile money. All transactions are secure and processed through our trusted payment partner.",
+      "We accept credit and debit cards, bank transfers, and mobile money. All transactions are secure and processed through our payment partner.",
+  },
+  {
+    question: "Who teaches on PharmEdge?",
+    answer:
+      "Pharmacist instructors who already made the move into data, pharmacovigilance, or digital health. Tutors apply, get reviewed, and publish only after the course is checked.",
+  },
+  {
+    question: "Can I study while working full-time?",
+    answer:
+      "Yes. The pathway is about 130 hours across six levels, built for evenings and weekends on a laptop or a phone. You keep the job you already have.",
+  },
+  {
+    question: "How do I check a certificate?",
+    answer:
+      "Every credential has a public page. Enter the certificate ID on Verify — a recruiter can confirm holder, course, and issue date without a login.",
+  },
+  {
+    question: "Who built PharmEdge?",
+    answer:
+      "PharmEdge is built by PharmAnalytics as Africa's first pharmacy-specific digital health education platform. Contact the team if you are an employer, university, or partnership.",
   },
 ];
 
 export function FAQSection() {
   const [openIndex, setOpenIndex] = useState(0);
 
-  const toggle = (index: number) => {
-    setOpenIndex(openIndex === index ? -1 : index);
-  };
-
   return (
-    <section
-      id="faq"
-      className="relative overflow-hidden bg-white py-14 md:py-16 lg:py-16 xl:py-24"
-    >
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
-        <div className="flex flex-col lg:flex-row lg:items-start lg:gap-12 xl:gap-16">
-          {/* Left image */}
-          <div className="relative mx-auto mb-10 w-full max-w-sm shrink-0 lg:mx-0 lg:mb-0 lg:max-w-md xl:max-w-lg">
-            <div className="relative h-[40vh] overflow-hidden rounded-[24px] bg-red-400 md:h-[44vh] lg:h-[50vh] xl:h-[65vh]">
-              <Image
-                src="/assets/linkedin-sales-solutions-6ie6OjshvWg-unsplash.jpg"
-                alt="Student learning"
-                fill
-                className="h-auto w-full object-cover object-center"
-              />
-            </div>
-          </div>
+    <section className="bg-background py-20 md:py-24 lg:py-28">
+      <LandingContainer>
+        <div className="mx-auto max-w-3xl">
+          <AnimatedSection className="space-y-4">
+            <LandingEyebrow>Questions</LandingEyebrow>
+            <LandingHeading>Frequently asked questions</LandingHeading>
+          </AnimatedSection>
 
-          {/* Right content */}
-          <div className="flex-1">
-            <h2 className="mb-6 font-display text-[26px] font-bold leading-tight text-[var(--ink-deep)] sm:text-[30px] md:text-[32px] lg:mb-8 lg:text-[34px] xl:text-[2.5rem]">
-              Frequently <span className="text-[var(--emerald)]">Asked</span>
-              <br />
-              Questions
-            </h2>
-
-            <div className="space-y-4">
+          <AnimatedSection delay={0.08} className="mt-12">
+            <div className="divide-y divide-border border-y border-border">
               {faqs.map((faq, index) => {
                 const isOpen = openIndex === index;
                 return (
                   <div
-                    key={index}
-                    className={`overflow-hidden rounded-[16px] transition-colors duration-300 ${
-                      isOpen
-                        ? "bg-[var(--emerald)] text-white"
-                        : "bg-[#f5f5f5] text-[var(--ink-deep)]"
-                    }`}
+                    key={faq.question}
+                    className={cn(
+                      "border-l-2 transition-colors",
+                      isOpen ? "border-l-accent" : "border-l-transparent",
+                    )}
                   >
                     <button
                       type="button"
-                      onClick={() => toggle(index)}
-                      className="flex w-full items-center justify-between px-5 py-4 text-left text-base font-semibold lg:px-6 lg:py-5 lg:text-lg xl:text-xl"
+                      onClick={() => setOpenIndex(isOpen ? -1 : index)}
+                      className="flex w-full items-center justify-between gap-4 px-4 py-5 text-left sm:px-6 sm:py-6"
+                      aria-expanded={isOpen}
                     >
-                      <span>{faq.question}</span>
-                      <motion.span
-                        animate={{ rotate: isOpen ? 45 : 0 }}
-                        transition={{ duration: 0.25, ease: MOTION_EASE }}
-                        className="ml-4 flex h-8 w-8 items-center justify-center rounded-full text-xl font-bold"
+                      <span className="text-[15px] leading-snug font-semibold sm:text-[17px]">
+                        {faq.question}
+                      </span>
+                      <span
+                        className={cn(
+                          "shrink-0 text-lg font-medium",
+                          isOpen ? "text-accent" : "text-muted-foreground",
+                        )}
                       >
-                        +
-                      </motion.span>
+                        {isOpen ? "−" : "+"}
+                      </span>
                     </button>
                     <AnimatePresence initial={false}>
-                      {isOpen && (
+                      {isOpen ? (
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: "auto", opacity: 1 }}
@@ -97,19 +107,19 @@ export function FAQSection() {
                           transition={{ duration: 0.3, ease: MOTION_EASE }}
                           className="overflow-hidden"
                         >
-                          <div className="px-6 pb-6 text-[14px] font-semibold leading-relaxed text-white/90">
+                          <p className="px-4 pb-6 text-[15px] leading-relaxed text-muted-foreground sm:px-6">
                             {faq.answer}
-                          </div>
+                          </p>
                         </motion.div>
-                      )}
+                      ) : null}
                     </AnimatePresence>
                   </div>
                 );
               })}
             </div>
-          </div>
+          </AnimatedSection>
         </div>
-      </div>
+      </LandingContainer>
     </section>
   );
 }

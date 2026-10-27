@@ -6,7 +6,7 @@ function Bone({ className }: { className?: string }) {
   return <div className={clsx(pulse, "rounded-md", className)} aria-hidden />;
 }
 
-const shell = "mx-auto w-full max-w-[96rem] px-5 sm:px-8 lg:px-12 xl:px-16";
+const shell = "mx-auto w-full max-w-[90rem] px-6 sm:px-10 lg:px-16 xl:px-20";
 
 function HomeHeroSkeleton() {
   return (

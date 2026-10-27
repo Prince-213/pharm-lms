@@ -26,7 +26,7 @@ export function AuthLayoutShell({
           <PharmLogo priority markClassName="h-8 w-8" wordmarkClassName="text-lg" />
         </Link>
         {portalLabel ? (
-          <p className="relative z-10 mt-6 text-sm font-semibold uppercase tracking-wider text-[var(--accent)]">
+          <p className="relative z-10 mt-6 text-sm font-semibold uppercase tracking-wider text-[var(--auth-accent)]">
             {portalLabel}
           </p>
         ) : null}

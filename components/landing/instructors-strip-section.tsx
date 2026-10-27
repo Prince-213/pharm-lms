@@ -19,10 +19,10 @@ export function InstructorsStripSection() {
   const { tutors } = getTutorsCms();
 
   return (
-    <section className="bg-background pb-16 md:pb-20 xl:pb-24">
-      <LandingContainer className="flex flex-col gap-8 xl:gap-10">
+    <section className="bg-background pb-20 md:pb-24 lg:pb-28">
+      <LandingContainer className="flex flex-col gap-12 lg:gap-16">
         <AnimatedSection className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-          <div className="max-w-2xl space-y-3">
+          <div className="max-w-2xl space-y-4">
             <LandingEyebrow>Your instructors</LandingEyebrow>
             <LandingHeading>
               Taught by pharmacists who made the move.

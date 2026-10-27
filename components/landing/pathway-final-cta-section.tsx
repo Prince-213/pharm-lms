@@ -37,7 +37,7 @@ export function PathwayFinalCtaSection() {
 
   return (
     <section
-      className="relative overflow-hidden py-16 text-white md:py-20 xl:py-24"
+      className="relative overflow-hidden py-20 text-white md:py-24 lg:py-28"
       style={{
         background:
           "linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%)",
@@ -59,7 +59,7 @@ export function PathwayFinalCtaSection() {
 
       <LandingContainer className="relative grid items-center gap-10 lg:grid-cols-12 lg:gap-16">
         <AnimatedSection className="space-y-5 lg:col-span-7">
-          <LandingHeading className="text-[2rem] text-white sm:text-[2.4rem] xl:text-[3.1rem]">
+          <LandingHeading className="text-[1.55rem] text-white sm:text-[1.85rem] md:text-[2.2rem] xl:text-[2.75rem]">
             Your next role starts with <span className="text-accent">level one.</span>
           </LandingHeading>
           <p className="max-w-xl text-base leading-relaxed text-white/80 md:text-lg">

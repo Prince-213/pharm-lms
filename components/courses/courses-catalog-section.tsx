@@ -1,13 +1,21 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Grid3X3, List, Search } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   CatalogResultCard,
   toCatalogResultCardView,
 } from "@/components/courses/catalog-result-card";
+import {
+  AnimatedStagger,
+  AnimatedStaggerItem,
+} from "@/components/landing/motion-primitives";
+import {
+  PopularCourseCard,
+  type PopularCourseCardView,
+} from "@/components/landing/popular-course-card";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,7 +35,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { PopularCourseCardView } from "@/components/landing/popular-course-card";
 import type { CatalogSort } from "@/lib/courses/public-catalog";
 import { cnUdemyInput, udemyBorderClass } from "@/lib/ui/udemy-surface";
 import { cn } from "@/lib/utils";
@@ -65,10 +72,7 @@ function FilterCard({
 }) {
   return (
     <div
-      className={cn(
-        "rounded-md border bg-white px-4 py-3",
-        udemyBorderClass,
-      )}
+      className={cn("rounded-md border bg-white px-4 py-3", udemyBorderClass)}
     >
       <h3 className="text-sm font-bold text-foreground">{title}</h3>
       <div className="mt-2">{children}</div>
@@ -128,8 +132,7 @@ export function CoursesCatalogSection({
           <h1 className="text-base text-foreground">
             {activeQ ? (
               <>
-                Search result for:{" "}
-                <span className="font-bold">{activeQ}</span>
+                Search result for: <span className="font-bold">{activeQ}</span>
               </>
             ) : (
               <span className="font-bold">{resultsLabel}</span>
@@ -229,8 +232,7 @@ export function CoursesCatalogSection({
                         q: activeQ || undefined,
                         level: activeLevel || undefined,
                         price: activePrice || undefined,
-                        sort:
-                          activeSort !== "popular" ? activeSort : undefined,
+                        sort: activeSort !== "popular" ? activeSort : undefined,
                         view: activeView !== "grid" ? activeView : undefined,
                       })}
                       className={cn(
@@ -255,9 +257,7 @@ export function CoursesCatalogSection({
                             level: activeLevel || undefined,
                             price: activePrice || undefined,
                             sort:
-                              activeSort !== "popular"
-                                ? activeSort
-                                : undefined,
+                              activeSort !== "popular" ? activeSort : undefined,
                             view:
                               activeView !== "grid" ? activeView : undefined,
                           })}
@@ -368,7 +368,7 @@ export function CoursesCatalogSection({
                 </CardContent>
               </Card>
             ) : (
-              <div
+              <AnimatedStagger
                 className={cn(
                   "grid gap-5",
                   activeView === "list"
@@ -377,12 +377,17 @@ export function CoursesCatalogSection({
                 )}
               >
                 {courses.map((course) => (
-                  <CatalogResultCard
-                    key={course.id}
-                    course={toCatalogResultCardView(course)}
-                  />
+                  <AnimatedStaggerItem key={course.id}>
+                    {activeView === "list" ? (
+                      <PopularCourseCard course={course} layout="list" />
+                    ) : (
+                      <CatalogResultCard
+                        course={toCatalogResultCardView(course)}
+                      />
+                    )}
+                  </AnimatedStaggerItem>
                 ))}
-              </div>
+              </AnimatedStagger>
             )}
 
             {totalPages > 1 ? (
@@ -393,9 +398,7 @@ export function CoursesCatalogSection({
                       href={buildHref({
                         ...baseParams,
                         page:
-                          currentPage > 1
-                            ? String(currentPage - 1)
-                            : undefined,
+                          currentPage > 1 ? String(currentPage - 1) : undefined,
                       })}
                       className={
                         currentPage <= 1
