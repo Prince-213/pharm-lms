@@ -25,7 +25,7 @@ export function InstructorsStripSection() {
           <div className="max-w-2xl space-y-4">
             <LandingEyebrow>Your instructors</LandingEyebrow>
             <LandingHeading>
-              Taught by pharmacists who made the move.
+              Taught by people who already made the move.
             </LandingHeading>
           </div>
           <Button asChild variant="link" className="h-auto justify-start px-0 text-base font-semibold text-primary">

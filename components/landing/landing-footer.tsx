@@ -63,7 +63,7 @@ const exploreLinks = [
 
 const pageLinks = [
   { label: "Instructors", href: "/student/tutors" },
-  { label: "Contact", href: "/contact-admin" },
+  { label: "Contact", href: "/contact" },
   { label: "Privacy Policy", href: "/legal/privacy" },
   { label: "Terms & Conditions", href: "/legal/terms" },
 ];

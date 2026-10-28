@@ -22,8 +22,8 @@ const tiles = [
   {
     tone: "navy" as const,
     index: "02",
-    title: "Pharmacist instructors",
-    body: "Taught by practitioners who already made the move into data and digital health.",
+    title: "Instructors from practice",
+    body: "Taught by people who already made the move into data and digital health.",
     className: "md:col-start-3 md:row-start-1",
   },
   {

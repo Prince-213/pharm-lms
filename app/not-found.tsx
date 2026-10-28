@@ -30,7 +30,11 @@ export default function NotFound() {
               >
                 <Link href="/">Back to home</Link>
               </Button>
-              <Button asChild variant="outline" className="h-11 rounded-md px-6">
+              <Button
+                asChild
+                variant="outline"
+                className="h-11 rounded-md px-6"
+              >
                 <Link href="/courses">Browse courses</Link>
               </Button>
               <Button asChild variant="ghost" className="h-11 rounded-md px-6">

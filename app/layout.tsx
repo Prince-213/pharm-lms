@@ -1,8 +1,10 @@
 import "./globals.css";
+import Script from "next/script";
 import { Toaster } from "sonner";
 import { SessionProviderWrapper } from "@/components/session-provider-wrapper";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { fontVariables, montserrat } from "@/lib/fonts";
+import { MARKETING_THEME_BOOTSTRAP } from "@/lib/marketing-theme";
 import { rootMetadata } from "@/lib/site-metadata";
 import { cn } from "@/lib/utils";
 
@@ -14,8 +16,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("h-full antialiased", fontVariables)}>
-      <body className={cn("flex min-h-full flex-col font-sans", montserrat.className)}>
+    <html
+      lang="en"
+      className={cn("h-full antialiased", fontVariables)}
+      suppressHydrationWarning
+    >
+      <body
+        className={cn(
+          "flex min-h-full flex-col font-sans",
+          montserrat.className,
+        )}
+      >
+        <Script id="pharm-marketing-theme" strategy="beforeInteractive">
+          {MARKETING_THEME_BOOTSTRAP}
+        </Script>
         <TooltipProvider>
           <SessionProviderWrapper>{children}</SessionProviderWrapper>
         </TooltipProvider>

@@ -24,8 +24,8 @@ const items = [
   },
   {
     icon: GraduationCap,
-    title: "Pharmacist instructors",
-    body: "You learn from pharmacists who already made the move into data and digital health.",
+    title: "Instructors from practice",
+    body: "You learn from people who already made the move into data and digital health.",
   },
   {
     icon: Certificate,

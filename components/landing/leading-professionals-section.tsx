@@ -24,7 +24,7 @@ export function LeadingProfessionalsSection() {
           <div className="max-w-2xl space-y-4">
             <LandingEyebrow>Instructors</LandingEyebrow>
             <LandingHeading>
-              Taught by pharmacists who made the move.
+              Taught by people who already made the move.
             </LandingHeading>
           </div>
           <Button

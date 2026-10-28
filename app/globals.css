@@ -448,26 +448,27 @@ h6 {
 }
 
 /*
- * Marketing + auth OS dark: usage patches on top of pharm-brand tokens.
+ * Marketing + auth dark usage patches on top of pharm-brand tokens.
  * Keep navy slabs (`bg-primary` on sections); cyan is for links, highlights, and solid CTAs.
+ * Never gated on html.dark — dashboards stay light.
  */
 @media (prefers-color-scheme: dark) {
-  html:has([data-marketing]) header.bg-sidebar {
+  html:not([data-marketing-theme="light"]):has([data-marketing]) header.bg-sidebar {
     background-color: rgb(6 6 15 / 0.92);
     backdrop-filter: blur(10px);
   }
 
-  html:has([data-marketing]) .text-primary,
-  html:has(.auth-saas) .text-primary {
+  html:not([data-marketing-theme="light"]):has([data-marketing]) .text-primary,
+  html:not([data-marketing-theme="light"]):has(.auth-saas) .text-primary {
     color: #7eb6ff;
   }
 
-  html:has([data-marketing]) .bg-primary-soft,
-  html:has(.auth-saas) .bg-primary-soft {
+  html:not([data-marketing-theme="light"]):has([data-marketing]) .bg-primary-soft,
+  html:not([data-marketing-theme="light"]):has(.auth-saas) .bg-primary-soft {
     background-color: rgb(0 191 255 / 0.14);
   }
 
-  html:has([data-marketing]) :is(
+  html:not([data-marketing-theme="light"]):has([data-marketing]) :is(
     .bg-white,
     .bg-\[\#f0f0f0\],
     .bg-\[\#F8F9FA\],
@@ -476,7 +477,7 @@ h6 {
     background-color: var(--card);
   }
 
-  html:has([data-marketing]) :is(
+  html:not([data-marketing-theme="light"]):has([data-marketing]) :is(
     .border-slate-100,
     .border-slate-200,
     .border-slate-300
@@ -484,38 +485,114 @@ h6 {
     border-color: var(--border);
   }
 
-  html:has([data-marketing]) :is(.text-\[\#111111\], .text-\[\#5A536C\]) {
+  html:not([data-marketing-theme="light"]):has([data-marketing]) :is(.text-\[\#111111\], .text-\[\#5A536C\]) {
     color: var(--muted-foreground);
   }
 
   /* Paper controls sitting on navy bands stay white with dark type. */
-  html:has([data-marketing]) :is(header, .bg-\[var\(--primary\)\], .text-white)
+  html:not([data-marketing-theme="light"]):has([data-marketing]) :is(header, .bg-\[var\(--primary\)\], .text-white)
     .bg-white {
     background-color: #ffffff;
     color: #0a0a14;
   }
 
-  html:has([data-marketing]) :is(header, .bg-\[var\(--primary\)\], .text-white)
+  html:not([data-marketing-theme="light"]):has([data-marketing]) :is(header, .bg-\[var\(--primary\)\], .text-white)
     .text-primary {
     color: #000080;
   }
 
-  html:has([data-marketing]) :is(a, button).bg-primary {
+  html:not([data-marketing-theme="light"]):has([data-marketing]) :is(a, button).bg-primary {
     background-color: #00bfff;
     color: #00005c;
   }
 
-  html:has([data-marketing]) :is(a, button).bg-primary:hover {
+  html:not([data-marketing-theme="light"]):has([data-marketing]) :is(a, button).bg-primary:hover {
     background-color: #7dd9ff;
     color: #00005c;
   }
 
-  html:has([data-marketing]) :is(a, button).bg-primary .text-primary-foreground {
+  html:not([data-marketing-theme="light"]):has([data-marketing]) :is(a, button).bg-primary .text-primary-foreground {
     color: #00005c;
   }
 
-  html:has(.auth-saas) [data-slot="input-group"] {
+  html:not([data-marketing-theme="light"]):has(.auth-saas) [data-slot="input-group"] {
     background-color: var(--surface);
     border-color: var(--border);
+  }
+}
+
+html[data-marketing-theme="dark"]:has([data-marketing]) header.bg-sidebar {
+  background-color: rgb(6 6 15 / 0.92);
+  backdrop-filter: blur(10px);
+}
+
+html[data-marketing-theme="dark"]:has([data-marketing]) .text-primary,
+html[data-marketing-theme="dark"]:has(.auth-saas) .text-primary {
+  color: #7eb6ff;
+}
+
+html[data-marketing-theme="dark"]:has([data-marketing]) .bg-primary-soft,
+html[data-marketing-theme="dark"]:has(.auth-saas) .bg-primary-soft {
+  background-color: rgb(0 191 255 / 0.14);
+}
+
+html[data-marketing-theme="dark"]:has([data-marketing]) :is(
+  .bg-white,
+  .bg-\[\#f0f0f0\],
+  .bg-\[\#F8F9FA\],
+  .bg-\[\#F5F5F4\]
+) {
+  background-color: var(--card);
+}
+
+html[data-marketing-theme="dark"]:has([data-marketing]) :is(
+  .border-slate-100,
+  .border-slate-200,
+  .border-slate-300
+) {
+  border-color: var(--border);
+}
+
+html[data-marketing-theme="dark"]:has([data-marketing]) :is(.text-\[\#111111\], .text-\[\#5A536C\]) {
+  color: var(--muted-foreground);
+}
+
+html[data-marketing-theme="dark"]:has([data-marketing]) :is(header, .bg-\[var\(--primary\)\], .text-white)
+  .bg-white {
+  background-color: #ffffff;
+  color: #0a0a14;
+}
+
+html[data-marketing-theme="dark"]:has([data-marketing]) :is(header, .bg-\[var\(--primary\)\], .text-white)
+  .text-primary {
+  color: #000080;
+}
+
+html[data-marketing-theme="dark"]:has([data-marketing]) :is(a, button).bg-primary {
+  background-color: #00bfff;
+  color: #00005c;
+}
+
+html[data-marketing-theme="dark"]:has([data-marketing]) :is(a, button).bg-primary:hover {
+  background-color: #7dd9ff;
+  color: #00005c;
+}
+
+html[data-marketing-theme="dark"]:has([data-marketing]) :is(a, button).bg-primary .text-primary-foreground {
+  color: #00005c;
+}
+
+html[data-marketing-theme="dark"]:has(.auth-saas) [data-slot="input-group"] {
+  background-color: var(--surface);
+  border-color: var(--border);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html.marketing-theme-ready:has([data-marketing]) [data-marketing],
+  html.marketing-theme-ready:has(.auth-saas) .auth-saas {
+    transition:
+      color 240ms ease,
+      background-color 240ms ease,
+      border-color 240ms ease;
   }
 }

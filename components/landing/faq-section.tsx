@@ -37,7 +37,7 @@ const faqs = [
   {
     question: "Who teaches on PharmEdge?",
     answer:
-      "Pharmacist instructors who already made the move into data, pharmacovigilance, or digital health. Tutors apply, get reviewed, and publish only after the course is checked.",
+      "Instructors who already made the move into data, pharmacovigilance, or digital health. Tutors apply, get reviewed, and publish only after the course is checked.",
   },
   {
     question: "Can I study while working full-time?",
