@@ -78,7 +78,6 @@ export function navItemsForTitle(config: PortalNavConfig): {
 export const studentPortalConfig: PortalNavConfig = {
   portalTitle: "Student",
   homeHref: "/student/dashboard",
-  footerLabel: "Pharmacy Academy",
   maxContentWidth: "max-w-[1400px]",
   titleExtras: [
     { href: "/student/browse", label: "Browse" },

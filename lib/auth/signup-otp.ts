@@ -1,13 +1,13 @@
 "use server";
 
+import { randomInt } from "node:crypto";
 import { compare, hash } from "bcryptjs";
 import { z } from "zod";
 import { UserRole } from "@/generated/prisma/enums";
 import { messageForExistingEmail } from "@/lib/auth/existing-account-message";
 import { sendEmail } from "@/lib/notifications/email-service";
-import { checkRateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
-import { randomInt } from "node:crypto";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const OTP_TTL_MS = 15 * 60 * 1000;
 const SEND_COOLDOWN_MS = 60 * 1000;
@@ -21,15 +21,14 @@ const completeSchema = z.object({
   password: z.string().min(8).max(72),
   code: z.string().regex(/^\d{6}$/, "Enter the 6-digit code from your email."),
   role: z.enum([UserRole.STUDENT, UserRole.TUTOR, UserRole.MENTOR]),
+  acceptedTerms: z.literal(true),
 });
 
 export type OtpSendResult =
   | { ok: true; devEmailMocked?: boolean }
   | { ok: false; error: string; cooldownSeconds?: number };
 
-export type CompleteSignupResult =
-  | { ok: true }
-  | { ok: false; error: string };
+export type CompleteSignupResult = { ok: true } | { ok: false; error: string };
 
 function redactEmail(email: string): string {
   const [local, domain] = email.split("@");
@@ -49,20 +48,36 @@ function generateSixDigitCode(): string {
   return String(randomInt(100000, 1000000));
 }
 
-const initiateSchema = z.object({
-  fullName: z.string().min(2, "Enter your full name (at least 2 characters).").max(80),
-  email: z.string().email("Enter a valid email address.").toLowerCase(),
-  password: z.string().min(8, "Password must be at least 8 characters.").max(72),
-  confirmPassword: z.string(),
-  role: z.enum([UserRole.STUDENT, UserRole.TUTOR, UserRole.MENTOR]),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match.",
-  path: ["confirmPassword"],
-});
+const initiateSchema = z
+  .object({
+    fullName: z
+      .string()
+      .min(2, "Enter your full name (at least 2 characters).")
+      .max(80),
+    email: z.string().email("Enter a valid email address.").toLowerCase(),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters.")
+      .max(72),
+    confirmPassword: z.string(),
+    role: z.enum([UserRole.STUDENT, UserRole.TUTOR, UserRole.MENTOR]),
+    acceptedTerms: z.literal(true, {
+      error: "Accept the Terms and Privacy Policy to continue.",
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+  });
 
 export type InitiateSignupResult =
   | { ok: true; devEmailMocked?: boolean }
-  | { ok: false; error: string; fieldErrors?: Record<string, string>; cooldownSeconds?: number };
+  | {
+      ok: false;
+      error: string;
+      fieldErrors?: Record<string, string>;
+      cooldownSeconds?: number;
+    };
 
 export async function initiateSignupAction(
   input: unknown,
@@ -148,9 +163,7 @@ export async function sendSignupOtpAction(
     if (lastSend) {
       const elapsed = Date.now() - lastSend.createdAt.getTime();
       if (elapsed < SEND_COOLDOWN_MS) {
-        const cooldownSeconds = Math.ceil(
-          (SEND_COOLDOWN_MS - elapsed) / 1000,
-        );
+        const cooldownSeconds = Math.ceil((SEND_COOLDOWN_MS - elapsed) / 1000);
         console.log(
           `[signup-otp] send_code blocked: cooldown email=${redacted} waitSeconds=${cooldownSeconds}`,
         );
@@ -208,9 +221,7 @@ export async function sendSignupOtpAction(
       return { ok: true, devEmailMocked: true };
     }
 
-    console.log(
-      `[signup-otp] send_code success mode=resend email=${redacted}`,
-    );
+    console.log(`[signup-otp] send_code success mode=resend email=${redacted}`);
     return { ok: true };
   } catch (err) {
     const code = prismaErrorCode(err);
@@ -290,7 +301,14 @@ export async function completeSignupWithOtpAction(
   try {
     await prisma.$transaction([
       prisma.user.create({
-        data: { fullName, email, role, passwordHash, isActive: true },
+        data: {
+          fullName,
+          email,
+          role,
+          passwordHash,
+          isActive: true,
+          termsAcceptedAt: new Date(),
+        },
         select: { id: true },
       }),
       prisma.signupOtp.update({

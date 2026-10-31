@@ -67,6 +67,7 @@ export function customPrismaAdapter(): Adapter {
           isActive,
           passwordHash: null,
           avatarUrl: image ?? null,
+          termsAcceptedAt: new Date(),
         },
         select: {
           id: true,

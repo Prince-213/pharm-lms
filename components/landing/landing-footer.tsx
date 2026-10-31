@@ -66,6 +66,7 @@ const pageLinks = [
   { label: "Contact", href: "/contact" },
   { label: "Privacy Policy", href: "/legal/privacy" },
   { label: "Terms & Conditions", href: "/legal/terms" },
+  { label: "Cookie Policy", href: "/legal/cookies" },
 ];
 
 const accountLinks = [

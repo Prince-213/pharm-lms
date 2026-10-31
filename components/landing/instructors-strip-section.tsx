@@ -1,19 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "@/lib/icons/server";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  AnimatedSection,
-  AnimatedStagger,
-  AnimatedStaggerItem,
-} from "@/components/landing/motion-primitives";
 import {
   LandingContainer,
   LandingEyebrow,
   LandingHeading,
 } from "@/components/landing/landing-container";
+import {
+  AnimatedSection,
+  AnimatedStagger,
+  AnimatedStaggerItem,
+} from "@/components/landing/motion-primitives";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { cmsTutorImageSrc, getTutorsCms } from "@/lib/cms/tutors";
+import { ArrowRight } from "@/lib/icons/server";
 
 export function InstructorsStripSection() {
   const { tutors } = getTutorsCms();
@@ -28,7 +28,11 @@ export function InstructorsStripSection() {
               Taught by people who already made the move.
             </LandingHeading>
           </div>
-          <Button asChild variant="link" className="h-auto justify-start px-0 text-base font-semibold text-primary">
+          <Button
+            asChild
+            variant="link"
+            className="h-auto justify-start px-0 text-base font-semibold text-primary"
+          >
             <Link href="/courses">
               Meet all instructors
               <ArrowRight className="size-4" />
@@ -39,32 +43,32 @@ export function InstructorsStripSection() {
         <AnimatedStagger className="grid gap-4 sm:grid-cols-2 lg:max-w-4xl">
           {tutors.map((tutor) => (
             <AnimatedStaggerItem key={tutor.id}>
-            <Card
-              className="border-border/80 py-0 shadow-none transition-transform hover:-translate-y-1"
-            >
-              <CardContent className="flex items-center gap-4 p-5">
-                <div className="relative size-16 shrink-0 overflow-hidden rounded-full bg-primary-soft">
-                  <Image
-                    src={cmsTutorImageSrc(tutor.image)}
-                    alt={tutor.name}
-                    fill
-                    sizes="64px"
-                    className="object-cover"
-                    style={
-                      tutor.objectPosition
-                        ? { objectPosition: tutor.objectPosition }
-                        : undefined
-                    }
-                  />
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-[17px] font-bold">{tutor.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {tutor.title ?? "Pharmacy tutor"}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+              <Card className="border-border/80 py-0 shadow-none transition-transform hover:-translate-y-1">
+                <CardContent className="flex items-center gap-4 p-5">
+                  <div className="relative size-16 shrink-0 overflow-hidden rounded-full bg-primary-soft">
+                    <Image
+                      src={cmsTutorImageSrc(tutor.image)}
+                      alt={tutor.name}
+                      fill
+                      sizes="64px"
+                      className="object-cover"
+                      style={
+                        tutor.objectPosition
+                          ? { objectPosition: tutor.objectPosition }
+                          : undefined
+                      }
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-[17px] font-bold">
+                      {tutor.name}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {tutor.title ?? "Tutor"}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             </AnimatedStaggerItem>
           ))}
         </AnimatedStagger>

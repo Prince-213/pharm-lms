@@ -9,12 +9,14 @@ import { AuthDivider } from "@/components/auth/auth-divider";
 import { AppleIcon } from "@/components/icons/apple-icon";
 import { GoogleIcon } from "@/components/icons/google-icon";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
+import { Label } from "@/components/ui/label";
 import { UserRole } from "@/generated/prisma/enums";
 import { consumeWrongPortalRoleAction } from "@/lib/auth/consume-wrong-portal-role";
 import {
@@ -57,6 +59,7 @@ type FieldErrors = {
   password?: string;
   confirmPassword?: string;
   otpCode?: string;
+  acceptedTerms?: string;
 };
 
 type NonAdminPortalActor = keyof typeof PORTAL_AUTH_BASE;
@@ -107,6 +110,7 @@ export function LoginForm({
   const [otpDevHint, setOtpDevHint] = useState(false);
   const [signupStep, setSignupStep] = useState<"details" | "verify">("details");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
     if (adminHints) {
@@ -198,6 +202,9 @@ export function LoginForm({
     if (password !== confirmPassword) {
       errors.confirmPassword = "Passwords do not match.";
     }
+    if (!acceptedTerms) {
+      errors.acceptedTerms = "Accept the Terms and Privacy Policy to continue.";
+    }
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   }
@@ -216,6 +223,7 @@ export function LoginForm({
         password,
         confirmPassword,
         role: portalRole,
+        acceptedTerms: true,
       });
       if (!result.ok) {
         if (result.fieldErrors) {
@@ -260,6 +268,14 @@ export function LoginForm({
 
   function startOAuth(provider: "google" | "apple"): void {
     if (!portalRole || isAdmin) return;
+    if (isSignup && !acceptedTerms) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        acceptedTerms: "Accept the Terms and Privacy Policy to continue.",
+      }));
+      setError("Accept the Terms and Privacy Policy to continue.");
+      return;
+    }
     setError("");
     setOauthPending(provider);
     setOAuthIntentCookie(actorType as "student" | "tutor" | "mentor");
@@ -308,6 +324,7 @@ export function LoginForm({
         password,
         code,
         role: portalRole,
+        acceptedTerms: true,
       });
       if (!result.ok) {
         setError(result.error);
@@ -467,6 +484,48 @@ export function LoginForm({
         </div>
       ) : null}
 
+      {isSignup && !isAdmin && signupStep === "details" ? (
+        <div className="space-y-1">
+          <div className="flex items-start gap-2.5 text-sm text-muted-foreground">
+            <Checkbox
+              id="signup-terms"
+              checked={acceptedTerms}
+              aria-invalid={Boolean(fieldErrors.acceptedTerms)}
+              onCheckedChange={(value) => {
+                setAcceptedTerms(value === true);
+                clearFieldError("acceptedTerms");
+              }}
+              className="mt-0.5"
+            />
+            <Label
+              htmlFor="signup-terms"
+              className="text-sm leading-relaxed font-normal text-muted-foreground"
+            >
+              I agree to the{" "}
+              <Link
+                href="/legal/terms"
+                className="underline underline-offset-4 hover:text-[var(--auth-link)]"
+              >
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/legal/privacy"
+                className="underline underline-offset-4 hover:text-[var(--auth-link)]"
+              >
+                Privacy Policy
+              </Link>
+              .
+            </Label>
+          </div>
+          {fieldErrors.acceptedTerms ? (
+            <p className="text-xs text-[var(--auth-error)]">
+              {fieldErrors.acceptedTerms}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
       {showOAuthRow && (!isSignup || signupStep === "details") ? (
         <div className="space-y-2">
           {showGoogle ? (
@@ -477,7 +536,7 @@ export function LoginForm({
               onClick={() => startOAuth("google")}
               className="h-12 w-full justify-center gap-2 bg-[var(--surface)] font-medium"
             >
-              <GoogleIcon className="size-4" />
+              <GoogleIcon className="size-5" />
               Continue with Google
             </Button>
           ) : null}
@@ -757,23 +816,25 @@ export function LoginForm({
         </div>
       ) : null}
 
-      <p className="text-sm text-muted-foreground">
-        By clicking continue, you agree to our{" "}
-        <Link
-          href="/legal/terms"
-          className="underline underline-offset-4 hover:text-[var(--auth-link)]"
-        >
-          Terms of Service
-        </Link>{" "}
-        and{" "}
-        <Link
-          href="/legal/privacy"
-          className="underline underline-offset-4 hover:text-[var(--auth-link)]"
-        >
-          Privacy Policy
-        </Link>
-        .
-      </p>
+      {!isSignup ? (
+        <p className="text-sm text-muted-foreground">
+          See our{" "}
+          <Link
+            href="/legal/terms"
+            className="underline underline-offset-4 hover:text-[var(--auth-link)]"
+          >
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link
+            href="/legal/privacy"
+            className="underline underline-offset-4 hover:text-[var(--auth-link)]"
+          >
+            Privacy Policy
+          </Link>
+          .
+        </p>
+      ) : null}
     </form>
   );
 }

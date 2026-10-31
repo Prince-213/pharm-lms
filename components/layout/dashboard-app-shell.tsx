@@ -1,18 +1,16 @@
 "use client";
 
-import { useMemo } from "react";
 import { usePathname } from "next/navigation";
+import { useMemo } from "react";
+import { DashboardChromeFooter } from "@/components/layout/dashboard-chrome-footer";
 import { DashboardSiteHeader } from "@/components/layout/dashboard-site-header";
-import { PortalAppSidebar } from "@/components/layout/portal-app-sidebar";
 import {
   navItemsForTitle,
   type PortalNavConfig,
 } from "@/components/layout/nav/portal-nav-config";
+import { PortalAppSidebar } from "@/components/layout/portal-app-sidebar";
 import { PortalDataSync } from "@/components/system/portal-data-sync";
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { shellHeaderTitleFromNav } from "@/lib/shell-header-title";
 import { cn } from "@/lib/utils";
 
@@ -51,7 +49,11 @@ export function DashboardAppShell({
       <PortalDataSync />
       <PortalAppSidebar config={config} />
       <SidebarInset>
-        <DashboardSiteHeader title={headerTitle} subtitle={subtitle} />
+        <DashboardSiteHeader
+          title={headerTitle}
+          subtitle={subtitle}
+          homeHref={config.homeHref}
+        />
         <main
           className={cn(
             "flex flex-1 flex-col gap-4 overflow-y-auto bg-[#f7f9fa] p-4 sm:p-6 lg:p-8",
@@ -66,6 +68,7 @@ export function DashboardAppShell({
             {children}
           </div>
         </main>
+        <DashboardChromeFooter />
       </SidebarInset>
     </SidebarProvider>
   );

@@ -83,7 +83,7 @@ export type LandingPersonCard = {
 
 const cmsPeopleMembers: LandingPersonCard[] = getCmsTutors().map((tutor) => ({
   name: tutor.name,
-  title: tutor.title?.trim() || "Pharmacy tutor",
+  title: tutor.title?.trim() || "Tutor",
   bio: tutor.bio?.trim() || "",
   avatar: tutor.image,
 }));

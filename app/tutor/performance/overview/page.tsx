@@ -115,7 +115,18 @@ export default async function PerformanceOverviewPage() {
           },
         }),
       ])
-    : [[], 0, 0, 0, 0, 0, [], 0, { grossMinor: 0, netMinor: 0, purchaseCount: 0 }, 0];
+    : [
+        [],
+        0,
+        0,
+        0,
+        0,
+        0,
+        [],
+        0,
+        { grossMinor: 0, netMinor: 0, purchaseCount: 0 },
+        0,
+      ];
 
   // ── Enrollment trend: 6-month monthly buckets ──────────────────────────────
   const now = new Date();
@@ -140,7 +151,7 @@ export default async function PerformanceOverviewPage() {
     <div className="space-y-6 md:space-y-8 lg:space-y-10">
       <PerformanceToolbar
         title="Performance Overview"
-        subtitle="Insights across your pharmacy academy courses."
+        subtitle="Insights across your PharmEdge courses."
         dateRangeLabel="Last 6 months"
       />
 
@@ -208,8 +219,8 @@ export default async function PerformanceOverviewPage() {
                 )}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Net to you after fees · {(purchaseCount as number).toLocaleString()}{" "}
-                lifetime sales
+                Net to you after fees ·{" "}
+                {(purchaseCount as number).toLocaleString()} lifetime sales
               </p>
             </div>
 

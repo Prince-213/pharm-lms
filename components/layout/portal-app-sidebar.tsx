@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { GraduationCap } from "@/lib/icons/client";
+import { LegalLinks } from "@/components/brand/legal-links";
 import { PharmLogo } from "@/components/brand/pharm-logo";
 import {
   isNavItemActive,
@@ -27,10 +27,7 @@ type PortalAppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   config: PortalNavConfig;
 };
 
-export function PortalAppSidebar({
-  config,
-  ...props
-}: PortalAppSidebarProps) {
+export function PortalAppSidebar({ config, ...props }: PortalAppSidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -41,8 +38,9 @@ export function PortalAppSidebar({
           className="group-data-[collapsible=icon]:hidden"
         >
           <PharmLogo
+            inverted
             markClassName="h-7 w-7"
-            wordmarkClassName="text-base text-sidebar-foreground"
+            wordmarkClassName="text-base"
           />
         </Link>
         <Link
@@ -50,7 +48,7 @@ export function PortalAppSidebar({
           className="hidden group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center"
           aria-label="PharmEdge home"
         >
-          <PharmLogo wordmark={false} markClassName="h-7 w-7" />
+          <PharmLogo inverted wordmark={false} markClassName="h-7 w-7" />
         </Link>
       </SidebarHeader>
 
@@ -84,18 +82,26 @@ export function PortalAppSidebar({
         ))}
       </SidebarContent>
 
-      {config.footerLabel ? (
-        <SidebarFooter className="p-2">
-          <Card className="border-sidebar-border bg-sidebar-accent/40 shadow-none group-data-[collapsible=icon]:hidden">
-            <CardContent className="flex flex-col items-center p-4 text-center">
-              <GraduationCap className="mb-2 h-5 w-5 text-sidebar-primary" />
+      <SidebarFooter className="p-2">
+        <Card className="border-sidebar-border bg-sidebar-accent/40 shadow-none group-data-[collapsible=icon]:hidden">
+          <CardContent className="flex flex-col items-center gap-2 p-4 text-center">
+            <PharmLogo
+              inverted
+              markClassName="h-7 w-7"
+              wordmarkClassName="text-sm"
+            />
+            {config.footerLabel ? (
               <p className="text-xs font-medium text-sidebar-foreground/80">
                 {config.footerLabel}
               </p>
-            </CardContent>
-          </Card>
-        </SidebarFooter>
-      ) : null}
+            ) : null}
+            <LegalLinks
+              className="justify-center text-[11px]"
+              linkClassName="text-sidebar-foreground/70 underline-offset-4 hover:text-sidebar-foreground hover:underline"
+            />
+          </CardContent>
+        </Card>
+      </SidebarFooter>
 
       <SidebarRail />
     </Sidebar>

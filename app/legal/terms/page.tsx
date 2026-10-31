@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function LegalTermsPage() {
   return (
-    <div className="min-h-screen bg-[var(--background)] px-6 py-16 text-[var(--foreground)]">
+    <div className="bg-[var(--background)] px-6 py-16 text-[var(--foreground)]">
       <div className="mx-auto max-w-2xl space-y-6">
         <h1 className="font-display text-3xl font-bold tracking-tight">
           Terms of use

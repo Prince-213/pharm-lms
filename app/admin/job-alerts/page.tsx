@@ -1,27 +1,16 @@
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { AdminPanel } from "@/components/admin/admin-panel";
 import { AdminStatCard } from "@/components/admin/admin-stat-card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { requireAdminSession } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
-import {
-  isApifyConfigured,
-  JOB_SOURCE_LABELS,
-  type JobSourceId,
-} from "@/lib/jobs/constants";
+import { isApifyConfigured, type JobSourceId } from "@/lib/jobs/constants";
 import {
   cadenceGuardActive,
   ensureSourceHealthRows,
   getOrCreateJobAlertSettings,
 } from "@/lib/jobs/settings";
 import { JobAlertsSettingsForm } from "./job-alerts-settings-form";
+import { JobSourceTable } from "./job-source-table";
 
 function formatWhen(value: Date | null | undefined) {
   if (!value) return "—";
@@ -109,38 +98,17 @@ export default async function AdminJobAlertsPage() {
           title="Sources"
           description="Eight keyless feeds plus an optional hard-capped Apify run."
         >
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Source</TableHead>
-                <TableHead>Enabled</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Kept</TableHead>
-                <TableHead>Error</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sources.map((row) => (
-                <TableRow key={row.id}>
-                  <TableCell className="font-medium">
-                    {JOB_SOURCE_LABELS[row.source as JobSourceId] ?? row.source}
-                  </TableCell>
-                  <TableCell>{row.enabled ? "Yes" : "No"}</TableCell>
-                  <TableCell className="capitalize">
-                    {sourceStatus(row)}
-                  </TableCell>
-                  <TableCell>
-                    {row.lastMs != null ? `${row.lastMs} ms` : "—"}
-                  </TableCell>
-                  <TableCell>{row.jobsKept}</TableCell>
-                  <TableCell className="max-w-[220px] truncate text-muted-foreground">
-                    {row.lastError ?? "—"}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <JobSourceTable
+            rows={sources.map((row) => ({
+              id: row.id,
+              source: row.source,
+              enabled: row.enabled,
+              statusLabel: sourceStatus(row),
+              lastMs: row.lastMs,
+              jobsKept: row.jobsKept,
+              lastError: row.lastError,
+            }))}
+          />
         </AdminPanel>
 
         <AdminPanel

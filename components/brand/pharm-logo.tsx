@@ -8,6 +8,7 @@ type PharmLogoProps = {
   markClassName?: string;
   wordmarkClassName?: string;
   wordmark?: boolean;
+  /** Sit the navy mark on a white plate and use a light wordmark. */
   inverted?: boolean;
   priority?: boolean;
 };
@@ -22,18 +23,21 @@ export function PharmLogo({
 }: PharmLogoProps) {
   return (
     <span className={cn("inline-flex items-center gap-2", className)}>
-      <Image
-        src={BRAND_LOGO_SRC}
-        alt={wordmark ? "" : "PharmEdge"}
-        width={40}
-        height={40}
+      <span
         className={cn(
-          "h-8 w-8 object-contain",
-          inverted && "brightness-0 invert",
-          markClassName,
+          "inline-flex shrink-0 items-center justify-center",
+          inverted && "rounded-md bg-white p-0.5 shadow-sm",
         )}
-        priority={priority}
-      />
+      >
+        <Image
+          src={BRAND_LOGO_SRC}
+          alt={wordmark ? "" : "PharmEdge"}
+          width={40}
+          height={40}
+          className={cn("h-8 w-8 object-contain", markClassName)}
+          priority={priority}
+        />
+      </span>
       {wordmark ? (
         <span
           className={cn(

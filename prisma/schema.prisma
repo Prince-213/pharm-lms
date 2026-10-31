@@ -107,6 +107,7 @@ model User {
   mentorProfileSubmittedAt DateTime?
   tutorProfileCompletedAt  DateTime?
   isActive                 Boolean                 @default(true)
+  termsAcceptedAt          DateTime?
   createdAt                DateTime                @default(now())
   updatedAt                DateTime                @updatedAt
   courses                  Course[]                @relation("MentorCourses")

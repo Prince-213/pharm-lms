@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { LegalLinks } from "@/components/brand/legal-links";
+import { PharmLogo } from "@/components/brand/pharm-logo";
 import { InstructorCourseHeader } from "@/components/mentor/instructor-course-header";
 
 type InstructorShellProps = {
@@ -43,46 +46,23 @@ export function InstructorShell({
 
 export function InstructorFooter() {
   return (
-    <footer className="mt-10 bg-[var(--surface)] text-[var(--foreground)]">
-      <div className="border-b border-[var(--border)] px-6 py-6 text-sm">
-        Top institutions choose PharmEdge to build in-demand clinical skills.
-      </div>
-      <div className="grid grid-cols-2 gap-6 px-6 py-8 text-xs md:grid-cols-4">
-        <div>
-          <h4 className="mb-2 font-semibold">In-demand Careers</h4>
-          <ul className="space-y-1 text-muted-foreground">
-            <li>Data Scientist</li>
-            <li>Cloud Engineer</li>
-            <li>Project Manager</li>
-          </ul>
+    <footer className="mt-10 border-t border-border bg-background px-6 py-6 text-[var(--foreground)]">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <Link href="/tutor/courses" className="w-fit">
+          <PharmLogo
+            markClassName="h-7 w-7"
+            wordmarkClassName="text-base text-foreground"
+          />
+        </Link>
+        <div className="flex flex-col gap-1 sm:items-end">
+          <LegalLinks
+            className="text-xs"
+            linkClassName="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          />
+          <p className="text-[11px] text-muted-foreground">
+            © {new Date().getFullYear()} PharmEdge
+          </p>
         </div>
-        <div>
-          <h4 className="mb-2 font-semibold">Web Development</h4>
-          <ul className="space-y-1 text-muted-foreground">
-            <li>Web Development</li>
-            <li>JavaScript</li>
-            <li>React JS</li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="mb-2 font-semibold">Data Science</h4>
-          <ul className="space-y-1 text-muted-foreground">
-            <li>Data Science</li>
-            <li>Python</li>
-            <li>Machine Learning</li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="mb-2 font-semibold">Leadership</h4>
-          <ul className="space-y-1 text-muted-foreground">
-            <li>Leadership</li>
-            <li>Management Skills</li>
-            <li>Communication</li>
-          </ul>
-        </div>
-      </div>
-      <div className="border-t border-[var(--border)] px-6 py-4 text-xs text-muted-foreground">
-        PharmEdge © 2026 PharmEdge.
       </div>
     </footer>
   );

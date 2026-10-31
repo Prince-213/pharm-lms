@@ -39,7 +39,10 @@ function chunk<T>(items: T[], size: number): T[][] {
 }
 
 function stripHtml(html: string, maxLen = 140): string {
-  const plain = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  const plain = html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   if (plain.length <= maxLen) return plain;
   return `${plain.slice(0, maxLen - 1)}…`;
 }
@@ -77,7 +80,9 @@ export async function loadLandingPopularCoursePages(
         reviews: { select: { rating: true } },
         sections: {
           select: {
-            lessons: { select: { durationSec: true, content: true, videoUrl: true } },
+            lessons: {
+              select: { durationSec: true, content: true, videoUrl: true },
+            },
           },
         },
       },
@@ -197,12 +202,16 @@ async function loadLandingPeople(
       people.map(async (person) => {
         const avatar =
           (await resolveMediaUrl(person.avatarUrl)) ?? DEFAULT_AVATAR;
+        const headline = person.mentorHeadline?.trim() ?? "";
+        const normalizedHeadline = /^pharmacy tutor$/i.test(headline)
+          ? "Tutor"
+          : headline;
         const title =
-          person.mentorHeadline?.trim() ||
+          normalizedHeadline ||
           (role === UserRole.TUTOR
             ? person.courses.length
               ? "Course instructor"
-              : "Pharmacy tutor"
+              : "Tutor"
             : "Pharmacy mentor");
         const bio =
           person.bio?.trim() ||

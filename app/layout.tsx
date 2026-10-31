@@ -1,6 +1,7 @@
 import "./globals.css";
 import Script from "next/script";
 import { Toaster } from "sonner";
+import { CookieBanner } from "@/components/legal/cookie-banner";
 import { SessionProviderWrapper } from "@/components/session-provider-wrapper";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { fontVariables, montserrat } from "@/lib/fonts";
@@ -33,6 +34,7 @@ export default function RootLayout({
         <TooltipProvider>
           <SessionProviderWrapper>{children}</SessionProviderWrapper>
         </TooltipProvider>
+        <CookieBanner />
         <Toaster position="top-right" />
       </body>
     </html>

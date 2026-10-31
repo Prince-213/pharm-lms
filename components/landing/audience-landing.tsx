@@ -164,7 +164,7 @@ export function AudienceLanding({ content }: { content: AudiencePageContent }) {
                         {person.name}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {person.title ?? "Pharmacy tutor"}
+                        {person.title ?? "Tutor"}
                       </p>
                     </figcaption>
                   </figure>
