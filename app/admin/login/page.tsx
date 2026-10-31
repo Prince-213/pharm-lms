@@ -6,11 +6,12 @@ import {
   parseAuthJsError,
   parsePortalAuthError,
 } from "@/lib/auth/parse-auth-page-params";
+import { parseUserRoleParam } from "@/lib/auth/wrong-portal";
 
 export default async function AdminLoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ authError?: string; error?: string }>;
+  searchParams: Promise<{ authError?: string; error?: string; as?: string }>;
 }) {
   const sp = await searchParams;
 
@@ -24,6 +25,7 @@ export default async function AdminLoginPage({
           googleEnabled={false}
           portalAuthError={parsePortalAuthError(sp.authError)}
           authJsError={parseAuthJsError(sp.error)}
+          actualAccountRole={parseUserRoleParam(sp.as)}
         />
       </CrossSectorSessionGate>
     </AdminAuthPageShell>

@@ -432,6 +432,18 @@ AUTH_URL=https://edge.pharmanalytics.org
 NEXTAUTH_URL=https://edge.pharmanalytics.org
 NEXT_PUBLIC_SITE_URL=https://edge.pharmanalytics.org
 R2_CORS_ORIGINS=https://edge.pharmanalytics.org,http://localhost:3000
+
+# Job alerts (weekly cache + email)
+JOBS_BOARD_LIVE=1
+CRON_SECRET=
+APIFY_TOKEN=
+APIFY_ACTOR_ID=agentx~all-jobs-scraper
+```
+
+Monday 07:00 WAT (06:00 UTC) cron after deploy:
+
+```
+0 6 * * 1 curl -fsS -H "Authorization: Bearer YOUR_CRON_SECRET" https://edge.pharmanalytics.org/api/cron/job-alerts
 ```
 
 ### 5. Restart (rebuild if this rebrand is being deployed)

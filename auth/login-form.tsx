@@ -9,22 +9,25 @@ import { AuthDivider } from "@/components/auth/auth-divider";
 import { AppleIcon } from "@/components/icons/apple-icon";
 import { GoogleIcon } from "@/components/icons/google-icon";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { Input } from "@/components/ui/input";
 import { UserRole } from "@/generated/prisma/enums";
-import {
-  completeSignupWithOtpAction,
-  initiateSignupAction,
-} from "@/lib/auth/signup-otp";
-import { portalAuthCopy } from "@/lib/auth/portal-auth-copy";
+import { consumeWrongPortalRoleAction } from "@/lib/auth/consume-wrong-portal-role";
 import {
   messageForAuthJsError,
   messageForOauthOnlyLogin,
 } from "@/lib/auth/existing-account-message";
+import { portalAuthCopy } from "@/lib/auth/portal-auth-copy";
+import {
+  completeSignupWithOtpAction,
+  initiateSignupAction,
+} from "@/lib/auth/signup-otp";
+import { parseWrongPortalCode } from "@/lib/auth/wrong-portal";
+import { showWrongPortalToasts } from "@/lib/auth/wrong-portal-toast";
 import { userRoleLabel } from "@/lib/user-role-label";
 
 type LoginFormProps = {
@@ -38,6 +41,8 @@ type LoginFormProps = {
   portalAuthError?: "wrong_portal" | "account_disabled" | null;
   /** Auth.js `?error=` query value (OAuthCallback, OAuthAccountNotLinked, etc.). */
   authJsError?: string | null;
+  /** Role the account actually has, when known (OAuth `?as=`). */
+  actualAccountRole?: UserRole | null;
 };
 
 const PORTAL_AUTH_BASE = {
@@ -80,6 +85,7 @@ export function LoginForm({
   adminCredentialHints,
   portalAuthError = null,
   authJsError = null,
+  actualAccountRole = null,
 }: LoginFormProps) {
   const isSignup = mode === "signup";
   const isAdmin = actorType === "admin";
@@ -153,11 +159,21 @@ export function LoginForm({
     if (portalAuthError === "account_disabled" && wrongPortalBanner) {
       toast.error(wrongPortalBanner);
     } else if (portalAuthError === "wrong_portal" && wrongPortalBanner) {
-      toast.error(wrongPortalBanner);
+      showWrongPortalToasts({
+        attemptedLabel: isAdmin ? "Admin" : portalActorTitle,
+        actualRole: actualAccountRole,
+      });
     } else if (authJsBanner) {
       toast.error(authJsBanner);
     }
-  }, [portalAuthError, wrongPortalBanner, authJsBanner]);
+  }, [
+    portalAuthError,
+    wrongPortalBanner,
+    authJsBanner,
+    actualAccountRole,
+    isAdmin,
+    portalActorTitle,
+  ]);
 
   function clearFieldError(field: keyof FieldErrors) {
     setFieldErrors((prev) => {
@@ -250,6 +266,19 @@ export function LoginForm({
     void signIn(provider, { callbackUrl });
   }
 
+  async function notifyWrongPortal(code?: string | null): Promise<boolean> {
+    const actualRole =
+      parseWrongPortalCode(code) ?? (await consumeWrongPortalRoleAction());
+    if (!actualRole && !code?.startsWith("WRONG_PORTAL")) return false;
+    setError(
+      showWrongPortalToasts({
+        attemptedLabel: isAdmin ? "Admin" : portalActorTitle,
+        actualRole,
+      }),
+    );
+    return true;
+  }
+
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsPending(true);
@@ -294,11 +323,11 @@ export function LoginForm({
         portalRole,
       });
       if (signInResult?.error) {
-        if (signInResult.code === "WRONG_PORTAL" && portalActorTitle) {
-          setError(
-            `This account is not registered as a ${portalActorTitle.toLowerCase()}.`,
-          );
-        } else if (signInResult.code === "ACCOUNT_DISABLED") {
+        if (await notifyWrongPortal(signInResult.code)) {
+          setIsPending(false);
+          return;
+        }
+        if (signInResult.code === "ACCOUNT_DISABLED") {
           setError(
             actorType === "mentor"
               ? "This mentor account has been deactivated by an admin. Contact support if you need help."
@@ -331,15 +360,11 @@ export function LoginForm({
     });
 
     if (result?.error) {
-      if (result.code === "WRONG_PORTAL") {
-        const msg = isAdmin
-          ? "This account does not have admin access."
-          : portalActorTitle
-            ? `This account is not registered as a ${portalActorTitle.toLowerCase()}.`
-            : "Invalid credentials.";
-        setError(msg);
-        toast.error(msg);
-      } else if (result.code === "ACCOUNT_DISABLED") {
+      if (await notifyWrongPortal(result.code)) {
+        setIsPending(false);
+        return;
+      }
+      if (result.code === "ACCOUNT_DISABLED") {
         const msg =
           actorType === "mentor"
             ? "This mentor account has been deactivated by an admin. Contact support if you need help."

@@ -8,6 +8,7 @@ import {
   parseAuthJsError,
   parsePortalAuthError,
 } from "@/lib/auth/parse-auth-page-params";
+import { parseUserRoleParam } from "@/lib/auth/wrong-portal";
 
 export default async function TutorLoginPage({
   searchParams,
@@ -16,6 +17,7 @@ export default async function TutorLoginPage({
     callbackUrl?: string;
     authError?: string;
     error?: string;
+    as?: string;
   }>;
 }) {
   const sp = await searchParams;
@@ -37,6 +39,7 @@ export default async function TutorLoginPage({
           appleEnabled={isAppleOAuthEnabled()}
           portalAuthError={parsePortalAuthError(sp.authError)}
           authJsError={parseAuthJsError(sp.error)}
+          actualAccountRole={parseUserRoleParam(sp.as)}
         />
       </CrossSectorSessionGate>
     </AuthPageShell>

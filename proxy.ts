@@ -81,7 +81,12 @@ export async function proxy(req: NextRequest) {
     return staleSession ? expireSessionCookies(redirect) : redirect;
   }
 
-  if (userRole && token?.sub && needsAuth && !canAccessRolePath(userRole, pathname)) {
+  if (
+    userRole &&
+    token?.sub &&
+    needsAuth &&
+    !canAccessRolePath(userRole, pathname)
+  ) {
     return NextResponse.redirect(new URL(roleHomePath(userRole), req.url));
   }
 
@@ -92,9 +97,7 @@ export async function proxy(req: NextRequest) {
     if (normalizePathname(userLoginPath) === loginPath) {
       return NextResponse.redirect(new URL(userHome, req.url));
     }
-    const signOutUrl = new URL("/api/auth/signout", req.url);
-    signOutUrl.searchParams.set("callbackUrl", loginPath);
-    return NextResponse.redirect(signOutUrl);
+    return NextResponse.next();
   }
 
   const next = NextResponse.next();

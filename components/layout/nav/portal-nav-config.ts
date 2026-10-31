@@ -1,7 +1,9 @@
 import {
+  type AppIcon,
   Award,
   BarChart3,
   BookOpen,
+  Briefcase,
   Calendar,
   ClipboardText as ClipboardList,
   CreditCard,
@@ -10,8 +12,8 @@ import {
   Heart,
   LayoutDashboard,
   MessageSquare,
-  Search,
   School,
+  Search,
   Ticket,
   Trophy,
   User,
@@ -19,7 +21,6 @@ import {
   Users,
   Wallet,
   Wrench,
-  type AppIcon,
 } from "@/lib/icons/client";
 
 export type PortalNavItem = {
@@ -104,6 +105,7 @@ export const studentPortalConfig: PortalNavConfig = {
       items: [
         { href: "/student/browse", label: "Browse", icon: Search },
         { href: "/student/wishlist", label: "Wishlist", icon: Heart },
+        { href: "/student/jobs", label: "Jobs", icon: Briefcase },
       ],
     },
     {
@@ -162,6 +164,7 @@ export const adminPortalConfig: PortalNavConfig = {
         { href: "/admin/coupons", label: "Coupons", icon: Ticket },
         { href: "/admin/badges", label: "Badges", icon: Award },
         { href: "/admin/messages", label: "Messages", icon: MessageSquare },
+        { href: "/admin/job-alerts", label: "Job alerts", icon: Briefcase },
       ],
     },
   ],

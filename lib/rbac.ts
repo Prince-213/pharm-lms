@@ -15,6 +15,13 @@ export function roleHomePath(role: UserRole) {
   return "/student/dashboard";
 }
 
+export function loginPathForRole(role: UserRole) {
+  if (role === UserRole.ADMIN) return "/admin/login";
+  if (role === UserRole.TUTOR) return "/tutor/login";
+  if (role === UserRole.MENTOR) return "/mentor/login";
+  return "/student/login";
+}
+
 /** Account profile editor (or home when no dedicated profile exists). */
 export function profilePathForRole(role: UserRole) {
   if (role === UserRole.TUTOR) return "/tutor/profile";

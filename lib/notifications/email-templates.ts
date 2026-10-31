@@ -12,7 +12,11 @@ export function getSubmissionTemplate(courseTitle: string, mentorName: string) {
   `;
 }
 
-export function getApprovalTemplate(courseTitle: string, mentorName: string, courseUrl: string) {
+export function getApprovalTemplate(
+  courseTitle: string,
+  mentorName: string,
+  courseUrl: string,
+) {
   return `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1c1d1f;">
       <h2 style="color: #10b981;">Course Approved & Published!</h2>
@@ -53,7 +57,8 @@ export function getAssignmentSubmittedEmailTemplate(opts: {
   assignmentTitle: string;
   reviewUrl: string;
 }) {
-  const { mentorName, studentName, courseTitle, assignmentTitle, reviewUrl } = opts;
+  const { mentorName, studentName, courseTitle, assignmentTitle, reviewUrl } =
+    opts;
   return `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1c1d1f;">
       <h2 style="color: #6366f1;">New submission received</h2>
@@ -98,7 +103,12 @@ export function getCourseReviewReceivedEmailTemplate(opts: {
   `;
 }
 
-export function getRejectionTemplate(courseTitle: string, mentorName: string, reason: string, editUrl: string) {
+export function getRejectionTemplate(
+  courseTitle: string,
+  mentorName: string,
+  reason: string,
+  editUrl: string,
+) {
   return `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1c1d1f;">
       <h2 style="color: #e11d48;">Course Requires Revision</h2>
@@ -115,3 +125,8 @@ export function getRejectionTemplate(courseTitle: string, mentorName: string, re
     </div>
   `;
 }
+
+export {
+  type DigestJob,
+  getJobAlertDigestTemplate,
+} from "@/lib/notifications/job-alert-template";

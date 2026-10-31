@@ -143,6 +143,8 @@ model User {
   withdrawalsProcessed     WithdrawalRequest[]     @relation("WithdrawalProcessedBy")
   couponsCreated           Coupon[]                @relation("CouponCreatedBy")
   couponRedemptions        CouponRedemption[]
+  jobPreference            JobPreference?
+  jobAlertDeliveries       JobAlertDelivery[]
 
   @@index([role, isActive])
   @@index([mentorProfileSubmittedAt])
@@ -797,4 +799,111 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+enum JobOnboardingStatus {
+  PENDING
+  SKIPPED
+  COMPLETE
+}
+
+enum JobWorkStyle {
+  REMOTE
+  COUNTRY
+  RELOCATE
+}
+
+enum JobCareerLevel {
+  STUDENT
+  EARLY
+  EXPERIENCED
+}
+
+enum JobSourceHealthStatus {
+  HEALTHY
+  DOWN
+  UNCONFIGURED
+}
+
+model JobPreference {
+  id               String              @id @default(cuid())
+  userId           String              @unique
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roles            String[]            @default([])
+  workStyle        JobWorkStyle?
+  level            JobCareerLevel?
+  jobAlertsEnabled Boolean             @default(true)
+  onboardingStatus JobOnboardingStatus @default(PENDING)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+}
+
+model ScrapedJob {
+  id         String             @id @default(cuid())
+  applyUrl   String             @unique
+  source     String
+  title      String
+  company    String?
+  location   String?
+  remote     Boolean            @default(false)
+  type       String?
+  salaryText String?
+  snippet    String?            @db.Text
+  postedAt   DateTime?
+  rawJson    Json?
+  expiresAt  DateTime
+  createdAt  DateTime           @default(now())
+  deliveries JobAlertDelivery[]
+
+  @@index([expiresAt])
+  @@index([source])
+}
+
+model JobSourceHealth {
+  id         String                @id @default(cuid())
+  source     String                @unique
+  enabled    Boolean               @default(true)
+  status     JobSourceHealthStatus @default(UNCONFIGURED)
+  lastStatus Int?
+  lastMs     Int?
+  jobsKept   Int                   @default(0)
+  lastError  String?               @db.Text
+  lastRunAt  DateTime?
+  updatedAt  DateTime              @updatedAt
+}
+
+model JobAlertSettings {
+  id              String    @id @default("default")
+  enabled         Boolean   @default(true)
+  cadenceDays     Int       @default(7)
+  maxEmailJobs    Int       @default(5)
+  defaultKeywords String[]  @default(["pharmacist", "pharmacovigilance", "clinical data", "health informatics"])
+  lastSuccessAt   DateTime?
+  updatedAt       DateTime  @updatedAt
+}
+
+model JobAlertRun {
+  id         String             @id @default(cuid())
+  startedAt  DateTime           @default(now())
+  finishedAt DateTime?
+  ok         Boolean            @default(false)
+  jobsStored Int                @default(0)
+  emailsSent Int                @default(0)
+  emailsSkip Int                @default(0)
+  error      String?            @db.Text
+  deliveries JobAlertDelivery[]
+}
+
+model JobAlertDelivery {
+  id        String     @id @default(cuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId     String
+  job       ScrapedJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  runId     String
+  run       JobAlertRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+
+  @@unique([userId, jobId])
+  @@index([runId])
 }

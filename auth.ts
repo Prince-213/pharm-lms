@@ -7,14 +7,14 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { z } from "zod";
 import { type MentorProfileStatus, UserRole } from "@/generated/prisma/enums";
-import { ensureMentorCanSignIn } from "@/lib/auth/mentor-login-access";
 import { isAppleOAuthEnabled } from "@/lib/auth/apple-oauth-enabled";
 import { customPrismaAdapter } from "@/lib/auth/custom-prisma-adapter";
 import { isGoogleOAuthEnabled } from "@/lib/auth/google-oauth-enabled";
+import { ensureMentorCanSignIn } from "@/lib/auth/mentor-login-access";
 import { getAuthSecret } from "@/lib/auth/secret";
 import { SESSION_MAX_AGE_SECONDS } from "@/lib/auth/session-policy";
-import { checkRateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 /**
  * Logs an auth-time DB failure without tearing down `/api/auth/session`.
@@ -27,7 +27,10 @@ function warnAuthDbFailure(scope: string, error: unknown) {
 }
 
 class WrongPortalCredentials extends CredentialsSignin {
-  code = "WRONG_PORTAL";
+  constructor(actualRole: UserRole) {
+    super(`WRONG_PORTAL_${actualRole}`);
+    this.code = `WRONG_PORTAL_${actualRole}`;
+  }
 }
 
 class AccountDisabledCredentials extends CredentialsSignin {
@@ -111,7 +114,13 @@ const providers: NextAuthConfig["providers"] = [
       }
       const expected = parsed.data.portalRole;
       if (expected && user.role !== expected) {
-        throw new WrongPortalCredentials();
+        const cookieStore = await cookies();
+        cookieStore.set("wrong_portal_as", user.role, {
+          path: "/",
+          maxAge: 120,
+          sameSite: "lax",
+        });
+        throw new WrongPortalCredentials(user.role);
       }
       return {
         id: user.id,
@@ -234,7 +243,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             : expectedRole === UserRole.TUTOR
               ? "/tutor/login"
               : "/student/login";
-        return `${loginPath}?authError=wrong_portal`;
+        return `${loginPath}?authError=wrong_portal&as=${row.role.toLowerCase()}`;
       }
       return true;
     },
@@ -263,14 +272,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             } else {
               token.sub = undefined;
               (token as { role?: UserRole }).role = undefined;
-              (token as { mentorProfileStatus?: MentorProfileStatus }).mentorProfileStatus =
-                undefined;
+              (
+                token as { mentorProfileStatus?: MentorProfileStatus }
+              ).mentorProfileStatus = undefined;
             }
           } else {
             token.sub = undefined;
             (token as { role?: UserRole }).role = undefined;
-            (token as { mentorProfileStatus?: MentorProfileStatus }).mentorProfileStatus =
-              undefined;
+            (
+              token as { mentorProfileStatus?: MentorProfileStatus }
+            ).mentorProfileStatus = undefined;
           }
         } catch (error) {
           warnAuthDbFailure("jwt fresh-login lookup", error);
@@ -303,14 +314,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             } else {
               token.sub = undefined;
               (token as { role?: UserRole }).role = undefined;
-              (token as { mentorProfileStatus?: MentorProfileStatus }).mentorProfileStatus =
-                undefined;
+              (
+                token as { mentorProfileStatus?: MentorProfileStatus }
+              ).mentorProfileStatus = undefined;
             }
           } else {
             token.sub = undefined;
             (token as { role?: UserRole }).role = undefined;
-            (token as { mentorProfileStatus?: MentorProfileStatus }).mentorProfileStatus =
-              undefined;
+            (
+              token as { mentorProfileStatus?: MentorProfileStatus }
+            ).mentorProfileStatus = undefined;
           }
         } catch (error) {
           warnAuthDbFailure("jwt session-refresh lookup", error);

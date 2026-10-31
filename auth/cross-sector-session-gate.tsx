@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { useEffect, useRef } from "react";
 import type { UserRole } from "@/generated/prisma/enums";
+import { showWrongPortalToasts } from "@/lib/auth/wrong-portal-toast";
+import { userRoleLabel } from "@/lib/user-role-label";
 
 export function CrossSectorSessionGate({
   expectedRole,
@@ -12,32 +14,18 @@ export function CrossSectorSessionGate({
   children: React.ReactNode;
 }) {
   const { data: session, status } = useSession();
-  const didTriggerSignOut = useRef(false);
-  const [signingOut, setSigningOut] = useState(false);
+  const didNotify = useRef(false);
 
   useEffect(() => {
     if (status !== "authenticated" || !session?.user?.role) return;
     if (session.user.role === expectedRole) return;
-    if (didTriggerSignOut.current) return;
-    didTriggerSignOut.current = true;
-    setSigningOut(true);
-    const callbackUrl =
-      typeof window !== "undefined"
-        ? `${window.location.pathname}${window.location.search}`
-        : "/";
-    void signOut({ callbackUrl });
+    if (didNotify.current) return;
+    didNotify.current = true;
+    showWrongPortalToasts({
+      attemptedLabel: userRoleLabel(expectedRole),
+      actualRole: session.user.role,
+    });
   }, [status, session, expectedRole]);
-
-  if (signingOut) {
-    return (
-      <div className="flex min-h-[40vh] flex-col items-center justify-center gap-2 px-4 text-center text-sm text-muted-foreground">
-        <p className="font-semibold text-[var(--foreground)]">Signing out…</p>
-        <p className="max-w-sm text-xs">
-          Switching to this portal. You will be asked to sign in again.
-        </p>
-      </div>
-    );
-  }
 
   return <>{children}</>;
 }
