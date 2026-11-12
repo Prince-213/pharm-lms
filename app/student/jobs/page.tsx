@@ -8,6 +8,7 @@ import {
   loadStudentRankContext,
 } from "@/lib/jobs/listing";
 import { isStudentProfileComplete } from "@/lib/jobs/profile-complete";
+import { getOrCreateJobAlertSettings } from "@/lib/jobs/settings";
 import { roleHomePath } from "@/lib/rbac";
 import { JobsLockPanel } from "./jobs-lock-panel";
 import { JobsPageClient } from "./jobs-page-client";
@@ -15,6 +16,13 @@ import { JobsPageClient } from "./jobs-page-client";
 type SearchParams = {
   onboard?: string;
 };
+
+function toIso(value: Date | string | null | undefined): string | null {
+  if (value == null) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString();
+}
 
 export default async function StudentJobsPage({
   searchParams,
@@ -57,6 +65,13 @@ export default async function StudentJobsPage({
   const startOnboarding =
     prefs.onboardingStatus === "PENDING" || params.onboard === "1";
 
+  const settings = await getOrCreateJobAlertSettings();
+  const cadenceDays = settings.cadenceDays || 7;
+  const lastSuccessAt = settings.lastSuccessAt;
+  const nextScrapeAt = lastSuccessAt
+    ? new Date(lastSuccessAt.getTime() + cadenceDays * 24 * 60 * 60 * 1000)
+    : null;
+
   const jobs = live
     ? await getRankedJobsForStudent(
         await loadStudentRankContext(session.user.id),
@@ -65,15 +80,20 @@ export default async function StudentJobsPage({
   const emailed = live
     ? await db.jobAlertDelivery.findMany({
         where: { userId: session.user.id },
-        select: { jobId: true },
+        select: { jobId: true, createdAt: true },
       })
     : [];
+  const emailedAtByJobId = Object.fromEntries(
+    emailed.map((row) => [row.jobId, row.createdAt.toISOString()]),
+  );
 
   return (
     <JobsPageClient
       live={live}
       startOnboarding={startOnboarding}
-      emailedJobIds={emailed.map((row) => row.jobId)}
+      cadenceDays={cadenceDays}
+      lastSuccessAt={toIso(lastSuccessAt)}
+      nextScrapeAt={toIso(nextScrapeAt)}
       prefs={{
         roles: prefs.roles,
         workStyle: prefs.workStyle,
@@ -81,31 +101,22 @@ export default async function StudentJobsPage({
         jobAlertsEnabled: prefs.jobAlertsEnabled,
         onboardingStatus: prefs.onboardingStatus,
       }}
-      jobs={jobs.map(
-        ({
-          id,
-          title,
-          snippet,
-          location,
-          remote,
-          company,
-          source,
-          type,
-          salaryText,
-          applyUrl,
-        }) => ({
-          id,
-          title,
-          snippet,
-          location,
-          remote,
-          company,
-          source,
-          type,
-          salaryText,
-          applyUrl,
-        }),
-      )}
+      jobs={jobs.map((job, rankIndex) => ({
+        id: job.id,
+        title: job.title,
+        snippet: job.snippet,
+        location: job.location,
+        remote: job.remote,
+        company: job.company,
+        source: job.source,
+        type: job.type,
+        salaryText: job.salaryText,
+        applyUrl: job.applyUrl,
+        postedAt: toIso(job.postedAt),
+        createdAt: toIso(job.createdAt) ?? new Date(0).toISOString(),
+        rankIndex,
+        emailedAt: emailedAtByJobId[job.id] ?? null,
+      }))}
     />
   );
 }

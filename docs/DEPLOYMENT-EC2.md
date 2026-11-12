@@ -230,6 +230,10 @@ AUTH_GOOGLE_ID=...
 AUTH_GOOGLE_SECRET=...
 
 PG_POOL_MAX=5
+
+# Required at **build** time (not runtime-only). Generate once; keep stable on this host.
+# openssl rand -base64 32
+NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=
 ```
 
 Save: `Ctrl+O`, Enter, `Ctrl+X`.
@@ -237,6 +241,8 @@ Save: `Ctrl+O`, Enter, `Ctrl+X`.
 **Never commit `.env` to GitHub.**
 
 When you cut over to the live domain, change the URL variables to `https://edge.pharmanalytics.org` (see Part 11) and run `pm2 restart pharm-lms`.
+
+The deploy script (`~/deploy-pharm-lms.sh`) sources `.env` before `pnpm build` and sets `NEXT_DEPLOYMENT_ID` to the git SHA so stale browser tabs hard-reload instead of posting old Server Action IDs.
 
 ---
 
@@ -440,11 +446,20 @@ APIFY_TOKEN=
 APIFY_ACTOR_ID=agentx~all-jobs-scraper
 ```
 
-Monday 07:00 WAT (06:00 UTC) cron after deploy:
+Monday 07:00 WAT (06:00 UTC) cron after deploy (Contabo or EC2):
 
 ```
 0 6 * * 1 curl -fsS -H "Authorization: Bearer YOUR_CRON_SECRET" https://edge.pharmanalytics.org/api/cron/job-alerts
 ```
+
+**Job alerts email checklist (Contabo):**
+
+1. `crontab -l` shows the Monday curl above (same host that serves the app).
+2. `CRON_SECRET` in `~/pharm-lms/.env` matches the Bearer token in crontab.
+3. `RESEND_API_KEY` is set — without it, digests log `MOCK_NO_RESEND` and never reach inboxes (admin batch email will warn).
+4. `EMAIL_FROM` uses a Resend-verified domain.
+
+Admins receive an in-app notification and summary email after each non-skipped ingest (including repair scrapes).
 
 ### 5. Restart (rebuild if this rebrand is being deployed)
 
@@ -489,6 +504,54 @@ Use `https://edge.pharmanalytics.org` as the public origin (no trailing slash).
 | DB errors | Check `DATABASE_URL`; run `pnpm db:migrate:deploy` |
 | Upload fails | Add site URL to R2 CORS |
 | `git pull` fails | Check deploy key / PAT on **your** repo |
+| `Failed to find Server Action` in PM2 logs | Stale tab vs new build — see **Server Action skew** below |
+
+### Server Action skew (Contabo / VPS recovery)
+
+PM2 error: `Failed to find Server Action "…"`. Clients are calling action IDs from an older `.next` build.
+
+1. Confirm a single process and correct cwd:
+
+```bash
+pm2 status
+pm2 describe pharm-lms | grep -E 'exec cwd|status|script path'
+```
+
+`exec cwd` should be `/root/pharm-lms` (or `$HOME/pharm-lms`).
+
+2. Ensure `.env` has a stable build-time key (generate once; do not change every deploy):
+
+```bash
+grep NEXT_SERVER_ACTIONS_ENCRYPTION_KEY ~/pharm-lms/.env
+# If missing:
+#   KEY=$(openssl rand -base64 32)
+#   echo "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=$KEY" >> ~/pharm-lms/.env
+```
+
+3. Prefer a full deploy (pull + build with key + `NEXT_DEPLOYMENT_ID`):
+
+```bash
+~/deploy-pharm-lms.sh
+```
+
+One-shot clean rebuild without git pull:
+
+```bash
+cd ~/pharm-lms
+pm2 stop pharm-lms
+rm -rf .next
+set -a && source .env && set +a
+export NODE_OPTIONS=--max-old-space-size=2048
+export NEXT_DEPLOYMENT_ID="$(git rev-parse HEAD)"
+pnpm build
+pm2 restart pharm-lms
+```
+
+4. Hard-refresh open browser tabs (or close them). Old tabs keep logging until refreshed.
+
+5. Nginx should proxy only — do not enable long-lived HTML `proxy_cache` for document routes.
+
+Occasional `Failed to find Server Action "x"` from bots/scanners can still appear and is safe to ignore after a clean deploy.
 
 ---
 
@@ -500,8 +563,9 @@ Use `https://edge.pharmanalytics.org` as the public origin (no trailing slash).
 | Deploy (server) | `~/deploy-pharm-lms.sh` |
 | View logs | `pm2 logs pharm-lms` |
 | App status | `pm2 status` |
-| Restart only | `pm2 restart pharm-lms` |
-| Reconnect | EC2 → Connect → Instance Connect |
+| Restart only (env-only changes) | `pm2 restart pharm-lms` |
+| Code/env for Server Actions | Always `~/deploy-pharm-lms.sh` (rebuild), not restart alone |
+| Reconnect | EC2 → Connect → Instance Connect (or SSH to Contabo) |
 
 ---
 

@@ -18,14 +18,18 @@ export function JobsPageClient({
   prefs,
   live,
   jobs,
-  emailedJobIds,
   startOnboarding,
+  cadenceDays,
+  lastSuccessAt,
+  nextScrapeAt,
 }: {
   prefs: Prefs;
   live: boolean;
   jobs: BoardJob[];
-  emailedJobIds: string[];
   startOnboarding: boolean;
+  cadenceDays: number;
+  lastSuccessAt: string | null;
+  nextScrapeAt: string | null;
 }) {
   const [showOnboarding, setShowOnboarding] = useState(startOnboarding);
 
@@ -69,7 +73,9 @@ export function JobsPageClient({
   return (
     <JobsBoard
       jobs={jobs}
-      emailedJobIds={emailedJobIds}
+      cadenceDays={cadenceDays}
+      lastSuccessAt={lastSuccessAt}
+      nextScrapeAt={nextScrapeAt}
       onRefine={() => setShowOnboarding(true)}
     />
   );

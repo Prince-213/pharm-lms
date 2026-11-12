@@ -15,6 +15,7 @@ export type ListedJob = {
   salaryText: string | null;
   applyUrl: string;
   postedAt: Date | string | null;
+  createdAt: Date | string;
 };
 
 export async function loadStudentRankContext(
@@ -65,6 +66,7 @@ async function queryFreshJobs(): Promise<ListedJob[]> {
       salaryText: true,
       applyUrl: true,
       postedAt: true,
+      createdAt: true,
     },
   });
   return rows;
@@ -75,19 +77,23 @@ const cachedFreshJobs = unstable_cache(queryFreshJobs, ["job-board-fresh"], {
   revalidate: 3600,
 });
 
-function hydratePostedAt(job: ListedJob): ListedJob {
-  if (job.postedAt instanceof Date || job.postedAt == null) return job;
-  const parsed = new Date(job.postedAt);
-  return {
-    ...job,
-    postedAt: Number.isNaN(parsed.getTime()) ? null : parsed,
-  };
+function hydrateDate(value: Date | string | null | undefined): Date | null {
+  if (value instanceof Date) return value;
+  if (value == null) return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function hydrateJobDates(job: ListedJob): ListedJob {
+  const postedAt = hydrateDate(job.postedAt);
+  const createdAt = hydrateDate(job.createdAt) ?? new Date(0);
+  return { ...job, postedAt, createdAt };
 }
 
 export async function getRankedJobsForStudent(
   ctx: RankContext,
 ): Promise<ListedJob[]> {
-  const jobs = (await cachedFreshJobs()).map(hydratePostedAt);
+  const jobs = (await cachedFreshJobs()).map(hydrateJobDates);
   return rankJobs(jobs, ctx, LISTING_CAP);
 }
 

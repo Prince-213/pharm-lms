@@ -20,6 +20,7 @@ import {
   getOrCreateJobAlertSettings,
 } from "@/lib/jobs/settings";
 import { sendEmail } from "@/lib/notifications/email-service";
+import { notifyAdminsJobAlertBatchComplete } from "@/lib/notifications/job-alert-events";
 import { getJobAlertDigestTemplate } from "@/lib/notifications/job-alert-template";
 
 export type IngestOutcome =
@@ -228,7 +229,7 @@ async function sendDigestToStudent(
   kind: "weekly" | "welcome",
   fresh: Awaited<ReturnType<typeof loadFreshJobs>>,
   already: Set<string>,
-): Promise<{ sent: boolean; reason?: string }> {
+): Promise<{ sent: boolean; mocked?: boolean; reason?: string }> {
   if (!isStudentProfileComplete(student) || !student.email) {
     return { sent: false, reason: "incomplete" };
   }
@@ -281,7 +282,7 @@ async function sendDigestToStudent(
     })),
     skipDuplicates: true,
   });
-  return { sent: true };
+  return { sent: true, mocked: Boolean(sent.mocked) };
 }
 
 async function sendWeeklyDigests(
@@ -304,7 +305,7 @@ async function sendWeeklyDigests(
   });
 
   if (newJobIds.length === 0) {
-    return { emailsSent: 0, emailsSkip: students.length };
+    return { emailsSent: 0, emailsSkip: students.length, emailsMocked: 0 };
   }
 
   const fresh = await loadJobsByIds(newJobIds);
@@ -314,6 +315,7 @@ async function sendWeeklyDigests(
   );
   let emailsSent = 0;
   let emailsSkip = 0;
+  let emailsMocked = 0;
 
   for (const student of students) {
     const result = await sendDigestToStudent(
@@ -324,12 +326,16 @@ async function sendWeeklyDigests(
       fresh,
       delivered.get(student.id) ?? new Set(),
     );
-    if (result.sent) emailsSent += 1;
-    else emailsSkip += 1;
+    if (result.sent) {
+      emailsSent += 1;
+      if (result.mocked) emailsMocked += 1;
+    } else {
+      emailsSkip += 1;
+    }
     await sleep(150);
   }
 
-  return { emailsSent, emailsSkip };
+  return { emailsSent, emailsSkip, emailsMocked };
 }
 
 export async function sendWelcomeJobDigest(userId: string): Promise<{
@@ -440,8 +446,8 @@ export async function runJobAlertIngest(opts?: {
       where: { expiresAt: { lt: new Date() } },
     });
 
-    const { emailsSent, emailsSkip } = repairOnly
-      ? { emailsSent: 0, emailsSkip: 0 }
+    const { emailsSent, emailsSkip, emailsMocked } = repairOnly
+      ? { emailsSent: 0, emailsSkip: 0, emailsMocked: 0 }
       : await sendWeeklyDigests(
           run.id,
           settings.maxEmailJobs || DEFAULT_EMAIL_JOBS,
@@ -458,12 +464,31 @@ export async function runJobAlertIngest(opts?: {
         emailsSkip,
       },
     });
+
+    let lastSuccessAt = settings.lastSuccessAt;
     if (!repairOnly) {
+      lastSuccessAt = new Date();
       await db.jobAlertSettings.update({
         where: { id: "default" },
-        data: { lastSuccessAt: new Date() },
+        data: { lastSuccessAt },
       });
     }
+
+    const sourceCount = JOB_SOURCES.filter((source) => enabled[source]).length;
+    void notifyAdminsJobAlertBatchComplete({
+      runId: run.id,
+      jobsStored,
+      emailsSent,
+      emailsSkip,
+      emailsMocked,
+      repairOnly,
+      cadenceDays: settings.cadenceDays,
+      lastSuccessAt,
+      sourceCount,
+    }).catch((err) => {
+      console.error("[job-alerts] admin batch notify failed", err);
+    });
+
     revalidateTag("job-board", "max");
     return {
       skipped: false,

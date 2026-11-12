@@ -23,12 +23,12 @@ export async function sendEmail({
   const redacted = redactEmail(to);
 
   if (!resend) {
-    console.log(
-      `[email-service] MOCK (no RESEND_API_KEY) to=${redacted} subject="${subject}"`,
+    console.warn(
+      `[email-service] MOCK_NO_RESEND to=${redacted} subject="${subject}" — set RESEND_API_KEY for real delivery`,
     );
-    console.log("[email-service] MOCK body (OTP is in HTML below):");
-    console.log(html);
-    console.log("[email-service] MOCK end");
+    console.warn("[email-service] MOCK_NO_RESEND body:");
+    console.warn(html);
+    console.warn("[email-service] MOCK_NO_RESEND end");
     return { success: true, mocked: true };
   }
 

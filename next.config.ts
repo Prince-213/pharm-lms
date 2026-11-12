@@ -8,6 +8,8 @@ const toModule = (name: string) => path.join(projectRoot, "node_modules", name);
 
 const nextConfig: NextConfig = {
   /* config options here */
+  // Set by deploy script (git SHA). Stale tabs hard-reload instead of posting old Server Action IDs.
+  deploymentId: process.env.NEXT_DEPLOYMENT_ID,
   turbopack: {
     root: projectRoot,
     resolveAlias: {
