@@ -8,6 +8,7 @@ import {
   isNavItemActive,
   type PortalNavConfig,
 } from "@/components/layout/nav/portal-nav-config";
+import { PortalNavUser } from "@/components/layout/portal-nav-user";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Sidebar,
@@ -82,7 +83,8 @@ export function PortalAppSidebar({ config, ...props }: PortalAppSidebarProps) {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="p-2">
+      <SidebarFooter className="gap-2 p-2">
+        <PortalNavUser />
         <Card className="border-sidebar-border bg-sidebar-accent/40 shadow-none group-data-[collapsible=icon]:hidden">
           <CardContent className="flex flex-col items-center gap-2 p-4 text-center">
             <PharmLogo
