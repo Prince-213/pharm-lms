@@ -11,8 +11,8 @@ Public fallbacks:
 
 | File | Used for |
 |------|----------|
-| `default-v3.jpg` | Site-wide Open Graph / Twitter card fallback |
-| `home-v3.jpg` | Homepage — listed first in metadata |
+| `default-v4.jpg` | Site-wide Open Graph / Twitter card fallback |
+| `home-v4.jpg` | Homepage — listed first in metadata |
 
 Sources are AI-authored in `scripts/og-sources/`. Resize and publish:
 
@@ -20,4 +20,4 @@ Sources are AI-authored in `scripts/og-sources/`. Resize and publish:
 pnpm brand:assets
 ```
 
-Brand: navy `#1e40af` / `#0b1228`, purple accent `#7a4dfc`, wordmark **PharmEdge**, CTA chip “Start learning”.
+Brand: navy `#000080` / `#00005c`, cyan accent `#00BFFF`, neutral `#FAFAFB`, wordmark **PharmEdge**, CTA chip “Start learning”.

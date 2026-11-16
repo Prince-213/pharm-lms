@@ -86,7 +86,8 @@ async function writeOgJpeg(sourceName: string, dest: string) {
 
 async function main() {
   const transparent = { r: 0, g: 0, b: 0, alpha: 0 };
-  const appleBg = { r: 245, g: 247, b: 250, alpha: 255 };
+  // Brand neutral #FAFAFB
+  const appleBg = { r: 250, g: 250, b: 251, alpha: 255 };
 
   const fav16 = await markOnCanvas(16, transparent, 0.06);
   const fav32 = await markOnCanvas(32, transparent, 0.06);
@@ -109,8 +110,8 @@ async function main() {
   writeFileSync(join(seoDir, "favicon.ico"), ico);
   writeFileSync(join(root, "public/favicon.ico"), ico);
 
-  const homeOg = join(ogDir, "home-v3.jpg");
-  const defaultOg = join(ogDir, "default-v3.jpg");
+  const homeOg = join(ogDir, "home-v4.jpg");
+  const defaultOg = join(ogDir, "default-v4.jpg");
   await writeOgJpeg("home.png", homeOg);
   await writeOgJpeg("default.png", defaultOg);
   await writeOgJpeg("home.png", join(root, "app/opengraph-image.jpg"));
